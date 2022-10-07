@@ -51,6 +51,11 @@ class CommandLine {
 		return array_unique($folders);
 	}
 
+	public function get_variable(string $string){
+		exec("echo $string", $var);
+		return $var[0] ?? '';
+	}
+
 }
 
 ?>
