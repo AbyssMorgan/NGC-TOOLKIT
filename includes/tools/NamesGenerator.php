@@ -1,5 +1,12 @@
 <?php
 
+namespace App\Tools;
+
+use AVE;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use FilesystemIterator;
+
 class NamesGenerator {
 
 	private string $name = "NamesGenerator";

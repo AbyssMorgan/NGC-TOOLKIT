@@ -21,7 +21,7 @@ class CommandLine {
 	}
 
 	public function get_input(){
-		return trim(fgets(STDIN));
+		return trim(readline());
 	}
 
 	public function get_folders(string $string){

@@ -7,6 +7,7 @@
 	require_once("$includes_path/extensions/ImageFunctions.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/NamesGenerator.php");
+	require_once("$includes_path/tools/FileFunctions.php");
 
 	$ave = new AVE($argv);
 	$ave->execute();

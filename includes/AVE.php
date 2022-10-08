@@ -4,6 +4,9 @@ use App\Services\IniFile;
 use App\Services\Logs;
 use App\Services\CommandLine;
 
+use App\Tools\NamesGenerator;
+use App\Tools\FileFunctions;
+
 class AVE extends CommandLine {
 
 	use App\Extensions\VideoFunctions;
@@ -112,7 +115,7 @@ class AVE extends CommandLine {
 				break;
 			}
 			case '1': {
-
+				// $this->tool = new FileFunctions($this);
 				break;
 			}
 			case '2': {
