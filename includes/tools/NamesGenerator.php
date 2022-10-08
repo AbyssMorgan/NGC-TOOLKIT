@@ -18,7 +18,7 @@ class NamesGenerator {
 		echo " 0 - Generate Names CheckSum\r\n";
 		echo " 1 - Generate Names Number\r\n";
 		echo " 2 - Extension Change\r\n";
-		echo " 3 - Video CheckSum/Resolution Generator\r\n";
+		echo " 3 - Video CheckSum/Resolution/Thumbnail Generator\r\n";
 	}
 
 	public function action(string $action){
