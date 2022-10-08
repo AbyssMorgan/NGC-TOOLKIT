@@ -327,6 +327,7 @@ class NamesGenerator {
 
 	public function tool_extension_action(){
 		$this->ave->clear();
+		$this->ave->set_tool("$this->name > Extension > Replace");
 		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
