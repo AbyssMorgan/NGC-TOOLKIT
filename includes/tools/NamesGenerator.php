@@ -21,13 +21,12 @@ class NamesGenerator {
 		echo " 3 - Video CheckSum/Resolution Generator\r\n";
 	}
 
-	public function action($action){
+	public function action(string $action){
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': {
-				return $this->tool_checksum_help();
-			}
+			case '0': return $this->tool_checksum_help();
+			case '1': return $this->tool_number_help();
 		}
 		$this->ave->select_action();
 	}
@@ -53,7 +52,7 @@ class NamesGenerator {
 			' ??l - List only',
 		]);
 
-		echo "\r\n Mode: ";
+		echo "\r\n\r\n Mode: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
 
@@ -62,6 +61,8 @@ class NamesGenerator {
 			'algo' => strtolower($line[1] ?? '0'),
 			'list_only' => strtolower(($line[2] ?? '?')) == 'l',
 		];
+
+		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
 		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->tool_checksum_help();
 		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_checksum_help();
@@ -100,14 +101,14 @@ class NamesGenerator {
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
-			case '0': return "$folder\\$hash.$extension";
-			case '1': return "$folder\\$name $hash.$extension";
-			case '2': return "$folder\\$foldername $hash.$extension";
-			case '3': return "$folder\\$foldername ".sprintf("%04d",$file_id)." $hash.$extension";
-			case '4': return "$folder\\".date("Y-m-d",filemtime($file))." $hash.$extension";
-			case '5': return "$folder\\".date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension";
-			case '6': return "$folder\\".sprintf("%04d",$file_id)." $hash.$extension";
-			case '7': return "$folder\\".sprintf("%06d",$file_id)." $hash.$extension";
+			case '0': return "$folder".DIRECTORY_SEPARATOR."$hash.$extension";
+			case '1': return "$folder".DIRECTORY_SEPARATOR."$name $hash.$extension";
+			case '2': return "$folder".DIRECTORY_SEPARATOR."$foldername $hash.$extension";
+			case '3': return "$folder".DIRECTORY_SEPARATOR."$foldername ".sprintf("%04d",$file_id)." $hash.$extension";
+			case '4': return "$folder".DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." $hash.$extension";
+			case '5': return "$folder".DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension";
+			case '6': return "$folder".DIRECTORY_SEPARATOR.sprintf("%04d",$file_id)." $hash.$extension";
+			case '7': return "$folder".DIRECTORY_SEPARATOR.sprintf("%06d",$file_id)." $hash.$extension";
 		}
 	}
 
@@ -123,8 +124,9 @@ class NamesGenerator {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
-			$file_id = 1;
 			if(!file_exists($folder)) continue;
+			$file_id = 1;
+			$list = [];
 			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
 			foreach(new RecursiveIteratorIterator($files) as $file){
 				if(is_dir($file) || is_link($file)) continue 2;
@@ -133,25 +135,183 @@ class NamesGenerator {
 				$new_name = $this->tool_checksum_get_pattern($this->params['mode'], $file, $hash, $file_id++);
 				$progress++;
 				if($this->params['list_only']){
-					echo "lista $file $new_name\r\n";
+					array_push($list,$new_name);
 				} else {
-					if(file_exists($new_name) && $new_name != $file){
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$errors++;
-						if($this->ave->config('AVE_ACTION_AFTER_DUPLICATE') == 'DELETE'){
+						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						if($this->ave->config->get('AVE_ACTION_AFTER_DUPLICATE') == 'DELETE'){
 							unlink($file);
+							$this->ave->log_event->write("DELETE \"$file\"");
 						} else {
 							rename($file,"$file.tmp");
+							$this->ave->log_event->write("RENAME \"$file\" \"$file.tmp\"");
 						}
 					} else {
 						rename($file,$new_name);
+						$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
 					}
 				}
 				$this->ave->set_progress($progress, $errors);
+			}
+			if($this->params['list_only']){
+				$count = count($list);
+				$this->ave->log_event->write("Write $count items from \"$folder\" to data file");
+				$this->ave->log_data->write($list);
 			}
 			$this->ave->set_folder_done($folder);
 		}
 		$this->ave->exit();
 	}
+
+	public function tool_number_help(){
+		$this->ave->clear();
+		$this->ave->set_tool("$this->name > Number");
+
+		echo implode("\r\n",[
+			'           Group Model Format                 Range',
+			' Normal    g0    s0    "PPP_DDDDDD"           000001 - 999999',
+			' Part      g1    s1    "III\PPP_DDDDDD"       000001 - 999999',
+			' Merge     g2    s2    "PPP_DDDDDD"           000001 - 999999',
+			' DirName   g3    s3    "PPP_dir_name_DDDDDD"  000001 - 999999',
+			' DirNameEx g4    s4    "PPP_dir_name_DDDD"    0001 -   9999',
+			' Revert    g5    s5    "PPP_DDDDDD"           999999 - 000001',
+			' NoPref    g6    s6    "DDDDDD"               000001 - 999999',
+		]);
+
+		echo "\r\n\r\n Mode: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+
+		$this->params = [
+			'type' => strtolower($line[0] ?? '?'),
+			'mode' => strtolower($line[1] ?? '?'),
+		];
+
+		if(!in_array($this->params['type'],['s','g'])) return $this->tool_number_help();
+		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) return $this->tool_number_help();
+		$this->ave->set_tool("$this->name > CheckSum > ".$this->tool_number_name($this->params['mode']));
+		switch($this->params['type']){
+			case 's': return $this->tool_number_action_single();
+			case 'g': return $this->tool_number_action_group();
+		}
+
+	}
+
+	public function tool_number_name(string $mode){
+		switch($mode){
+			case '0': return 'Normal';
+			case '1': return 'Part';
+			case '2': return 'Merge';
+			case '3': return 'DirName';
+			case '4': return 'DirNameEx';
+			case '5': return 'Revert';
+			case '6': return 'NoPref';
+		}
+		return 'Unknown';
+	}
+
+	public function tool_number_get_prefix_id(){
+		return sprintf("%03d", random_int(0, 999));
+	}
+
+	public function tool_number_get_pattern(string $mode, string $file, string $prefix, int $file_id, string $input, int $part_id){
+		$folder = pathinfo($file, PATHINFO_DIRNAME);
+		$foldername = pathinfo($folder, PATHINFO_FILENAME);
+		$name = pathinfo($file, PATHINFO_FILENAME);
+		$extension = pathinfo($file, PATHINFO_EXTENSION);
+		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
+		switch($mode){
+			case '0': return "$folder".DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '1': return "$input".DIRECTORY_SEPARATOR.sprintf("%03d",$part_id).DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '2': return "$input".DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '3': return "$folder".DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%06d",$file_id).".$extension";
+			case '4': return "$folder".DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%04d",$file_id).".$extension";
+			case '5': return "$folder".DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '6': return "$folder".DIRECTORY_SEPARATOR.sprintf("%06d",$file_id).".$extension";
+		}
+	}
+
+	public function tool_number_action(string $folder, int &$progress, int &$errors){
+		if(!file_exists($folder)) return false;
+		$file_id = ($this->params['mode'] == 5) ? 999999 : 1;
+		$prefix_id = $this->tool_number_get_prefix_id();
+		$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
+		foreach(new RecursiveIteratorIterator($files) as $file){
+			if(is_dir($file) || is_link($file)) continue;
+			$extension = strtolower(pathinfo($file,PATHINFO_EXTENSION));
+			if(!in_array($extension, array_merge(explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO')), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'))))) continue;
+			$part_id = floor($file_id / intval($this->ave->config->get('AVE_PART_SIZE'))) + 1;
+			if($this->params['mode'] == 1){
+				$prefix_id = sprintf("%03d",$part_id);
+			}
+			if(in_array($extension, explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO')))){
+				$prefix = $this->ave->config->get('AVE_PREFIX_PHOTO')."_$prefix_id"."_";
+			} else {
+				$prefix = $this->ave->config->get('AVE_PREFIX_VIDEO')."_$prefix_id"."_";
+			}
+			$new_name = $this->tool_number_get_pattern($this->params['mode'], $file, $prefix, $file_id, $folder, $part_id);
+			$directory = pathinfo($new_name, PATHINFO_DIRNAME);
+			if(!file_exists($directory)) mkdir($directory,octdec($this->ave->config->get('AVE_DEFAULT_FOLDER_PERMISSION')),true);
+			if($this->params['mode'] == 5){
+				$file_id--;
+			} else {
+				$file_id++;
+			}
+			$progress++;
+			if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+				$errors++;
+				$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+			} else {
+				rename($file,$new_name);
+				$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+			}
+			$this->ave->set_progress($progress, $errors);
+		}
+		return true;
+	}
+
+	public function tool_number_action_single(){
+		$this->ave->clear();
+		echo "\r\n Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->tool_number_help();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			$this->tool_number_action($folder, $progress, $errors);
+			$this->ave->set_folder_done($folder);
+		}
+		$this->ave->exit();
+	}
+
+	public function tool_number_action_group(){
+		$this->ave->clear();
+		echo "\r\n Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->tool_number_help();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$subfolders = scandir($folder);
+			foreach($subfolders as $subfoolder){
+				if($subfoolder == '.' || $subfoolder == '..') continue;
+				if(is_dir("$folder".DIRECTORY_SEPARATOR."$subfoolder")){
+					$this->tool_number_action("$folder".DIRECTORY_SEPARATOR."$subfoolder", $progress, $errors);
+				}
+			}
+			$this->ave->set_folder_done($folder);
+		}
+		$this->ave->exit();
+	}
+
 
 }
 

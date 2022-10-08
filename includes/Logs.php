@@ -49,6 +49,10 @@ class Logs {
 		return $this->writeString($content);
 	}
 
+	public function getPath(){
+		return $this->path;
+	}
+
 }
 
 ?>

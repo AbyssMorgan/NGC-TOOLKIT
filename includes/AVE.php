@@ -3,6 +3,11 @@
 class AVE extends CommandLine {
 
 	public IniFile $config;
+
+	public Logs $log_event;
+	public Logs $log_error;
+	public Logs $log_data;
+
 	public string $path;
 
 	private string $app_name = "AVE";
@@ -35,6 +40,19 @@ class AVE extends CommandLine {
 		if($changed){
 			$this->config->save();
 		}
+		$keys = [
+			'AVE_LOG_FOLDER',
+			'AVE_DATA_FOLDER',
+		];
+		foreach($keys as $key){
+			$this->config->set($key, $this->get_variable($this->config->get($key)));
+		}
+
+		$timestamp = date("Y-m-d His");
+
+		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt");
+		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt");
+		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false);
 	}
 
 	public function clear(){
@@ -58,6 +76,7 @@ class AVE extends CommandLine {
 	public function set_tool(string $name){
 		$this->tool_name = $name;
 		$this->title("[$this->app_name v$this->version > $this->tool_name]");
+		$this->log_event->write("Set Tool: $this->tool_name");
 	}
 
 	public function set_progress($progress, $errors){
@@ -65,6 +84,7 @@ class AVE extends CommandLine {
 	}
 
 	public function select_tool(){
+		$this->log_event->write("Select Tool");
 		$this->clear();
 		$this->title("[$this->app_name v$this->version]");
 		$this->tool = null;
@@ -113,6 +133,7 @@ class AVE extends CommandLine {
 	public function setup_folders(array $folders){
 		foreach($folders as $folder){
 			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXIST]';
+			$this->log_event->write("Scan: $folder");
 		}
 		$this->print_folders_state();
 	}
@@ -130,11 +151,22 @@ class AVE extends CommandLine {
 	}
 
 	public function exit(int $seconds = 10){
+		$this->log_event->write("Exit");
+		if(file_exists($this->log_data->getPath())){
+			$this->open_file($this->log_data->getPath());
+		}
+		if(file_exists($this->log_error->getPath())){
+			$this->open_file($this->log_error->getPath());
+		}
+		$this->timeout($seconds);
+	}
+
+	private function timeout(int $seconds){
 		$this->title("[$this->app_name v$this->version > Wait] $seconds seconds");
 		if($seconds > 0){
 			sleep(1);
 			$seconds--;
-			$this->exit($seconds);
+			$this->timeout($seconds);
 		} else {
 			exit(0);
 		}

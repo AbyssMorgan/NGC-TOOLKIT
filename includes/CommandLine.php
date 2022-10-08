@@ -56,6 +56,10 @@ class CommandLine {
 		return $var[0] ?? '';
 	}
 
+	public function open_file(string $path){
+		exec("START \"\" \"$path\"");
+	}
+
 }
 
 ?>
