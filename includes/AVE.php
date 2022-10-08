@@ -1,6 +1,13 @@
 <?php
 
+use App\Services\IniFile;
+use App\Services\Logs;
+use App\Services\CommandLine;
+
 class AVE extends CommandLine {
+
+	use App\Extensions\VideoFunctions;
+	use App\Extensions\ImageFunctions;
 
 	public IniFile $config;
 

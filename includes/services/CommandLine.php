@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Services;
+
 class CommandLine {
 
 	public function __construct(){

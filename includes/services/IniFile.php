@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Services;
+
 class IniFile {
 
 	protected $path;

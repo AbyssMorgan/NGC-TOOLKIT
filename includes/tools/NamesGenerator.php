@@ -28,6 +28,7 @@ class NamesGenerator {
 			case '0': return $this->tool_checksum_help();
 			case '1': return $this->tool_number_help();
 			case '2': return $this->tool_extension_action();
+			case '3': return $this->tool_videogenerator_help();
 		}
 		$this->ave->select_action();
 	}
@@ -203,7 +204,7 @@ class NamesGenerator {
 
 		if(!in_array($this->params['type'],['s','g'])) return $this->tool_number_help();
 		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) return $this->tool_number_help();
-		$this->ave->set_tool("$this->name > CheckSum > ".$this->tool_number_name($this->params['mode']));
+		$this->ave->set_tool("$this->name > Number > ".$this->tool_number_name($this->params['mode']));
 		switch($this->params['type']){
 			case 's': return $this->tool_number_action_single();
 			case 'g': return $this->tool_number_action_group();
@@ -252,7 +253,7 @@ class NamesGenerator {
 		$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
 		foreach(new RecursiveIteratorIterator($files) as $file){
 			if(is_dir($file) || is_link($file)) continue;
-			$extension = strtolower(pathinfo($file,PATHINFO_EXTENSION));
+			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 			if(!in_array($extension, array_merge(explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO')), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'))))) continue;
 			$part_id = floor($file_id / intval($this->ave->config->get('AVE_PART_SIZE'))) + 1;
 			if($this->params['mode'] == 1){
@@ -276,8 +277,11 @@ class NamesGenerator {
 				$errors++;
 				$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
 			} else {
-				rename($file, $new_name);
-				$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+				if(rename($file, $new_name)){
+					$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+				} else {
+					$this->ave->log_error->write("FAILED RENAME \"$file\" \"$new_name\"");
+				}
 			}
 			$this->ave->set_progress($progress, $errors);
 		}
@@ -352,7 +356,7 @@ class NamesGenerator {
 			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
 			foreach(new RecursiveIteratorIterator($files) as $file){
 				if(is_dir($file) || is_link($file)) continue;
-				$extension = strtolower(pathinfo($file,PATHINFO_EXTENSION));
+				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == $extension_old){
 					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
 					if(rename($file, $new_name)){
@@ -367,6 +371,163 @@ class NamesGenerator {
 			}
 		}
 
+	}
+
+	public function tool_videogenerator_help(){
+		$this->ave->clear();
+		$this->ave->set_tool("$this->name > VideoGenerator");
+
+		echo implode("\r\n",[
+			' Modes:',
+			' 0  - CheckSum',
+			' 1  - Resolution',
+			' 2  - Thumbnail',
+			' 3  - Full: CheckSum + Resolution + Thumbnail',
+			' 4  - Lite: CheckSum + Resolution',
+			' ?0 - md5 (default)',
+			' ?1 - sha256',
+			' ?2 - crc32',
+			' ?3 - whirlpool',
+		]);
+
+		echo "\r\n\r\n Mode: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+			'algo' => strtolower($line[1] ?? '?'),
+		];
+
+		if($this->params['algo'] == '?') $this->params['algo'] = '0';
+
+		if(!in_array($this->params['mode'],['0','1','2','3','4'])) return $this->tool_videogenerator_help();
+		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_videogenerator_help();
+
+		$this->ave->set_tool("$this->name > VideoGenerator > ".$this->tool_videogenerator_name($this->params['mode']));
+		$this->params['checksum'] = in_array($this->params['mode'],['0','3','4']);
+		$this->params['resolution'] = in_array($this->params['mode'],['1','3','4']);
+		$this->params['thumbnail'] = in_array($this->params['mode'],['2','3']);
+		$this->tool_videogenerator_action();
+	}
+
+	public function tool_videogenerator_name(string $mode){
+		switch($mode){
+			case '0': return 'CheckSum';
+			case '1': return 'Resolution';
+			case '2': return 'Thumbnail';
+			case '3': return 'Full';
+			case '4': return 'Lite';
+		}
+		return 'Unknown';
+	}
+
+	public function tool_videogenerator_action(){
+		$this->ave->clear();
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->tool_videogenerator_help();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$algo = $this->tool_checksum_algo($this->params['algo']);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$file_id = 1;
+			$list = [];
+			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
+			foreach(new RecursiveIteratorIterator($files) as $file){
+				if(is_dir($file) || is_link($file)) continue 2;
+				$extension = pathinfo($file, PATHINFO_EXTENSION);
+				if(in_array(strtolower($extension), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO')))){
+					$name = pathinfo($file, PATHINFO_FILENAME);
+					$directory = pathinfo($file, PATHINFO_DIRNAME);
+					if($this->params['checksum'] && !file_exists("$file.$algo")){
+						$hash = hash_file($algo, $file, false);
+						if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
+					}
+					if($this->params['resolution']){
+						$resolution = $this->ave->getVideoResolution($file);
+						if($resolution == '0x0'){
+							$this->ave->log_error->write("FAILED GET_VIDEO_RESOLUTION \"$file\"");
+						} else {
+							if(strpos($name, " [$resolution]") === false){
+								$name = "$name [$resolution]";
+							}
+						}
+					}
+					if($this->params['thumbnail']){
+						$thumbnail = $this->ave->getVideoThumbnail($file);
+					} else {
+						$thumbnail = false;
+					}
+					$new_name = "$directory".DIRECTORY_SEPARATOR."$name.$extension";
+					$renamed = false;
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						$errors++;
+						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+					} else {
+						if(rename($file, $new_name)){
+							$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+							$renamed = true;
+						} else {
+							$this->ave->log_error->write("FAILED RENAME \"$file\" \"$new_name\"");
+							$errors++;
+						}
+					}
+					if(isset($hash)){
+						if(file_put_contents("$new_name.$algo",$hash)){
+							$this->ave->log_event->write("CREATE \"$new_name.$algo\"");
+						} else {
+							$this->ave->log_error->write("FAILED CREATE \"$new_name.$algo\"");
+							$errors++;
+						}
+					} else if($renamed){
+						foreach(['md5','sha256','crc32','whirlpool'] as $a){
+							if(file_exists("$file.$a")){
+								if(rename("$file.$a","$new_name.$a")){
+									$this->ave->log_event->write("RENAME \"$file.$algo\" \"$new_name.$a\"");
+								} else {
+									$this->ave->log_error->write("FAILED RENAME \"$file.$algo\" \"$new_name.$a\"");
+									$errors++;
+								}
+							}
+						}
+					}
+
+					$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."_s.jpg";
+					$name_new = "$directory".DIRECTORY_SEPARATOR."$name"."_s.jpg";
+					if($renamed && file_exists($name_old)){
+						if(rename($name_old, $name_new)){
+							$this->ave->log_event->write("RENAME \"$name_old\" \"$name_new\"");
+							$renamed = true;
+						} else {
+							$this->ave->log_error->write("FAILED RENAME \"$name_old\" \"$name_new\"");
+							$errors++;
+						}
+					}
+
+					$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
+					$name_new = "$directory".DIRECTORY_SEPARATOR."$name.srt";
+					if($renamed && file_exists($name_old)){
+						if(rename($name_old, $name_new)){
+							$this->ave->log_event->write("RENAME \"$name_old\" \"$name_new\"");
+							$renamed = true;
+						} else {
+							$this->ave->log_error->write("FAILED RENAME \"$name_old\" \"$name_new\"");
+							$errors++;
+						}
+					}
+
+					$progress++;
+					$this->ave->set_progress($progress, $errors);
+				}
+			}
+			$this->ave->set_folder_done($folder);
+		}
+		$this->ave->exit();
 	}
 
 }
