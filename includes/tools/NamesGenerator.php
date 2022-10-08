@@ -27,6 +27,7 @@ class NamesGenerator {
 		switch($this->action){
 			case '0': return $this->tool_checksum_help();
 			case '1': return $this->tool_number_help();
+			case '2': return $this->tool_extension_action();
 		}
 		$this->ave->select_action();
 	}
@@ -114,7 +115,7 @@ class NamesGenerator {
 
 	public function tool_cheksum_action(){
 		$this->ave->clear();
-		echo "\r\n Folders: ";
+		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->tool_checksum_help();
 		$folders = $this->ave->get_folders($line);
@@ -141,15 +142,27 @@ class NamesGenerator {
 						$errors++;
 						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
 						if($this->ave->config->get('AVE_ACTION_AFTER_DUPLICATE') == 'DELETE'){
-							unlink($file);
-							$this->ave->log_event->write("DELETE \"$file\"");
+							if(unlink($file)){
+								$this->ave->log_event->write("DELETE \"$file\"");
+							} else {
+								$this->ave->log_error->write("FAILED DELETE \"$file\"");
+								$errors++;
+							}
 						} else {
-							rename($file,"$file.tmp");
-							$this->ave->log_event->write("RENAME \"$file\" \"$file.tmp\"");
+							if(rename($file, "$file.tmp")){
+								$this->ave->log_event->write("RENAME \"$file\" \"$file.tmp\"");
+							} else {
+								$this->ave->log_error->write("FAILED RENAME \"$file\" \"$file.tmp\"");
+								$errors++;
+							}
 						}
 					} else {
-						rename($file,$new_name);
-						$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+						if(rename($file, $new_name)){
+							$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+						} else {
+							$this->ave->log_error->write("FAILED RENAME \"$file\" \"$new_name\"");
+							$errors++;
+						}
 					}
 				}
 				$this->ave->set_progress($progress, $errors);
@@ -252,7 +265,7 @@ class NamesGenerator {
 			}
 			$new_name = $this->tool_number_get_pattern($this->params['mode'], $file, $prefix, $file_id, $folder, $part_id);
 			$directory = pathinfo($new_name, PATHINFO_DIRNAME);
-			if(!file_exists($directory)) mkdir($directory,octdec($this->ave->config->get('AVE_DEFAULT_FOLDER_PERMISSION')),true);
+			if(!file_exists($directory)) mkdir($directory, octdec($this->ave->config->get('AVE_DEFAULT_FOLDER_PERMISSION')), true);
 			if($this->params['mode'] == 5){
 				$file_id--;
 			} else {
@@ -263,7 +276,7 @@ class NamesGenerator {
 				$errors++;
 				$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
 			} else {
-				rename($file,$new_name);
+				rename($file, $new_name);
 				$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
 			}
 			$this->ave->set_progress($progress, $errors);
@@ -273,7 +286,7 @@ class NamesGenerator {
 
 	public function tool_number_action_single(){
 		$this->ave->clear();
-		echo "\r\n Folders: ";
+		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->tool_number_help();
 		$folders = $this->ave->get_folders($line);
@@ -290,7 +303,7 @@ class NamesGenerator {
 
 	public function tool_number_action_group(){
 		$this->ave->clear();
-		echo "\r\n Folders: ";
+		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->tool_number_help();
 		$folders = $this->ave->get_folders($line);
@@ -312,6 +325,48 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
+	public function tool_extension_action(){
+		$this->ave->clear();
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+
+		echo "\r\n Extension old: ";
+		$extension_old = $this->ave->get_input();
+		if($extension_old == '#') return $this->ave->select_action();
+
+		echo "\r\n Extension new: ";
+		$extension_new = $this->ave->get_input();
+		if($extension_new == '#') return $this->ave->select_action();
+
+		$this->ave->setup_folders($folders);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
+			foreach(new RecursiveIteratorIterator($files) as $file){
+				if(is_dir($file) || is_link($file)) continue;
+				$extension = strtolower(pathinfo($file,PATHINFO_EXTENSION));
+				if($extension == $extension_old){
+					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
+					if(rename($file, $new_name)){
+						$this->ave->log_event->write("RENAME \"$file\" \"$new_name\"");
+					} else {
+						$this->ave->log_error->write("FAILED RENAME \"$file\" \"$new_name\"");
+						$errors++;
+					}
+					$progress++;
+					$this->ave->set_progress($progress, $errors);
+				}
+			}
+		}
+
+	}
 
 }
 

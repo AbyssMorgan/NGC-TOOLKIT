@@ -57,7 +57,11 @@ class AVE extends CommandLine {
 
 	public function clear(){
 		$this->cls();
-		if($this->config->get('AVE_SHOW_LOGO')) echo $this->logo;
+		if($this->config->get('AVE_SHOW_LOGO')){
+			echo "$this->logo\r\n";
+		} else {
+			echo "\r\n";
+		}
 	}
 
 	public function execute(){
