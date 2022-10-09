@@ -9,8 +9,7 @@ use App\Tools\FileFunctions;
 
 class AVE extends CommandLine {
 
-	use App\Extensions\VideoFunctions;
-	use App\Extensions\ImageFunctions;
+	use App\Extensions\MediaFunctions;
 
 	public IniFile $config;
 
@@ -106,7 +105,7 @@ class AVE extends CommandLine {
 		echo " Tools:\r\n";
 		echo " 0 - Names Generator\r\n";
 		echo " 1 - File Functions\r\n";
-		echo " 2 - Directory Functions\r\n";
+		// echo " 2 - Directory Functions\r\n";
 		echo "\r\n Tool: ";
 		$line = $this->get_input();
 		switch($line){
@@ -161,6 +160,43 @@ class AVE extends CommandLine {
 		$this->clear();
 		foreach($this->folders_state as $folder_name => $state){
 			echo " Scan: \"$folder_name\" $state\r\n";
+		}
+	}
+
+	public function unlink($path){
+		if(!file_exists($path) || is_dir($path)) return false;
+		if(unlink($file)){
+			$this->log_event->write("DELETE \"$path\"");
+			return true;
+		} else {
+			$this->log_error->write("FAILED DELETE \"$path\"");
+			return false;
+		}
+	}
+
+	public function mkdir(string $path){
+		if(file_exists($path)) return false;
+		if(mkdir($path, octdec($this->config->get('AVE_DEFAULT_FOLDER_PERMISSION')), true)){
+			$this->log_event->write("MKDIR \"$path\"");
+			return true;
+		} else {
+			$this->log_error->write("FAILED MKDIR \"$path\"");
+			return false;
+		}
+	}
+
+	public function rename(string $from, string $to){
+		if($from == $to) return true;
+		if(file_exists($to)){
+			$this->log_error->write("FAILED RENAME \"$from\" \"$to\" FILE EXISTS");
+			return false;
+		}
+		if(rename($from, $to)){
+			$this->log_event->write("RENAME \"$from\" \"$to\"");
+			return true;
+		} else {
+			$this->log_error->write("FAILED RENAME \"$from\" \"$to\"");
+			return false;
 		}
 	}
 
