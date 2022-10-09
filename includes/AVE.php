@@ -114,7 +114,7 @@ class AVE extends CommandLine {
 				break;
 			}
 			case '1': {
-				// $this->tool = new FileFunctions($this);
+				$this->tool = new FileFunctions($this);
 				break;
 			}
 			case '2': {
