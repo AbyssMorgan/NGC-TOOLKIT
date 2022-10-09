@@ -1,5 +1,6 @@
 @ECHO OFF
 chcp 65001
+CLS
 SET PATH=%PATH%;%CD%\php;%CD%\bin
 FOR /F "tokens=*" %%s IN ('php "%CD%\includes\main.php" GET_COLOR') DO COLOR %%s
 php "%CD%\includes\main.php
