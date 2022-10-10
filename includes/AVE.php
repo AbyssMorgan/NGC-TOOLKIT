@@ -25,6 +25,7 @@ class AVE extends CommandLine {
 	private array $arguments;
 	private string $logo;
 	private string $tool_name;
+	private string $subtool_name;
 	private array $folders_state = [];
 	private $tool;
 
@@ -88,8 +89,15 @@ class AVE extends CommandLine {
 
 	public function set_tool(string $name){
 		$this->tool_name = $name;
+		$this->subtool_name = '';
 		$this->title("[$this->app_name v$this->version > $this->tool_name]");
 		$this->log_event->write("Set Tool: $this->tool_name");
+	}
+
+	public function set_subtool(string $name){
+		$this->subtool_name = $name;
+		$this->title("[$this->app_name v$this->version > $this->tool_name > $this->subtool_name]");
+		$this->log_event->write("Set Tool: $this->tool_name > $this->subtool_name");
 	}
 
 	public function set_progress($progress, $errors){
@@ -133,7 +141,7 @@ class AVE extends CommandLine {
 		$this->clear();
 		$this->title("[$this->app_name v$this->version > $this->tool_name]");
 		$this->tool->help();
-		echo "\r\n Action: ";
+		echo " Action: ";
 		$line = $this->get_input();
 		if($line == '#'){
 			$this->select_tool();
@@ -198,6 +206,10 @@ class AVE extends CommandLine {
 			$this->log_error->write("FAILED RENAME \"$from\" \"$to\"");
 			return false;
 		}
+	}
+
+	public function print_help(array $help){
+		echo implode("\r\n", $help)."\r\n\r\n";
 	}
 
 	public function exit(int $seconds = 10){

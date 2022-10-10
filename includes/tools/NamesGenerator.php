@@ -21,11 +21,12 @@ class NamesGenerator {
 	}
 
 	public function help(){
-		echo " Actions:\r\n";
-		echo " 0 - Generate Names CheckSum\r\n";
-		echo " 1 - Generate Names Number\r\n";
-		echo " 2 - Extension Change\r\n";
-		echo " 3 - Video CheckSum/Resolution/Thumbnail Generator\r\n";
+		$this->ave->print_help([
+			' Actions:',
+			' 0 - Generate Names: CheckSum',
+			' 1 - Generate Names: Number',
+			' 2 - Generate Video: CheckSum/Resolution/Thumbnail',
+		]);
 	}
 
 	public function action(string $action){
@@ -34,17 +35,16 @@ class NamesGenerator {
 		switch($this->action){
 			case '0': return $this->tool_checksum_help();
 			case '1': return $this->tool_number_help();
-			case '2': return $this->tool_extension_action();
-			case '3': return $this->tool_videogenerator_help();
+			case '2': return $this->tool_videogenerator_help();
 		}
 		$this->ave->select_action();
 	}
 
 	public function tool_checksum_help(){
 		$this->ave->clear();
-		$this->ave->set_tool("$this->name > CheckSum");
+		$this->ave->set_subtool("CheckSum");
 
-		echo implode("\r\n",[
+		$this->ave->print_help([
 			' Modes:',
 			' 0   - Normal           "<HASH>"',
 			' 1   - CurrentName      "name <HASH>"',
@@ -61,7 +61,7 @@ class NamesGenerator {
 			' ??l - List only',
 		]);
 
-		echo "\r\n\r\n Mode: ";
+		echo " Mode: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
 
@@ -75,7 +75,7 @@ class NamesGenerator {
 
 		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->tool_checksum_help();
 		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_checksum_help();
-		$this->ave->set_tool("$this->name > CheckSum > ".$this->tool_checksum_name($this->params['mode'])." > ".$this->tool_checksum_algo($this->params['algo']));
+		$this->ave->set_subtool("CheckSum > ".$this->tool_checksum_name($this->params['mode'])." > ".$this->tool_checksum_algo($this->params['algo']));
 		return $this->tool_cheksum_action();
 	}
 
@@ -172,9 +172,9 @@ class NamesGenerator {
 
 	public function tool_number_help(){
 		$this->ave->clear();
-		$this->ave->set_tool("$this->name > Number");
+		$this->ave->set_subtool("Number");
 
-		echo implode("\r\n",[
+		$this->ave->print_help([
 			'           Group Model Format                 Range',
 			' Normal    g0    s0    "PPP_DDDDDD"           000001 - 999999',
 			' Part      g1    s1    "III\PPP_DDDDDD"       000001 - 999999',
@@ -185,7 +185,7 @@ class NamesGenerator {
 			' NoPref    g6    s6    "DDDDDD"               000001 - 999999',
 		]);
 
-		echo "\r\n\r\n Mode: ";
+		echo " Mode: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
 
@@ -196,7 +196,7 @@ class NamesGenerator {
 
 		if(!in_array($this->params['type'],['s','g'])) return $this->tool_number_help();
 		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) return $this->tool_number_help();
-		$this->ave->set_tool("$this->name > Number > ".$this->tool_number_name($this->params['mode']));
+		$this->ave->set_subtool("Number > ".$this->tool_number_name($this->params['mode']));
 		switch($this->params['type']){
 			case 's': return $this->tool_number_action_single();
 			case 'g': return $this->tool_number_action_group();
@@ -324,50 +324,11 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_extension_action(){
-		$this->ave->clear();
-		$this->ave->set_tool("$this->name > Extension > Replace");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-
-		echo "\r\n Extension old: ";
-		$extension_old = strtolower($this->ave->get_input());
-		if($extension_old == '#') return $this->ave->select_action();
-
-		echo "\r\n Extension new: ";
-		$extension_new = $this->ave->get_input();
-		if($extension_new == '#') return $this->ave->select_action();
-
-		$this->ave->setup_folders($folders);
-
-		$progress = 0;
-		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
-
-		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
-				if(is_dir($file) || is_link($file)) continue 1;
-				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				if($extension == $extension_old){
-					$progress++;
-					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
-					if(!$this->ave->rename($file, $new_name)) $errors++;
-					$this->ave->set_progress($progress, $errors);
-				}
-			}
-		}
-
-	}
-
 	public function tool_videogenerator_help(){
 		$this->ave->clear();
-		$this->ave->set_tool("$this->name > VideoGenerator");
+		$this->ave->set_subtool("VideoGenerator");
 
-		echo implode("\r\n",[
+		$this->ave->print_help([
 			' Modes:',
 			' 0  - CheckSum',
 			' 1  - Resolution',
@@ -380,7 +341,7 @@ class NamesGenerator {
 			' ?3 - whirlpool',
 		]);
 
-		echo "\r\n\r\n Mode: ";
+		echo " Mode: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
 
@@ -394,7 +355,7 @@ class NamesGenerator {
 		if(!in_array($this->params['mode'],['0','1','2','3','4'])) return $this->tool_videogenerator_help();
 		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_videogenerator_help();
 
-		$this->ave->set_tool("$this->name > VideoGenerator > ".$this->tool_videogenerator_name($this->params['mode']));
+		$this->ave->set_subtool("VideoGenerator > ".$this->tool_videogenerator_name($this->params['mode']));
 		$this->params['checksum'] = in_array($this->params['mode'],['0','3','4']);
 		$this->params['resolution'] = in_array($this->params['mode'],['1','3','4']);
 		$this->params['thumbnail'] = in_array($this->params['mode'],['2','3']);
