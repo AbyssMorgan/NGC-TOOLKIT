@@ -110,14 +110,14 @@ class NamesGenerator {
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
-			case '0': return "$folder".DIRECTORY_SEPARATOR."$hash.$extension";
-			case '1': return "$folder".DIRECTORY_SEPARATOR."$name $hash.$extension";
-			case '2': return "$folder".DIRECTORY_SEPARATOR."$foldername $hash.$extension";
-			case '3': return "$folder".DIRECTORY_SEPARATOR."$foldername ".sprintf("%04d",$file_id)." $hash.$extension";
-			case '4': return "$folder".DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." $hash.$extension";
-			case '5': return "$folder".DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension";
-			case '6': return "$folder".DIRECTORY_SEPARATOR.sprintf("%04d",$file_id)." $hash.$extension";
-			case '7': return "$folder".DIRECTORY_SEPARATOR.sprintf("%06d",$file_id)." $hash.$extension";
+			case '0': return $folder.DIRECTORY_SEPARATOR."$hash.$extension";
+			case '1': return $folder.DIRECTORY_SEPARATOR."$name $hash.$extension";
+			case '2': return $folder.DIRECTORY_SEPARATOR."$foldername $hash.$extension";
+			case '3': return $folder.DIRECTORY_SEPARATOR."$foldername ".sprintf("%04d",$file_id)." $hash.$extension";
+			case '4': return $folder.DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." $hash.$extension";
+			case '5': return $folder.DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension";
+			case '6': return $folder.DIRECTORY_SEPARATOR.sprintf("%04d",$file_id)." $hash.$extension";
+			case '7': return $folder.DIRECTORY_SEPARATOR.sprintf("%06d",$file_id)." $hash.$extension";
 		}
 	}
 
@@ -228,13 +228,13 @@ class NamesGenerator {
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
-			case '0': return "$folder".DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '1': return "$input".DIRECTORY_SEPARATOR.sprintf("%03d",$part_id).DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '2': return "$input".DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '3': return "$folder".DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%06d",$file_id).".$extension";
-			case '4': return "$folder".DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%04d",$file_id).".$extension";
-			case '5': return "$folder".DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '6': return "$folder".DIRECTORY_SEPARATOR.sprintf("%06d",$file_id).".$extension";
+			case '0': return $folder.DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '1': return $input.DIRECTORY_SEPARATOR.sprintf("%03d",$part_id).DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '2': return $input.DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '3': return $folder.DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%06d",$file_id).".$extension";
+			case '4': return $folder.DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%04d",$file_id).".$extension";
+			case '5': return $folder.DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
+			case '6': return $folder.DIRECTORY_SEPARATOR.sprintf("%06d",$file_id).".$extension";
 		}
 	}
 
@@ -315,8 +315,8 @@ class NamesGenerator {
 			$subfolders = scandir($folder);
 			foreach($subfolders as $subfoolder){
 				if($subfoolder == '.' || $subfoolder == '..') continue;
-				if(is_dir("$folder".DIRECTORY_SEPARATOR."$subfoolder")){
-					$this->tool_number_action("$folder".DIRECTORY_SEPARATOR."$subfoolder", $progress, $errors);
+				if(is_dir($folder.DIRECTORY_SEPARATOR."$subfoolder")){
+					$this->tool_number_action($folder.DIRECTORY_SEPARATOR."$subfoolder", $progress, $errors);
 				}
 			}
 			$this->ave->set_folder_done($folder);
