@@ -63,6 +63,7 @@ class AVE extends CommandLine {
 		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt");
 		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt");
 		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false);
+		ini_set('memory_limit', $this->config->get('AVE_MAX_MEMORY_LIMIT'));
 	}
 
 	public function clear(){

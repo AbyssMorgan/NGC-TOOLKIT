@@ -9,21 +9,21 @@ trait MediaFunctions {
 	public function getImageFromPath(string $path){
 		if(!file_exists($path)) return null;
 		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
-			case 'bmp': return imagecreatefrombmp($path);
-			case 'avif': return imagecreatefromavif($path);
-			case 'gd2': return imagecreatefromgd2($path);
-			case 'gd': return imagecreatefromgd($path);
-			case 'gif': return imagecreatefromgif($path);
+			case 'bmp': return @imagecreatefrombmp($path);
+			case 'avif': return @imagecreatefromavif($path);
+			case 'gd2': return @imagecreatefromgd2($path);
+			case 'gd': return @imagecreatefromgd($path);
+			case 'gif': return @imagecreatefromgif($path);
 			case 'jpeg':
 			case 'jpg': {
-				return imagecreatefromjpeg($path);
+				return @imagecreatefromjpeg($path);
 			}
-			case 'png': return imagecreatefrompng($path);
-			case 'tga': return imagecreatefromtga($path);
-			case 'wbmp': return imagecreatefromwbmp($path);
-			case 'webp': return imagecreatefromwebp($path);
-			case 'xbm': return imagecreatefromxbm($path);
-			case 'xpm': return imagecreatefromxpm($path);
+			case 'png': return @imagecreatefrompng($path);
+			case 'tga': return @imagecreatefromtga($path);
+			case 'wbmp': return @imagecreatefromwbmp($path);
+			case 'webp': return @imagecreatefromwebp($path);
+			case 'xbm': return @imagecreatefromxbm($path);
+			case 'xpm': return @imagecreatefromxpm($path);
 		}
 		return null;
 	}
@@ -31,7 +31,10 @@ trait MediaFunctions {
 	public function getImageResolution(string $path){
 		$image = $this->getImageFromPath($path);
 		if(is_null($image)) return "[0x0]";
-		return imagesx($image)."x".imagesy($image);
+		$x = imagesx($image);
+		$y = imagesy($image);
+		imagedestroy($image);
+		return $x."x".$y;
 	}
 
 	public function getVideoResolution(string $path){
