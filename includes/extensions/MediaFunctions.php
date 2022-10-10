@@ -30,7 +30,7 @@ trait MediaFunctions {
 
 	public function getImageResolution(string $path){
 		$image = $this->getImageFromPath($path);
-		if(is_null($image)) return "[0x0]";
+		if(!$image) return "0x0";
 		$x = imagesx($image);
 		$y = imagesy($image);
 		imagedestroy($image);
@@ -85,8 +85,10 @@ trait MediaFunctions {
 			return '360';
 		} else if($v >= 320){
 			return '240';
-		} else {
+		} else if($v >= 256){
 			return '144';
+		} else {
+			return '0';
 		}
 	}
 
