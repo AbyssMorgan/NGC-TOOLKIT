@@ -25,7 +25,7 @@ class FileFunctions {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Anti Duplicates',
-			// ' 1 - Sort Files: Date',
+			' 1 - Sort Files: Date',
 			' 2 - Sort Files: Extension',
 			' 3 - Sort Media: Quality',
 			' 4 - Extension Change',
@@ -37,7 +37,7 @@ class FileFunctions {
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_antiduplicates_help();
-			// case '1': return $this->tool_sortdate_action();
+			case '1': return $this->tool_sortdate_help();
 			case '2': return $this->tool_sortextension_action();
 			case '3': return $this->tool_sortmedia_help();
 			case '4': return $this->tool_extension_action();
@@ -152,18 +152,20 @@ class FileFunctions {
 				if(is_dir($file) || is_link($file)) continue 1;
 				$progress++;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				$directory = "$folder".DIRECTORY_SEPARATOR."$extension";
+				$directory = $folder.DIRECTORY_SEPARATOR."$extension";
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
 						$errors++;
+						$this->ave->set_progress($progress, $errors);
 						continue 1;
 					}
 				}
 
-				$new_name = "$folder".DIRECTORY_SEPARATOR."$extension".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+				$new_name = $folder.DIRECTORY_SEPARATOR."$extension".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
 				if(!$this->ave->rename($file, $new_name)) $errors++;
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->set_folder_done($folder);
 		}
 
 		$this->ave->exit();
@@ -231,6 +233,7 @@ class FileFunctions {
 				if($resolution == '0x0'){
 					$this->ave->log_error->write("FAILED GET_MEDIA_RESOLUTION \"$file\"");
 					$errors++;
+					$this->ave->set_progress($progress, $errors);
 					continue 1;
 				}
 				$size = explode("x",$resolution);
@@ -254,11 +257,11 @@ class FileFunctions {
 					}
 				}
 				if($this->params['resolution'] && $this->params['quality']){
-					$directory = "$folder".DIRECTORY_SEPARATOR.$orientation.DIRECTORY_SEPARATOR.$quality;
+					$directory = $folder.DIRECTORY_SEPARATOR.$orientation.DIRECTORY_SEPARATOR.$quality;
 				} else if($this->params['resolution']){
-					$directory = "$folder".DIRECTORY_SEPARATOR.$orientation;
+					$directory = $folder.DIRECTORY_SEPARATOR.$orientation;
 				} else if($this->params['quality']){
-					$directory = "$folder".DIRECTORY_SEPARATOR.$quality;
+					$directory = $folder.DIRECTORY_SEPARATOR.$quality;
 				}
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
@@ -309,10 +312,112 @@ class FileFunctions {
 					$this->ave->set_progress($progress, $errors);
 				}
 			}
+			$this->ave->set_folder_done($folder);
 		}
-
+		$this->ave->exit();
 	}
 
+	public array $tool_sortdate_mode = [
+		'0' => 'YYYYxMMxDD',
+		'1' => 'YYYYxMM',
+		'2' => 'YYYY',
+		'3' => 'YYxMMxDD',
+		'4' => 'DDxMMxYY',
+		'5' => 'DDxMMxYYYY',
+		'6' => 'YYYYxMMxDDxhh',
+		'7' => 'YYYYxMMxDDxhhxmm',
+	];
+
+	public function tool_sortdate_help(){
+		$this->ave->clear();
+		$this->ave->set_subtool("SortDate");
+
+		$help = [' Modes:'];
+		foreach($this->tool_sortdate_mode as $mode_key => $mode_name){
+			array_push($help, " $mode_key $mode_name");
+		}
+		$this->ave->print_help($help);
+
+		echo " Mode: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+
+		$this->ave->clear();
+
+		$this->ave->print_help([
+			' Separators:',
+			' . - _ \ @ #',
+		]);
+
+		echo " Separator: ";
+		$separator = $this->ave->get_input();
+		if($separator == '#') return $this->ave->select_action();
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+			'separator' => strtolower($separator[0] ?? '?'),
+		];
+
+		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->tool_sortdate_help();
+		if(!in_array($this->params['separator'],['.','-','_','\\','@','#'])) return $this->tool_sortdate_help();
+		if($this->params['separator'] == '\\') $this->params['separator'] = DIRECTORY_SEPARATOR;
+		$this->ave->set_subtool("SortDate > ".$this->tool_sortdate_mode[$this->params['mode'] ?? '?']);
+		return $this->tool_sortdate_action();
+	}
+
+	public function tool_sortdate_action(){
+		$this->ave->clear();
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+
+		$this->ave->setup_folders($folders);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
+			foreach(new RecursiveIteratorIterator($files) as $file){
+				if(is_dir($file) || is_link($file)) continue 1;
+				$progress++;
+				$new_name = $this->tool_sortdate_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
+				$directory = pathinfo($new_name, PATHINFO_DIRNAME);
+				if(!file_exists($directory)){
+					if(!$this->ave->mkdir($directory)){
+						$errors++;
+						$this->ave->set_progress($progress, $errors);
+						continue 1;
+					}
+				}
+				if(!$this->ave->rename($file, $new_name)) $errors++;
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->exit();
+	}
+
+	public function tool_sortdate_get_pattern(string $folder, string $mode, string $file, string $separator){
+		return $folder.DIRECTORY_SEPARATOR.str_replace("-", $separator, $this->tool_sortdate_format_date($mode, filemtime($file))).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+	}
+
+	public function tool_sortdate_format_date(string $mode, int $date){
+		switch($mode){
+			case '0': return date('Y-m-d', $date);
+			case '1': return date('Y-m', $date);
+			case '2': return date('Y', $date);
+			case '3': return date('y-m-d', $date);
+			case '4': return date('d-m-y', $date);
+			case '5': return date('d-m-Y', $date);
+			case '6': return date('Y-m-d-h', $date);
+			case '7': return date('Y-m-d-h-i', $date);
+		}
+	}
 
 }
 
