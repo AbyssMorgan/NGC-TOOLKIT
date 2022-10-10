@@ -25,7 +25,7 @@ class FileFunctions {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Anti Duplicates',
-			' 1 - Sort Files: Date',
+			// ' 1 - Sort Files: Date',
 			' 2 - Sort Files: Extension',
 			' 3 - Sort Media: Quality',
 			' 4 - Extension Change',
@@ -37,7 +37,7 @@ class FileFunctions {
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_antiduplicates_help();
-			case '1': return $this->tool_sortdate_action();
+			// case '1': return $this->tool_sortdate_action();
 			case '2': return $this->tool_sortextension_action();
 			case '3': return $this->tool_sortmedia_help();
 			case '4': return $this->tool_extension_action();
