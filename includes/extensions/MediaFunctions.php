@@ -85,10 +85,8 @@ trait MediaFunctions {
 			return '360';
 		} else if($v >= 320){
 			return '240';
-		} else if($v >= 256){
-			return '144';
 		} else {
-			return '0';
+			return '144';
 		}
 	}
 
