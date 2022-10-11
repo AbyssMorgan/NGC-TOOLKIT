@@ -176,7 +176,7 @@ class AVE extends CommandLine {
 
 	public function unlink($path){
 		if(!file_exists($path) || is_dir($path)) return false;
-		if(unlink($file)){
+		if(unlink($path)){
 			$this->log_event->write("DELETE \"$path\"");
 			return true;
 		} else {
@@ -215,11 +215,28 @@ class AVE extends CommandLine {
 		echo implode("\r\n", $help)."\r\n\r\n";
 	}
 
-	public function progress($count, $total){
+	public function progress(int|float $count, int|float $total){
 		if($total > 0){
 			$percent = sprintf("%.02f", ($count / $total) * 100.0);
 			echo " Progress: $percent %        \r";
 		}
+	}
+
+	public function getHashFromIDX(string $path, array &$keys, bool $progress){
+		if(!file_exists($path)) return 0;
+		$cnt = 0;
+		$size = filesize($path);
+		$fp = @fopen($path, "r");
+		if($fp){
+			while(($line = fgets($fp)) !== false){
+				$line = trim($line);
+				$keys[pathinfo($line, PATHINFO_FILENAME)] = $line;
+				$cnt++;
+				if($progress) $this->progress(ftell($fp), $size);
+			}
+			fclose($fp);
+		}
+		return $cnt;
 	}
 
 	public function exit(int $seconds = 10){

@@ -137,10 +137,11 @@ class NamesGenerator {
 			$file_id = 1;
 			$list = [];
 			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
-				$progress++;
-				if($progress > $total) break 1;
+				$items++;
+				if($items > $total) break 1;
 				$this->ave->progress($progress, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$hash = hash_file($algo, $file, false);
@@ -148,6 +149,7 @@ class NamesGenerator {
 				$new_name = $this->tool_checksum_get_pattern($this->params['mode'], $file, $hash, $file_id++);
 				if($this->params['list_only']){
 					array_push($list,$new_name);
+					$progress++;
 				} else {
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
@@ -158,7 +160,11 @@ class NamesGenerator {
 							if(!$this->ave->rename($file, "$file.tmp")) $errors++;
 						}
 					} else {
-						if(!$this->ave->rename($file, $new_name)) $errors++;
+						if($this->ave->rename($file, $new_name)){
+							$progress++;
+						} else {
+							$errors++;
+						}
 					}
 				}
 				$this->ave->set_progress($progress, $errors);
@@ -248,10 +254,11 @@ class NamesGenerator {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
-			$progress++;
-			if($progress > $total) break 1;
+			$items++;
+			if($items > $total) break 1;
 			$this->ave->progress($progress, $total);
 			if(is_dir($file) || is_link($file)) continue;
 			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -282,7 +289,11 @@ class NamesGenerator {
 				$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
 				$errors++;
 			} else {
-				if(!$this->ave->rename($file, $new_name)) $errors++;
+				if($this->ave->rename($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
+				}
 			}
 			$this->ave->set_progress($progress, $errors);
 		}
@@ -396,10 +407,11 @@ class NamesGenerator {
 			$file_id = 1;
 			$list = [];
 			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
-				$progress++;
-				if($progress > $total) break 1;
+				$items++;
+				if($items > $total) break 1;
 				$this->ave->progress($progress, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -472,7 +484,7 @@ class NamesGenerator {
 							$errors++;
 						}
 					}
-
+					$progress++;
 					$this->ave->set_progress($progress, $errors);
 				}
 			}
