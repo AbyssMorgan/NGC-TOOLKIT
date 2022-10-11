@@ -142,7 +142,7 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if($items > $total) break 1;
-				$this->ave->progress($progress, $total);
+				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$hash = hash_file($algo, $file, false);
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
@@ -259,7 +259,7 @@ class NamesGenerator {
 		foreach($files as $file){
 			$items++;
 			if($items > $total) break 1;
-			$this->ave->progress($progress, $total);
+			$this->ave->progress($items, $total);
 			if(is_dir($file) || is_link($file)) continue;
 			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 			if(!in_array($extension, array_merge($image_extensions, $video_extensions))) continue;
@@ -412,7 +412,7 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if($items > $total) break 1;
-				$this->ave->progress($progress, $total);
+				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if(in_array(strtolower($extension), $video_extensions)){
