@@ -31,7 +31,7 @@ class AVE extends CommandLine {
 
 	public function __construct(array $arguments){
 		parent::__construct();
-		$this->path = __DIR__."/..";
+		$this->path = __DIR__.DIRECTORY_SEPARATOR."..";
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);

@@ -2,6 +2,7 @@
 
 namespace App\Extensions;
 
+use Imagick;
 use App\Dictionaries\MediaOrientation;
 
 trait MediaFunctions {
@@ -30,11 +31,16 @@ trait MediaFunctions {
 
 	public function getImageResolution(string $path){
 		$image = $this->getImageFromPath($path);
-		if(!$image) return $this->getVideoResolution($path);
-		$x = imagesx($image);
-		$y = imagesy($image);
+		if(!$image){
+			$image = new Imagick($path);
+			$w = $image->getImageWidth();
+			$h = $image->getImageHeight();
+			return $w."x".$h;
+		}
+		$w = imagesx($image);
+		$h = imagesy($image);
 		imagedestroy($image);
-		return $x."x".$y;
+		return $w."x".$h;
 	}
 
 	public function getVideoResolution(string $path){
