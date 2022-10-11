@@ -102,7 +102,9 @@ class AVE extends CommandLine {
 	}
 
 	public function set_progress($progress, $errors){
-		$this->title("[$this->app_name v$this->version > $this->tool_name] Files: $progress Errors: $errors");
+		$title = "$this->app_name v$this->version > $this->tool_name";
+		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
+		$this->title("[$title] Files: $progress Errors: $errors");
 	}
 
 	public function select_tool(){

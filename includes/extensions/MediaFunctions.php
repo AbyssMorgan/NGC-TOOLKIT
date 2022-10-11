@@ -30,7 +30,7 @@ trait MediaFunctions {
 
 	public function getImageResolution(string $path){
 		$image = $this->getImageFromPath($path);
-		if(!$image) return "0x0";
+		if(!$image) return $this->getVideoResolution($path);
 		$x = imagesx($image);
 		$y = imagesy($image);
 		imagedestroy($image);

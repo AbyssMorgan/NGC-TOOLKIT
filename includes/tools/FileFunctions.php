@@ -193,7 +193,7 @@ class FileFunctions {
 		if(!in_array($this->params['mode'],['0','1','2'])) return $this->tool_sortmedia_help();
 		$this->params['resolution'] = in_array($this->params['mode'],['0','1']);
 		$this->params['quality'] = in_array($this->params['mode'],['0','2']);
-		$this->ave->set_subtool("AntiDuplicates > ".$this->tool_sortmedia_name($this->params['mode']));
+		$this->ave->set_subtool("SortMedia > ".$this->tool_sortmedia_name($this->params['mode']));
 		return $this->tool_sortmedias_action();
 	}
 
