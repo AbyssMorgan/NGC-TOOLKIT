@@ -102,10 +102,13 @@ class FileFunctions {
 		$keys = [];
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
-				if(is_dir($file) || is_link($file)) continue 1;
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = iterator_count($files);
+			foreach($files as $file){
 				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
+				if(is_dir($file) || is_link($file)) continue 1;
 				if($this->params['mode'] == 'a'){
 					$key = hash_file('md5', $file, false);
 				} else {
@@ -147,10 +150,13 @@ class FileFunctions {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
-				if(is_dir($file) || is_link($file)) continue 1;
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = iterator_count($files);
+			foreach($files as $file){
 				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
+				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$directory = $folder.DIRECTORY_SEPARATOR."$extension";
 				if(!file_exists($directory)){
@@ -219,12 +225,15 @@ class FileFunctions {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		foreach($folders as $folder){
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = iterator_count($files);
+			foreach($files as $file){
+				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if(!in_array($extension, array_merge($image_extensions, $video_extensions))) continue 1;
-				$progress++;
 				if(in_array($extension, $image_extensions)){
 					$resolution = $this->ave->getImageResolution($file);
 				} else {
@@ -301,12 +310,15 @@ class FileFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = iterator_count($files);
+			foreach($files as $file){
+				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == $extension_old){
-					$progress++;
 					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
 					if(!$this->ave->rename($file, $new_name)) $errors++;
 					$this->ave->set_progress($progress, $errors);
@@ -380,10 +392,13 @@ class FileFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
-				if(is_dir($file) || is_link($file)) continue 1;
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = iterator_count($files);
+			foreach($files as $file){
 				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
+				if(is_dir($file) || is_link($file)) continue 1;
 				$new_name = $this->tool_sortdate_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
 				$directory = pathinfo($new_name, PATHINFO_DIRNAME);
 				if(!file_exists($directory)){

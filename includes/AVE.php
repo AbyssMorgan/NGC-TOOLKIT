@@ -215,6 +215,13 @@ class AVE extends CommandLine {
 		echo implode("\r\n", $help)."\r\n\r\n";
 	}
 
+	public function progress($count, $total){
+		if($total > 0){
+			$percent = sprintf("%.02f", ($count / $total) * 100.0);
+			echo " Progress: $percent %        \r";
+		}
+	}
+
 	public function exit(int $seconds = 10){
 		$this->log_event->write("Exit");
 		if(file_exists($this->log_data->getPath())){

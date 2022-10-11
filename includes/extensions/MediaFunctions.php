@@ -32,10 +32,16 @@ trait MediaFunctions {
 	public function getImageResolution(string $path){
 		$image = $this->getImageFromPath($path);
 		if(!$image){
-			$image = new Imagick($path);
-			$w = $image->getImageWidth();
-			$h = $image->getImageHeight();
-			return $w."x".$h;
+			try {
+				$image = new Imagick($path);
+				$w = $image->getImageWidth();
+				$h = $image->getImageHeight();
+				$image->clear();
+				return $w."x".$h;
+			}
+			catch(\Exception $e){
+				return '0x0';
+			}
 		}
 		$w = imagesx($image);
 		$h = imagesy($image);

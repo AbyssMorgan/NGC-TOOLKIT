@@ -9,6 +9,12 @@
 	require_once("$includes_path/tools/NamesGenerator.php");
 	require_once("$includes_path/tools/FileFunctions.php");
 
-	$ave = new AVE($argv);
-	$ave->execute();
+	try {
+		$ave = new AVE($argv);
+		$ave->execute();
+	}
+	catch(\Exception $e){
+		echo $e->getMessage()."\r\n";
+		echo $e->getTraceAsString()."\r\n";
+	}
 ?>

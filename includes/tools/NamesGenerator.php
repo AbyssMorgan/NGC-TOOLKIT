@@ -136,10 +136,13 @@ class NamesGenerator {
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
-				if(is_dir($file) || is_link($file)) continue 1;
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = count($files);
+			foreach($files as $file){
 				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
+				if(is_dir($file) || is_link($file)) continue 1;
 				$hash = hash_file($algo, $file, false);
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
 				$new_name = $this->tool_checksum_get_pattern($this->params['mode'], $file, $hash, $file_id++);
@@ -244,12 +247,15 @@ class NamesGenerator {
 		$prefix_id = $this->tool_number_get_prefix_id();
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
-		$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-		foreach(new RecursiveIteratorIterator($files) as $file){
+		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+		$total = count($files);
+		foreach($files as $file){
+			$progress++;
+			if($progress > $total) break 1;
+			$this->ave->progress($progress, $total);
 			if(is_dir($file) || is_link($file)) continue;
 			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 			if(!in_array($extension, array_merge($image_extensions, $video_extensions))) continue;
-			$progress++;
 			$part_id = floor($file_id / intval($this->ave->config->get('AVE_PART_SIZE'))) + 1;
 			if($this->params['mode'] == 1){
 				$prefix_id = sprintf("%03d",$part_id);
@@ -389,10 +395,13 @@ class NamesGenerator {
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = new RecursiveDirectoryIterator($folder,FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
-			foreach(new RecursiveIteratorIterator($files) as $file){
-				if(is_dir($file) || is_link($file)) continue 1;
+			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$total = count($files);
+			foreach($files as $file){
 				$progress++;
+				if($progress > $total) break 1;
+				$this->ave->progress($progress, $total);
+				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if(in_array(strtolower($extension), $video_extensions)){
 					$name = pathinfo($file, PATHINFO_FILENAME);
