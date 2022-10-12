@@ -239,6 +239,10 @@ class AVE extends CommandLine {
 		return $cnt;
 	}
 
+	public function getFiles(string $path){
+		return iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS)));
+	}
+
 	public function exit(int $seconds = 10){
 		$this->log_event->write("Exit");
 		if(file_exists($this->log_data->getPath())){

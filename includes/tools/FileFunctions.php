@@ -109,12 +109,11 @@ class FileFunctions {
 				$this->ave->set_folder_done($folder);
 				continue;
 			}
-			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$files = $this->ave->getFiles($folder);
 			$items = 0;
-			$total = iterator_count($files);
+			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if($items > $total) break 1;
 				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -143,6 +142,7 @@ class FileFunctions {
 				}
 				$this->ave->set_progress($progress, $errors);
 			}
+			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
 
@@ -165,12 +165,11 @@ class FileFunctions {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$files = $this->ave->getFiles($folder);
 			$items = 0;
-			$total = iterator_count($files);
+			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if($items > $total) break 1;
 				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -190,6 +189,7 @@ class FileFunctions {
 				}
 				$this->ave->set_progress($progress, $errors);
 			}
+			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
 
@@ -244,12 +244,11 @@ class FileFunctions {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		foreach($folders as $folder){
-			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$files = $this->ave->getFiles($folder);
 			$items = 0;
-			$total = iterator_count($files);
+			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if($items > $total) break 1;
 				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -305,6 +304,7 @@ class FileFunctions {
 				}
 				$this->ave->set_progress($progress, $errors);
 			}
+			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
 		$this->ave->exit();
@@ -334,12 +334,11 @@ class FileFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$files = $this->ave->getFiles($folder);
 			$items = 0;
-			$total = iterator_count($files);
+			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if($items > $total) break 1;
 				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -353,6 +352,7 @@ class FileFunctions {
 					$this->ave->set_progress($progress, $errors);
 				}
 			}
+			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
 		$this->ave->exit();
@@ -421,12 +421,11 @@ class FileFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+			$files = $this->ave->getFiles($folder);
 			$items = 0;
-			$total = iterator_count($files);
+			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if($items > $total) break 1;
 				$this->ave->progress($items, $total);
 				if(is_dir($file) || is_link($file)) continue 1;
 				$new_name = $this->tool_sortdate_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
@@ -445,6 +444,7 @@ class FileFunctions {
 				}
 				$this->ave->set_progress($progress, $errors);
 			}
+			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
 

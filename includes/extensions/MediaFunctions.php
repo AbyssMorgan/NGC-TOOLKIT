@@ -40,7 +40,7 @@ trait MediaFunctions {
 				return $w."x".$h;
 			}
 			catch(\Exception $e){
-				return '0x0';
+				return $this->getVideoResolution($path);
 			}
 		}
 		$w = imagesx($image);
