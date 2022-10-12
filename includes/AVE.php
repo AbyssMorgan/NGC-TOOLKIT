@@ -76,8 +76,8 @@ class AVE extends CommandLine {
 	}
 
 	public function execute(){
-		switch($this->command){
-			case 'GET_COLOR': {
+		switch(strtolower($this->command)){
+			case 'get_color': {
 				echo $this->config->get('AVE_COLOR') ?? 'AF';
 				break;
 			}
@@ -86,6 +86,7 @@ class AVE extends CommandLine {
 				break;
 			}
 		}
+		return true;
 	}
 
 	public function set_tool(string $name){
@@ -186,7 +187,6 @@ class AVE extends CommandLine {
 	}
 
 	public function mkdir(string $path){
-		if(file_exists($path)) return false;
 		if(mkdir($path, octdec($this->config->get('AVE_DEFAULT_FOLDER_PERMISSION')), true)){
 			$this->log_event->write("MKDIR \"$path\"");
 			return true;
@@ -199,7 +199,7 @@ class AVE extends CommandLine {
 	public function rename(string $from, string $to){
 		if($from == $to) return true;
 		if(file_exists($to)){
-			$this->log_error->write("FAILED RENAME \"$from\" \"$to\" FILE EXISTS");
+			$this->log_error->write("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
 		if(rename($from, $to)){
@@ -239,8 +239,15 @@ class AVE extends CommandLine {
 		return $cnt;
 	}
 
-	public function getFiles(string $path){
-		return iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS)));
+	public function getFiles(string $path, array|null $extensions = null){
+		$data = [];
+		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+		foreach($files as $file){
+			if(is_dir($file) || is_link($file)) continue;
+			if(!is_null($extensions) && !in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), $extensions)) continue;
+			array_push($data, (string)$file);
+		}
+		return $data;
 	}
 
 	public function exit(int $seconds = 10){

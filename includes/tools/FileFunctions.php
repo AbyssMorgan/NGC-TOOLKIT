@@ -115,7 +115,6 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == 'idx' && $this->ave->config->get('AVE_LOAD_IDX_CHECKSUM')){
 					$progress += $this->ave->getHashFromIDX($file, $keys, false);
@@ -171,7 +170,6 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$directory = $folder.DIRECTORY_SEPARATOR."$extension";
 				if(!file_exists($directory)){
@@ -243,16 +241,15 @@ class FileFunctions {
 		$this->ave->set_progress($progress, $errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
+		$extensions = array_merge($image_extensions, $video_extensions);
 		foreach($folders as $folder){
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->getFiles($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
 				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				if(!in_array($extension, array_merge($image_extensions, $video_extensions))) continue 1;
 				if(in_array($extension, $image_extensions)){
 					$resolution = $this->ave->getImageResolution($file);
 				} else {
@@ -340,7 +337,6 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == $extension_old){
 					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
@@ -427,7 +423,6 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
 				$new_name = $this->tool_sortdate_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
 				$directory = pathinfo($new_name, PATHINFO_DIRNAME);
 				if(!file_exists($directory)){
