@@ -28,7 +28,8 @@ class FileFunctions {
 			' 1 - Sort Files: Date',
 			' 2 - Sort Files: Extension',
 			' 3 - Sort Media: Quality',
-			' 4 - Extension Change',
+			' 4 - Sort Gif: Animated',
+			' 5 - Extension Change',
 		]);
 	}
 
@@ -40,7 +41,8 @@ class FileFunctions {
 			case '1': return $this->tool_sortdate_help();
 			case '2': return $this->tool_sortextension_action();
 			case '3': return $this->tool_sortmedia_help();
-			case '4': return $this->tool_extension_action();
+			case '4': return $this->tool_gifanimated_action();
+			case '5': return $this->tool_extension_action();
 		}
 		$this->ave->select_action();
 	}
@@ -309,7 +311,7 @@ class FileFunctions {
 
 	public function tool_extension_action(){
 		$this->ave->clear();
-		$this->ave->set_subtool("Extension > Replace");
+		$this->ave->set_subtool("ExtensionChange");
 		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
@@ -340,6 +342,56 @@ class FileFunctions {
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == $extension_old){
 					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
+					if($this->ave->rename($file, $new_name)){
+						$progress++;
+					} else {
+						$errors++;
+					}
+					$this->ave->set_progress($progress, $errors);
+				}
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+		$this->ave->exit();
+	}
+
+	public function tool_gifanimated_action(){
+		$this->ave->clear();
+		$this->ave->set_subtool("SortGif");
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+
+		$this->ave->setup_folders($folders);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				$this->ave->progress($items, $total);
+				if(strtolower(pathinfo($file, PATHINFO_EXTENSION)) == 'gif'){
+					if($this->ave->isGifAnimated($file)){
+						$directory = $folder.DIRECTORY_SEPARATOR."Animated";
+					} else {
+						$directory = $folder.DIRECTORY_SEPARATOR."NotAnimated";
+					}
+					if(!file_exists($directory)){
+						if(!$this->ave->mkdir($directory)){
+							$errors++;
+							$this->ave->set_progress($progress, $errors);
+							continue 1;
+						}
+					}
+					$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_BASENAME);
 					if($this->ave->rename($file, $new_name)){
 						$progress++;
 					} else {

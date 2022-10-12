@@ -49,6 +49,17 @@ trait MediaFunctions {
 		return $w."x".$h;
 	}
 
+	public function isGifAnimated(string $path){
+		if(!($fh = @fopen($path, 'rb'))) return false;
+		$count = 0;
+		while(!feof($fh) && $count < 2){
+			$chunk = fread($fh, 1024 * 100);
+			$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
+		}
+		fclose($fh);
+		return $count > 1;
+	}
+
 	public function getVideoResolution(string $path){
 		exec("ffprobe -v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\"", $output);
 		return $output[0] ?? '0x0';
