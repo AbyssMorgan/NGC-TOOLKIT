@@ -116,7 +116,7 @@ class FileFunctions {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
+				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == 'idx' && $this->ave->config->get('AVE_LOAD_IDX_CHECKSUM')){
 					$progress += $this->ave->getHashFromIDX($file, $keys, false);
@@ -141,6 +141,7 @@ class FileFunctions {
 				} else {
 					$keys[$key] = $file;
 				}
+				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
@@ -171,7 +172,7 @@ class FileFunctions {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
+				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$directory = $folder.DIRECTORY_SEPARATOR."$extension";
 				if(!file_exists($directory)){
@@ -187,6 +188,7 @@ class FileFunctions {
 				} else {
 					$errors++;
 				}
+				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
@@ -250,7 +252,7 @@ class FileFunctions {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
+				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if(in_array($extension, $image_extensions)){
 					$resolution = $this->ave->getImageResolution($file);
@@ -301,6 +303,7 @@ class FileFunctions {
 				} else {
 					$errors++;
 				}
+				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
@@ -333,22 +336,20 @@ class FileFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->getFiles($folder, [$extension_old]);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
-				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				if($extension == $extension_old){
-					$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
-					if($this->ave->rename($file, $new_name)){
-						$progress++;
-					} else {
-						$errors++;
-					}
-					$this->ave->set_progress($progress, $errors);
+				if(!file_exists($file)) continue 1;
+				$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
+				if($this->ave->rename($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
 				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
 			$this->ave->set_folder_done($folder);
@@ -372,33 +373,32 @@ class FileFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->getFiles($folder, ['gif']);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
-				if(strtolower(pathinfo($file, PATHINFO_EXTENSION)) == 'gif'){
-					if($this->ave->isGifAnimated($file)){
-						$directory = $folder.DIRECTORY_SEPARATOR."Animated";
-					} else {
-						$directory = $folder.DIRECTORY_SEPARATOR."NotAnimated";
-					}
-					if(!file_exists($directory)){
-						if(!$this->ave->mkdir($directory)){
-							$errors++;
-							$this->ave->set_progress($progress, $errors);
-							continue 1;
-						}
-					}
-					$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_BASENAME);
-					if($this->ave->rename($file, $new_name)){
-						$progress++;
-					} else {
-						$errors++;
-					}
-					$this->ave->set_progress($progress, $errors);
+				if(!file_exists($file)) continue 1;
+				if($this->ave->isGifAnimated($file)){
+					$directory = $folder.DIRECTORY_SEPARATOR."Animated";
+				} else {
+					$directory = $folder.DIRECTORY_SEPARATOR."NotAnimated";
 				}
+				if(!file_exists($directory)){
+					if(!$this->ave->mkdir($directory)){
+						$errors++;
+						$this->ave->set_progress($progress, $errors);
+						continue 1;
+					}
+				}
+				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_BASENAME);
+				if($this->ave->rename($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
 			$this->ave->set_folder_done($folder);
@@ -474,7 +474,7 @@ class FileFunctions {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
+				if(!file_exists($file)) continue 1;
 				$new_name = $this->tool_sortdate_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
 				$directory = pathinfo($new_name, PATHINFO_DIRNAME);
 				if(!file_exists($directory)){
@@ -489,6 +489,7 @@ class FileFunctions {
 				} else {
 					$errors++;
 				}
+				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);

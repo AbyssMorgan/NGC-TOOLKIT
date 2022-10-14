@@ -141,8 +141,7 @@ class NamesGenerator {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
+				if(!file_exists($file)) continue 1;
 				$hash = hash_file($algo, $file, false);
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
 				$new_name = $this->tool_checksum_get_pattern($this->params['mode'], $file, $hash, $file_id++);
@@ -166,6 +165,7 @@ class NamesGenerator {
 						}
 					}
 				}
+				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
@@ -253,15 +253,13 @@ class NamesGenerator {
 		$prefix_id = $this->tool_number_get_prefix_id();
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
-		$files = $this->ave->getFiles($folder);
+		$files = $this->ave->getFiles($folder, array_merge($image_extensions, $video_extensions));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			$this->ave->progress($items, $total);
-			if(is_dir($file) || is_link($file)) continue;
+			if(!file_exists($file)) continue;
 			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-			if(!in_array($extension, array_merge($image_extensions, $video_extensions))) continue;
 			$part_id = floor($file_id / intval($this->ave->config->get('AVE_PART_SIZE'))) + 1;
 			if($this->params['mode'] == 1){
 				$prefix_id = sprintf("%03d",$part_id);
@@ -295,6 +293,7 @@ class NamesGenerator {
 				}
 			}
 			unset($files);
+			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
 		return true;
@@ -406,86 +405,84 @@ class NamesGenerator {
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->getFiles($folder, $video_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				$this->ave->progress($items, $total);
-				if(is_dir($file) || is_link($file)) continue 1;
+				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				if(in_array(strtolower($extension), $video_extensions)){
-					$name = pathinfo($file, PATHINFO_FILENAME);
-					$directory = pathinfo($file, PATHINFO_DIRNAME);
-					if($this->params['checksum'] && !file_exists("$file.$algo")){
-						$hash = hash_file($algo, $file, false);
-						if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
-					}
-					if($this->params['resolution']){
-						$resolution = $this->ave->getVideoResolution($file);
-						if($resolution == '0x0'){
-							$this->ave->log_error->write("FAILED GET_MEDIA_RESOLUTION \"$file\"");
-							$errors++;
-						} else {
-							if(strpos($name, " [$resolution]") === false){
-								$name = "$name [$resolution]";
-							}
-						}
-					}
-					if($this->params['thumbnail']){
-						$thumbnail = $this->ave->getVideoThumbnail($file);
-					} else {
-						$thumbnail = false;
-					}
-					$new_name = "$directory".DIRECTORY_SEPARATOR."$name.$extension";
-					$renamed = false;
-					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+				$name = pathinfo($file, PATHINFO_FILENAME);
+				$directory = pathinfo($file, PATHINFO_DIRNAME);
+				if($this->params['checksum'] && !file_exists("$file.$algo")){
+					$hash = hash_file($algo, $file, false);
+					if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
+				}
+				if($this->params['resolution']){
+					$resolution = $this->ave->getVideoResolution($file);
+					if($resolution == '0x0'){
+						$this->ave->log_error->write("FAILED GET_MEDIA_RESOLUTION \"$file\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$renamed = true;
-						} else {
-							$errors++;
+						if(strpos($name, " [$resolution]") === false){
+							$name = "$name [$resolution]";
 						}
 					}
-					if(isset($hash)){
-						if(file_put_contents("$new_name.$algo",$hash)){
-							$this->ave->log_event->write("CREATE \"$new_name.$algo\"");
-						} else {
-							$this->ave->log_error->write("FAILED CREATE \"$new_name.$algo\"");
-							$errors++;
-						}
-					} else if($renamed){
-						foreach(['md5','sha256','crc32','whirlpool'] as $a){
-							if(file_exists("$file.$a")){
-								if(!$this->ave->rename("$file.$a","$new_name.$a")) $errors++;
-							}
-						}
-					}
-
-					$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."_s.jpg";
-					$name_new = "$directory".DIRECTORY_SEPARATOR."$name"."_s.jpg";
-					if($renamed && file_exists($name_old)){
-						if($this->ave->rename($name_old, $name_new)){
-							$renamed = true;
-						} else {
-							$errors++;
-						}
-					}
-
-					$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
-					$name_new = "$directory".DIRECTORY_SEPARATOR."$name.srt";
-					if($renamed && file_exists($name_old)){
-						if($this->ave->rename($name_old, $name_new)){
-							$renamed = true;
-						} else {
-							$errors++;
-						}
-					}
-					$progress++;
-					$this->ave->set_progress($progress, $errors);
 				}
+				if($this->params['thumbnail']){
+					$thumbnail = $this->ave->getVideoThumbnail($file);
+				} else {
+					$thumbnail = false;
+				}
+				$new_name = "$directory".DIRECTORY_SEPARATOR."$name.$extension";
+				$renamed = false;
+				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+					$errors++;
+				} else {
+					if($this->ave->rename($file, $new_name)){
+						$renamed = true;
+					} else {
+						$errors++;
+					}
+				}
+				if(isset($hash)){
+					if(file_put_contents("$new_name.$algo",$hash)){
+						$this->ave->log_event->write("CREATE \"$new_name.$algo\"");
+					} else {
+						$this->ave->log_error->write("FAILED CREATE \"$new_name.$algo\"");
+						$errors++;
+					}
+				} else if($renamed){
+					foreach(['md5','sha256','crc32','whirlpool'] as $a){
+						if(file_exists("$file.$a")){
+							if(!$this->ave->rename("$file.$a","$new_name.$a")) $errors++;
+						}
+					}
+				}
+
+				$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."_s.jpg";
+				$name_new = "$directory".DIRECTORY_SEPARATOR."$name"."_s.jpg";
+				if($renamed && file_exists($name_old)){
+					if($this->ave->rename($name_old, $name_new)){
+						$renamed = true;
+					} else {
+						$errors++;
+					}
+				}
+
+				$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
+				$name_new = "$directory".DIRECTORY_SEPARATOR."$name.srt";
+				if($renamed && file_exists($name_old)){
+					if($this->ave->rename($name_old, $name_new)){
+						$renamed = true;
+					} else {
+						$errors++;
+					}
+				}
+				$progress++;
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
 			}
 			unset($files);
 			$this->ave->set_folder_done($folder);
