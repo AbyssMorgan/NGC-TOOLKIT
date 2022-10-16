@@ -6,6 +6,7 @@ use App\Services\CommandLine;
 
 use App\Tools\NamesGenerator;
 use App\Tools\FileFunctions;
+use App\Tools\MediaSorter;
 
 class AVE extends CommandLine {
 
@@ -60,9 +61,9 @@ class AVE extends CommandLine {
 
 		$timestamp = date("Y-m-d His");
 
-		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt");
-		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt");
-		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false);
+		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt", true, true);
+		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt", true, true);
+		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false, true);
 		ini_set('memory_limit', $this->config->get('AVE_MAX_MEMORY_LIMIT'));
 	}
 
@@ -114,11 +115,14 @@ class AVE extends CommandLine {
 		$this->title("[$this->app_name v$this->version]");
 		$this->tool = null;
 		$this->tool_name = '';
-		echo " Tools:\r\n";
-		echo " 0 - Names Generator\r\n";
-		echo " 1 - File Functions\r\n";
-		// echo " 2 - Directory Functions\r\n";
-		echo "\r\n Tool: ";
+		$this->print_help([
+			' Tools:',
+			' 0 - Names Generator',
+			' 1 - File Functions',
+			' 2 - Media Sorter',
+		]);
+
+		echo ' Tool: ';
 		$line = $this->get_input();
 		switch($line){
 			case '0': {
@@ -130,7 +134,7 @@ class AVE extends CommandLine {
 				break;
 			}
 			case '2': {
-
+				$this->tool = new MediaSorter($this);
 				break;
 			}
 		}
@@ -252,6 +256,10 @@ class AVE extends CommandLine {
 
 	public function exit(int $seconds = 10){
 		$this->log_event->write("Exit");
+		$this->log_event->close();
+		$this->log_error->close();
+		$this->log_data->close();
+
 		if(file_exists($this->log_data->getPath())){
 			$this->open_file($this->log_data->getPath());
 		}
