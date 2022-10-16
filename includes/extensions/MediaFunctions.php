@@ -113,6 +113,25 @@ trait MediaFunctions {
 		}
 	}
 
+	public function getImageColorCount(string $path){
+		$imagick = new Imagick($path);
+		return $imagick->getImageColors();
+	}
+
+	public function getImageColorGroup(int $colors){
+		if($colors >= 100000){
+			return 'Very-High';
+		} else if($colors >= 30000){
+			return 'High';
+		} else if($colors >= 10000){
+			return 'Medium';
+		} else if($colors >= 1000){
+			return 'Low';
+		} else {
+			return 'Very-Low';
+		}
+	}
+
 }
 
 ?>

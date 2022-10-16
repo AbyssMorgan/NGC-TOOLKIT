@@ -25,6 +25,7 @@ class MediaSorter {
 			' 1 - Sort Files:  Extension',
 			' 2 - Sort Gif:    Animated',
 			' 3 - Sort Media:  Quality',
+			' 4 - Sort Images: Colors count',
 		]);
 	}
 
@@ -36,6 +37,7 @@ class MediaSorter {
 			case '1': return $this->tool_sortextension_action();
 			case '2': return $this->tool_gifanimated_action();
 			case '3': return $this->tool_sortmedia_help();
+			case '4': return $this->tool_sortimagescolor_help();
 		}
 		$this->ave->select_action();
 	}
@@ -202,7 +204,7 @@ class MediaSorter {
 
 	public function tool_gifanimated_action(){
 		$this->ave->clear();
-		$this->ave->set_subtool("SortGif");
+		$this->ave->set_subtool("SortGifAnimated");
 		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
@@ -357,6 +359,53 @@ class MediaSorter {
 			case '6': return date('Y-m-d-h', $date);
 			case '7': return date('Y-m-d-h-i', $date);
 		}
+	}
+
+	public function tool_sortimagescolor_help(){
+		$this->ave->clear();
+		$this->ave->set_subtool("SortImagesColor");
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+
+		$this->ave->setup_folders($folders);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $image_extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$colors = $this->ave->getImageColorCount($file);
+				$group = $this->ave->getImageColorGroup($colors);
+				$directory = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$group;
+				if(!file_exists($directory)){
+					if(!$this->ave->mkdir($directory)){
+						$errors++;
+						$this->ave->set_progress($progress, $errors);
+						continue 1;
+					}
+				}
+				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_BASENAME);
+				if($this->ave->rename($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+		$this->ave->exit();
 	}
 
 }
