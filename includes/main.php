@@ -1,4 +1,7 @@
 <?php
+	declare(strict_types=1);
+	error_reporting(E_ALL);
+
 	$includes_path = __DIR__;
 	require_once("$includes_path/dictionaries/MediaOrientation.php");
 	require_once("$includes_path/services/Logs.php");

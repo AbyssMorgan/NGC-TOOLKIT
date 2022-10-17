@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 class CommandLine {
@@ -8,23 +10,23 @@ class CommandLine {
 
 	}
 
-	public function cmd_escape(string $text){
-		return str_replace([">","<"],["^>","^<"],$text);
+	public function cmd_escape(string $text) : string {
+		return str_replace([">","<"],["^>","^<"], $text);
 	}
 
-	public function title(string $title){
+	public function title(string $title) : void {
 		system("TITLE ".$this->cmd_escape($title));
 	}
 
-	public function cls(){
+	public function cls() : void {
 		echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
 	}
 
-	public function get_input(){
+	public function get_input() : string {
 		return trim(readline());
 	}
 
-	public function get_folders(string $string){
+	public function get_folders(string $string) : array {
 		$string = trim($string);
 		$folders = [];
 
@@ -53,12 +55,12 @@ class CommandLine {
 		return array_unique($folders);
 	}
 
-	public function get_variable(string $string){
+	public function get_variable(string $string) : string {
 		exec("echo $string", $var);
 		return $var[0] ?? '';
 	}
 
-	public function open_file(string $path){
+	public function open_file(string $path) : void {
 		exec("START \"\" \"$path\"");
 	}
 

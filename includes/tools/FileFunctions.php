@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tools;
 
 use AVE;
@@ -60,7 +62,7 @@ class FileFunctions {
 		return $this->tool_antiduplicates_action();
 	}
 
-	public function tool_antiduplicates_name(string $mode){
+	public function tool_antiduplicates_name(string $mode) : string {
 		switch($mode){
 			case 'a': return 'CheckSum';
 			case 'b': return 'Name';
@@ -68,7 +70,7 @@ class FileFunctions {
 		return 'Unknown';
 	}
 
-	public function tool_antiduplicates_actionname(string $mode){
+	public function tool_antiduplicates_actionname(string $mode) : string {
 		switch($mode){
 			case '1': return 'Rename';
 			case '2': return 'Delete';

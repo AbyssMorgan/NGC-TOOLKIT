@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tools;
 
 use AVE;
@@ -114,7 +116,7 @@ class MediaSorter {
 		return $this->tool_sortmedia_action();
 	}
 
-	public function tool_sortmedia_name(string $mode){
+	public function tool_sortmedia_name(string $mode) : string {
 		switch($mode){
 			case '0': return 'Resolution + Quality';
 			case '1': return 'Resolution';
@@ -280,7 +282,7 @@ class MediaSorter {
 
 		$this->ave->print_help([
 			' Separators:',
-			' . - _ \ @ #',
+			' . - _ \ @',
 		]);
 
 		echo " Separator: ";
@@ -293,7 +295,7 @@ class MediaSorter {
 		];
 
 		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->tool_sortdate_help();
-		if(!in_array($this->params['separator'],['.','-','_','\\','@','#'])) return $this->tool_sortdate_help();
+		if(!in_array($this->params['separator'],['.','-','_','\\','@'])) return $this->tool_sortdate_help();
 		if($this->params['separator'] == '\\') $this->params['separator'] = DIRECTORY_SEPARATOR;
 		$this->ave->set_subtool("SortDate > ".$this->tool_sortdate_mode[$this->params['mode'] ?? '?']);
 		return $this->tool_sortdate_action();
@@ -344,11 +346,11 @@ class MediaSorter {
 		$this->ave->exit();
 	}
 
-	public function tool_sortdate_get_pattern(string $folder, string $mode, string $file, string $separator){
+	public function tool_sortdate_get_pattern(string $folder, string $mode, string $file, string $separator) : string {
 		return $folder.DIRECTORY_SEPARATOR.str_replace("-", $separator, $this->tool_sortdate_format_date($mode, filemtime($file))).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
 	}
 
-	public function tool_sortdate_format_date(string $mode, int $date){
+	public function tool_sortdate_format_date(string $mode, int $date) : string {
 		switch($mode){
 			case '0': return date('Y-m-d', $date);
 			case '1': return date('Y-m', $date);
@@ -359,6 +361,7 @@ class MediaSorter {
 			case '6': return date('Y-m-d-h', $date);
 			case '7': return date('Y-m-d-h-i', $date);
 		}
+		return '';
 	}
 
 	public function tool_sortimagescolor_help(){

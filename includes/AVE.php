@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Services\IniFile;
 use App\Services\Logs;
 use App\Services\CommandLine;
@@ -22,7 +24,7 @@ class AVE extends CommandLine {
 
 	private string $app_name = "AVE";
 	private string $version = "1.0";
-	private string|null $command;
+	private ?string $command;
 	private array $arguments;
 	private string $logo;
 	private string $tool_name;
@@ -67,7 +69,7 @@ class AVE extends CommandLine {
 		ini_set('memory_limit', $this->config->get('AVE_MAX_MEMORY_LIMIT'));
 	}
 
-	public function clear(){
+	public function clear() : void {
 		$this->cls();
 		if($this->config->get('AVE_SHOW_LOGO')){
 			echo "$this->logo\r\n";
@@ -76,40 +78,43 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function execute(){
-		switch(strtolower($this->command)){
-			case 'get_color': {
-				echo $this->config->get('AVE_COLOR') ?? 'AF';
-				break;
-			}
-			default: {
-				$this->select_tool();
-				break;
+	public function execute() : void {
+		if(is_null($this->command)){
+			$this->select_tool();
+		} else {
+			switch(strtolower($this->command)){
+				case 'get_color': {
+					echo $this->config->get('AVE_COLOR') ?? 'AF';
+					break;
+				}
+				default: {
+					echo "Unknown command\r\n";
+					break;
+				}
 			}
 		}
-		return true;
 	}
 
-	public function set_tool(string $name){
+	public function set_tool(string $name) : void {
 		$this->tool_name = $name;
 		$this->subtool_name = '';
 		$this->title("[$this->app_name v$this->version > $this->tool_name]");
 		$this->log_event->write("Set Tool: $this->tool_name");
 	}
 
-	public function set_subtool(string $name){
+	public function set_subtool(string $name) : void {
 		$this->subtool_name = $name;
 		$this->title("[$this->app_name v$this->version > $this->tool_name > $this->subtool_name]");
 		$this->log_event->write("Set Tool: $this->tool_name > $this->subtool_name");
 	}
 
-	public function set_progress($progress, $errors){
+	public function set_progress(int $progress, int $errors) : void {
 		$title = "$this->app_name v$this->version > $this->tool_name";
 		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
 		$this->title("[$title] Files: $progress Errors: $errors");
 	}
 
-	public function select_tool(){
+	public function select_tool() : void {
 		$this->log_event->write("Select Tool");
 		$this->clear();
 		$this->title("[$this->app_name v$this->version]");
@@ -145,7 +150,7 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function select_action(){
+	public function select_action() : bool {
 		$this->clear();
 		$this->title("[$this->app_name v$this->version > $this->tool_name]");
 		$this->tool->help();
@@ -156,10 +161,10 @@ class AVE extends CommandLine {
 		} else {
 			$this->tool->action($line);
 		}
-
+		return true;
 	}
 
-	public function setup_folders(array $folders){
+	public function setup_folders(array $folders) : void {
 		foreach($folders as $folder){
 			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXIST]';
 			$this->log_event->write("Scan: $folder");
@@ -167,19 +172,19 @@ class AVE extends CommandLine {
 		$this->print_folders_state();
 	}
 
-	public function set_folder_done(string $folder){
+	public function set_folder_done(string $folder) : void {
 		$this->folders_state[$folder] = '[DONE]';
 		$this->print_folders_state();
 	}
 
-	public function print_folders_state(){
+	public function print_folders_state() : void {
 		$this->clear();
 		foreach($this->folders_state as $folder_name => $state){
 			echo " Scan: \"$folder_name\" $state\r\n";
 		}
 	}
 
-	public function unlink($path){
+	public function unlink(string $path) : bool {
 		if(!file_exists($path) || is_dir($path)) return false;
 		if(unlink($path)){
 			$this->log_event->write("DELETE \"$path\"");
@@ -190,7 +195,7 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function mkdir(string $path){
+	public function mkdir(string $path) : bool {
 		if(mkdir($path, octdec($this->config->get('AVE_DEFAULT_FOLDER_PERMISSION')), true)){
 			$this->log_event->write("MKDIR \"$path\"");
 			return true;
@@ -200,7 +205,7 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function rename(string $from, string $to){
+	public function rename(string $from, string $to) : bool {
 		if($from == $to) return true;
 		if(file_exists($to)){
 			$this->log_error->write("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
@@ -215,18 +220,18 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function print_help(array $help){
+	public function print_help(array $help) : void {
 		echo implode("\r\n", $help)."\r\n\r\n";
 	}
 
-	public function progress(int|float $count, int|float $total){
+	public function progress(int|float $count, int|float $total) : void {
 		if($total > 0){
 			$percent = sprintf("%.02f", ($count / $total) * 100.0);
 			echo " Progress: $percent %        \r";
 		}
 	}
 
-	public function getHashFromIDX(string $path, array &$keys, bool $progress){
+	public function getHashFromIDX(string $path, array &$keys, bool $progress) : int {
 		if(!file_exists($path)) return 0;
 		$cnt = 0;
 		$size = filesize($path);
@@ -243,7 +248,7 @@ class AVE extends CommandLine {
 		return $cnt;
 	}
 
-	public function getFiles(string $path, array|null $extensions = null){
+	public function getFiles(string $path, array|null $extensions = null) : array {
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
 		foreach($files as $file){
@@ -254,7 +259,7 @@ class AVE extends CommandLine {
 		return $data;
 	}
 
-	public function exit(int $seconds = 10){
+	public function exit(int $seconds = 10) : void {
 		$this->log_event->write("Exit");
 		$this->log_event->close();
 		$this->log_error->close();
@@ -269,7 +274,7 @@ class AVE extends CommandLine {
 		$this->timeout($seconds);
 	}
 
-	private function timeout(int $seconds){
+	private function timeout(int $seconds) : void {
 		$this->title("[$this->app_name v$this->version > Wait] $seconds seconds");
 		if($seconds > 0){
 			sleep(1);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tools;
 
 use AVE;
@@ -76,7 +78,7 @@ class NamesGenerator {
 		return $this->tool_cheksum_action();
 	}
 
-	public function tool_checksum_name(string $mode){
+	public function tool_checksum_name(string $mode) : string {
 		switch($mode){
 			case '0': return 'Normal';
 			case '1': return 'CurrentName';
@@ -90,7 +92,7 @@ class NamesGenerator {
 		return 'Unknown';
 	}
 
-	public function tool_checksum_algo(string $mode){
+	public function tool_checksum_algo(string $mode) : string {
 		switch($mode){
 			case '0': return 'md5';
 			case '1': return 'sha256';
@@ -100,7 +102,7 @@ class NamesGenerator {
 		return 'md5';
 	}
 
-	public function tool_checksum_get_pattern(string $mode, string $file, string $hash, int $file_id){
+	public function tool_checksum_get_pattern(string $mode, string $file, string $hash, int $file_id) : string {
 		$folder = pathinfo($file, PATHINFO_DIRNAME);
 		$foldername = pathinfo($folder, PATHINFO_FILENAME);
 		$name = pathinfo($file, PATHINFO_FILENAME);
@@ -116,6 +118,7 @@ class NamesGenerator {
 			case '6': return $folder.DIRECTORY_SEPARATOR.sprintf("%04d",$file_id)." $hash.$extension";
 			case '7': return $folder.DIRECTORY_SEPARATOR.sprintf("%06d",$file_id)." $hash.$extension";
 		}
+		return '';
 	}
 
 	public function tool_cheksum_action(){
@@ -223,7 +226,7 @@ class NamesGenerator {
 		return 'Unknown';
 	}
 
-	public function tool_number_get_prefix_id(){
+	public function tool_number_get_prefix_id() : string {
 		return sprintf("%03d", random_int(0, 999));
 	}
 
@@ -375,7 +378,7 @@ class NamesGenerator {
 		$this->tool_videogenerator_action();
 	}
 
-	public function tool_videogenerator_name(string $mode){
+	public function tool_videogenerator_name(string $mode) : string {
 		switch($mode){
 			case '0': return 'CheckSum';
 			case '1': return 'Resolution';

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Extensions;
 
 use Imagick;
@@ -7,7 +9,7 @@ use App\Dictionaries\MediaOrientation;
 
 trait MediaFunctions {
 
-	public function getImageFromPath(string $path){
+	public function getImageFromPath(string $path) : GdImage|null {
 		if(!file_exists($path)) return null;
 		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
 			case 'bmp': return @imagecreatefrombmp($path);
@@ -29,7 +31,7 @@ trait MediaFunctions {
 		return null;
 	}
 
-	public function getImageResolution(string $path){
+	public function getImageResolution(string $path) : string {
 		$image = $this->getImageFromPath($path);
 		if(!$image){
 			try {
@@ -49,7 +51,7 @@ trait MediaFunctions {
 		return $w."x".$h;
 	}
 
-	public function isGifAnimated(string $path){
+	public function isGifAnimated(string $path) : bool {
 		if(!($fh = @fopen($path, 'rb'))) return false;
 		$count = 0;
 		while(!feof($fh) && $count < 2){
@@ -60,12 +62,12 @@ trait MediaFunctions {
 		return $count > 1;
 	}
 
-	public function getVideoResolution(string $path){
+	public function getVideoResolution(string $path) : string {
 		exec("ffprobe -v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\"", $output);
 		return $output[0] ?? '0x0';
 	}
 
-	public function getVideoThumbnail(string $path){
+	public function getVideoThumbnail(string $path) : bool {
 		$folder = pathinfo($path, PATHINFO_DIRNAME);
 		$w = $this->config->get('AVE_THUMBNAIL_WIDTH');
 		$r = $this->config->get('AVE_THUMBNAIL_ROWS');
@@ -74,7 +76,7 @@ trait MediaFunctions {
 		return file_exists("$path"."_s.jpg");
 	}
 
-	public function getMediaOrientation(int $width, int $height){
+	public function getMediaOrientation(int $width, int $height) : MediaOrientation {
 		if($width > $height){
 			return MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL;
 		} else if($height > $width){
@@ -84,7 +86,7 @@ trait MediaFunctions {
 		}
 	}
 
-	public function getMediaQuality(int $width, int $height){
+	public function getMediaQuality(int $width, int $height) : string {
 		$v = max($width, $height);
 		if($v >= 30720){
 			return '17280';
@@ -113,12 +115,12 @@ trait MediaFunctions {
 		}
 	}
 
-	public function getImageColorCount(string $path){
+	public function getImageColorCount(string $path) : int {
 		$imagick = new Imagick($path);
 		return $imagick->getImageColors();
 	}
 
-	public function getImageColorGroup(int $colors){
+	public function getImageColorGroup(int $colors) : string {
 		if($colors >= 100000){
 			return 'Very-High';
 		} else if($colors >= 30000){
