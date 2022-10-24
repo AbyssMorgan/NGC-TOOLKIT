@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 class IniFile {
 
-	protected $path;
+	protected ?string $path;
 
-	protected $data;
+	protected array $data;
 
-	protected $valid;
+	protected bool $valid;
 
-	protected $sort;
+	protected bool $sort;
 
-	protected $original;
+	protected array $original;
 
-	public $version = 10500;
+	public int $version = 20000;
 
-	function __construct($path = null, $sort = false){
+	function __construct(?string $path = null, bool $sort = false){
 		$this->path = $path;
 		$this->data = [];
 		$this->original = [];
@@ -28,7 +30,7 @@ class IniFile {
 		}
 	}
 
-	protected function create(){
+	protected function create() : bool {
 		$folder = pathinfo($this->path,PATHINFO_DIRNAME);
 		if(!file_exists($folder)) mkdir($folder, 0777, true);
 		$file = fopen($this->path, "w");
@@ -38,21 +40,21 @@ class IniFile {
 		return file_exists($this->path);
 	}
 
-	public function open($path, $sort = false){
+	public function open(string $path, bool $sort = false) : bool {
 		$this->path = $path;
 		$this->sort = $sort;
 		$this->valid = $this->read();
 		return $this->valid;
 	}
 
-	public function close(){
+	public function close() : void {
 		$this->valid = false;
 		$this->path = null;
 		$this->data = [];
 		$this->original = [];
 	}
 
-	public function read(){
+	public function read() : bool {
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
@@ -69,7 +71,7 @@ class IniFile {
 		return true;
 	}
 
-	public function parse_line($line, &$key, &$data, $escape = true){
+	public function parse_line(string $line, &$key, int|bool|string|array|float|null &$data, bool $escape = true) : bool {
 		if($escape) $line = str_replace("\n","",str_replace("\r","",str_replace("\xEF\xBB\xBF","",$line)));
 		if(strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
 		$option = explode("=",$line,2);
@@ -105,11 +107,11 @@ class IniFile {
 		return true;
 	}
 
-	public function isChanged(){
+	public function isChanged() : bool {
 		return (json_encode($this->getOriginalAll()) != json_encode($this->getAll()));
 	}
 
-	public function isValueChanged($key){
+	public function isValueChanged(string $key) : bool {
 		$value = $this->get($key);
 		$original = $this->getOriginal($key);
 		if(gettype($value) != gettype($original)) return false;
@@ -120,57 +122,49 @@ class IniFile {
 		}
 	}
 
-	public function getOriginalAll(){
+	public function getOriginalAll() : array {
 		return $this->original;
 	}
 
-	public function getAll(){
+	public function getAll() : array {
 		return $this->data;
 	}
 
-	public function getSorted(){
+	public function getSorted() : array {
 		$data = $this->data;
 		ksort($data);
 		return $data;
 	}
 
-	public function sort(){
+	public function sort() : void {
 		ksort($this->data);
 	}
 
-	public function setAll($data, $save = false){
-		if(gettype($data) == 'array'){
-			$this->data = $data;
-			if($save) return $this->save();
-			return true;
-		}
-		return false;
+	public function setAll(array $data, bool $save = false) : void {
+		$this->data = $data;
+		if($save) $this->save();
 	}
 
-	public function update($data, $save = false){
-		if(gettype($data) == 'array'){
-			foreach($data as $key => $value){
-				$this->set($key,$value);
-			}
-			if($save) return $this->save();
-			return true;
+	public function update(array $data, bool $save = false) : void {
+		foreach($data as $key => $value){
+			$this->set($key,$value);
 		}
-		return false;
+		if($save) $this->save();
 	}
 
-	public function get($key, $default = null){
+	public function get(string $key, int|bool|string|array|float|null $default = null) : mixed {
 		return $this->data[$key] ?? $default;
 	}
 
-	public function getOriginal($key, $default = null){
+	public function getOriginal(string $key, int|bool|string|array|float|null $default = null) : mixed {
 		return $this->original[$key] ?? $default;
 	}
 
-	public function set($key, $value){
+	public function set(string $key, int|bool|string|array|float|null $value) : void {
 		$this->data[$key] = $this->cleanValue($value);
 	}
 
-	public function cleanValue($value){
+	public function cleanValue(int|bool|string|array|float|null $value) : mixed {
 		if(gettype($value) == 'string'){
 			if(strtolower($value) == 'true'){
 				return true;
@@ -181,12 +175,12 @@ class IniFile {
 		return $value;
 	}
 
-	public function rename($key1, $key2){
+	public function rename(string $key1, string $key2){
 		$this->set($key2, $this->get($key1));
 		$this->unset($key1);
 	}
 
-	public function unset($keys){
+	public function unset(string|array $keys){
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->isSet($key)){
@@ -195,7 +189,7 @@ class IniFile {
 		}
 	}
 
-	public function reset($keys, $value = null){
+	public function reset(string|array $keys, int|bool|string|array|float|null $value = null){
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->isSet($key)){
@@ -204,7 +198,7 @@ class IniFile {
 		}
 	}
 
-	public function save(){
+	public function save() : bool {
 		if(!$this->isValid()) return false;
 		if(file_exists($this->path)){
 			chmod($this->path, 0777);
@@ -234,37 +228,39 @@ class IniFile {
 		return true;
 	}
 
-	public function isValid(){
+	public function isValid() : bool {
 		return $this->valid;
 	}
 
-	public function toggleSort($sort){
+	public function toggleSort(bool $sort) : void {
 		$this->sort = $sort;
 	}
 
-	public function keys(){
+	public function keys() : array {
 		return array_keys($this->data);
 	}
 
-	public function isSet($key){
+	public function isSet(string $key) : bool {
 		return array_key_exists($key, $this->data);
 	}
 
-	public function getSize(){
+	public function getSize() : int {
 		if(!$this->isValid()) return 0;
-		return filesize($this->path);
+		$size = filesize($this->path);
+		if(!$size) return 0;
+		return $size;
 	}
 
-	public function getModificationDate(){
+	public function getModificationDate() : string {
 		if(!$this->isValid()) return '0000-00-00 00:00:00';
 		return date("Y-m-d H:i:s",filemtime($this->path));
 	}
 
-	public function toJson(){
+	public function toJson() : string|false {
 		return json_encode($this->data);
 	}
 
-	public function fromJson($json, $merge = false, $save = false){
+	public function fromJson(string $json, bool $merge = false, bool $save = false) : void {
 		if($merge){
 			$this->update(json_decode($json, true), $save);
 		} else {
@@ -272,7 +268,7 @@ class IniFile {
 		}
 	}
 
-	public function fromAssoc($assoc, $merge = false, $save = false){
+	public function fromAssoc(array $assoc, bool $merge = false, bool $save = false) : void {
 		if(!$merge) $this->data = [];
 		foreach($assoc as $key => $value){
 			$this->set($key, $value);
@@ -280,7 +276,7 @@ class IniFile {
 		if($save) $this->save();
 	}
 
-	public function search($search){
+	public function search(string $search) : array {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
@@ -291,7 +287,7 @@ class IniFile {
 		return $results;
 	}
 
-	public function searchPrefix($search){
+	public function searchPrefix(string $search) : array {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
@@ -302,7 +298,7 @@ class IniFile {
 		return $results;
 	}
 
-	public function searchSuffix($search){
+	public function searchSuffix(string $search) : array {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
@@ -313,7 +309,7 @@ class IniFile {
 		return $results;
 	}
 
-	public function setChanged($key, $value, $default = null){
+	public function setChanged(string $key, int|bool|string|array|float|null $value, int|bool|string|array|float|null $default = null) : void {
 		if($this->cleanValue($value) != $default){
 			$this->set($key, $value);
 		} else {
@@ -321,7 +317,7 @@ class IniFile {
 		}
 	}
 
-	public function only($keys){
+	public function only(string|array $keys) : array {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
 		foreach($keys as $key){
@@ -330,7 +326,7 @@ class IniFile {
 		return $data;
 	}
 
-	public function allExcept($keys){
+	public function allExcept(string|array $keys) : array {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
 		foreach($this->keys() as $key){
@@ -339,11 +335,11 @@ class IniFile {
 		return $data;
 	}
 
-	public function extract_path(&$data, $key, $delimiter = '/'){
+	public function extract_path(array &$data, string $key, string $delimiter = '/') : void {
 		$this->set_nested_array_value($data, $key, $this->get($key), $delimiter);
 	}
 
-	public function set_nested_array_value(&$array, $path, $value, $delimiter = '/'){
+	public function set_nested_array_value(array &$array, string $path, array $value, $delimiter = '/') : mixed {
 		$pathParts = explode($delimiter, $path);
 		$current = &$array;
 		foreach($pathParts as $key) $current = &$current[$key];

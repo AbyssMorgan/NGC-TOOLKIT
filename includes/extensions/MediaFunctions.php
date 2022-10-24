@@ -9,7 +9,7 @@ use App\Dictionaries\MediaOrientation;
 
 trait MediaFunctions {
 
-	public function getImageFromPath(string $path) : GdImage|null {
+	public function getImageFromPath(string $path){
 		if(!file_exists($path)) return null;
 		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
 			case 'bmp': return @imagecreatefrombmp($path);
@@ -76,7 +76,7 @@ trait MediaFunctions {
 		return file_exists("$path"."_s.jpg");
 	}
 
-	public function getMediaOrientation(int $width, int $height) : MediaOrientation {
+	public function getMediaOrientation(int $width, int $height){
 		if($width > $height){
 			return MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL;
 		} else if($height > $width){

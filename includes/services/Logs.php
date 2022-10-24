@@ -6,19 +6,19 @@ namespace App\Services;
 
 class Logs {
 
-	private $path;
-	private $timestamp;
-	private $hold_open;
+	private string $path;
+	private bool $timestamp;
+	private bool $hold_open;
 	private $file;
 
-	function __construct($path = null, $timestamp = true, $hold_open = false){
+	function __construct(string $path, $timestamp = true, $hold_open = false){
 		$this->path = $path;
 		$this->timestamp = $timestamp;
 		$this->hold_open = $hold_open;
 		$this->file = false;
 	}
 
-	protected function create(){
+	protected function create() : bool {
 		$folder = pathinfo($this->path,PATHINFO_DIRNAME);
 		if(!file_exists($folder)) mkdir($folder, 0777, true);
 		$file = fopen($this->path, "w");
@@ -28,7 +28,7 @@ class Logs {
 		return file_exists($this->path);
 	}
 
-	protected function writeString($line){
+	protected function writeString(string $line) : bool {
 		if(!$this->file) $this->file = fopen($this->path,"a");
 		if(!$this->file) return false;
 		if($this->timestamp) fwrite($this->file,"[".date("Y-m-d H:i:s")."] ");
@@ -37,7 +37,7 @@ class Logs {
 		return true;
 	}
 
-	protected function writeArray($lines){
+	protected function writeArray(array $lines) : bool {
 		if(!$this->file) $this->file = fopen($this->path,"a");
 		if(!$this->file) return false;
 		foreach($lines as $line){
@@ -48,7 +48,7 @@ class Logs {
 		return true;
 	}
 
-	public function write($content){
+	public function write(string|array $content) : bool {
 		if(is_null($this->path)) return false;
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
@@ -57,11 +57,11 @@ class Logs {
 		return $this->writeString($content);
 	}
 
-	public function getPath(){
+	public function getPath() : string {
 		return $this->path;
 	}
 
-	public function close(){
+	public function close() : bool {
 		if(!$this->file) return false;
 		fclose($this->file);
 		$this->file = false;

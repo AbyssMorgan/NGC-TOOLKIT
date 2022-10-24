@@ -82,7 +82,7 @@ class FileFunctions {
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return $this->tool_antiduplicates_help();
 		$folders = $this->ave->get_folders($line);
 
 		$this->ave->setup_folders($folders);

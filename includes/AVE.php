@@ -196,7 +196,7 @@ class AVE extends CommandLine {
 	}
 
 	public function mkdir(string $path) : bool {
-		if(mkdir($path, octdec($this->config->get('AVE_DEFAULT_FOLDER_PERMISSION')), true)){
+		if(mkdir($path, $this->config->get('AVE_DEFAULT_FOLDER_PERMISSION'), true)){
 			$this->log_event->write("MKDIR \"$path\"");
 			return true;
 		} else {
@@ -252,6 +252,7 @@ class AVE extends CommandLine {
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
 		foreach($files as $file){
+			$file = (string)$file;
 			if(is_dir($file) || is_link($file)) continue;
 			if(!is_null($extensions) && !in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), $extensions)) continue;
 			array_push($data, (string)$file);

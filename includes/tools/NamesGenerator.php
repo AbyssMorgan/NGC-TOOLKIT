@@ -260,7 +260,7 @@ class NamesGenerator {
 			$items++;
 			if(!file_exists($file)) continue;
 			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-			$part_id = floor($file_id / intval($this->ave->config->get('AVE_PART_SIZE'))) + 1;
+			$part_id = (int) floor($file_id / intval($this->ave->config->get('AVE_PART_SIZE'))) + 1;
 			if($this->params['mode'] == 1){
 				$prefix_id = sprintf("%03d",$part_id);
 			}
