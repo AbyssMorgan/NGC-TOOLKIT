@@ -64,6 +64,28 @@ class CommandLine {
 		exec("START \"\" \"$path\"");
 	}
 
+	public function get_file_attributes(string $path) : array {
+		exec("ATTRIB \"$path\"", $var);
+		$attributes = str_replace($path, '', $var[0]);
+		return [
+			'R' => (strpos($attributes, "R") !== false),
+			'A' => (strpos($attributes, "A") !== false),
+			'S' => (strpos($attributes, "S") !== false),
+			'H' => (strpos($attributes, "H") !== false),
+			'I' => (strpos($attributes, "I") !== false),
+		];
+	}
+
+	public function set_file_attributes(string $path, bool|null $r = null, bool|null $a = null, bool|null $s = null, bool|null $h = null, bool|null $i = null) : void {
+		$attributes = '';
+		if(!is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
+		if(!is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
+		if(!is_null($s)) $attributes .= ($s ? '+' : '-').'S ';
+		if(!is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
+		if(!is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
+		exec("ATTRIB $attributes \"$path\"");
+	}
+
 }
 
 ?>

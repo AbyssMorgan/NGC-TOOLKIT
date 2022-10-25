@@ -224,7 +224,7 @@ class AVE extends CommandLine {
 
 	public function rename(string $from, string $to) : bool {
 		if($from == $to) return true;
-		if(file_exists($to)){
+		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
 			$this->log_error->write("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
