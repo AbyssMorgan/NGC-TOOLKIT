@@ -24,6 +24,7 @@ class FileFunctions {
 			' Actions:',
 			' 0 - Anti Duplicates',
 			' 1 - Extension Change',
+			' 2 - Validate CheckSum',
 		]);
 	}
 
@@ -33,6 +34,7 @@ class FileFunctions {
 		switch($this->action){
 			case '0': return $this->tool_antiduplicates_help();
 			case '1': return $this->tool_extension_action();
+			case '2': return $this->tool_validatechecksum_help();
 		}
 		$this->ave->select_action();
 	}
@@ -177,6 +179,137 @@ class FileFunctions {
 					$progress++;
 				} else {
 					$errors++;
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+		$this->ave->exit();
+	}
+
+	public function tool_validatechecksum_help(){
+		$this->ave->clear();
+		$this->ave->set_subtool("ValidateCheckSum");
+
+		$this->ave->print_help([
+			' Modes:',
+			' 0   - From file',
+			' 1   - From name',
+			' ?0  - md5 (default)',
+			' ?1  - sha256',
+			' ?2  - crc32',
+			' ?3  - whirlpool',
+		]);
+
+		echo " Mode: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+			'algo' => strtolower($line[1] ?? '0'),
+		];
+
+		if($this->params['algo'] == '?') $this->params['algo'] = '0';
+
+		if(!in_array($this->params['mode'],['0','1'])) return $this->tool_validatechecksum_help();
+		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_validatechecksum_help();
+
+		$this->ave->set_subtool("ValidateCheckSum > ".$this->tool_validatechecksum_name($this->params['mode'])." > ".$this->tool_validatechecksum_algo($this->params['algo']));
+		return $this->tool_validatechecksum_action();
+	}
+
+	public function tool_validatechecksum_name(string $mode) : string {
+		switch($mode){
+			case '0': return 'File';
+			case '1': return 'Name';
+		}
+		return 'Unknown';
+	}
+
+	public function tool_validatechecksum_algo(string $mode) : string {
+		switch($mode){
+			case '0': return 'md5';
+			case '1': return 'sha256';
+			case '2': return 'crc32';
+			case '3': return 'whirlpool';
+		}
+		return 'md5';
+	}
+
+	public function tool_validatechecksum_algo_length(string $mode) : int {
+		switch($mode){
+			case '0': return 32;
+			case '1': return 64;
+			case '2': return 8;
+			case '3': return 128;
+		}
+		return 32;
+	}
+
+	public function tool_validatechecksum_action(){
+		$this->ave->clear();
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->tool_validatechecksum_help();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$algo = $this->tool_validatechecksum_algo($this->params['algo']);
+		$algo_length = $this->tool_validatechecksum_algo_length($this->params['algo']);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		$except_files = explode(";", $this->ave->config->get('AVE_IGNORE_SCAN'));
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$file_id = 1;
+			$list = [];
+			$files = $this->ave->getFiles($folder, null, ['md5','sha256','crc32','whirlpool','srt']);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
+				if(in_array($file_name, $except_files)) continue;
+				$hash = hash_file($algo, $file, false);
+				$progress++;
+				if($this->params['mode'] == '0'){
+					$checksum_file = "$file.$algo";
+					if(!file_exists($checksum_file)){
+						$this->ave->log_error->write("FILE NOT FOUND \"$checksum_file\"");
+						$errors++;
+					} else {
+						$hash_current = strtolower(trim(file_get_contents($checksum_file)));
+						if($hash_current != $hash){
+							$this->ave->log_error->write("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $hash_current");
+							$errors++;
+						} else {
+							$this->ave->log_event->write("FILE \"$file\" checksum: $hash");
+						}
+					}
+				} else {
+					if($len < $algo_length){
+						$this->ave->log_error->write("INVALID FILE NAME \"$file\"");
+						$errors++;
+					} else {
+						if($len > $algo_length){
+							$start = strpos($file_name, '[');
+							if($start !== false){
+								$end = strpos($file_name, ']', $start);
+								$file_name = str_replace(' '.substr($file_name, $start, $end - $start + 1), '', $file_name);
+							}
+							$file_name = substr($file_name, strlen($file_name) - $algo_length, $algo_length);
+						}
+						if($file_name != $hash){
+							$this->ave->log_error->write("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $file_name");
+							$errors++;
+						} else {
+							$this->ave->log_event->write("FILE \"$file\" checksum: $hash");
+						}
+					}
 				}
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);

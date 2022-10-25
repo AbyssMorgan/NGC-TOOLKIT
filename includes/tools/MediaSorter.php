@@ -238,7 +238,7 @@ class MediaSorter {
 						continue 1;
 					}
 				}
-				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_BASENAME);
+				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
@@ -396,7 +396,7 @@ class MediaSorter {
 						continue 1;
 					}
 				}
-				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_BASENAME);
+				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {

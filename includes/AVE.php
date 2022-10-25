@@ -265,12 +265,13 @@ class AVE extends CommandLine {
 		return $cnt;
 	}
 
-	public function getFiles(string $path, array|null $extensions = null) : array {
+	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
 		foreach($files as $file){
 			if($file->isDir() || $file->isLink()) continue;
 			if(!is_null($extensions) && !in_array(strtolower($file->getExtension()), $extensions)) continue;
+			if(!is_null($except) && in_array(strtolower($file->getExtension()), $except)) continue;
 			array_push($data, $file->getRealPath());
 		}
 		return $data;
