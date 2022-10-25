@@ -291,6 +291,7 @@ class FileFunctions {
 						}
 					}
 				} else {
+					$len = strlen($file_name);
 					if($len < $algo_length){
 						$this->ave->log_error->write("INVALID FILE NAME \"$file\"");
 						$errors++;
