@@ -25,6 +25,7 @@ class DirectoryFunctions {
 			' Actions:',
 			' 0 - Delete empty dirs',
 			' 1 - Force load icon (desktop.ini)',
+			' 2 - Count files in every dirs',
 		]);
 	}
 
@@ -34,6 +35,7 @@ class DirectoryFunctions {
 		switch($this->action){
 			case '0': return $this->tool_deleteemptydirs_action();
 			case '1': return $this->tool_forceloadicon_action();
+			case '2': return $this->tool_countfiles_action();
 		}
 		$this->ave->select_action();
 	}
@@ -109,6 +111,67 @@ class DirectoryFunctions {
 			$this->ave->set_folder_done($folder);
 		}
 		$this->ave->exit();
+	}
+
+	public function tool_countfiles_action(){
+		$this->ave->clear();
+		$this->ave->set_subtool("CountFiles");
+
+		echo " Extensions (empty for all): ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+
+		if($line == '' || $line == '*'){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->select_action();
+		$folders = $this->ave->get_folders($line);
+
+		$this->ave->setup_folders($folders);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		$data = [];
+
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $extensions);
+			$this->ave->log_event->write($files);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$progress++;
+				$key = pathinfo($file, PATHINFO_DIRNAME);
+				if(!isset($data[$key])) $data[$key] = 0;
+				$data[$key]++;
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
+		foreach($data as $path => $count){
+			if($this->ave->config->get('AVE_FILE_COUNT_FORMAT') == 'CSV'){
+				$this->ave->log_data->write("$count;\"$path\"");
+			} else {
+				$this->ave->log_data->write("\"$count\" \"$path\"");
+			}
+		}
+
+		unset($data);
+
+		$this->ave->exit();
+
 	}
 
 }
