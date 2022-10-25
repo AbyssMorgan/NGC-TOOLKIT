@@ -12,6 +12,7 @@
 	require_once("$includes_path/tools/NamesGenerator.php");
 	require_once("$includes_path/tools/FileFunctions.php");
 	require_once("$includes_path/tools/MediaSorter.php");
+	require_once("$includes_path/tools/DirectoryFunctions.php");
 
 	try {
 		$ave = new AVE($argv);
