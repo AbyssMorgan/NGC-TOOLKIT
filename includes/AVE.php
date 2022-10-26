@@ -17,6 +17,7 @@ class AVE extends CommandLine {
 	use App\Extensions\MediaFunctions;
 
 	public IniFile $config;
+	public IniFile $mkvmerge;
 
 	public Logs $log_event;
 	public Logs $log_error;
@@ -45,6 +46,7 @@ class AVE extends CommandLine {
 		$changed = false;
 		$config_default = new IniFile("$this->path/config/default.ini", true);
 		$this->config = new IniFile("$this->path/config/user.ini", true);
+		$this->mkvmerge = new IniFile("$this->path/config/mkvmerge.ini", true);
 		foreach($config_default->getAll() as $key => $value){
 			if(!$this->config->isSet($key)){
 				$this->config->set($key,$value);
