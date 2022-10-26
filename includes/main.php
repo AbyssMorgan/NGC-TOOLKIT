@@ -7,6 +7,7 @@
 	require_once("$includes_path/services/Logs.php");
 	require_once("$includes_path/services/IniFile.php");
 	require_once("$includes_path/services/CommandLine.php");
+	require_once("$includes_path/services/GuardDriver.php");
 	require_once("$includes_path/extensions/MediaFunctions.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/NamesGenerator.php");
