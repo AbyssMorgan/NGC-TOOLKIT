@@ -13,6 +13,7 @@
 	require_once("$includes_path/tools/FileFunctions.php");
 	require_once("$includes_path/tools/MediaSorter.php");
 	require_once("$includes_path/tools/DirectoryFunctions.php");
+	require_once("$includes_path/tools/MediaTools.php");
 
 	try {
 		$ave = new AVE($argv);

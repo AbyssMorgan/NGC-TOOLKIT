@@ -10,6 +10,7 @@ use App\Tools\NamesGenerator;
 use App\Tools\FileFunctions;
 use App\Tools\MediaSorter;
 use App\Tools\DirectoryFunctions;
+use App\Tools\MediaTools;
 
 class AVE extends CommandLine {
 
@@ -127,6 +128,7 @@ class AVE extends CommandLine {
 			' 1 - File Functions',
 			' 2 - Media Sorter',
 			' 3 - Directory Functions',
+			' 4 - Media Tools',
 		]);
 
 		echo ' Tool: ';
@@ -146,6 +148,10 @@ class AVE extends CommandLine {
 			}
 			case '3': {
 				$this->tool = new DirectoryFunctions($this);
+				break;
+			}
+			case '4': {
+				$this->tool = new MediaTools($this);
 				break;
 			}
 		}
