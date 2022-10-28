@@ -49,6 +49,11 @@ class MediaTools {
 		if(!isset($folders[0])) goto set_video;
 		$video = $folders[0];
 
+		if(!file_exists($video) || !is_dir($video)){
+			echo "Invalid video folder\r\n";
+			goto set_video;
+		}
+
 		set_audio:
 		echo " Audio:  ";
 		$line = $this->ave->get_input();
@@ -56,6 +61,11 @@ class MediaTools {
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_audio;
 		$audio = $folders[0];
+
+		if(!file_exists($audio) || !is_dir($audio)){
+			echo "Invalid audio folder\r\n";
+			goto set_audio;
+		}
 
 		set_output:
 		echo " Output: ";
@@ -65,20 +75,16 @@ class MediaTools {
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
+		if(file_exists($output) && !is_dir($output)){
+			echo "Invalid output folder\r\n";
+			goto set_output;
+		}
+
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 
-		if(!file_exists($video) || !is_dir($video)){
-			echo "Invalid video folder\r\n";
-			goto set_video;
-		} else if(!file_exists($audio) || !is_dir($audio)){
-			echo "Invalid audio folder\r\n";
-			goto set_audio;
-		} else if(file_exists($output) && !is_dir($output)){
-			echo "Invalid output folder\r\n";
-			goto set_output;
-		} else if(!file_exists($output)){
+		if(!file_exists($output)){
 			$this->ave->mkdir($output);
 		}
 
