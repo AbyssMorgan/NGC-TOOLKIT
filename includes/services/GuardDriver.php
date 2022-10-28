@@ -78,7 +78,7 @@ class GuardDriver {
 			$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
 			if(!isset($data[$key])) $data[$key] = [];
 			$this->data[$key][pathinfo($file, PATHINFO_BASENAME)] = strtoupper(hash_file('md5', $file));
-			if(!$update) array_push($this->file_list, str_replace("\\", "/", $file));
+			array_push($this->file_list, str_replace("\\", "/", $file));
 			$this->keys[$key] = str_replace("\\", "/", pathinfo($file, PATHINFO_DIRNAME));
 		}
 	}

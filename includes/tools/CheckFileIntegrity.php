@@ -29,7 +29,7 @@ class CheckFileIntegrity {
 			' 1 - Generate guard',
 			' 2 - Check integrity',
 			' 3 - Get files tree',
-			// ' 4 - Update guard: Remove missing files',
+			' 4 - Update guard: Remove missing files',
 			' 5 - Update guard: Add unknown files',
 			' 6 - Update guard: Update changed files',
 		]);
@@ -43,7 +43,7 @@ class CheckFileIntegrity {
 			case '1': return $this->tool_generate_guard();
 			case '2': return $this->tool_check_integrity();
 			case '3': return $this->tool_get_files_tree();
-			// case '4': return $this->tool_update_remove_missing();
+			case '4': return $this->tool_update_remove_missing();
 			case '5': return $this->tool_update_add_unknown();
 			case '6': return $this->tool_update_changed();
 		}
@@ -210,7 +210,7 @@ class CheckFileIntegrity {
 			goto set_guard;
 		}
 
-		$ini = new IniFile($guard_file);
+		$ini = new IniFile($guard_file, true);
 		if(is_null($ini->get('keys'))){
 			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
 			goto set_guard;
@@ -281,7 +281,7 @@ class CheckFileIntegrity {
 			goto set_guard;
 		}
 
-		$ini = new IniFile($guard_file);
+		$ini = new IniFile($guard_file, true);
 		if(is_null($ini->get('keys'))){
 			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
 			goto set_guard;
@@ -298,8 +298,74 @@ class CheckFileIntegrity {
 	}
 
 	public function tool_update_remove_missing(){
+		$this->ave->clear();
+		$this->ave->set_subtool("UpdateRemoveMissing");
 
-		$this->ave->exit();
+		set_input:
+		echo " Input (Folder): ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		set_guard:
+		echo " Guard (.ave-guard): ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_guard;
+		$guard_file = $folders[0];
+
+		if(!file_exists($guard_file)){
+			echo " Guard file not exists\r\n";
+			goto set_guard;
+		}
+
+		$ini = new IniFile($guard_file, true);
+		if(is_null($ini->get('keys'))){
+			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
+			goto set_guard;
+		}
+
+		$cwd = getcwd();
+		chdir($input);
+		echo " Validate files from $guard_file\r\n";
+		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
+		$validation = $guard->validate(['damaged' => false, 'unknown' => false, 'missing' => true]);
+
+		foreach($validation as $error){
+			$file = $error['file'];
+			$this->ave->log_event->write("REMOVE FILE \"$file\"");
+			$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
+			$arr = $ini->get($key);
+			if(isset($arr[pathinfo($file, PATHINFO_BASENAME)])) unset($arr[pathinfo($file, PATHINFO_BASENAME)]);
+			if(!empty($arr)){
+				$ini->set($key, $arr);
+			} else {
+				$ini->unset($key);
+				$arr = $ini->get('keys');
+				if(isset($arr[$key])) unset($arr[$key]);
+				$ini->set('keys', $arr);
+				$arr = $ini->get('file_list');
+				$key = array_search($arr, pathinfo($file, PATHINFO_DIRNAME));
+				if($key !== false){
+					if(isset($arr[$key])) unset($arr[$key]);
+					$ini->set('file_list', $arr);
+				}
+			}
+		}
+
+		$ini->save();
+
+		chdir($cwd);
+
+		$this->ave->exit(10, true);
 	}
 
 	public function tool_update_add_unknown(){
@@ -332,7 +398,7 @@ class CheckFileIntegrity {
 			goto set_guard;
 		}
 
-		$ini = new IniFile($guard_file);
+		$ini = new IniFile($guard_file, true);
 		if(is_null($ini->get('keys'))){
 			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
 			goto set_guard;
@@ -356,7 +422,7 @@ class CheckFileIntegrity {
 
 		chdir($cwd);
 
-		$this->ave->exit();
+		$this->ave->exit(10, true);
 	}
 
 	public function tool_update_changed(){
@@ -389,7 +455,7 @@ class CheckFileIntegrity {
 			goto set_guard;
 		}
 
-		$ini = new IniFile($guard_file);
+		$ini = new IniFile($guard_file, true);
 		if(is_null($ini->get('keys'))){
 			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
 			goto set_guard;
