@@ -310,12 +310,15 @@ class AVE extends CommandLine {
 		return $data;
 	}
 
-	public function exit(int $seconds = 10) : void {
+	public function exit(int $seconds = 10, $open_log = false) : void {
 		$this->log_event->write("Exit");
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();
-
+		
+		if($open_log && file_exists($this->log_info->getPath())){
+			$this->open_file($this->log_info->getPath());
+		}
 		if(file_exists($this->log_data->getPath())){
 			$this->open_file($this->log_data->getPath());
 		}
