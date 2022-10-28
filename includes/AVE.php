@@ -11,6 +11,7 @@ use App\Tools\FileFunctions;
 use App\Tools\MediaSorter;
 use App\Tools\DirectoryFunctions;
 use App\Tools\MediaTools;
+use App\Tools\CheckFileIntegrity;
 
 class AVE extends CommandLine {
 
@@ -131,6 +132,7 @@ class AVE extends CommandLine {
 			' 2 - Media Sorter',
 			' 3 - Directory Functions',
 			' 4 - Media Tools',
+			' 5 - Check File Integrity',
 		]);
 
 		echo ' Tool: ';
@@ -154,6 +156,10 @@ class AVE extends CommandLine {
 			}
 			case '4': {
 				$this->tool = new MediaTools($this);
+				break;
+			}
+			case '5': {
+				$this->tool = new CheckFileIntegrity($this);
 				break;
 			}
 		}
@@ -271,6 +277,13 @@ class AVE extends CommandLine {
 			fclose($fp);
 		}
 		return $cnt;
+	}
+
+	public function formatBytes($bytes, $precision = 2){
+		if($bytes <= 0) return '0.00 B';
+		$i = floor(log($bytes)/log(1024));
+		$sizes = ['B','KB','MB','GB','TB','PB','EB','ZB','YB'];
+		return sprintf('%.'.$precision.'f',$bytes/pow(1024,$i)).' '.$sizes[$i];
 	}
 
 	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {

@@ -139,6 +139,8 @@ class GuardDriver {
 		$this->data['file_count'] = count($this->file_list);
 		$this->data['folders'] = $this->folder_list;
 		$this->data['folders_count'] = count($this->folder_list);
+		$this->data['files_to_scan'] = $this->files_to_scan;
+		$this->data['folders_to_scan'] = $this->folders_to_scan;
 		return $this->data;
 	}
 
