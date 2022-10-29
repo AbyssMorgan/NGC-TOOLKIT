@@ -43,7 +43,7 @@ class AVE extends CommandLine {
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);
 		$this->arguments = array_values($arguments);
-		$this->logo = file_get_contents("$this->path/meta/GUI.txt");
+		$this->logo = file_get_contents("$this->path/meta/LOGO.txt");
 		$changed = false;
 		$config_default = new IniFile("$this->path/config/default.ini", true);
 		$this->config = new IniFile("$this->path/config/user.ini", true);
@@ -315,7 +315,7 @@ class AVE extends CommandLine {
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();
-		
+
 		if($open_log && file_exists($this->log_info->getPath())){
 			$this->open_file($this->log_info->getPath());
 		}
