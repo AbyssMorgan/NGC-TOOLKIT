@@ -104,7 +104,7 @@ class CheckFileIntegrity {
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
 		foreach($this->ave->get_folders($line) as $folder){
-			$pattern->addFolders(str_replace($input, "", $folder));
+			$pattern->addFolders(str_replace([$input.DIRECTORY_SEPARATOR,$input], "", $folder));
 		}
 
 		if(!empty($line)){
