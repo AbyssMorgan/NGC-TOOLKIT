@@ -22,9 +22,10 @@ class NamesGenerator {
 	public function help(){
 		$this->ave->print_help([
 			' Actions:',
-			' 0 - Generate Names: CheckSum',
-			' 1 - Generate Names: Number',
-			' 2 - Generate Video: CheckSum/Resolution/Thumbnail',
+			' 0 - Generate names: CheckSum',
+			' 1 - Generate names: Number',
+			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
+			' 3 - Generate series name: S01E01 etc.',
 		]);
 	}
 
@@ -35,6 +36,7 @@ class NamesGenerator {
 			case '0': return $this->tool_checksum_help();
 			case '1': return $this->tool_number_help();
 			case '2': return $this->tool_videogenerator_help();
+			case '3': return $this->tool_generateseriesname_action();
 		}
 		$this->ave->select_action();
 	}
@@ -487,6 +489,64 @@ class NamesGenerator {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
+		$this->ave->exit();
+	}
+
+	public function tool_generateseriesname_action(){
+		$this->ave->clear();
+		$this->ave->set_subtool("GenerateSeriesName");
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $video_extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$file_name = strtoupper(pathinfo($file, PATHINFO_FILENAME));
+				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
+					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
+					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				} else if(preg_match("/\[S[0-9]{2}\.E[0-9]{1,3}\]/", $file_name, $mathes) == 1){
+					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				} else if(preg_match("/(\[S0\.)(E[0-9]{1,3})\]/", $file_name, $mathes) == 1){
+					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2]);
+				} else {
+					$this->ave->log_error->write("FAILED GET SERIES ID \"$file\"");
+					$errors++;
+				}
+
+				if(isset($escaped_name)){
+					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$errors++;
+					} else {
+						if($this->ave->rename($file, $new_name)){
+							$progress++;
+						} else {
+							$errors++;
+						}
+					}
+				}
+
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
 		$this->ave->exit();
 	}
 

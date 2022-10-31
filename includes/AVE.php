@@ -27,7 +27,7 @@ class AVE extends CommandLine {
 	public string $path;
 
 	private string $app_name = "AVE";
-	private string $version = "1.0";
+	private string $version = "1.1";
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
