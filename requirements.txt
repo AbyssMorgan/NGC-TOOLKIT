@@ -1,0 +1,5 @@
+Operating system: Windows 7, 8, 8.1, 10, 11
+
+Permissions read/write for config folder
+
+By defaults logs save into C:\Users\%USERNAME%\AppData\Roaming\AVE
