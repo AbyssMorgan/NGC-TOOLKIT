@@ -23,7 +23,7 @@ class NamesGenerator {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Generate names: CheckSum',
-			' 1 - Generate names: Number',
+			' 1 - Generate names: Number (Video/Images)',
 			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
 			' 3 - Generate series name: S01E01 etc.',
 		]);
@@ -186,7 +186,7 @@ class NamesGenerator {
 		$this->ave->set_subtool("Number");
 
 		$this->ave->print_help([
-			'           Group Model Format                 Range',
+			'           Group Single Format                Range',
 			' Normal    g0    s0    "PPP_DDDDDD"           000001 - 999999',
 			' Part      g1    s1    "III\PPP_DDDDDD"       000001 - 999999',
 			' Merge     g2    s2    "PPP_DDDDDD"           000001 - 999999',
@@ -512,7 +512,7 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$file_name = strtoupper(pathinfo($file, PATHINFO_FILENAME));
+				$file_name = str_replace(['SEASON','EPISODE',' '], ['S','E',''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
 				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
 					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
 				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){

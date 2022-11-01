@@ -316,8 +316,8 @@ class AVE extends CommandLine {
 		$this->log_error->close();
 		$this->log_data->close();
 
-		if($open_log && file_exists($this->log_info->getPath())){
-			$this->open_file($this->log_info->getPath());
+		if($open_log && file_exists($this->log_event->getPath())){
+			$this->open_file($this->log_event->getPath());
 		}
 		if(file_exists($this->log_data->getPath())){
 			$this->open_file($this->log_data->getPath());
