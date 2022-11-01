@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Services\IniFile;
 use App\Services\Logs;
 use App\Services\CommandLine;
+use App\Services\GuardDriver;
 
 use App\Tools\NamesGenerator;
 use App\Tools\FileFunctions;
@@ -25,16 +26,28 @@ class AVE extends CommandLine {
 	public Logs $log_data;
 
 	public string $path;
+	public bool $abort = false;
 
 	private string $app_name = "AVE";
-	private string $version = "1.1";
+	private string $version = "1.2.0";
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
 	private string $tool_name;
 	private string $subtool_name;
 	private array $folders_state = [];
+	private string $guard_file;
 	private $tool;
+
+	private array $folders_to_scan = [
+		'bin',
+		'includes',
+	];
+
+	private array $files_to_scan = [
+		'config/default.ini',
+		'config/mkvmerge.ini',
+	];
 
 	public function __construct(array $arguments){
 		parent::__construct();
@@ -48,12 +61,31 @@ class AVE extends CommandLine {
 		$config_default = new IniFile("$this->path/config/default.ini", true);
 		$this->config = new IniFile("$this->path/config/user.ini", true);
 		$this->mkvmerge = new IniFile("$this->path/config/mkvmerge.ini", true);
+		$this->guard_file = "$this->path/AVE.ave-guard";
 		foreach($config_default->getAll() as $key => $value){
 			if(!$this->config->isSet($key)){
 				$this->config->set($key,$value);
 				$changed = true;
 			}
 		}
+		if($this->version != $this->config->get('APP_VERSION')){
+			$this->config->set('APP_VERSION', $this->version);
+			$changed = true;
+			$version_changed = true;
+		} else {
+			$version_changed = false;
+		}
+
+		$check_for_updates = false;
+		if($this->config->get('AVE_CHECK_FOR_UPDATES') && $this->command != '--get-color'){
+			$next_check_update = $this->config->get('APP_NEXT_CHECK_FOR_UPDATE', date("U") - 3600);
+			if(date("U") >= $next_check_update){
+				$this->config->set('APP_NEXT_CHECK_FOR_UPDATE', date("U") + 86400 * $this->config->get('AVE_CHECK_FOR_UPDATES_DAYS'));
+				$changed = true;
+				$check_for_updates = true;
+			}
+		}
+
 		$config_default->close();
 		if($changed){
 			$this->config->save();
@@ -72,6 +104,68 @@ class AVE extends CommandLine {
 		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt", true, true);
 		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false, true);
 		ini_set('memory_limit', $this->config->get('AVE_MAX_MEMORY_LIMIT'));
+
+		$dev = file_exists($this->path.DIRECTORY_SEPARATOR."_get_package.cmd");
+
+		if($version_changed && !$dev){
+			echo " Check for remove unused files...\r\n";
+			$validation = $this->validate(['damaged' => false, 'unknown' => true, 'missing' => false]);
+			foreach($validation as $error){
+				if($error['type'] == 'unknown'){
+					$this->unlink($this->path.DIRECTORY_SEPARATOR.$error['file']);
+				}
+			}
+		}
+
+		if($check_for_updates && !$dev){
+			$this->tool_update();
+		}
+	}
+
+	public function check_for_updates(string &$version) : bool {
+		$ch = curl_init("https://raw.githubusercontent.com/AbyssMorgan/AVE-PHP/master/version");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$response = curl_exec($ch);
+		if(!curl_errno($ch)){
+			$version = $response;
+			return ($this->version != $response);
+		} else {
+			$error = curl_error($ch);
+  		echo " Failed check for updates: $error\r\n";
+			return false;
+		}
+	}
+
+	public function download_update($version){
+		echo " Download update...\r\n";
+		$file = $this->path.DIRECTORY_SEPARATOR."AVE-PHP.7z";
+		if(file_exists($file)) unlink($file);
+		$fh = fopen($file,"wb");
+		$ch = curl_init("https://github.com/AbyssMorgan/AVE-PHP/releases/download/v$version/AVE-PHP.7z");
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_FILE, $fh);
+		$response = curl_exec($ch);
+		if(!curl_errno($ch)){
+			exec("START \"\" \"\"");
+			$this->abort = true;
+		} else {
+  		echo " Failed download updates: $error\r\n";
+		}
+	}
+
+	public function tool_update(){
+		echo " Check for updates ...\r\n";
+		$version = '';
+		if($this->check_for_updates($version)){
+			echo " Update available AVE-PHP v$version current v$this->version\r\n";
+			echo " Download now (Y/N): ";
+			$line = $this->get_input();
+			if(strtoupper($line[0] ?? 'N') == 'Y'){
+				$this->download_update($version);
+			}
+		}
 	}
 
 	public function clear() : void {
@@ -88,7 +182,25 @@ class AVE extends CommandLine {
 			$this->select_tool();
 		} else {
 			switch(strtolower($this->command)){
-				case 'get_color': {
+				case '--guard-generate': {
+					$guard = new GuardDriver($this->guard_file);
+					$cwd = getcwd();
+					chdir($this->path);
+					$guard->setFolders($this->folders_to_scan);
+					$guard->setFiles($this->files_to_scan);
+					$guard->generate();
+					chdir($cwd);
+					break;
+				}
+				case '--put-version': {
+					file_put_contents("$this->path/version", $this->version);
+					break;
+				}
+				case '--guard-validate': {
+					echo print_r($this->validate(), true);
+					break;
+				}
+				case '--get-color': {
 					echo $this->config->get('AVE_COLOR') ?? 'AF';
 					break;
 				}
@@ -98,6 +210,17 @@ class AVE extends CommandLine {
 				}
 			}
 		}
+	}
+
+	public function validate(array $flags = ['damaged' => true, 'unknown' => true, 'missing' => true]) : array {
+		$guard = new GuardDriver($this->guard_file);
+		$cwd = getcwd();
+		chdir($this->path);
+		$guard->setFolders($this->folders_to_scan);
+		$guard->setFiles($this->files_to_scan);
+		$validation = $guard->validate($flags);
+		chdir($cwd);
+		return $validation;
 	}
 
 	public function set_tool(string $name) : void {

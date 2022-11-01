@@ -20,7 +20,7 @@
 
 	try {
 		$ave = new AVE($argv);
-		$ave->execute();
+		if(!$ave->abort) $ave->execute();
 	}
 	catch(\Exception $e){
 		echo $e->getMessage()."\r\n";
