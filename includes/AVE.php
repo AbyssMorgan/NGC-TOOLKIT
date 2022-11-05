@@ -68,24 +68,24 @@ class AVE extends CommandLine {
 				$changed = true;
 			}
 		}
-		if($this->version != $this->config->get('APP_VERSION')){
-			$this->config->set('APP_VERSION', $this->version);
-			$changed = true;
-			$version_changed = true;
-		} else {
-			$version_changed = false;
-		}
 
+		$version_changed = false;
 		$check_for_updates = false;
-		if($this->config->get('AVE_CHECK_FOR_UPDATES') && $this->command != '--get-color'){
-			$next_check_update = $this->config->get('APP_NEXT_CHECK_FOR_UPDATE', date("U") - 3600);
-			if(date("U") >= $next_check_update){
-				$this->config->set('APP_NEXT_CHECK_FOR_UPDATE', date("U") + 86400 * $this->config->get('AVE_CHECK_FOR_UPDATES_DAYS'));
+		if($this->command == '--interactive'){
+			if($this->version != $this->config->get('APP_VERSION')){
+				$this->config->set('APP_VERSION', $this->version);
 				$changed = true;
-				$check_for_updates = true;
+				$version_changed = true;
+			}
+			if($this->config->get('AVE_CHECK_FOR_UPDATES')){
+				$next_check_update = $this->config->get('APP_NEXT_CHECK_FOR_UPDATE', date("U") - 3600);
+				if(date("U") >= $next_check_update){
+					$this->config->set('APP_NEXT_CHECK_FOR_UPDATE', date("U") + 86400 * $this->config->get('AVE_CHECK_FOR_UPDATES_DAYS'));
+					$changed = true;
+					$check_for_updates = true;
+				}
 			}
 		}
-
 		$config_default->close();
 		if($changed){
 			$this->config->save();
@@ -178,36 +178,36 @@ class AVE extends CommandLine {
 	}
 
 	public function execute() : void {
-		if(is_null($this->command)){
-			$this->select_tool();
-		} else {
-			switch(strtolower($this->command)){
-				case '--guard-generate': {
-					$guard = new GuardDriver($this->guard_file);
-					$cwd = getcwd();
-					chdir($this->path);
-					$guard->setFolders($this->folders_to_scan);
-					$guard->setFiles($this->files_to_scan);
-					$guard->generate();
-					chdir($cwd);
-					break;
-				}
-				case '--put-version': {
-					file_put_contents("$this->path/version", $this->version);
-					break;
-				}
-				case '--guard-validate': {
-					echo print_r($this->validate(), true);
-					break;
-				}
-				case '--get-color': {
-					echo $this->config->get('AVE_COLOR') ?? 'AF';
-					break;
-				}
-				default: {
-					echo "Unknown command\r\n";
-					break;
-				}
+		switch(strtolower($this->command ?? '')){
+			case '--guard-generate': {
+				$guard = new GuardDriver($this->guard_file);
+				$cwd = getcwd();
+				chdir($this->path);
+				$guard->setFolders($this->folders_to_scan);
+				$guard->setFiles($this->files_to_scan);
+				$guard->generate();
+				chdir($cwd);
+				break;
+			}
+			case '--put-version': {
+				file_put_contents("$this->path/version", $this->version);
+				break;
+			}
+			case '--guard-validate': {
+				echo print_r($this->validate(), true);
+				break;
+			}
+			case '--get-color': {
+				echo $this->config->get('AVE_COLOR') ?? 'AF';
+				break;
+			}
+			case '--interactive': {
+				$this->select_tool();
+				break;
+			}
+			default: {
+				echo "Unknown command: \"$this->command\"\r\n";
+				break;
 			}
 		}
 	}
