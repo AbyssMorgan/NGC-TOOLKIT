@@ -29,7 +29,7 @@ class NamesGenerator {
 			' 4 - Escape file name (WWW)',
 			' 5 - Pretty file name',
 			' 6 - Remove YouTube quality tag',
-			' 7 - Series epizode editor',
+			' 7 - Series episode editor',
 		]);
 	}
 
@@ -44,7 +44,7 @@ class NamesGenerator {
 			case '4': return $this->tool_escapefilenamewww_action();
 			case '5': return $this->tool_prettyfilename_action();
 			case '6': return $this->tool_removeyoutubequalitytag_action();
-			case '7': return $this->tool_seriesepizodeeditor_help();
+			case '7': return $this->tool_seriesepisodeeditor_help();
 		}
 		$this->ave->select_action();
 	}
@@ -740,9 +740,9 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_seriesepizodeeditor_help(){
+	public function tool_seriesepisodeeditor_help(){
 		$this->ave->clear();
-		$this->ave->set_subtool("SeriesEpizodeEditor");
+		$this->ave->set_subtool("SeriesEpisodeEditor");
 
 		$this->ave->print_help([
 			' Modes:',
@@ -760,22 +760,22 @@ class NamesGenerator {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1'])) return $this->tool_seriesepizodeeditor_help();
+		if(!in_array($this->params['mode'],['0','1'])) return $this->tool_seriesepisodeeditor_help();
 		switch($this->params['mode']){
 			case '0': {
-				$this->tool_seriesepizodeeditor_action_season();
+				$this->tool_seriesepisodeeditor_action_season();
 				break;
 			}
 			case '1': {
-				$this->tool_seriesepizodeeditor_action_episode();
+				$this->tool_seriesepisodeeditor_action_episode();
 				break;
 			}
 		}
 	}
 
-	public function tool_seriesepizodeeditor_action_season(){
+	public function tool_seriesepisodeeditor_action_season(){
 		$this->ave->clear();
-		$this->ave->set_subtool("SeriesEpizodeEditor > ChangeSeason");
+		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeSeason");
 
 		set_input:
 		echo " Attention filename must begin with the season and episode number in the format:\r\n";
@@ -783,7 +783,7 @@ class NamesGenerator {
 		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -797,7 +797,7 @@ class NamesGenerator {
 		set_season_current:
 		echo " Current season: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$current_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if(empty($current_season)) goto set_season_current;
 		if(strlen($current_season) == 1) $current_season = "0$current_season";
@@ -805,7 +805,7 @@ class NamesGenerator {
 		set_season_new:
 		echo " New season:     ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if(empty($new_season)) goto set_season_new;
 		if(strlen($new_season) == 1) $new_season = "0$new_season";
@@ -853,9 +853,9 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_seriesepizodeeditor_action_episode(){
+	public function tool_seriesepisodeeditor_action_episode(){
 		$this->ave->clear();
-		$this->ave->set_subtool("SeriesEpizodeEditor > ChangeEpisodeNumbers");
+		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeEpisodeNumbers");
 
 		set_input:
 		echo " Attention filename must begin with the season and episode number in the format:\r\n";
@@ -863,7 +863,7 @@ class NamesGenerator {
 		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -878,7 +878,7 @@ class NamesGenerator {
 		set_start:
 		echo " Start: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if(empty($episode_start)) goto set_start;
 		if($episode_start[0] == '0') $episode_start = substr($episode_start,1);
@@ -887,7 +887,7 @@ class NamesGenerator {
 		set_end:
 		echo " End:   ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if(empty($episode_end)) goto set_end;
 		if($episode_end[0] == '0') $episode_end = substr($episode_end,1);
@@ -896,7 +896,7 @@ class NamesGenerator {
 		echo " Choose step as integer (example 5 or -5)\r\n";
 		echo " Step:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
 		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
 		$progress = 0;
