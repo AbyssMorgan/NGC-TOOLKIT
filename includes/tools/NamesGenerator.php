@@ -528,11 +528,12 @@ class NamesGenerator {
 				} else if(preg_match("/(\[S0\.)(E[0-9]{1,3})\]/", $file_name, $mathes) == 1){
 					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2]);
 				} else {
+					$escaped_name = '';
 					$this->ave->log_error->write("FAILED GET SERIES ID \"$file\"");
 					$errors++;
 				}
 
-				if(isset($escaped_name)){
+				if(!empty($escaped_name)){
 					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
