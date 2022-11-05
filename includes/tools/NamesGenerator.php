@@ -182,7 +182,7 @@ class NamesGenerator {
 			if($this->params['list_only']){
 				$count = count($list);
 				$this->ave->write_log("Write $count items from \"$folder\" to data file");
-				$this->ave->log_data->write($list);
+				$this->ave->write_data($list);
 			}
 			$this->ave->set_folder_done($folder);
 		}
@@ -747,7 +747,7 @@ class NamesGenerator {
 		$this->ave->print_help([
 			' Modes:',
 			' 0   - Change season',
-			// ' 1   - Change episode numbers',
+			' 1   - Change episode numbers',
 		]);
 
 		echo " Mode: ";
@@ -760,17 +760,16 @@ class NamesGenerator {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0'])) return $this->tool_seriesepizodeeditor_help();
-		// if(!in_array($this->params['mode'],['0','1'])) return $this->tool_seriesepizodeeditor_help();
+		if(!in_array($this->params['mode'],['0','1'])) return $this->tool_seriesepizodeeditor_help();
 		switch($this->params['mode']){
 			case '0': {
 				$this->tool_seriesepizodeeditor_action_season();
 				break;
 			}
-			// case '1': {
-			// 	$this->tool_seriesepizodeeditor_action_episode();
-			// 	break;
-			// }
+			case '1': {
+				$this->tool_seriesepizodeeditor_action_episode();
+				break;
+			}
 		}
 	}
 
@@ -824,7 +823,7 @@ class NamesGenerator {
 			$items++;
 			if(!file_exists($file)) continue;
 			$file_name = pathinfo($file, PATHINFO_FILENAME);
-			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
+			if(preg_match("/S[0-9]{2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$serie_id = substr($file_name, 1, 2);
 				if($serie_id == $current_season){
 					$directory = pathinfo($file, PATHINFO_DIRNAME);
@@ -854,12 +853,122 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	// public function tool_seriesepizodeeditor_action_episode(){
-	// 	$this->ave->clear();
-	// 	$this->ave->set_subtool("SeriesEpizodeEditor > ChangeEpisodeNumbers");
-	//
-	// 	$this->ave->exit();
-	// }
+	public function tool_seriesepizodeeditor_action_episode(){
+		$this->ave->clear();
+		$this->ave->set_subtool("SeriesEpizodeEditor > ChangeEpisodeNumbers");
+
+		set_input:
+		echo " Attention filename must begin with the season and episode number in the format:\r\n";
+		echo " \"S00E00<whatever>.<extension>\"\r\n";
+		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
+		echo " Folder: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		echo " Choose episodes to edit (example 01 or 001)\r\n";
+
+		set_start:
+		echo " Start: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
+		if(empty($episode_start)) goto set_start;
+		if($episode_start[0] == '0') $episode_start = substr($episode_start,1);
+		$episode_start = intval($episode_start);
+
+		set_end:
+		echo " End:   ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
+		if(empty($episode_end)) goto set_end;
+		if($episode_end[0] == '0') $episode_end = substr($episode_end,1);
+		$episode_end = intval($episode_end);
+
+		echo " Choose step as integer (example 5 or -5)\r\n";
+		echo " Step:  ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
+
+		$progress = 0;
+		$errors = 0;
+		$list = [];
+		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
+		$files = $this->ave->getFiles($input, array_merge($video_extensions, $follow_extensions));
+		foreach($files as $file){
+			if(!file_exists($file)) continue 1;
+			$file_name = pathinfo($file, PATHINFO_FILENAME);
+			$episode = null;
+			if(preg_match("/S[0-9]{2}E[0-9]{3}/", $file_name, $mathes) == 1){
+				$digits = 3;
+				$max = 999;
+				$episode = intval(ltrim(substr($file_name, 4, 3), "0"));
+				$name = substr($file_name, 7);
+			} else if(preg_match("/S[0-9]{2}E[0-9]{2}/", $file_name, $mathes) == 1){
+				$digits = 2;
+				$max = 99;
+				$episode = intval(ltrim(substr($file_name, 4, 2), "0"));
+				$name = substr($file_name, 6);
+			} else if(preg_match("/S[0-9]{2}E[0-9]{1}/", $file_name, $mathes) == 1){
+				$digits = 2;
+				$max = 99;
+				$episode = intval(substr($file_name, 4, 1));
+				$name = substr($file_name, 5);
+			}
+			if(is_null($episode)){
+				$this->ave->write_error("FAILED GET EPISODE ID \"$file\"");
+				$errors++;
+			} else {
+				$season = substr($file_name, 0, 3);
+				if($episode <= $episode_end && $episode >= $episode_start){
+					$directory = pathinfo($file, PATHINFO_DIRNAME);
+					$extension = pathinfo($file, PATHINFO_EXTENSION);
+					$new_name = $directory.DIRECTORY_SEPARATOR.$season.'E'.$this->ave->format_episode($episode + $episode_step, $digits, $max)."$name.$extension";
+					array_push($list,[
+						'input' => $file,
+						'output' => $new_name,
+					]);
+				}
+			}
+		}
+
+		if($episode_step > 0) $list = array_reverse($list);
+
+		$items = 0;
+		$total = count($list);
+		$round = 0;
+		change_names:
+		foreach($list as $key => $item){
+			$progress++;
+			if(file_exists($item['output']) && $round == 0) continue;
+			$items++;
+			if(file_exists($item['output'])){
+				$this->ave->write_error("UNABLE CHANGE NAME \"".$item['input']."\" TO \"".$item['output']."\" FILE ALREADY EXIST");
+				$errors++;
+			} else {
+				if(!$this->ave->rename($item['input'], $item['output'])) $errors++;
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+			unset($list[$key]);
+		}
+		if($round == 0){
+			$round++;
+			goto change_names;
+		}
+
+		$this->ave->exit();
+	}
 
 }
 

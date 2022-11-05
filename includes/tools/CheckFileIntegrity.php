@@ -253,13 +253,13 @@ class CheckFileIntegrity {
 			}
 		}
 
-		$this->ave->log_data->write("State: $damaged damaged, $missing missing, $unknown unknown");
-		$this->ave->log_data->write("\r\nDamaged:");
-		$this->ave->log_data->write($errors['damaged'] ?? []);
-		$this->ave->log_data->write("\r\nMissing:");
-		$this->ave->log_data->write($errors['missing'] ?? []);
-		$this->ave->log_data->write("\r\nUnknown:");
-		$this->ave->log_data->write($errors['unknown'] ?? []);
+		$this->ave->write_data("State: $damaged damaged, $missing missing, $unknown unknown");
+		$this->ave->write_data("\r\nDamaged:");
+		$this->ave->write_data($errors['damaged'] ?? []);
+		$this->ave->write_data("\r\nMissing:");
+		$this->ave->write_data($errors['missing'] ?? []);
+		$this->ave->write_data("\r\nUnknown:");
+		$this->ave->write_data($errors['unknown'] ?? []);
 
 		$this->ave->exit();
 	}

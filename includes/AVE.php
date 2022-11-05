@@ -449,6 +449,10 @@ class AVE extends CommandLine {
 		}
 	}
 
+	public function write_data(string|array $data){
+		$this->log_data->write($data);
+	}
+
 	public function exit(int $seconds = 10, $open_log = false) : void {
 		$this->write_log("Exit");
 		$this->log_event->close();

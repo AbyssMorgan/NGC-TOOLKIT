@@ -165,9 +165,9 @@ class DirectoryFunctions {
 
 		foreach($data as $path => $count){
 			if($this->ave->config->get('AVE_FILE_COUNT_FORMAT') == 'CSV'){
-				$this->ave->log_data->write("$count;\"$path\"");
+				$this->ave->write_data("$count;\"$path\"");
 			} else {
-				$this->ave->log_data->write("\"$count\" \"$path\"");
+				$this->ave->write_data("\"$count\" \"$path\"");
 			}
 		}
 

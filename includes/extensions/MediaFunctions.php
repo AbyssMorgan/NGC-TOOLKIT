@@ -134,6 +134,13 @@ trait MediaFunctions {
 		}
 	}
 
+	public function format_episode(int $episode, int $digits, int $max) : string {
+		$episode = $episode % $max;
+		if($episode < 0) $episode += $max;
+		$ep = strval($episode);
+		return str_repeat("0", $digits - strlen($ep)).$ep;
+	}
+
 }
 
 ?>
