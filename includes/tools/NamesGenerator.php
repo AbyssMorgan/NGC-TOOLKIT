@@ -28,6 +28,7 @@ class NamesGenerator {
 			' 3 - Generate series name: S01E01 etc.',
 			' 4 - Escape file name (WWW)',
 			' 5 - Pretty file name',
+			' 6 - Remove YouTube quality tag',
 		]);
 	}
 
@@ -41,6 +42,7 @@ class NamesGenerator {
 			case '3': return $this->tool_generateseriesname_action();
 			case '4': return $this->tool_escapefilenamewww_action();
 			case '5': return $this->tool_prettyfilename_action();
+			case '6': return $this->tool_removeyoutubequalitytag_action();
 		}
 		$this->ave->select_action();
 	}
@@ -640,6 +642,75 @@ class NamesGenerator {
 				$escaped_name = trim($escaped_name, ' ');
 
 				if(empty($escaped_name)){
+					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
+					$errors++;
+				} else {
+					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$errors++;
+					} else {
+						if($this->ave->rename($file, $new_name)){
+							$progress++;
+						} else {
+							$errors++;
+						}
+					}
+				}
+
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->exit();
+	}
+
+	public function tool_removeyoutubequalitytag_action(){
+		$this->ave->clear();
+		$this->ave->set_subtool("RemoveYouTubeQualityTag");
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		$audio_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO'));
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, array_merge($video_extensions, $audio_extensions));
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$file_name = pathinfo($file, PATHINFO_FILENAME);
+				$quality_tag = '';
+				$start = strrpos($file_name, '(');
+				if($start !== false){
+					$end = strpos($file_name, ')', $start);
+					if($end !== false){
+						$quality_tag = substr($file_name, $start, $end - $start + 1);
+						if(strpos($quality_tag, '_') === false){
+							$quality_tag = '';
+						}
+					}
+				}
+				if(!empty($quality_tag)){
+					$escaped_name = trim(str_replace($quality_tag, '', $file_name), ' ');
+				} else {
+					$escaped_name = '';
+				}
+
+				if(empty($quality_tag)){
+					$this->ave->log_error->write("FAILED GET YOUTUBE QUALITY TAG \"$file\"");
+					$errors++;
+				} else if(empty($escaped_name)){
 					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
