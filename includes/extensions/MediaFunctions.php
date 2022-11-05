@@ -64,7 +64,7 @@ trait MediaFunctions {
 
 	public function getVideoResolution(string $path) : string {
 		exec("ffprobe -v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
-		return $output[0] ?? '0x0';
+		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
 	public function getVideoThumbnail(string $path) : bool {

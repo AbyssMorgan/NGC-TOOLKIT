@@ -86,6 +86,10 @@ class CommandLine {
 		exec("ATTRIB $attributes \"$path\"");
 	}
 
+	public function is_valid_device(string $path) : bool {
+		return file_exists(substr($path,0,3));
+	}
+
 }
 
 ?>

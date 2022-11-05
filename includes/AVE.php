@@ -86,7 +86,6 @@ class AVE extends CommandLine {
 				}
 			}
 		}
-		$config_default->close();
 		if($changed){
 			$this->config->save();
 		}
@@ -96,7 +95,12 @@ class AVE extends CommandLine {
 		];
 		foreach($keys as $key){
 			$this->config->set($key, $this->get_variable($this->config->get($key)));
+			if(!$this->is_valid_device($this->config->get($key))){
+				$this->config->set($key, $this->get_variable($config_default->get($key)));
+			}
 		}
+
+		$config_default->close();
 
 		$timestamp = date("Y-m-d His");
 
@@ -227,13 +231,13 @@ class AVE extends CommandLine {
 		$this->tool_name = $name;
 		$this->subtool_name = '';
 		$this->title("[$this->app_name v$this->version > $this->tool_name]");
-		$this->log_event->write("Set Tool: $this->tool_name");
+		$this->write_log("Set Tool: $this->tool_name");
 	}
 
 	public function set_subtool(string $name) : void {
 		$this->subtool_name = $name;
 		$this->title("[$this->app_name v$this->version > $this->tool_name > $this->subtool_name]");
-		$this->log_event->write("Set Tool: $this->tool_name > $this->subtool_name");
+		$this->write_log("Set Tool: $this->tool_name > $this->subtool_name");
 	}
 
 	public function set_progress(int $progress, int $errors) : void {
@@ -243,7 +247,7 @@ class AVE extends CommandLine {
 	}
 
 	public function select_tool() : void {
-		$this->log_event->write("Select Tool");
+		$this->write_log("Select Tool");
 		$this->clear();
 		$this->title("[$this->app_name v$this->version]");
 		$this->tool = null;
@@ -310,7 +314,7 @@ class AVE extends CommandLine {
 	public function setup_folders(array $folders) : void {
 		foreach($folders as $folder){
 			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXIST]';
-			$this->log_event->write("Scan: $folder");
+			$this->write_log("Scan: $folder");
 		}
 		$this->print_folders_state();
 	}
@@ -330,10 +334,10 @@ class AVE extends CommandLine {
 	public function rmdir(string $path) : bool {
 		if(!file_exists($path) || !is_dir($path)) return false;
 		if(rmdir($path)){
-			$this->log_event->write("DELETE \"$path\"");
+			$this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			$this->log_error->write("FAILED DELETE \"$path\"");
+			$this->write_error("FAILED DELETE \"$path\"");
 			return false;
 		}
 	}
@@ -341,20 +345,20 @@ class AVE extends CommandLine {
 	public function unlink(string $path) : bool {
 		if(!file_exists($path) || is_dir($path)) return false;
 		if(unlink($path)){
-			$this->log_event->write("DELETE \"$path\"");
+			$this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			$this->log_error->write("FAILED DELETE \"$path\"");
+			$this->write_error("FAILED DELETE \"$path\"");
 			return false;
 		}
 	}
 
 	public function mkdir(string $path) : bool {
 		if(mkdir($path, 0777, true)){
-			$this->log_event->write("MKDIR \"$path\"");
+			$this->write_log("MKDIR \"$path\"");
 			return true;
 		} else {
-			$this->log_error->write("FAILED MKDIR \"$path\"");
+			$this->write_error("FAILED MKDIR \"$path\"");
 			return false;
 		}
 	}
@@ -362,14 +366,14 @@ class AVE extends CommandLine {
 	public function rename(string $from, string $to) : bool {
 		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
-			$this->log_error->write("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
+			$this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
 		if(rename($from, $to)){
-			$this->log_event->write("RENAME \"$from\" \"$to\"");
+			$this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
-			$this->log_error->write("FAILED RENAME \"$from\" \"$to\"");
+			$this->write_error("FAILED RENAME \"$from\" \"$to\"");
 			return false;
 		}
 	}
@@ -433,8 +437,20 @@ class AVE extends CommandLine {
 		return $data;
 	}
 
+	public function write_log(string|array $data){
+		if($this->config->get('AVE_LOG_EVENT')){
+			$this->log_event->write($data);
+		}
+	}
+
+	public function write_error(string|array $data){
+		if($this->config->get('AVE_LOG_ERROR')){
+			$this->log_error->write($data);
+		}
+	}
+
 	public function exit(int $seconds = 10, $open_log = false) : void {
-		$this->log_event->write("Exit");
+		$this->write_log("Exit");
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();

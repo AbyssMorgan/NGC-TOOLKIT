@@ -341,7 +341,7 @@ class CheckFileIntegrity {
 
 		foreach($validation as $error){
 			$file = $error['file'];
-			$this->ave->log_event->write("REMOVE FILE \"$file\"");
+			$this->ave->write_log("REMOVE FILE \"$file\"");
 			$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
 			$arr = $ini->get($key);
 			if(isset($arr[pathinfo($file, PATHINFO_BASENAME)])) unset($arr[pathinfo($file, PATHINFO_BASENAME)]);
@@ -414,7 +414,7 @@ class CheckFileIntegrity {
 
 		foreach($validation as $error){
 			$file = $error['file'];
-			$this->ave->log_event->write("ADD FILE \"$file\"");
+			$this->ave->write_log("ADD FILE \"$file\"");
 			$guard->scanFile($file);
 		}
 
@@ -471,7 +471,7 @@ class CheckFileIntegrity {
 
 		foreach($validation as $error){
 			$file = $error['file'];
-			$this->ave->log_event->write("UPDATE FILE \"$file\"");
+			$this->ave->write_log("UPDATE FILE \"$file\"");
 			$guard->scanFile($file, true);
 		}
 

@@ -146,7 +146,7 @@ class DirectoryFunctions {
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->getFiles($folder, $extensions);
-			$this->ave->log_event->write($files);
+			$this->ave->write_log($files);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){

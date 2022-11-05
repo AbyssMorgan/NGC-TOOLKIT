@@ -108,24 +108,24 @@ class MediaTools {
 			foreach($files_video as $key => $file){
 				$items++;
 				if(!file_exists($file)){
-					$this->ave->log_error->write("FILE NOT FOUND \"$file\"");
+					$this->ave->write_error("FILE NOT FOUND \"$file\"");
 					$errors++;
 				} else if(!isset($files_audio[$key])){
-					$this->ave->log_error->write("AUDIO FILE NOT FOUND FOR \"$file\"");
+					$this->ave->write_error("AUDIO FILE NOT FOUND FOR \"$file\"");
 					$errors++;
 				} else {
 					$audio = $files_audio[$key];
 					$out = $output.DIRECTORY_SEPARATOR.$key.".mkv";
 					if(file_exists($out)){
-						$this->ave->log_error->write("FILE ALREADY EXISTS \"$out\"");
+						$this->ave->write_error("FILE ALREADY EXISTS \"$out\"");
 						$errors++;
 					} else {
 						exec("mkvmerge -o \"$out\" --no-audio --no-subtitles \"$file\" --no-video \"$audio\"");
 						if(!file_exists($out)){
-							$this->ave->log_error->write("FAILED MERGE \"$file\" + \"$audio\" INTO \"$out\"");
+							$this->ave->write_error("FAILED MERGE \"$file\" + \"$audio\" INTO \"$out\"");
 							$errors++;
 						} else {
-							$this->ave->log_event->write("MERGE \"$file\" + \"$audio\" INTO \"$out\"");
+							$this->ave->write_log("MERGE \"$file\" + \"$audio\" INTO \"$out\"");
 							$progress++;
 						}
 					}
@@ -183,18 +183,18 @@ class MediaTools {
 				$srt = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
 				$out = $output.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
 				if(file_exists($out)){
-					$this->ave->log_error->write("FILE ALREADY EXISTS \"$out\"");
+					$this->ave->write_error("FILE ALREADY EXISTS \"$out\"");
 					$errors++;
 				} else if(!file_exists($srt)){
-					$this->ave->log_error->write("FILE NOT EXISTS \"$srt\"");
+					$this->ave->write_error("FILE NOT EXISTS \"$srt\"");
 					$errors++;
 				} else {
 					exec("mkvmerge -o \"$out\" --default-track 0 --sub-charset 0:UTF-8 --language 0:$lang \"$srt\" \"$file\"");
 					if(!file_exists($out)){
-						$this->ave->log_error->write("FAILED MERGE \"$file\" + \"$srt\" INTO \"$out\"");
+						$this->ave->write_error("FAILED MERGE \"$file\" + \"$srt\" INTO \"$out\"");
 						$errors++;
 					} else {
-						$this->ave->log_event->write("MERGE \"$file\" + \"$srt\" INTO \"$out\"");
+						$this->ave->write_log("MERGE \"$file\" + \"$srt\" INTO \"$out\"");
 						$progress++;
 					}
 				}

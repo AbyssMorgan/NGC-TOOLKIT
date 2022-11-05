@@ -123,7 +123,7 @@ class FileFunctions {
 				$progress++;
 				if(isset($keys[$key])){
 					$duplicate = $keys[$key];
-					$this->ave->log_error->write("DUPLICATE \"$file\" OF \"$duplicate\"");
+					$this->ave->write_error("DUPLICATE \"$file\" OF \"$duplicate\"");
 					$errors++;
 					if($this->params['action'] == '2'){
 						if(!$this->ave->unlink($file)) $errors++;
@@ -280,21 +280,21 @@ class FileFunctions {
 				if($this->params['mode'] == '0'){
 					$checksum_file = "$file.$algo";
 					if(!file_exists($checksum_file)){
-						$this->ave->log_error->write("FILE NOT FOUND \"$checksum_file\"");
+						$this->ave->write_error("FILE NOT FOUND \"$checksum_file\"");
 						$errors++;
 					} else {
 						$hash_current = strtolower(trim(file_get_contents($checksum_file)));
 						if($hash_current != $hash){
-							$this->ave->log_error->write("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $hash_current");
+							$this->ave->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $hash_current");
 							$errors++;
 						} else {
-							$this->ave->log_event->write("FILE \"$file\" checksum: $hash");
+							$this->ave->write_log("FILE \"$file\" checksum: $hash");
 						}
 					}
 				} else {
 					$len = strlen($file_name);
 					if($len < $algo_length){
-						$this->ave->log_error->write("INVALID FILE NAME \"$file\"");
+						$this->ave->write_error("INVALID FILE NAME \"$file\"");
 						$errors++;
 					} else {
 						if($len > $algo_length){
@@ -306,10 +306,10 @@ class FileFunctions {
 							$file_name = substr($file_name, strlen($file_name) - $algo_length, $algo_length);
 						}
 						if($file_name != $hash){
-							$this->ave->log_error->write("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $file_name");
+							$this->ave->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $file_name");
 							$errors++;
 						} else {
-							$this->ave->log_event->write("FILE \"$file\" checksum: $hash");
+							$this->ave->write_log("FILE \"$file\" checksum: $hash");
 						}
 					}
 				}

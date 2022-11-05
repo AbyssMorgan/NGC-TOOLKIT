@@ -152,7 +152,7 @@ class MediaSorter {
 					$resolution = $this->ave->getVideoResolution($file);
 				}
 				if($resolution == '0x0'){
-					$this->ave->log_error->write("FAILED GET_MEDIA_RESOLUTION \"$file\"");
+					$this->ave->write_error("FAILED GET_MEDIA_RESOLUTION \"$file\"");
 					$errors++;
 					$this->ave->set_progress($progress, $errors);
 					continue 1;

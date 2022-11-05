@@ -160,7 +160,7 @@ class NamesGenerator {
 					$progress++;
 				} else {
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 						if($this->ave->config->get('AVE_ACTION_AFTER_DUPLICATE') == 'DELETE'){
 							if(!$this->ave->unlink($file)) $errors++;
@@ -181,7 +181,7 @@ class NamesGenerator {
 			unset($files);
 			if($this->params['list_only']){
 				$count = count($list);
-				$this->ave->log_event->write("Write $count items from \"$folder\" to data file");
+				$this->ave->write_log("Write $count items from \"$folder\" to data file");
 				$this->ave->log_data->write($list);
 			}
 			$this->ave->set_folder_done($folder);
@@ -293,7 +293,7 @@ class NamesGenerator {
 				$file_id++;
 			}
 			if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-				$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+				$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 				$errors++;
 			} else {
 				if($this->ave->rename($file, $new_name)){
@@ -431,7 +431,7 @@ class NamesGenerator {
 				if($this->params['resolution']){
 					$resolution = $this->ave->getVideoResolution($file);
 					if($resolution == '0x0'){
-						$this->ave->log_error->write("FAILED GET_MEDIA_RESOLUTION \"$file\"");
+						$this->ave->write_error("FAILED GET_MEDIA_RESOLUTION \"$file\"");
 						$errors++;
 					} else {
 						if(strpos($name, " [$resolution]") === false){
@@ -447,7 +447,7 @@ class NamesGenerator {
 				$new_name = $directory.DIRECTORY_SEPARATOR."$name.$extension";
 				$renamed = false;
 				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-					$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
 					if($this->ave->rename($file, $new_name)){
@@ -458,9 +458,9 @@ class NamesGenerator {
 				}
 				if(isset($hash)){
 					if(file_put_contents("$new_name.$algo",$hash)){
-						$this->ave->log_event->write("CREATE \"$new_name.$algo\"");
+						$this->ave->write_log("CREATE \"$new_name.$algo\"");
 					} else {
-						$this->ave->log_error->write("FAILED CREATE \"$new_name.$algo\"");
+						$this->ave->write_error("FAILED CREATE \"$new_name.$algo\"");
 						$errors++;
 					}
 				} else if($renamed){
@@ -531,14 +531,14 @@ class NamesGenerator {
 					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2]);
 				} else {
 					$escaped_name = '';
-					$this->ave->log_error->write("FAILED GET SERIES ID \"$file\"");
+					$this->ave->write_error("FAILED GET SERIES ID \"$file\"");
 					$errors++;
 				}
 
 				if(!empty($escaped_name)){
 					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
 						if($this->ave->rename($file, $new_name)){
@@ -588,12 +588,12 @@ class NamesGenerator {
 				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-]/', '', str_replace(' ', '_', $escaped_name)), ' ');
 
 				if(empty($escaped_name)){
-					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
+					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
 					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
 						if($this->ave->rename($file, $new_name)){
@@ -645,12 +645,12 @@ class NamesGenerator {
 				$escaped_name = trim($escaped_name, ' ');
 
 				if(empty($escaped_name)){
-					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
+					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
 					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
 						if($this->ave->rename($file, $new_name)){
@@ -711,15 +711,15 @@ class NamesGenerator {
 				}
 
 				if(empty($quality_tag)){
-					$this->ave->log_error->write("FAILED GET YOUTUBE QUALITY TAG \"$file\"");
+					$this->ave->write_error("FAILED GET YOUTUBE QUALITY TAG \"$file\"");
 					$errors++;
 				} else if(empty($escaped_name)){
-					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
+					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
 					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
 						if($this->ave->rename($file, $new_name)){
@@ -832,7 +832,7 @@ class NamesGenerator {
 					$file_name = "S$new_season".substr($file_name, 3);
 					$new_name = $directory.DIRECTORY_SEPARATOR."$file_name.$extension";
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
-						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
 						if($this->ave->rename($file, $new_name)){
@@ -843,7 +843,7 @@ class NamesGenerator {
 					}
 				}
 			} else {
-				$this->ave->log_error->write("FAILED GET SERIES ID \"$file\"");
+				$this->ave->write_error("FAILED GET SERIES ID \"$file\"");
 				$errors++;
 			}
 
