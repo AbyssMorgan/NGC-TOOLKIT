@@ -260,6 +260,7 @@ class AVE extends CommandLine {
 			' 3 - Directory Functions',
 			' 4 - Media Tools',
 			' 5 - Check File Integrity',
+			' X - Check for updates',
 		]);
 
 		echo ' Tool: ';
@@ -289,11 +290,20 @@ class AVE extends CommandLine {
 				$this->tool = new CheckFileIntegrity($this);
 				break;
 			}
+			case 'X': {
+				$this->clear();
+				$this->title("[$this->app_name v$this->version > CheckForUpdates]");
+				$this->tool_update();
+				$this->abort = true;
+				break;
+			}
 		}
-		if(!is_null($this->tool)){
-			$this->select_action();
-		} else {
-			$this->select_tool();
+		if(!$this->abort){
+			if(!is_null($this->tool)){
+				$this->select_action();
+			} else {
+				$this->select_tool();
+			}
 		}
 	}
 
