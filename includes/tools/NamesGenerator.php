@@ -27,6 +27,7 @@ class NamesGenerator {
 			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
 			' 3 - Generate series name: S01E01 etc.',
 			' 4 - Escape file name (WWW)',
+			' 5 - Pretty file name',
 		]);
 	}
 
@@ -39,6 +40,7 @@ class NamesGenerator {
 			case '2': return $this->tool_videogenerator_help();
 			case '3': return $this->tool_generateseriesname_action();
 			case '4': return $this->tool_escapefilenamewww_action();
+			case '5': return $this->tool_prettyfilename_action();
 		}
 		$this->ave->select_action();
 	}
@@ -574,13 +576,73 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$file_name = pathinfo($file, PATHINFO_FILENAME);
-				while(strpos($file_name, '  ') !== false){
-					$file_name = str_replace('  ', ' ', $file_name);
+				$escaped_name = pathinfo($file, PATHINFO_FILENAME);
+				while(strpos($escaped_name, '  ') !== false){
+					$escaped_name = str_replace('  ', ' ', $escaped_name);
 				}
-				$escaped_name = preg_replace('/[^A-Za-z0-9_\-]/', '', str_replace(' ', '_', $file_name));
+				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-]/', '', str_replace(' ', '_', $escaped_name)), ' ');
 
-				if(isset($escaped_name)){
+				if(empty($escaped_name)){
+					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
+					$errors++;
+				} else {
+					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$errors++;
+					} else {
+						if($this->ave->rename($file, $new_name)){
+							$progress++;
+						} else {
+							$errors++;
+						}
+					}
+				}
+
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->exit();
+	}
+
+	public function tool_prettyfilename_action(){
+		$this->ave->clear();
+		$this->ave->set_subtool("PrettyFileName");
+		echo " Double spaces reduce\r\n";
+		echo " Replace nbsp into space\r\n";
+		echo " Replace _ and . into space\r\n";
+		echo " Remove characters: ; @ # ~ ! $ % ^ &\r\n\r\n";
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$escaped_name = str_replace(['_', '.', "\u{00A0}"], ' ', pathinfo($file, PATHINFO_FILENAME));
+				$escaped_name = str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $escaped_name);
+				while(strpos($escaped_name, '  ') !== false){
+					$escaped_name = str_replace('  ', ' ', $escaped_name);
+				}
+				$escaped_name = trim($escaped_name, ' ');
+
+				if(empty($escaped_name)){
+					$this->ave->log_error->write("ESCAPED NAME IS EMPTY \"$file\"");
+					$errors++;
+				} else {
 					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
