@@ -557,7 +557,7 @@ class NamesGenerator {
 		$this->ave->set_subtool("EscapeFileNameWWW");
 		echo " Double spaces reduce\r\n";
 		echo " Characters after escape: A-Z a-z 0-9 _ -\r\n";
-		echo " Be careful to prevent use on Japanese, Chinese, Korean, etc. file names\r\n\r\n"
+		echo " Be careful to prevent use on Japanese, Chinese, Korean, etc. file names\r\n\r\n";
 		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ave->select_action();
