@@ -25,7 +25,7 @@ class NamesGenerator {
 			' 0 - Generate names: CheckSum',
 			' 1 - Generate names: Number (Video/Images)',
 			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
-			' 3 - Generate series name: S01E01 etc.',
+			' 3 - Generate series name: S00E00 etc.',
 			' 4 - Escape file name (WWW)',
 			' 5 - Pretty file name',
 			' 6 - Remove YouTube quality tag',
@@ -442,7 +442,7 @@ class NamesGenerator {
 				} else {
 					$thumbnail = false;
 				}
-				$new_name = "$directory".DIRECTORY_SEPARATOR."$name.$extension";
+				$new_name = $directory.DIRECTORY_SEPARATOR."$name.$extension";
 				$renamed = false;
 				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 					$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");

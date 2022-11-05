@@ -262,11 +262,12 @@ class FileFunctions {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		$except_files = explode(";", $this->ave->config->get('AVE_IGNORE_SCAN'));
+		$except_extensions = explode(" ", $this->ave->config->get('AVE_IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = $this->ave->getFiles($folder, null, ['md5','sha256','crc32','whirlpool','srt']);
+			$files = $this->ave->getFiles($folder, null, $except_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
