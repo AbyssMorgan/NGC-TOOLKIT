@@ -273,7 +273,7 @@ class FileFunctions {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
-				if(in_array($file_name, $except_files)) continue;
+				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
 				$hash = hash_file($algo, $file, false);
 				$progress++;
 				if($this->params['mode'] == '0'){
