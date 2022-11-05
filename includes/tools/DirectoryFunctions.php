@@ -104,6 +104,7 @@ class DirectoryFunctions {
 				if(!file_exists($file.DIRECTORY_SEPARATOR."desktop.ini")) continue 1;
 				$a = $this->ave->get_file_attributes($file);
 				$this->ave->set_file_attributes($file, true, $a['A'], $a['S'], $a['H']);
+				$progress++;
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}

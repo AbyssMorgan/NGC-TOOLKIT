@@ -29,6 +29,7 @@ class NamesGenerator {
 			' 4 - Escape file name (WWW)',
 			' 5 - Pretty file name',
 			' 6 - Remove YouTube quality tag',
+			' 7 - Series epizode editor',
 		]);
 	}
 
@@ -43,6 +44,7 @@ class NamesGenerator {
 			case '4': return $this->tool_escapefilenamewww_action();
 			case '5': return $this->tool_prettyfilename_action();
 			case '6': return $this->tool_removeyoutubequalitytag_action();
+			case '7': return $this->tool_seriesepizodeeditor_help();
 		}
 		$this->ave->select_action();
 	}
@@ -737,6 +739,127 @@ class NamesGenerator {
 
 		$this->ave->exit();
 	}
+
+	public function tool_seriesepizodeeditor_help(){
+		$this->ave->clear();
+		$this->ave->set_subtool("SeriesEpizodeEditor");
+
+		$this->ave->print_help([
+			' Modes:',
+			' 0   - Change season',
+			// ' 1   - Change episode numbers',
+		]);
+
+		echo " Mode: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+		];
+
+		if($this->params['algo'] == '?') $this->params['algo'] = '0';
+
+		if(!in_array($this->params['mode'],['0'])) return $this->tool_seriesepizodeeditor_help();
+		// if(!in_array($this->params['mode'],['0','1'])) return $this->tool_seriesepizodeeditor_help();
+		switch($this->params['mode']){
+			case '0': {
+				$this->tool_seriesepizodeeditor_action_season();
+				break;
+			}
+			// case '1': {
+			// 	$this->tool_seriesepizodeeditor_action_episode();
+			// 	break;
+			// }
+		}
+	}
+
+	public function tool_seriesepizodeeditor_action_season(){
+		$this->ave->clear();
+		$this->ave->set_subtool("SeriesEpizodeEditor > ChangeSeason");
+
+		set_input:
+		echo " Attention filename must begin with the season and episode number in the format:\r\n";
+		echo " \"S00E00<whatever>.<extension>\"\r\n";
+		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
+		echo " Folder: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		echo " Example: 1 or 01 (up to 99)\r\n";
+		set_season_current:
+		echo " Current season: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$current_season = substr(preg_replace('/\D/', '', $line), 0, 2);
+		if(empty($current_season)) goto set_season_current;
+		if(strlen($current_season) == 1) $current_season = "0$current_season";
+
+		set_season_new:
+		echo " New season:     ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->tool_seriesepizodeeditor_help();
+		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
+		if(empty($new_season)) goto set_season_new;
+		if(strlen($new_season) == 1) $new_season = "0$new_season";
+
+		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
+		$files = $this->ave->getFiles($input, array_merge($video_extensions, $follow_extensions));
+		$items = 0;
+		$total = count($files);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+			$file_name = pathinfo($file, PATHINFO_FILENAME);
+			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
+				$serie_id = substr($file_name, 1, 2);
+				if($serie_id == $current_season){
+					$directory = pathinfo($file, PATHINFO_DIRNAME);
+					$extension = pathinfo($file, PATHINFO_EXTENSION);
+					$file_name = "S$new_season".substr($file_name, 3);
+					$new_name = $directory.DIRECTORY_SEPARATOR."$file_name.$extension";
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						$this->ave->log_error->write("DUPLICATE \"$file\" AS \"$new_name\"");
+						$errors++;
+					} else {
+						if($this->ave->rename($file, $new_name)){
+							$progress++;
+						} else {
+							$errors++;
+						}
+					}
+				}
+			} else {
+				$this->ave->log_error->write("FAILED GET SERIES ID \"$file\"");
+				$errors++;
+			}
+
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+		}
+
+		$this->ave->exit();
+	}
+
+	// public function tool_seriesepizodeeditor_action_episode(){
+	// 	$this->ave->clear();
+	// 	$this->ave->set_subtool("SeriesEpizodeEditor > ChangeEpisodeNumbers");
+	//
+	// 	$this->ave->exit();
+	// }
 
 }
 
