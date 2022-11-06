@@ -35,16 +35,16 @@ class MediaSorter {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->tool_sortdate_help();
-			case '1': return $this->tool_sortextension_action();
-			case '2': return $this->tool_gifanimated_action();
-			case '3': return $this->tool_sortmedia_help();
-			case '4': return $this->tool_sortimagescolor_help();
+			case '0': return $this->ToolSortDateHelp();
+			case '1': return $this->ToolSortExtensionAction();
+			case '2': return $this->ToolSortGifAnimatedAction();
+			case '3': return $this->ToolSortMediaHelp();
+			case '4': return $this->ToolSortImagesColorAction();
 		}
 		$this->ave->select_action();
 	}
 
-	public function tool_sortextension_action(){
+	public function ToolSortExtensionAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SortExtension");
 		echo " Folders: ";
@@ -90,7 +90,7 @@ class MediaSorter {
 		$this->ave->exit();
 	}
 
-	public function tool_sortmedia_help(){
+	public function ToolSortMediaHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SortMedia");
 
@@ -109,14 +109,14 @@ class MediaSorter {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['0','1','2'])) return $this->tool_sortmedia_help();
+		if(!in_array($this->params['mode'],['0','1','2'])) return $this->ToolSortMediaHelp();
 		$this->params['resolution'] = in_array($this->params['mode'],['0','1']);
 		$this->params['quality'] = in_array($this->params['mode'],['0','2']);
-		$this->ave->set_subtool("SortMedia > ".$this->tool_sortmedia_name($this->params['mode']));
-		return $this->tool_sortmedia_action();
+		$this->ave->set_subtool("SortMedia > ".$this->ToolSortMediaModeName($this->params['mode']));
+		return $this->ToolSortMediaAction();
 	}
 
-	public function tool_sortmedia_name(string $mode) : string {
+	public function ToolSortMediaModeName(string $mode) : string {
 		switch($mode){
 			case '0': return 'Resolution + Quality';
 			case '1': return 'Resolution';
@@ -125,11 +125,11 @@ class MediaSorter {
 		return 'Unknown';
 	}
 
-	public function tool_sortmedia_action(){
+	public function ToolSortMediaAction(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_sortmedia_help();
+		if($line == '#') return $this->ToolSortMediaHelp();
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
@@ -204,7 +204,7 @@ class MediaSorter {
 		$this->ave->exit();
 	}
 
-	public function tool_gifanimated_action(){
+	public function ToolSortGifAnimatedAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SortGifAnimated");
 		echo " Folders: ";
@@ -264,7 +264,7 @@ class MediaSorter {
 		'7' => 'YYYYxMMxDDxhhxmm',
 	];
 
-	public function tool_sortdate_help(){
+	public function ToolSortDateHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SortDate");
 
@@ -294,14 +294,14 @@ class MediaSorter {
 			'separator' => strtolower($separator[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->tool_sortdate_help();
-		if(!in_array($this->params['separator'],['.','-','_','\\','@'])) return $this->tool_sortdate_help();
+		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->ToolSortDateHelp();
+		if(!in_array($this->params['separator'],['.','-','_','\\','@'])) return $this->ToolSortDateHelp();
 		if($this->params['separator'] == '\\') $this->params['separator'] = DIRECTORY_SEPARATOR;
 		$this->ave->set_subtool("SortDate > ".$this->tool_sortdate_mode[$this->params['mode'] ?? '?']);
-		return $this->tool_sortdate_action();
+		return $this->ToolSortDateAction();
 	}
 
-	public function tool_sortdate_action(){
+	public function ToolSortDateAction(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
@@ -322,7 +322,7 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$new_name = $this->tool_sortdate_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
+				$new_name = $this->ToolSortDateGetPattern($folder, $this->params['mode'], $file, $this->params['separator']);
 				$directory = pathinfo($new_name, PATHINFO_DIRNAME);
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
@@ -346,11 +346,11 @@ class MediaSorter {
 		$this->ave->exit();
 	}
 
-	public function tool_sortdate_get_pattern(string $folder, string $mode, string $file, string $separator) : string {
-		return $folder.DIRECTORY_SEPARATOR.str_replace("-", $separator, $this->tool_sortdate_format_date($mode, filemtime($file))).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+	public function ToolSortDateGetPattern(string $folder, string $mode, string $file, string $separator) : string {
+		return $folder.DIRECTORY_SEPARATOR.str_replace("-", $separator, $this->ToolSortDateFormatDate($mode, filemtime($file))).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
 	}
 
-	public function tool_sortdate_format_date(string $mode, int $date) : string {
+	public function ToolSortDateFormatDate(string $mode, int $date) : string {
 		switch($mode){
 			case '0': return date('Y-m-d', $date);
 			case '1': return date('Y-m', $date);
@@ -364,7 +364,7 @@ class MediaSorter {
 		return '';
 	}
 
-	public function tool_sortimagescolor_help(){
+	public function ToolSortImagesColorAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SortImagesColor");
 		echo " Folders: ";

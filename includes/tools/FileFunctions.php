@@ -32,14 +32,14 @@ class FileFunctions {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->tool_antiduplicates_help();
-			case '1': return $this->tool_extension_action();
-			case '2': return $this->tool_validatechecksum_help();
+			case '0': return $this->ToolAntiDuplicatesHelp();
+			case '1': return $this->ToolExtensionChangeAction();
+			case '2': return $this->ToolValidateCheckSumHelp();
 		}
 		$this->ave->select_action();
 	}
 
-	public function tool_antiduplicates_help(){
+	public function ToolAntiDuplicatesHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("AntiDuplicates");
 
@@ -58,13 +58,13 @@ class FileFunctions {
 			'action' => strtolower($line[1] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['a','b'])) return $this->tool_antiduplicates_help();
-		if(!in_array($this->params['action'],['1','2'])) return $this->tool_antiduplicates_help();
-		$this->ave->set_subtool("AntiDuplicates > ".$this->tool_antiduplicates_name($this->params['mode'])." > ".$this->tool_antiduplicates_actionname($this->params['action']));
-		return $this->tool_antiduplicates_action();
+		if(!in_array($this->params['mode'],['a','b'])) return $this->ToolAntiDuplicatesHelp();
+		if(!in_array($this->params['action'],['1','2'])) return $this->ToolAntiDuplicatesHelp();
+		$this->ave->set_subtool("AntiDuplicates > ".$this->ToolAntiDuplicatesModeName($this->params['mode'])." > ".$this->ToolAntiDuplicatesActionName($this->params['action']));
+		return $this->ToolAntiDuplicatesAction();
 	}
 
-	public function tool_antiduplicates_name(string $mode) : string {
+	public function ToolAntiDuplicatesModeName(string $mode) : string {
 		switch($mode){
 			case 'a': return 'CheckSum';
 			case 'b': return 'Name';
@@ -72,7 +72,7 @@ class FileFunctions {
 		return 'Unknown';
 	}
 
-	public function tool_antiduplicates_actionname(string $mode) : string {
+	public function ToolAntiDuplicatesActionName(string $mode) : string {
 		switch($mode){
 			case '1': return 'Rename';
 			case '2': return 'Delete';
@@ -80,11 +80,11 @@ class FileFunctions {
 		return 'Unknown';
 	}
 
-	public function tool_antiduplicates_action(){
+	public function ToolAntiDuplicatesAction(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_antiduplicates_help();
+		if($line == '#') return $this->ToolAntiDuplicatesHelp();
 		$folders = $this->ave->get_folders($line);
 
 		$this->ave->setup_folders($folders);
@@ -144,7 +144,7 @@ class FileFunctions {
 		$this->ave->exit();
 	}
 
-	public function tool_extension_action(){
+	public function ToolExtensionChangeAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("ExtensionChange");
 		echo " Folders: ";
@@ -189,7 +189,7 @@ class FileFunctions {
 		$this->ave->exit();
 	}
 
-	public function tool_validatechecksum_help(){
+	public function ToolValidateCheckSumHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("ValidateCheckSum");
 
@@ -214,14 +214,14 @@ class FileFunctions {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1'])) return $this->tool_validatechecksum_help();
-		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_validatechecksum_help();
+		if(!in_array($this->params['mode'],['0','1'])) return $this->ToolValidateCheckSumHelp();
+		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->ToolValidateCheckSumHelp();
 
-		$this->ave->set_subtool("ValidateCheckSum > ".$this->tool_validatechecksum_name($this->params['mode'])." > ".$this->tool_validatechecksum_algo($this->params['algo']));
-		return $this->tool_validatechecksum_action();
+		$this->ave->set_subtool("ValidateCheckSum > ".$this->ToolValidateCheckSumModeName($this->params['mode'])." > ".$this->ToolValidateCheckSumAlgoName($this->params['algo']));
+		return $this->ToolValidateCheckSumAction();
 	}
 
-	public function tool_validatechecksum_name(string $mode) : string {
+	public function ToolValidateCheckSumModeName(string $mode) : string {
 		switch($mode){
 			case '0': return 'File';
 			case '1': return 'Name';
@@ -229,7 +229,7 @@ class FileFunctions {
 		return 'Unknown';
 	}
 
-	public function tool_validatechecksum_algo(string $mode) : string {
+	public function ToolValidateCheckSumAlgoName(string $mode) : string {
 		switch($mode){
 			case '0': return 'md5';
 			case '1': return 'sha256';
@@ -239,7 +239,7 @@ class FileFunctions {
 		return 'md5';
 	}
 
-	public function tool_validatechecksum_algo_length(string $mode) : int {
+	public function ToolValidateCheckSumAlgoLEngth(string $mode) : int {
 		switch($mode){
 			case '0': return 32;
 			case '1': return 64;
@@ -249,15 +249,15 @@ class FileFunctions {
 		return 32;
 	}
 
-	public function tool_validatechecksum_action(){
+	public function ToolValidateCheckSumAction(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_validatechecksum_help();
+		if($line == '#') return $this->ToolValidateCheckSumHelp();
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->tool_validatechecksum_algo($this->params['algo']);
-		$algo_length = $this->tool_validatechecksum_algo_length($this->params['algo']);
+		$algo = $this->ToolValidateCheckSumAlgoName($this->params['algo']);
+		$algo_length = $this->ToolValidateCheckSumAlgoLEngth($this->params['algo']);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);

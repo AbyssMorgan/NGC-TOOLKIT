@@ -39,18 +39,18 @@ class CheckFileIntegrity {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->tool_create_pattern();
-			case '1': return $this->tool_generate_guard();
-			case '2': return $this->tool_check_integrity();
-			case '3': return $this->tool_get_files_tree();
-			case '4': return $this->tool_update_remove_missing();
-			case '5': return $this->tool_update_add_unknown();
-			case '6': return $this->tool_update_changed();
+			case '0': return $this->ToolCreatePatternAction();
+			case '1': return $this->ToolGuardGenerateAction();
+			case '2': return $this->ToolCheckIntegrityAction();
+			case '3': return $this->ToolGetFilesTreeAction();
+			case '4': return $this->ToolUpdateRemoveMissingAction();
+			case '5': return $this->ToolUpdateAddUnknownAction();
+			case '6': return $this->ToolUpdateChangedAction();
 		}
 		$this->ave->select_action();
 	}
 
-	public function tool_create_pattern(){
+	public function ToolCreatePatternAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("CreatePattern");
 
@@ -136,7 +136,7 @@ class CheckFileIntegrity {
 		$this->ave->exit();
 	}
 
-	public function tool_generate_guard(){
+	public function ToolGuardGenerateAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("GuardGenerate");
 
@@ -180,7 +180,7 @@ class CheckFileIntegrity {
 		$this->ave->exit();
 	}
 
-	public function tool_check_integrity(){
+	public function ToolCheckIntegrityAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("CheckIntegrity");
 
@@ -264,7 +264,7 @@ class CheckFileIntegrity {
 		$this->ave->exit();
 	}
 
-	public function tool_get_files_tree(){
+	public function ToolGetFilesTreeAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("GetFilesTree");
 
@@ -297,7 +297,7 @@ class CheckFileIntegrity {
 		$this->ave->exit();
 	}
 
-	public function tool_update_remove_missing(){
+	public function ToolUpdateRemoveMissingAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateRemoveMissing");
 
@@ -368,7 +368,7 @@ class CheckFileIntegrity {
 		$this->ave->exit(10, true);
 	}
 
-	public function tool_update_add_unknown(){
+	public function ToolUpdateAddUnknownAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateAddUnknown");
 
@@ -425,7 +425,7 @@ class CheckFileIntegrity {
 		$this->ave->exit(10, true);
 	}
 
-	public function tool_update_changed(){
+	public function ToolUpdateChangedAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateChanged");
 

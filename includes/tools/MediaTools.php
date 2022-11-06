@@ -31,13 +31,13 @@ class MediaTools {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->tool_mergevideoaudio_action();
-			case '1': return $this->tool_mergevideosubtitles_action();
+			case '0': return $this->ToolMergeVideoAudioAction();
+			case '1': return $this->ToolMergeVideoSubtitlesAction();
 		}
 		$this->ave->select_action();
 	}
 
-	public function tool_mergevideoaudio_action(){
+	public function ToolMergeVideoAudioAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("MergeVideoAudio");
 
@@ -138,7 +138,7 @@ class MediaTools {
 		$this->ave->exit();
 	}
 
-	public function tool_mergevideosubtitles_action(){
+	public function ToolMergeVideoSubtitlesAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("MergeVideoSubtitles");
 

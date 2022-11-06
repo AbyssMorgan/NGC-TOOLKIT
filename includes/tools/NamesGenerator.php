@@ -37,19 +37,19 @@ class NamesGenerator {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->tool_checksum_help();
-			case '1': return $this->tool_number_help();
-			case '2': return $this->tool_videogenerator_help();
-			case '3': return $this->tool_generateseriesname_action();
-			case '4': return $this->tool_escapefilenamewww_action();
-			case '5': return $this->tool_prettyfilename_action();
-			case '6': return $this->tool_removeyoutubequalitytag_action();
-			case '7': return $this->tool_seriesepisodeeditor_help();
+			case '0': return $this->ToolCheckSumHelp();
+			case '1': return $this->ToolNumberHelp();
+			case '2': return $this->ToolVideoGeneratorHelp();
+			case '3': return $this->ToolGenerateSeriesNameAction();
+			case '4': return $this->ToolEscapeFileNameWWWAction();
+			case '5': return $this->ToolPrettyFileNameAction();
+			case '6': return $this->ToolRemoveYouTubeQualityTagAction();
+			case '7': return $this->ToolSeriesEpisodeEditorHelp();
 		}
 		$this->ave->select_action();
 	}
 
-	public function tool_checksum_help(){
+	public function ToolCheckSumHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("CheckSum");
 
@@ -82,13 +82,13 @@ class NamesGenerator {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->tool_checksum_help();
-		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_checksum_help();
-		$this->ave->set_subtool("CheckSum > ".$this->tool_checksum_name($this->params['mode'])." > ".$this->tool_checksum_algo($this->params['algo']));
-		return $this->tool_cheksum_action();
+		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) return $this->ToolCheckSumHelp();
+		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->ToolCheckSumHelp();
+		$this->ave->set_subtool("CheckSum > ".$this->ToolCheckSumModeName($this->params['mode'])." > ".$this->ToolCheckSumAlgoName($this->params['algo']));
+		return $this->ToolCheckSumAction();
 	}
 
-	public function tool_checksum_name(string $mode) : string {
+	public function ToolCheckSumModeName(string $mode) : string {
 		switch($mode){
 			case '0': return 'Normal';
 			case '1': return 'CurrentName';
@@ -102,7 +102,7 @@ class NamesGenerator {
 		return 'Unknown';
 	}
 
-	public function tool_checksum_algo(string $mode) : string {
+	public function ToolCheckSumAlgoName(string $mode) : string {
 		switch($mode){
 			case '0': return 'md5';
 			case '1': return 'sha256';
@@ -112,7 +112,7 @@ class NamesGenerator {
 		return 'md5';
 	}
 
-	public function tool_checksum_get_pattern(string $mode, string $file, string $hash, int $file_id) : string {
+	public function ToolCheckSumGetPattern(string $mode, string $file, string $hash, int $file_id) : string {
 		$folder = pathinfo($file, PATHINFO_DIRNAME);
 		$foldername = pathinfo($folder, PATHINFO_FILENAME);
 		$name = pathinfo($file, PATHINFO_FILENAME);
@@ -131,14 +131,14 @@ class NamesGenerator {
 		return '';
 	}
 
-	public function tool_cheksum_action(){
+	public function ToolCheckSumAction(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_checksum_help();
+		if($line == '#') return $this->ToolCheckSumHelp();
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->tool_checksum_algo($this->params['algo']);
+		$algo = $this->ToolCheckSumAlgoName($this->params['algo']);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
@@ -154,7 +154,7 @@ class NamesGenerator {
 				if(!file_exists($file)) continue 1;
 				$hash = hash_file($algo, $file, false);
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
-				$new_name = $this->tool_checksum_get_pattern($this->params['mode'], $file, $hash, $file_id++);
+				$new_name = $this->ToolCheckSumGetPattern($this->params['mode'], $file, $hash, $file_id++);
 				if($this->params['list_only']){
 					array_push($list,$new_name);
 					$progress++;
@@ -189,19 +189,19 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_number_help(){
+	public function ToolNumberHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("Number");
 
 		$this->ave->print_help([
-			'           Group Single Format                Range',
-			' Normal    g0    s0    "PPP_DDDDDD"           000001 - 999999',
-			' Part      g1    s1    "III\PPP_DDDDDD"       000001 - 999999',
-			' Merge     g2    s2    "PPP_DDDDDD"           000001 - 999999',
-			' DirName   g3    s3    "PPP_dir_name_DDDDDD"  000001 - 999999',
-			' DirNameEx g4    s4    "PPP_dir_name_DDDD"    0001 -   9999',
-			' Revert    g5    s5    "PPP_DDDDDD"           999999 - 000001',
-			' NoPref    g6    s6    "DDDDDD"               000001 - 999999',
+			' Group Single Format                Range',
+			' g0    s0    "PPP_DDDDDD"           000001 - 999999',
+			' g1    s1    "III\PPP_DDDDDD"       000001 - 999999',
+			' g2    s2    "PPP_DDDDDD"           000001 - 999999',
+			' g3    s3    "PPP_dir_name_DDDDDD"  000001 - 999999',
+			' g4    s4    "PPP_dir_name_DDDD"    0001 -   9999',
+			' g5    s5    "PPP_DDDDDD"           999999 - 000001',
+			' g6    s6    "DDDDDD"               000001 - 999999',
 		]);
 
 		echo " Mode: ";
@@ -213,34 +213,19 @@ class NamesGenerator {
 			'mode' => strtolower($line[1] ?? '?'),
 		];
 
-		if(!in_array($this->params['type'],['s','g'])) return $this->tool_number_help();
-		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) return $this->tool_number_help();
-		$this->ave->set_subtool("Number > ".$this->tool_number_name($this->params['mode']));
+		if(!in_array($this->params['type'],['s','g'])) return $this->ToolNumberHelp();
+		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) return $this->ToolNumberHelp();
 		switch($this->params['type']){
-			case 's': return $this->tool_number_action_single();
-			case 'g': return $this->tool_number_action_group();
+			case 's': return $this->ToolNumberActionSingle();
+			case 'g': return $this->ToolNumberActionGroup();
 		}
-
 	}
 
-	public function tool_number_name(string $mode){
-		switch($mode){
-			case '0': return 'Normal';
-			case '1': return 'Part';
-			case '2': return 'Merge';
-			case '3': return 'DirName';
-			case '4': return 'DirNameEx';
-			case '5': return 'Revert';
-			case '6': return 'NoPref';
-		}
-		return 'Unknown';
-	}
-
-	public function tool_number_get_prefix_id() : string {
+	public function ToolNumberGetPrefixID() : string {
 		return sprintf("%03d", random_int(0, 999));
 	}
 
-	public function tool_number_get_pattern(string $mode, string $file, string $prefix, int $file_id, string $input, int $part_id){
+	public function ToolNumberGetPattern(string $mode, string $file, string $prefix, int $file_id, string $input, int $part_id){
 		$folder = pathinfo($file, PATHINFO_DIRNAME);
 		$foldername = pathinfo($folder, PATHINFO_FILENAME);
 		$name = pathinfo($file, PATHINFO_FILENAME);
@@ -257,10 +242,10 @@ class NamesGenerator {
 		}
 	}
 
-	public function tool_number_action(string $folder, int &$progress, int &$errors){
+	public function ToolNumberAction(string $folder, int &$progress, int &$errors){
 		if(!file_exists($folder)) return false;
 		$file_id = ($this->params['mode'] == 5) ? 999999 : 1;
-		$prefix_id = $this->tool_number_get_prefix_id();
+		$prefix_id = $this->ToolNumberGetPrefixID();
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$files = $this->ave->getFiles($folder, array_merge($image_extensions, $video_extensions));
@@ -279,7 +264,7 @@ class NamesGenerator {
 			} else {
 				$prefix = $this->ave->config->get('AVE_PREFIX_VIDEO')."_$prefix_id"."_";
 			}
-			$new_name = $this->tool_number_get_pattern($this->params['mode'], $file, $prefix, $file_id, $folder, $part_id);
+			$new_name = $this->ToolNumberGetPattern($this->params['mode'], $file, $prefix, $file_id, $folder, $part_id);
 			$directory = pathinfo($new_name, PATHINFO_DIRNAME);
 			if(!file_exists($directory)){
 				if(!$this->ave->mkdir($directory)){
@@ -309,28 +294,28 @@ class NamesGenerator {
 		return true;
 	}
 
-	public function tool_number_action_single(){
+	public function ToolNumberActionSingle(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_number_help();
+		if($line == '#') return $this->ToolNumberHelp();
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
-			$this->tool_number_action($folder, $progress, $errors);
+			$this->ToolNumberAction($folder, $progress, $errors);
 			$this->ave->set_folder_done($folder);
 		}
 		$this->ave->exit();
 	}
 
-	public function tool_number_action_group(){
+	public function ToolNumberActionGroup(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_number_help();
+		if($line == '#') return $this->ToolNumberHelp();
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
@@ -342,7 +327,7 @@ class NamesGenerator {
 			foreach($subfolders as $subfoolder){
 				if($subfoolder == '.' || $subfoolder == '..') continue;
 				if(is_dir($folder.DIRECTORY_SEPARATOR."$subfoolder")){
-					$this->tool_number_action($folder.DIRECTORY_SEPARATOR."$subfoolder", $progress, $errors);
+					$this->ToolNumberAction($folder.DIRECTORY_SEPARATOR."$subfoolder", $progress, $errors);
 				}
 			}
 			$this->ave->set_folder_done($folder);
@@ -350,7 +335,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_videogenerator_help(){
+	public function ToolVideoGeneratorHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("VideoGenerator");
 
@@ -378,17 +363,17 @@ class NamesGenerator {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1','2','3','4'])) return $this->tool_videogenerator_help();
-		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->tool_videogenerator_help();
+		if(!in_array($this->params['mode'],['0','1','2','3','4'])) return $this->ToolVideoGeneratorHelp();
+		if(!in_array($this->params['algo'],['0','1','2','3'])) return $this->ToolVideoGeneratorHelp();
 
-		$this->ave->set_subtool("VideoGenerator > ".$this->tool_videogenerator_name($this->params['mode']));
+		$this->ave->set_subtool("VideoGenerator > ".$this->ToolVideoGeneratorModeName($this->params['mode']));
 		$this->params['checksum'] = in_array($this->params['mode'],['0','3','4']);
 		$this->params['resolution'] = in_array($this->params['mode'],['1','3','4']);
 		$this->params['thumbnail'] = in_array($this->params['mode'],['2','3']);
-		$this->tool_videogenerator_action();
+		$this->ToolVideoGeneratorAction();
 	}
 
-	public function tool_videogenerator_name(string $mode) : string {
+	public function ToolVideoGeneratorModeName(string $mode) : string {
 		switch($mode){
 			case '0': return 'CheckSum';
 			case '1': return 'Resolution';
@@ -399,14 +384,14 @@ class NamesGenerator {
 		return 'Unknown';
 	}
 
-	public function tool_videogenerator_action(){
+	public function ToolVideoGeneratorAction(){
 		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->tool_videogenerator_help();
+		if($line == '#') return $this->ToolVideoGeneratorHelp();
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->tool_checksum_algo($this->params['algo']);
+		$algo = $this->ToolCheckSumAlgoName($this->params['algo']);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
@@ -471,8 +456,8 @@ class NamesGenerator {
 					}
 				}
 
-				$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."_s.jpg";
-				$name_new = "$directory".DIRECTORY_SEPARATOR."$name"."_s.jpg";
+				$name_old = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."_s.jpg";
+				$name_new = $directory.DIRECTORY_SEPARATOR."$name"."_s.jpg";
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
 						$renamed = true;
@@ -481,8 +466,8 @@ class NamesGenerator {
 					}
 				}
 
-				$name_old = "$directory".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
-				$name_new = "$directory".DIRECTORY_SEPARATOR."$name.srt";
+				$name_old = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
+				$name_new = $directory.DIRECTORY_SEPARATOR."$name.srt";
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
 						$renamed = true;
@@ -500,7 +485,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_generateseriesname_action(){
+	public function ToolGenerateSeriesNameAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("GenerateSeriesName");
 		echo " Folders: ";
@@ -559,7 +544,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_escapefilenamewww_action(){
+	public function ToolEscapeFileNameWWWAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("EscapeFileNameWWW");
 		echo " Double spaces reduce\r\n";
@@ -614,7 +599,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_prettyfilename_action(){
+	public function ToolPrettyFileNameAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("PrettyFileName");
 		echo " Double spaces reduce\r\n";
@@ -671,7 +656,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_removeyoutubequalitytag_action(){
+	public function ToolRemoveYouTubeQualityTagAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveYouTubeQualityTag");
 		echo " Folders: ";
@@ -740,7 +725,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_seriesepisodeeditor_help(){
+	public function ToolSeriesEpisodeEditorHelp(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SeriesEpisodeEditor");
 
@@ -760,20 +745,20 @@ class NamesGenerator {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1'])) return $this->tool_seriesepisodeeditor_help();
+		if(!in_array($this->params['mode'],['0','1'])) return $this->ToolSeriesEpisodeEditorHelp();
 		switch($this->params['mode']){
 			case '0': {
-				$this->tool_seriesepisodeeditor_action_season();
+				$this->ToolSeriesEpisodeEditorActionSeason();
 				break;
 			}
 			case '1': {
-				$this->tool_seriesepisodeeditor_action_episode();
+				$this->ToolSeriesEpisodeEditorActionEpisode();
 				break;
 			}
 		}
 	}
 
-	public function tool_seriesepisodeeditor_action_season(){
+	public function ToolSeriesEpisodeEditorActionSeason(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeSeason");
 
@@ -783,7 +768,7 @@ class NamesGenerator {
 		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -797,7 +782,7 @@ class NamesGenerator {
 		set_season_current:
 		echo " Current season: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$current_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if(empty($current_season)) goto set_season_current;
 		if(strlen($current_season) == 1) $current_season = "0$current_season";
@@ -805,7 +790,7 @@ class NamesGenerator {
 		set_season_new:
 		echo " New season:     ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if(empty($new_season)) goto set_season_new;
 		if(strlen($new_season) == 1) $new_season = "0$new_season";
@@ -853,7 +838,7 @@ class NamesGenerator {
 		$this->ave->exit();
 	}
 
-	public function tool_seriesepisodeeditor_action_episode(){
+	public function ToolSeriesEpisodeEditorActionEpisode(){
 		$this->ave->clear();
 		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeEpisodeNumbers");
 
@@ -863,7 +848,7 @@ class NamesGenerator {
 		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -878,7 +863,7 @@ class NamesGenerator {
 		set_start:
 		echo " Start: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if(empty($episode_start)) goto set_start;
 		if($episode_start[0] == '0') $episode_start = substr($episode_start,1);
@@ -887,7 +872,7 @@ class NamesGenerator {
 		set_end:
 		echo " End:   ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if(empty($episode_end)) goto set_end;
 		if($episode_end[0] == '0') $episode_end = substr($episode_end,1);
@@ -896,7 +881,7 @@ class NamesGenerator {
 		echo " Choose step as integer (example 5 or -5)\r\n";
 		echo " Step:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->tool_seriesepisodeeditor_help();
+		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
 		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
 		$progress = 0;
