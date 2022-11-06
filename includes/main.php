@@ -2,6 +2,14 @@
 	declare(strict_types=1);
 	error_reporting(E_ALL);
 
+	set_exception_handler(function(Throwable $e){
+		echo $e->getMessage()."\r\n";
+		echo $e->getFile().':'.$e->getLine()."\r\n";
+		echo $e->getTraceAsString()."\r\n\r\n";
+		echo "ABORT, PRESS ENTER TO EXIT\r\n";
+		system("PAUSE > nul");
+	});
+
 	$includes_path = __DIR__;
 	require_once("$includes_path/dictionaries/MediaOrientation.php");
 	require_once("$includes_path/services/Logs.php");
@@ -18,12 +26,6 @@
 	require_once("$includes_path/tools/MediaTools.php");
 	require_once("$includes_path/tools/CheckFileIntegrity.php");
 
-	try {
-		$ave = new AVE($argv);
-		if(!$ave->abort) $ave->execute();
-	}
-	catch(\Exception $e){
-		echo $e->getMessage()."\r\n";
-		echo $e->getTraceAsString()."\r\n";
-	}
+	$ave = new AVE($argv);
+	if(!$ave->abort) $ave->execute();
 ?>

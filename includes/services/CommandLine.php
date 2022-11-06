@@ -26,6 +26,10 @@ class CommandLine {
 		return trim(readline());
 	}
 
+	public function pause() : void {
+		system("PAUSE > nul");
+	}
+
 	public function get_folders(string $string) : array {
 		$string = trim($string);
 		$folders = [];
