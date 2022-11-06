@@ -731,7 +731,7 @@ class NamesGenerator {
 
 		$this->ave->print_help([
 			' Modes:',
-			' 0   - Change season',
+			' 0   - Change season number',
 			' 1   - Change episode numbers',
 		]);
 
@@ -764,11 +764,11 @@ class NamesGenerator {
 
 		set_input:
 		echo " Attention filename must begin with the season and episode number in the format:\r\n";
-		echo " \"S00E00<whatever>.<extension>\"\r\n";
-		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
+		echo " \"S00E00{whatever}.{extension}>\"\r\n";
+		echo " \"S00E000{whatever}.{extension}>\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -782,17 +782,17 @@ class NamesGenerator {
 		set_season_current:
 		echo " Current season: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$current_season = substr(preg_replace('/\D/', '', $line), 0, 2);
-		if(empty($current_season)) goto set_season_current;
+		if($current_season == '') goto set_season_current;
 		if(strlen($current_season) == 1) $current_season = "0$current_season";
 
 		set_season_new:
 		echo " New season:     ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
-		if(empty($new_season)) goto set_season_new;
+		if($new_season == '') goto set_season_new;
 		if(strlen($new_season) == 1) $new_season = "0$new_season";
 
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
@@ -848,7 +848,7 @@ class NamesGenerator {
 		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -863,25 +863,25 @@ class NamesGenerator {
 		set_start:
 		echo " Start: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
-		if(empty($episode_start)) goto set_start;
+		if($episode_start == '') goto set_start;
 		if($episode_start[0] == '0') $episode_start = substr($episode_start,1);
 		$episode_start = intval($episode_start);
 
 		set_end:
 		echo " End:   ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
-		if(empty($episode_end)) goto set_end;
+		if($episode_end == '') goto set_end;
 		if($episode_end[0] == '0') $episode_end = substr($episode_end,1);
 		$episode_end = intval($episode_end);
 
 		echo " Choose step as integer (example 5 or -5)\r\n";
 		echo " Step:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->ToolSeriesEpisodeEditorHelp();
+		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();
 		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
 		$progress = 0;
