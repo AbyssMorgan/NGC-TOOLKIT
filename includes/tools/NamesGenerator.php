@@ -24,7 +24,7 @@ class NamesGenerator {
 			' Actions:',
 			' 0 - Generate names: CheckSum',
 			' 1 - Generate names: Number (Video/Images)',
-			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
+			' 2 - Generate video: CheckSum/Orientation/Thumbnail',
 			' 3 - Generate series name: S00E00 etc.',
 			' 4 - Escape file name (WWW)',
 			' 5 - Pretty file name',

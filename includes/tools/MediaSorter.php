@@ -96,8 +96,8 @@ class MediaSorter {
 
 		$this->ave->print_help([
 			' Modes:',
-			' 0 - Resolution + Quality',
-			' 1 - Resolution: Vertical / Horizontal / Square',
+			' 0 - Orientation + Quality',
+			' 1 - Orientation: Vertical / Horizontal / Square',
 			' 2 - Quality:    17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
 		]);
 
@@ -118,8 +118,8 @@ class MediaSorter {
 
 	public function ToolSortMediaModeName(string $mode) : string {
 		switch($mode){
-			case '0': return 'Resolution + Quality';
-			case '1': return 'Resolution';
+			case '0': return 'Orientation + Quality';
+			case '1': return 'Orientation';
 			case '2': return 'Quality';
 		}
 		return 'Unknown';

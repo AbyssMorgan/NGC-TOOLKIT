@@ -69,6 +69,13 @@ class AVE extends CommandLine {
 			}
 		}
 
+		foreach($this->config->keys() as $key){
+			if(!$config_default->isSet($key)){
+				$this->config->unset($key);
+				$changed = true;
+			}
+		}
+
 		$version_changed = false;
 		$check_for_updates = false;
 		if($this->command == '--interactive'){
