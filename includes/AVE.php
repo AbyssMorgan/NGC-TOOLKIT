@@ -481,7 +481,7 @@ class AVE extends CommandLine {
 	}
 
 	private function timeout(int $seconds) : void {
-		$this->title("$this->app_name v$this->version > Wait $seconds seconds");
+		$this->title("$this->app_name v$this->version > Exit $seconds seconds");
 		if($seconds > 0){
 			sleep(1);
 			$seconds--;
