@@ -229,13 +229,13 @@ class AVE extends CommandLine {
 	public function set_tool(string $name) : void {
 		$this->tool_name = $name;
 		$this->subtool_name = '';
-		$this->title("[$this->app_name v$this->version > $this->tool_name]");
+		$this->title("$this->app_name v$this->version > $this->tool_name");
 		$this->write_log("Set Tool: $this->tool_name");
 	}
 
 	public function set_subtool(string $name) : void {
 		$this->subtool_name = $name;
-		$this->title("[$this->app_name v$this->version > $this->tool_name > $this->subtool_name]");
+		$this->title("$this->app_name v$this->version > $this->tool_name > $this->subtool_name");
 		$this->write_log("Set Tool: $this->tool_name > $this->subtool_name");
 	}
 
@@ -248,7 +248,7 @@ class AVE extends CommandLine {
 	public function select_tool() : void {
 		$this->write_log("Select Tool");
 		$this->clear();
-		$this->title("[$this->app_name v$this->version]");
+		$this->title("$this->app_name v$this->version");
 		$this->tool = null;
 		$this->tool_name = '';
 		$this->print_help([
@@ -291,7 +291,7 @@ class AVE extends CommandLine {
 			}
 			case 'U': {
 				$this->clear();
-				$this->title("[$this->app_name v$this->version > CheckForUpdates]");
+				$this->title("$this->app_name v$this->version > CheckForUpdates");
 				$this->tool_update(true);
 				$this->abort = true;
 				break;
@@ -308,7 +308,7 @@ class AVE extends CommandLine {
 
 	public function select_action() : bool {
 		$this->clear();
-		$this->title("[$this->app_name v$this->version > $this->tool_name]");
+		$this->title("$this->app_name v$this->version > $this->tool_name");
 		$this->tool->help();
 		echo " Action: ";
 		$line = $this->get_input();
@@ -481,7 +481,7 @@ class AVE extends CommandLine {
 	}
 
 	private function timeout(int $seconds) : void {
-		$this->title("[$this->app_name v$this->version > Wait] $seconds seconds");
+		$this->title("$this->app_name v$this->version > Wait $seconds seconds");
 		if($seconds > 0){
 			sleep(1);
 			$seconds--;
