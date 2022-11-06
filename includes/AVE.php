@@ -201,10 +201,6 @@ class AVE extends CommandLine {
 				echo print_r($this->validate(), true);
 				break;
 			}
-			case '--get-color': {
-				echo $this->config->get('AVE_COLOR') ?? 'AF';
-				break;
-			}
 			case '--interactive': {
 				$this->select_tool();
 				break;
