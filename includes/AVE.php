@@ -29,7 +29,7 @@ class AVE extends CommandLine {
 	public bool $abort = false;
 
 	private string $app_name = "AVE";
-	private string $version = "1.3.0";
+	private string $version = "1.3.1";
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
@@ -159,7 +159,7 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function tool_update(){
+	public function tool_update(bool $response = false){
 		echo " Check for updates ...\r\n";
 		$version = '';
 		if($this->check_for_updates($version)){
@@ -169,6 +169,9 @@ class AVE extends CommandLine {
 			if(strtoupper($line[0] ?? 'N') == 'Y'){
 				$this->download_update($version);
 			}
+		} else if($response){
+			echo " No updates available\r\n";
+			$this->pause();
 		}
 	}
 
@@ -289,7 +292,7 @@ class AVE extends CommandLine {
 			case 'U': {
 				$this->clear();
 				$this->title("[$this->app_name v$this->version > CheckForUpdates]");
-				$this->tool_update();
+				$this->tool_update(true);
 				$this->abort = true;
 				break;
 			}
