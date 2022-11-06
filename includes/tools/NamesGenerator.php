@@ -24,7 +24,7 @@ class NamesGenerator {
 			' Actions:',
 			' 0 - Generate names: CheckSum',
 			' 1 - Generate names: Number (Video/Images)',
-			' 2 - Generate video: CheckSum/Orientation/Thumbnail',
+			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
 			' 3 - Generate series name: S00E00 etc.',
 			' 4 - Escape file name (WWW)',
 			' 5 - Pretty file name',
@@ -196,7 +196,7 @@ class NamesGenerator {
 		$this->ave->print_help([
 			' Group Single Format                Range',
 			' g0    s0    "PPP_DDDDDD"           000001 - 999999',
-			' g1    s1    "III\PPP_DDDDDD"       000001 - 999999',
+			' g1    s1    "PART\PPP_DDDDDD"       000001 - 999999',
 			' g2    s2    "PPP_DDDDDD"           000001 - 999999',
 			' g3    s3    "PPP_dir_name_DDDDDD"  000001 - 999999',
 			' g4    s4    "PPP_dir_name_DDDD"    0001 -   9999',
@@ -449,7 +449,8 @@ class NamesGenerator {
 						$errors++;
 					}
 				} else if($renamed){
-					foreach(['md5','sha256','crc32','whirlpool'] as $a){
+					$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
+					foreach($follow_extensions as $a){
 						if(file_exists("$file.$a")){
 							if(!$this->ave->rename("$file.$a","$new_name.$a")) $errors++;
 						}
@@ -844,8 +845,8 @@ class NamesGenerator {
 
 		set_input:
 		echo " Attention filename must begin with the season and episode number in the format:\r\n";
-		echo " \"S00E00<whatever>.<extension>\"\r\n";
-		echo " \"S00E000<whatever>.<extension>\"\r\n\r\n";
+		echo " \"S00E00{whatever}.{extension}\"\r\n";
+		echo " \"S00E000{whatever}.{extension}\"\r\n\r\n";
 		echo " Folder: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return $this->ToolSeriesEpisodeEditorHelp();

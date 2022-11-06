@@ -68,6 +68,7 @@ trait MediaFunctions {
 	}
 
 	public function getVideoThumbnail(string $path) : bool {
+		if(file_exists("$path"."_s.jpg")) return true;
 		$folder = pathinfo($path, PATHINFO_DIRNAME);
 		$w = $this->config->get('AVE_THUMBNAIL_WIDTH');
 		$r = $this->config->get('AVE_THUMBNAIL_ROWS');
