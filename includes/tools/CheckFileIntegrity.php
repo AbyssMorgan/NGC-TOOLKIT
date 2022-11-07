@@ -352,11 +352,11 @@ class CheckFileIntegrity {
 				$arr = $ini->get('keys');
 				if(isset($arr[$key])) unset($arr[$key]);
 				$ini->set('keys', $arr);
-				$arr = $ini->get('file_list');
-				$key = array_search($arr, pathinfo($file, PATHINFO_DIRNAME));
+				$arr = $ini->get('files');
+				$key = array_search(pathinfo($file, PATHINFO_DIRNAME), $arr);
 				if($key !== false){
 					if(isset($arr[$key])) unset($arr[$key]);
-					$ini->set('file_list', $arr);
+					$ini->set('files', $arr);
 				}
 			}
 		}
