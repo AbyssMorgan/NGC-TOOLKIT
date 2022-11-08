@@ -51,6 +51,7 @@ class AVE extends CommandLine {
 
 	public function __construct(array $arguments){
 		parent::__construct();
+		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
 		$this->path = __DIR__.DIRECTORY_SEPARATOR."..";
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
