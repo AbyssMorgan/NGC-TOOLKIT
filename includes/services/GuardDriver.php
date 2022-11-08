@@ -12,9 +12,9 @@ class GuardDriver {
 
 	private array $folders_to_scan = [];
 	private array $files_to_scan = [];
-	private array $file_list = [];
-	private array $data = [];
-	private array $keys = [];
+	public array $file_list = [];
+	public array $data = [];
+	public array $keys = [];
 	private array $errors = [];
 	private array $flags = [];
 	private int $size = 0;

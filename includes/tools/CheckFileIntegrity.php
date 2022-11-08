@@ -32,6 +32,7 @@ class CheckFileIntegrity {
 			' 4 - Update guard: Remove missing files',
 			' 5 - Update guard: Add unknown files',
 			' 6 - Update guard: Update changed files',
+			' 7 - Update guard: Update missing + unknown',
 		]);
 	}
 
@@ -46,6 +47,7 @@ class CheckFileIntegrity {
 			case '4': return $this->ToolUpdateRemoveMissingAction();
 			case '5': return $this->ToolUpdateAddUnknownAction();
 			case '6': return $this->ToolUpdateChangedAction();
+			case '7': return $this->ToolUpdateMissingAndUnknownAction();
 		}
 		$this->ave->select_action();
 	}
@@ -184,19 +186,6 @@ class CheckFileIntegrity {
 		$this->ave->clear();
 		$this->ave->set_subtool("CheckIntegrity");
 
-		set_input:
-		echo " Input (Folder): ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
-			goto set_input;
-		}
-
 		set_guard:
 		echo " Guard (.ave-guard): ";
 		$line = $this->ave->get_input();
@@ -215,6 +204,8 @@ class CheckFileIntegrity {
 			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
 			goto set_guard;
 		}
+
+		$input = pathinfo($guard_file, PATHINFO_DIRNAME);
 
 		$cwd = getcwd();
 		chdir($input);
@@ -300,152 +291,44 @@ class CheckFileIntegrity {
 	public function ToolUpdateRemoveMissingAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateRemoveMissing");
-
-		set_input:
-		echo " Input (Folder): ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
-			goto set_input;
-		}
-
-		set_guard:
-		echo " Guard (.ave-guard): ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-		if(!isset($folders[0])) goto set_guard;
-		$guard_file = $folders[0];
-
-		if(!file_exists($guard_file)){
-			echo " Guard file not exists\r\n";
-			goto set_guard;
-		}
-
-		$ini = new IniFile($guard_file, true);
-		if(is_null($ini->get('keys'))){
-			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
-			goto set_guard;
-		}
-
-		$cwd = getcwd();
-		chdir($input);
-		echo " Validate files from $guard_file\r\n";
-		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
-		$validation = $guard->validate(['damaged' => false, 'unknown' => false, 'missing' => true]);
-
-		foreach($validation as $error){
-			$file = $error['file'];
-			$this->ave->write_log("REMOVE FILE \"$file\"");
-			$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
-			$arr = $ini->get($key);
-			if(isset($arr[pathinfo($file, PATHINFO_BASENAME)])) unset($arr[pathinfo($file, PATHINFO_BASENAME)]);
-			if(!empty($arr)){
-				$ini->set($key, $arr);
-			} else {
-				$ini->unset($key);
-				$arr = $ini->get('keys');
-				if(isset($arr[$key])) unset($arr[$key]);
-				$ini->set('keys', $arr);
-				$arr = $ini->get('files');
-				$key = array_search(pathinfo($file, PATHINFO_DIRNAME), $arr);
-				if($key !== false){
-					if(isset($arr[$key])) unset($arr[$key]);
-					$ini->set('files', $arr);
-				}
-			}
-		}
-
-		$ini->save();
-
-		chdir($cwd);
-
+		$guard_file = $this->ToolGuardSetFile();
+		if(is_null($guard_file)) return $this->ave->select_action();
+		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
 		$this->ave->exit(10, true);
 	}
 
 	public function ToolUpdateAddUnknownAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateAddUnknown");
-
-		set_input:
-		echo " Input (Folder): ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
-			goto set_input;
-		}
-
-		set_guard:
-		echo " Guard (.ave-guard): ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-		if(!isset($folders[0])) goto set_guard;
-		$guard_file = $folders[0];
-
-		if(!file_exists($guard_file)){
-			echo " Guard file not exists\r\n";
-			goto set_guard;
-		}
-
-		$ini = new IniFile($guard_file, true);
-		if(is_null($ini->get('keys'))){
-			echo " File don't contain one of required information (Not a valid guard file ?)\r\n";
-			goto set_guard;
-		}
-
-		$cwd = getcwd();
-		chdir($input);
-		echo " Validate files from $guard_file\r\n";
-		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
-		$validation = $guard->validate(['damaged' => false, 'unknown' => true, 'missing' => false]);
-
-		$guard->load($ini);
-
-		foreach($validation as $error){
-			$file = $error['file'];
-			$this->ave->write_log("ADD FILE \"$file\"");
-			$guard->scanFile($file);
-		}
-
-		$ini->setAll($guard->get(), true);
-
-		chdir($cwd);
-
+		$guard_file = $this->ToolGuardSetFile();
+		if(is_null($guard_file)) return $this->ave->select_action();
+		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
 		$this->ave->exit(10, true);
 	}
 
 	public function ToolUpdateChangedAction(){
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateChanged");
+		$guard_file = $this->ToolGuardSetFile();
+		if(is_null($guard_file)) return $this->ave->select_action();
+		$this->ToolGuardUpdate($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
+		$this->ave->exit(10, true);
+	}
 
-		set_input:
-		echo " Input (Folder): ";
-		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
-		$folders = $this->ave->get_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
+	public function ToolUpdateMissingAndUnknownAction(){
+		$this->ave->clear();
+		$this->ave->set_subtool("UpdateMissingAndUnknown");
+		$guard_file = $this->ToolGuardSetFile();
+		if(is_null($guard_file)) return $this->ave->select_action();
+		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);
+		$this->ave->exit(10, true);
+	}
 
-		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
-			goto set_input;
-		}
-
+	public function ToolGuardSetFile() : ?string {
 		set_guard:
 		echo " Guard (.ave-guard): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return null;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_guard;
 		$guard_file = $folders[0];
@@ -461,25 +344,53 @@ class CheckFileIntegrity {
 			goto set_guard;
 		}
 
+		return $guard_file;
+	}
+
+	public function ToolGuardUpdate(string $guard_file) : void {
+		$ini = new IniFile($guard_file, true);
+		$input = pathinfo($guard_file, PATHINFO_DIRNAME);
 		$cwd = getcwd();
 		chdir($input);
 		echo " Validate files from $guard_file\r\n";
 		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
-		$validation = $guard->validate(['damaged' => true, 'unknown' => false, 'missing' => false]);
+		$validation = $guard->validate(['damaged' => false, 'unknown' => true, 'missing' => true]);
 
 		$guard->load($ini);
 
 		foreach($validation as $error){
 			$file = $error['file'];
-			$this->ave->write_log("UPDATE FILE \"$file\"");
-			$guard->scanFile($file, true);
+			switch($error['type']){
+				case 'unknown': {
+					$this->ave->write_log("ADD FILE \"$file\"");
+					$guard->scanFile($file);
+					break;
+				}
+				case 'damaged': {
+					$this->ave->write_log("UPDATE FILE \"$file\"");
+					$guard->scanFile($file, true);
+					break;
+				}
+				case 'missing': {
+					$this->ave->write_log("REMOVE FILE \"$file\"");
+					$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
+					if(isset($guard->data[$key][pathinfo($file, PATHINFO_BASENAME)])) unset($guard->data[$key][pathinfo($file, PATHINFO_BASENAME)]);
+					if(empty($guard->data[$key])){
+						if(isset($guard->data[$key])) unset($guard->data[$key]);
+					}
+					if(isset($guard->keys[$key])) unset($guard->keys[$key]);
+					$key = array_search($file, $guard->file_list);
+					if($key !== false){
+						if(isset($guard->file_list[$key])) unset($guard->file_list[$key]);
+					}
+					break;
+				}
+			}
 		}
 
 		$ini->setAll($guard->get(), true);
 
 		chdir($cwd);
-
-		$this->ave->exit(10, true);
 	}
 
 }
