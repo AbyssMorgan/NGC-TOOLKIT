@@ -6,6 +6,8 @@ namespace App\Tools;
 
 use AVE;
 
+use App\Services\FaceDetector;
+
 class MediaTools {
 
 	private string $name = "MediaTools";
@@ -24,6 +26,7 @@ class MediaTools {
 			' Actions:',
 			' 0 - Merge:  Video + Audio',
 			' 1 - Merge:  Video + SRT',
+			' 2 - Avatar generator',
 		]);
 	}
 
@@ -33,6 +36,7 @@ class MediaTools {
 		switch($this->action){
 			case '0': return $this->ToolMergeVideoAudioAction();
 			case '1': return $this->ToolMergeVideoSubtitlesAction();
+			case '2': return $this->ToolAvatarGeneratorAction();
 		}
 		$this->ave->select_action();
 	}
@@ -77,6 +81,11 @@ class MediaTools {
 
 		if(file_exists($output) && !is_dir($output)){
 			echo " Invalid output folder\r\n";
+			goto set_output;
+		}
+
+		if($audio == $output || $video == $output){
+			echo " Output folder must be different than audio/video folder\r\n";
 			goto set_output;
 		}
 
@@ -150,6 +159,11 @@ class MediaTools {
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
 		set_output:
 		echo " Output: ";
 		$line = $this->ave->get_input();
@@ -158,17 +172,21 @@ class MediaTools {
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
+		if(file_exists($output) && !is_dir($output)){
+			echo " Invalid output folder\r\n";
+			goto set_output;
+		}
+
+		if($input == $output){
+			echo " Output folder must be different than input folder\r\n";
+			goto set_output;
+		}
+
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 
-		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
-			goto set_input;
-		} else if(file_exists($output) && !is_dir($output)){
-			echo " Invalid output folder\r\n";
-			goto set_output;
-		} else if(!file_exists($output)){
+		if(!file_exists($output)){
 			$this->ave->mkdir($output);
 		}
 
@@ -201,6 +219,100 @@ class MediaTools {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+		}
+
+		$this->ave->exit();
+	}
+
+	public function ToolAvatarGeneratorAction(){
+		$this->ave->clear();
+		$this->ave->set_subtool("AvatarGenerator");
+
+		set_input:
+		echo " Input:  ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		set_output:
+		echo " Output: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_output;
+		$output = $folders[0];
+
+		set_size:
+		echo " Width (0 - no resize): ";
+		$line = $this->ave->get_input();
+		if($line == '#') return $this->ave->select_action();
+		$size = preg_replace('/\D/', '', $line);
+		if($size == '') goto set_size;
+		$size = intval($size);
+		if($size < 0) goto set_size;
+
+		if(file_exists($output) && !is_dir($output)){
+			echo " Invalid output folder\r\n";
+			goto set_output;
+		}
+
+		if($input == $output){
+			echo " Output folder must be different than input folder\r\n";
+			goto set_output;
+		}
+
+		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
+		$variants = explode(" ", $this->ave->config->get('AVE_AVATAR_GENERATOR_VARIANTS'));
+		$files = $this->ave->getFiles($input, $image_extensions);
+
+		$progress = 0;
+		$errors = 0;
+
+		$detector = new FaceDetector($this->ave->path.DIRECTORY_SEPARATOR.'meta'.DIRECTORY_SEPARATOR.'FaceDetector.dat');
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+			$folder = pathinfo($file, PATHINFO_DIRNAME);
+			$directory = str_replace($input, $output, $folder);
+			if(!file_exists($directory)){
+				if($this->ave->mkdir($directory)){
+					$progress++;
+				} else {
+					$errors++;
+				}
+			}
+			if(file_exists($directory)){
+				$image = $this->ave->getImageFromPath($file);
+				if(is_null($image)){
+					$this->ave->write_error("FAILED LOAD IMAGE \"$file\"");
+					$errors++;
+				} else {
+					$face = $detector->faceDetect($image);
+					if(!$face){
+						$this->ave->write_error("FAILED GET FACE \"$file\"");
+						$errors++;
+					} else {
+						foreach($variants as $variant){
+							$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."@$variant.png";
+							if($detector->saveVariantImage(floatval($variant), $file, $new_name, $size)){
+								$this->ave->write_log("WRITE VARIANT $variant FOR \"$file\"");
+							}
+						}
+						$progress++;
+					}
+				}
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
 		}
 
 		$this->ave->exit();
