@@ -34,7 +34,7 @@ class FaceDetector {
 		$this->detection_data = unserialize(file_get_contents($detection_data));
 	}
 
-	private function getVariantRectangle(float $multiplier = 1.0){
+	private function getVariantRectangle(float $multiplier = 1.0) : array {
 		$sw = $this->face['w'];
 		$nw = $this->face['w'] * $multiplier;
 		return [

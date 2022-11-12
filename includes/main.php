@@ -18,7 +18,8 @@
 	require_once("$includes_path/services/GuardPattern.php");
 	require_once("$includes_path/services/GuardDriver.php");
 	require_once("$includes_path/services/FaceDetector.php");
-	require_once("$includes_path/extensions/MediaFunctions.php");
+	require_once("$includes_path/services/DataBaseBackup.php");
+	require_once("$includes_path/services/MediaFunctions.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/NamesGenerator.php");
 	require_once("$includes_path/tools/FileFunctions.php");

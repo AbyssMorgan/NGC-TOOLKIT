@@ -16,8 +16,6 @@ use App\Tools\CheckFileIntegrity;
 
 class AVE extends CommandLine {
 
-	use App\Extensions\MediaFunctions;
-
 	public IniFile $config;
 	public IniFile $mkvmerge;
 
@@ -27,9 +25,10 @@ class AVE extends CommandLine {
 
 	public string $path;
 	public bool $abort = false;
+	public bool $open_log = false;
 
 	private string $app_name = "AVE";
-	private string $version = "1.3.1";
+	private string $version = "1.4.0";
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
@@ -57,7 +56,7 @@ class AVE extends CommandLine {
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);
 		$this->arguments = array_values($arguments);
-		$this->logo = file_get_contents("$this->path/meta/LOGO.txt");
+		$this->logo = "\r\n AVE-PHP Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
 		$config_default = new IniFile("$this->path/config/default.ini", true);
 		$this->config = new IniFile("$this->path/config/user.ini", true);
@@ -213,7 +212,10 @@ class AVE extends CommandLine {
 				break;
 			}
 			case '--interactive': {
-				$this->select_tool();
+				while(!$this->abort){
+					$this->abort = $this->select_tool();
+				}
+				$this->exit(10, $this->open_log);
 				break;
 			}
 			default: {
@@ -253,7 +255,7 @@ class AVE extends CommandLine {
 		$this->title("[$title] Files: $progress Errors: $errors");
 	}
 
-	public function select_tool() : void {
+	public function select_tool() : bool {
 		$this->write_log("Select Tool");
 		$this->clear();
 		$this->title("$this->app_name v$this->version");
@@ -301,30 +303,27 @@ class AVE extends CommandLine {
 				$this->clear();
 				$this->title("$this->app_name v$this->version > CheckForUpdates");
 				$this->tool_update(true);
-				$this->abort = true;
+				return true;
 				break;
 			}
 		}
-		if(!$this->abort){
-			if(!is_null($this->tool)){
-				$this->select_action();
-			} else {
-				$this->select_tool();
-			}
+		if(!$this->abort && !is_null($this->tool)){
+			return $this->select_action();
 		}
+		return false;
 	}
 
 	public function select_action() : bool {
-		$this->clear();
-		$this->title("$this->app_name v$this->version > $this->tool_name");
-		$this->tool->help();
-		echo " Action: ";
-		$line = $this->get_input();
-		if($line == '#'){
-			$this->select_tool();
-		} else {
-			$this->tool->action($line);
+		do {
+			$this->clear();
+			$this->title("$this->app_name v$this->version > $this->tool_name");
+			$this->tool->help();
+			echo " Action: ";
+			$line = $this->get_input();
+			if($line == '#') return false;
+			$response = $this->tool->action($line);
 		}
+		while(!$response);
 		return true;
 	}
 
@@ -423,7 +422,7 @@ class AVE extends CommandLine {
 		return $cnt;
 	}
 
-	public function formatBytes($bytes, $precision = 2){
+	public function formatBytes(int $bytes, int $precision = 2) : string {
 		if($bytes <= 0) return '0.00 B';
 		$i = floor(log($bytes)/log(1024));
 		$sizes = ['B','KB','MB','GB','TB','PB','EB','ZB','YB'];
@@ -454,29 +453,33 @@ class AVE extends CommandLine {
 		return $data;
 	}
 
-	public function write_log(string|array $data){
+	public function write_log(string|array $data) : void {
 		if($this->config->get('AVE_LOG_EVENT')){
 			$this->log_event->write($data);
 		}
 	}
 
-	public function write_error(string|array $data){
+	public function write_error(string|array $data) : void {
 		if($this->config->get('AVE_LOG_ERROR')){
 			$this->log_error->write($data);
 		}
 	}
 
-	public function write_data(string|array $data){
+	public function write_data(string|array $data) : void {
 		$this->log_data->write($data);
 	}
 
-	public function exit(int $seconds = 10, $open_log = false) : void {
+	public function exit(int $seconds = 10, bool $open_log = false) : void {
 		$this->write_log("Exit");
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();
+		$this->open_logs($open_log);
+		$this->timeout($seconds);
+	}
 
-		if($open_log && file_exists($this->log_event->getPath())){
+	public function open_logs(bool $open_event = false) : void {
+		if($open_event && file_exists($this->log_event->getPath())){
 			$this->open_file($this->log_event->getPath());
 		}
 		if(file_exists($this->log_data->getPath())){
@@ -485,7 +488,6 @@ class AVE extends CommandLine {
 		if(file_exists($this->log_error->getPath())){
 			$this->open_file($this->log_error->getPath());
 		}
-		$this->timeout($seconds);
 	}
 
 	private function timeout(int $seconds) : void {

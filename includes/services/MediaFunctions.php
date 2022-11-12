@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Extensions;
+namespace App\Services;
 
+use GdImage;
 use Imagick;
 use App\Dictionaries\MediaOrientation;
 
-trait MediaFunctions {
+class MediaFunctions {
 
-	public function getImageFromPath(string $path){
+	public function getImageFromPath(string $path) : ?GdImage {
 		if(!file_exists($path)) return null;
 		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
 			case 'bmp': return @imagecreatefrombmp($path);
@@ -77,7 +78,7 @@ trait MediaFunctions {
 		return file_exists("$path"."_s.jpg");
 	}
 
-	public function getMediaOrientation(int $width, int $height){
+	public function getMediaOrientation(int $width, int $height) : int {
 		if($width > $height){
 			return MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL;
 		} else if($height > $width){

@@ -6,6 +6,7 @@ namespace App\Tools;
 
 use AVE;
 
+use App\Services\MediaFunctions;
 use App\Services\FaceDetector;
 
 class MediaTools {
@@ -21,7 +22,7 @@ class MediaTools {
 		$this->ave->set_tool($this->name);
 	}
 
-	public function help(){
+	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Merge:  Video + Audio',
@@ -30,25 +31,25 @@ class MediaTools {
 		]);
 	}
 
-	public function action(string $action){
+	public function action(string $action) : bool {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolMergeVideoAudioAction();
-			case '1': return $this->ToolMergeVideoSubtitlesAction();
-			case '2': return $this->ToolAvatarGeneratorAction();
+			case '0': return $this->ToolMergeVideoAudio();
+			case '1': return $this->ToolMergeVideoSubtitles();
+			case '2': return $this->ToolAvatarGenerator();
 		}
-		$this->ave->select_action();
+		return false;
 	}
 
-	public function ToolMergeVideoAudioAction(){
+	public function ToolMergeVideoAudio() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("MergeVideoAudio");
 
 		set_video:
 		echo " Video:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_video;
 		$video = $folders[0];
@@ -61,7 +62,7 @@ class MediaTools {
 		set_audio:
 		echo " Audio:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_audio;
 		$audio = $folders[0];
@@ -74,7 +75,7 @@ class MediaTools {
 		set_output:
 		echo " Output: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
@@ -144,17 +145,17 @@ class MediaTools {
 			}
 		}
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolMergeVideoSubtitlesAction(){
+	public function ToolMergeVideoSubtitles() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("MergeVideoSubtitles");
 
 		set_input:
 		echo " Input:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -167,7 +168,7 @@ class MediaTools {
 		set_output:
 		echo " Output: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
@@ -221,17 +222,17 @@ class MediaTools {
 			}
 		}
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolAvatarGeneratorAction(){
+	public function ToolAvatarGenerator() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("AvatarGenerator");
 
 		set_input:
 		echo " Input:  ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -244,7 +245,7 @@ class MediaTools {
 		set_output:
 		echo " Output: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
@@ -252,7 +253,7 @@ class MediaTools {
 		set_size:
 		echo " Width (0 - no resize): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$size = preg_replace('/\D/', '', $line);
 		if($size == '') goto set_size;
 		$size = intval($size);
@@ -268,6 +269,8 @@ class MediaTools {
 			goto set_output;
 		}
 
+		$media = new MediaFunctions();
+
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$variants = explode(" ", $this->ave->config->get('AVE_AVATAR_GENERATOR_VARIANTS'));
 		$files = $this->ave->getFiles($input, $image_extensions);
@@ -275,7 +278,7 @@ class MediaTools {
 		$progress = 0;
 		$errors = 0;
 
-		$detector = new FaceDetector($this->ave->path.DIRECTORY_SEPARATOR.'meta'.DIRECTORY_SEPARATOR.'FaceDetector.dat');
+		$detector = new FaceDetector($this->ave->path.DIRECTORY_SEPARATOR.'bin'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'FaceDetector.dat');
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -291,7 +294,7 @@ class MediaTools {
 				}
 			}
 			if(file_exists($directory)){
-				$image = $this->ave->getImageFromPath($file);
+				$image = $media->getImageFromPath($file);
 				if(is_null($image)){
 					$this->ave->write_error("FAILED LOAD IMAGE \"$file\"");
 					$errors++;
@@ -315,7 +318,7 @@ class MediaTools {
 			$this->ave->set_progress($progress, $errors);
 		}
 
-		$this->ave->exit();
+		return true;
 	}
 
 }

@@ -22,7 +22,7 @@ class CheckFileIntegrity {
 		$this->ave->set_tool($this->name);
 	}
 
-	public function help(){
+	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Create pattern',
@@ -36,30 +36,30 @@ class CheckFileIntegrity {
 		]);
 	}
 
-	public function action(string $action){
+	public function action(string $action) : bool {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolCreatePatternAction();
-			case '1': return $this->ToolGuardGenerateAction();
-			case '2': return $this->ToolCheckIntegrityAction();
-			case '3': return $this->ToolGetFilesTreeAction();
-			case '4': return $this->ToolUpdateRemoveMissingAction();
-			case '5': return $this->ToolUpdateAddUnknownAction();
-			case '6': return $this->ToolUpdateChangedAction();
-			case '7': return $this->ToolUpdateMissingAndUnknownAction();
+			case '0': return $this->ToolCreatePattern();
+			case '1': return $this->ToolGuardGenerate();
+			case '2': return $this->ToolCheckIntegrity();
+			case '3': return $this->ToolGetFilesTree();
+			case '4': return $this->ToolUpdateRemoveMissing();
+			case '5': return $this->ToolUpdateAddUnknown();
+			case '6': return $this->ToolUpdateChanged();
+			case '7': return $this->ToolUpdateMissingAndUnknown();
 		}
-		$this->ave->select_action();
+		return false;
 	}
 
-	public function ToolCreatePatternAction(){
+	public function ToolCreatePattern() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("CreatePattern");
 
 		set_input:
 		echo " Input (Folder): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -72,7 +72,7 @@ class CheckFileIntegrity {
 		set_output:
 		echo " Output (Folder): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
@@ -92,7 +92,7 @@ class CheckFileIntegrity {
 		set_name:
 		echo " Name: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 
 		$pattern_file = $this->ave->get_folders($line);
 		if(!isset($pattern_file[0])) goto set_name;
@@ -104,7 +104,7 @@ class CheckFileIntegrity {
 		set_folders:
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		foreach($this->ave->get_folders($line) as $folder){
 			$pattern->addFolders(str_replace([$input.DIRECTORY_SEPARATOR,$input], "", $folder));
 		}
@@ -118,7 +118,7 @@ class CheckFileIntegrity {
 		set_files:
 		echo " Files: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		foreach($this->ave->get_folders($line) as $file){
 			$pattern->addFiles(str_replace($input, "", $file));
 		}
@@ -135,17 +135,17 @@ class CheckFileIntegrity {
 
 		$this->ave->open_file($output);
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolGuardGenerateAction(){
+	public function ToolGuardGenerate() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("GuardGenerate");
 
 		set_pattern:
 		echo " Pattern (.ave-pat): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_pattern;
 		$pattern_file = $folders[0];
@@ -179,17 +179,17 @@ class CheckFileIntegrity {
 
 		$this->ave->open_file(pathinfo($pattern_file, PATHINFO_DIRNAME));
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolCheckIntegrityAction(){
+	public function ToolCheckIntegrity() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("CheckIntegrity");
 
 		set_guard:
 		echo " Guard (.ave-guard): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_guard;
 		$guard_file = $folders[0];
@@ -252,17 +252,17 @@ class CheckFileIntegrity {
 		$this->ave->write_data("\r\nUnknown:");
 		$this->ave->write_data($errors['unknown'] ?? []);
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolGetFilesTreeAction(){
+	public function ToolGetFilesTree() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("GetFilesTree");
 
 		set_guard:
 		echo " Guard (.ave-guard): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_guard;
 		$guard_file = $folders[0];
@@ -285,43 +285,47 @@ class CheckFileIntegrity {
 
 		$this->ave->open_file($tree_file);
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolUpdateRemoveMissingAction(){
+	public function ToolUpdateRemoveMissing() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateRemoveMissing");
 		$guard_file = $this->ToolGuardSetFile();
-		if(is_null($guard_file)) return $this->ave->select_action();
+		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
-		$this->ave->exit(10, true);
+		$this->ave->open_log = true;
+		return true;
 	}
 
-	public function ToolUpdateAddUnknownAction(){
+	public function ToolUpdateAddUnknown() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateAddUnknown");
 		$guard_file = $this->ToolGuardSetFile();
-		if(is_null($guard_file)) return $this->ave->select_action();
+		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
-		$this->ave->exit(10, true);
+		$this->ave->open_log = true;
+		return true;
 	}
 
-	public function ToolUpdateChangedAction(){
+	public function ToolUpdateChanged() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateChanged");
 		$guard_file = $this->ToolGuardSetFile();
-		if(is_null($guard_file)) return $this->ave->select_action();
+		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
-		$this->ave->exit(10, true);
+		$this->ave->open_log = true;
+		return true;
 	}
 
-	public function ToolUpdateMissingAndUnknownAction(){
+	public function ToolUpdateMissingAndUnknown() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("UpdateMissingAndUnknown");
 		$guard_file = $this->ToolGuardSetFile();
-		if(is_null($guard_file)) return $this->ave->select_action();
+		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);
-		$this->ave->exit(10, true);
+		$this->ave->open_log = true;
+		return true;
 	}
 
 	public function ToolGuardSetFile() : ?string {

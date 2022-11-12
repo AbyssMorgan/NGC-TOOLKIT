@@ -1,4 +1,5 @@
 bin/*
 config/user.ini
+config/mysql
 AVE-PHP.7z
 AVE.ave-guard

@@ -26,7 +26,8 @@ class CommandLine {
 		return trim(readline());
 	}
 
-	public function pause() : void {
+	public function pause(?string $message = null) : void {
+		if(!is_null($message)) echo $message;
 		system("PAUSE > nul");
 	}
 

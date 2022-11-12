@@ -20,7 +20,7 @@ class DirectoryFunctions {
 		$this->ave->set_tool($this->name);
 	}
 
-	public function help(){
+	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Delete empty dirs',
@@ -30,24 +30,24 @@ class DirectoryFunctions {
 		]);
 	}
 
-	public function action(string $action){
+	public function action(string $action) : bool {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolDeleteEmptyDirsAction();
-			case '1': return $this->ToolForceLoadIconAction();
-			case '2': return $this->ToolCountFilesAction();
-			case '3': return $this->ToolCloneFolderStructureAction();
+			case '0': return $this->ToolDeleteEmptyDirs();
+			case '1': return $this->ToolForceLoadIcon();
+			case '2': return $this->ToolCountFiles();
+			case '3': return $this->ToolCloneFolderStructure();
 		}
-		$this->ave->select_action();
+		return false;
 	}
 
-	public function ToolDeleteEmptyDirsAction(){
+	public function ToolDeleteEmptyDirs() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("DeleteEmptyDirs");
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
 		$this->ave->setup_folders($folders);
@@ -78,15 +78,15 @@ class DirectoryFunctions {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolForceLoadIconAction(){
+	public function ToolForceLoadIcon() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("ForceLoadIcon");
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
 		$this->ave->setup_folders($folders);
@@ -113,16 +113,16 @@ class DirectoryFunctions {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolCountFilesAction(){
+	public function ToolCountFiles() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("CountFiles");
 
 		echo " Extensions (empty for all): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 
 		if($line == '' || $line == '*'){
 			$extensions = null;
@@ -132,7 +132,7 @@ class DirectoryFunctions {
 
 		echo " Folders: ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
 		$this->ave->setup_folders($folders);
@@ -173,17 +173,17 @@ class DirectoryFunctions {
 
 		unset($data);
 
-		$this->ave->exit();
+		return true;
 	}
 
-	public function ToolCloneFolderStructureAction(){
+	public function ToolCloneFolderStructure() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("CloneFolderStructure");
 
 		set_input:
 		echo " Input (Folder): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
@@ -196,7 +196,7 @@ class DirectoryFunctions {
 		set_output:
 		echo " Output (Folder): ";
 		$line = $this->ave->get_input();
-		if($line == '#') return $this->ave->select_action();
+		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
@@ -233,8 +233,7 @@ class DirectoryFunctions {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
-
-		$this->ave->exit();
+		return true;
 	}
 
 }

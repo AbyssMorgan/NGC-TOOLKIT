@@ -7,16 +7,12 @@ namespace App\Services;
 class IniFile {
 
 	protected ?string $path;
-
 	protected array $data;
-
 	protected bool $valid;
-
 	protected bool $sort;
-
 	protected array $original;
 
-	public int $version = 20000;
+	public int $version = 20100;
 
 	function __construct(?string $path = null, bool $sort = false){
 		$this->path = $path;
@@ -175,12 +171,12 @@ class IniFile {
 		return $value;
 	}
 
-	public function rename(string $key1, string $key2){
+	public function rename(string $key1, string $key2) : void {
 		$this->set($key2, $this->get($key1));
 		$this->unset($key1);
 	}
 
-	public function unset(string|array $keys){
+	public function unset(string|array $keys) : void {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->isSet($key)){
@@ -189,7 +185,7 @@ class IniFile {
 		}
 	}
 
-	public function reset(string|array $keys, int|bool|string|array|float|null $value = null){
+	public function reset(string|array $keys, int|bool|string|array|float|null $value = null) : void {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->isSet($key)){
