@@ -341,7 +341,7 @@ class AVE extends CommandLine {
 
 	public function setup_folders(array $folders) : void {
 		foreach($folders as $folder){
-			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXIST]';
+			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXISTS]';
 			$this->write_log("Scan: $folder");
 		}
 		$this->print_folders_state();

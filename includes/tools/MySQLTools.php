@@ -29,9 +29,10 @@ class MySQLTools {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Configure connection',
-			' 1 - Open config folder',
-			' 2 - Show connections',
-			' 3 - Make backup',
+			' 0 - Remove connection',
+			' 2 - Open config folder',
+			' 3 - Show connections',
+			' 4 - Make backup',
 		]);
 	}
 
@@ -40,9 +41,10 @@ class MySQLTools {
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->ToolConfigureConnection();
-			case '1': return $this->ToolOpenConfigFolder();
-			case '2': return $this->ToolShowConnections();
-			case '3': return $this->ToolMakeBackup();
+			case '1': return $this->ToolRemoveConnection();
+			case '2': return $this->ToolOpenConfigFolder();
+			case '3': return $this->ToolShowConnections();
+			case '4': return $this->ToolMakeBackup();
 		}
 		return false;
 	}
@@ -172,6 +174,27 @@ class MySQLTools {
 		return false;
 	}
 
+	public function ToolRemoveConnection() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("RemoveConnection");
+
+		set_label:
+		echo " Label: ";
+		$label = $this->ave->get_input();
+		if($label == '#') return false;
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
+
+		$path = $this->getConfigPath($label);
+		if(!file_exists($path)){
+			echo " Label \"$label\" not exists.";
+			goto set_label;
+		}
+
+		$this->unlink($this->getConfigPath($label));
+
+		return false;
+	}
+
 	public function ToolOpenConfigFolder() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("OpenConfigFolder");
@@ -214,7 +237,7 @@ class MySQLTools {
 		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
 
 		if(!file_exists($this->getConfigPath($label))){
-			echo " Label \"$label\" not exist.";
+			echo " Label \"$label\" not exists.";
 			goto set_label;
 		}
 
