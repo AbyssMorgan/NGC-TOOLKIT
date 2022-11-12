@@ -1013,7 +1013,7 @@ class NamesGenerator {
 
 		$keywords = [];
 		for($i = 0; $i < $quantity; $i++){
-			echo " Keyword $i: ";
+			echo " Keyword ".($i+1).": ";
 			$keywords[$i] = $this->ave->get_input_no_trim();
 		}
 

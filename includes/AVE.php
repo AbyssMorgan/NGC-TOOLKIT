@@ -110,11 +110,7 @@ class AVE extends CommandLine {
 
 		$config_default->close();
 
-		$timestamp = date("Y-m-d His");
-
-		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt", true, true);
-		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt", true, true);
-		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false, true);
+		$this->init_logs();
 		ini_set('memory_limit', $this->config->get('AVE_MAX_MEMORY_LIMIT'));
 
 		$dev = file_exists($this->path.DIRECTORY_SEPARATOR."_get_package.cmd");
@@ -484,14 +480,21 @@ class AVE extends CommandLine {
 
 	public function exit(int $seconds = 10, bool $open_log = false) : void {
 		$this->write_log("Exit");
-		$this->log_event->close();
-		$this->log_error->close();
-		$this->log_data->close();
-		$this->open_logs($open_log);
+		$this->open_logs($open_log, false);
 		$this->timeout($seconds);
 	}
 
-	public function open_logs(bool $open_event = false) : void {
+	public function init_logs(){
+		$timestamp = date("Y-m-d His");
+		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt", true, true);
+		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt", true, true);
+		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false, true);
+	}
+
+	public function open_logs(bool $open_event = false, bool $init = true) : void {
+		$this->log_event->close();
+		$this->log_error->close();
+		$this->log_data->close();
 		if($open_event && file_exists($this->log_event->getPath())){
 			$this->open_file($this->log_event->getPath());
 		}
@@ -501,6 +504,7 @@ class AVE extends CommandLine {
 		if(file_exists($this->log_error->getPath())){
 			$this->open_file($this->log_error->getPath());
 		}
+		if($init) $this->init_logs();
 	}
 
 	private function timeout(int $seconds) : void {
