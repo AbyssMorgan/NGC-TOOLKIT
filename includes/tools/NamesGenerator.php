@@ -32,6 +32,7 @@ class NamesGenerator {
 			' 6 - Remove YouTube quality tag',
 			' 7 - Series episode editor',
 			' 8 - Add file name prefix/suffix',
+			' 9 - Remove keywords from file name',
 		]);
 	}
 
@@ -48,6 +49,7 @@ class NamesGenerator {
 			case '6': return $this->ToolRemoveYouTubeQualityTag();
 			case '7': return $this->ToolSeriesEpisodeEditor();
 			case '8': return $this->ToolAddFileNamePrefixSuffix();
+			case '9': return $this->ToolRemoveKeywordsFromFileName();
 		}
 		return false;
 	}
@@ -963,6 +965,72 @@ class NamesGenerator {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$prefix.pathinfo($file, PATHINFO_FILENAME).$suffix.".".pathinfo($file, PATHINFO_EXTENSION);
+				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
+					$errors++;
+				} else {
+					if($this->ave->rename($file, $new_name)){
+						$progress++;
+					} else {
+						$errors++;
+					}
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->set_folder_done($folder);
+		}
+		return true;
+	}
+
+	public function ToolRemoveKeywordsFromFileName() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("RemoveKeywordsFromFileName");
+
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+
+		echo " Empty for all, separate with spaces for multiple.\r\n";
+		echo " Extensions: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		echo " Put numbers how much keywords you want add to remove.\r\n";
+
+		set_quantity:
+		echo " Quantity: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$quantity = intval(preg_replace('/\D/', '', $line));
+		if($quantity <= 0) goto set_quantity;
+
+		$keywords = [];
+		for($i = 0; $i < $quantity; $i++){
+			echo " Keyword $i: ";
+			$keywords[$i] = $this->ave->get_input_no_trim();
+		}
+
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$name = str_replace($keywords, '', pathinfo($file, PATHINFO_FILENAME));
+				$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$name.".".pathinfo($file, PATHINFO_EXTENSION);
 				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
