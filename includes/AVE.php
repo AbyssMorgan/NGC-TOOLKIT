@@ -13,6 +13,7 @@ use App\Tools\MediaSorter;
 use App\Tools\DirectoryFunctions;
 use App\Tools\MediaTools;
 use App\Tools\CheckFileIntegrity;
+use App\Tools\MySQLTools;
 
 class AVE extends CommandLine {
 
@@ -255,6 +256,12 @@ class AVE extends CommandLine {
 		$this->title("[$title] Files: $progress Errors: $errors");
 	}
 
+	public function set_progress_ex(string $label, int $progress, int $total) : void {
+		$title = "$this->app_name v$this->version > $this->tool_name";
+		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
+		$this->title("[$title] $label: $progress / $total");
+	}
+
 	public function select_tool() : bool {
 		$this->write_log("Select Tool");
 		$this->clear();
@@ -269,6 +276,7 @@ class AVE extends CommandLine {
 			' 3 - Directory Functions',
 			' 4 - Media Tools',
 			' 5 - Check File Integrity',
+			' 6 - MySQL Tools',
 			' U - Check for updates',
 		]);
 
@@ -297,6 +305,10 @@ class AVE extends CommandLine {
 			}
 			case '5': {
 				$this->tool = new CheckFileIntegrity($this);
+				break;
+			}
+			case '6': {
+				$this->tool = new MySQLTools($this);
 				break;
 			}
 			case 'U': {

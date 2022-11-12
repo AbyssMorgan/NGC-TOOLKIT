@@ -27,6 +27,7 @@
 	require_once("$includes_path/tools/DirectoryFunctions.php");
 	require_once("$includes_path/tools/MediaTools.php");
 	require_once("$includes_path/tools/CheckFileIntegrity.php");
+	require_once("$includes_path/tools/MySQLTools.php");
 
 	$ave = new AVE($argv);
 	if(!$ave->abort) $ave->execute();

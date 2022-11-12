@@ -14,6 +14,7 @@ class DataBaseBackup {
 
 	private int $query_limit;
 	private int $insert_limit;
+	private bool $max_allowed_packet;
 	private string $header;
 	private string $footer;
 	private array $types_no_quotes = [
@@ -28,11 +29,11 @@ class DataBaseBackup {
 		'year',
 	];
 
-	public function __construct(string $path, int $query_limit = 50000, int $insert_limit = 100, bool|int $max_allowed_packet = false, string $date_format = "Y-m-d_His"){
+	public function __construct(string $path, int $query_limit = 50000, int $insert_limit = 100, bool $max_allowed_packet = false, string $date_format = "Y-m-d_His"){
 		$date = date($date_format);
 		$this->query_limit = $query_limit;
 		$this->insert_limit = $insert_limit;
-		$this->set_max_allowed_packet = $max_allowed_packet;
+		$this->max_allowed_packet = $max_allowed_packet;
 		$this->path = $path.DIRECTORY_SEPARATOR.$date;
 		$this->header = base64_decode("U0VUIFNRTF9NT0RFID0gIk5PX0FVVE9fVkFMVUVfT05fWkVSTyI7ClNUQVJUIFRSQU5TQUNUSU9OOwpTRVQgdGltZV96b25lID0gIiswMDowMCI7CgovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX0NMSUVOVD1AQENIQVJBQ1RFUl9TRVRfQ0xJRU5UICovOwovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFM9QEBDSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBAT0xEX0NPTExBVElPTl9DT05ORUNUSU9OPUBAQ09MTEFUSU9OX0NPTk5FQ1RJT04gKi87Ci8qITQwMTAxIFNFVCBOQU1FUyB1dGY4bWI0ICovOw==");
 		$this->footer = base64_decode("Q09NTUlUOwoKLyohNDAxMDEgU0VUIENIQVJBQ1RFUl9TRVRfQ0xJRU5UPUBPTERfQ0hBUkFDVEVSX1NFVF9DTElFTlQgKi87Ci8qITQwMTAxIFNFVCBDSEFSQUNURVJfU0VUX1JFU1VMVFM9QE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBDT0xMQVRJT05fQ09OTkVDVElPTj1AT0xEX0NPTExBVElPTl9DT05ORUNUSU9OICovOw==");
@@ -122,7 +123,7 @@ class DataBaseBackup {
 		if($backup_structure){
 			fwrite($file, $this->getDrop($table)."\n\n");
 			fwrite($file, $this->getCreation($table)."\n\n");
-			if($this->set_max_allowed_packet) fwrite($file, "SET GLOBAL `max_allowed_packet` = 524288000;\r\n\r\n");
+			if($this->max_allowed_packet) fwrite($file, "SET GLOBAL `max_allowed_packet` = 524288000;\r\n\r\n");
 		}
 
 		if($backup_data){
@@ -131,6 +132,8 @@ class DataBaseBackup {
 			$count = $row->cnt;
 			if($count > 0){
 				while($offset < $count){
+					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
+					echo " Table: $table Progress: $percent %        \r";
 					$rows = $this->conn->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					foreach($rows as $row){
@@ -170,9 +173,13 @@ class DataBaseBackup {
 							unset($query);
 						}
 					}
+					$offset += $rows->rowCount();
+					$percent = sprintf("%.02f", max(($offset / $count) * 100.0, 100.0));
+					echo " Table: $table Progress: $percent %        \r";
 					unset($rows);
-					$offset += $this->query_limit;
 				}
+			} else {
+				echo " Table: $table Progress: 100.00 %        \r";
 			}
 		}
 
