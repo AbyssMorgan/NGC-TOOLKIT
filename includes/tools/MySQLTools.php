@@ -73,7 +73,7 @@ class MySQLTools {
 		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
 
 		if(file_exists($this->getConfigPath($label))){
-			echo " Label \"$label\" already in use.";
+			echo " Label \"$label\" already in use.\r\n";
 			echo " Overwrite (Y/N): ";
 			$line = $this->ave->get_input();
 			if(strtoupper($line[0] ?? 'N') == 'N') goto set_label;
@@ -186,7 +186,7 @@ class MySQLTools {
 
 		$path = $this->getConfigPath($label);
 		if(!file_exists($path)){
-			echo " Label \"$label\" not exists.";
+			echo " Label \"$label\" not exists.\r\n";
 			goto set_label;
 		}
 
@@ -237,7 +237,7 @@ class MySQLTools {
 		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
 
 		if(!file_exists($this->getConfigPath($label))){
-			echo " Label \"$label\" not exists.";
+			echo " Label \"$label\" not exists.\r\n";
 			goto set_label;
 		}
 
