@@ -166,7 +166,7 @@ class MySQLTools {
 			'BACKUP_PATH' => $output,
 		], true);
 
-		$this->write_log("Setup connection for \"$label\"");
+		$this->ave->write_log("Setup connection for \"$label\"");
 
 		$this->ave->clear();
 		$this->ave->pause(" Setup connection for \"$label\" done, press enter to back to menu");
