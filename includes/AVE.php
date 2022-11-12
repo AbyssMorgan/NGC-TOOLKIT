@@ -370,6 +370,7 @@ class AVE extends CommandLine {
 	}
 
 	public function mkdir(string $path) : bool {
+		if(file_exists($path) && is_dir($path)) return true;
 		if(mkdir($path, 0777, true)){
 			$this->write_log("MKDIR \"$path\"");
 			return true;

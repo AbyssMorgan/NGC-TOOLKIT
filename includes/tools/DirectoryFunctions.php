@@ -201,16 +201,9 @@ class DirectoryFunctions {
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
-		if(file_exists($output) && !is_dir($output)){
+		if((file_exists($output) && !is_dir($output)) || $this->ave->mkdir($output)){
 			echo " Invalid output folder\r\n";
 			goto set_output;
-		}
-
-		if(!file_exists($output)){
-			if(!$this->ave->mkdir($output)){
-				echo " Failed create output folder\r\n";
-				goto set_output;
-			}
 		}
 
 		$progress = 0;
