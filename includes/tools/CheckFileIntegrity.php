@@ -161,7 +161,7 @@ class CheckFileIntegrity {
 		$folders = count($pattern->getFolders());
 		echo " Loaded $folders folders and $files files\r\n";
 
-		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), pathinfo($pattern_file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard");
+		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), pathinfo($input, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard");
 
 		$cwd = getcwd();
 		chdir($input);

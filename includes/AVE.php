@@ -70,7 +70,7 @@ class AVE extends CommandLine {
 			}
 		}
 
-		foreach($this->config->keys() as $key){
+		foreach($this->config->allExcept(['APP_NEXT_CHECK_FOR_UPDATE','APP_VERSION']) as $key => $value){
 			if(!$config_default->isSet($key)){
 				$this->config->unset($key);
 				$changed = true;
