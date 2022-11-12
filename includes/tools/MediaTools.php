@@ -85,7 +85,7 @@ class MediaTools {
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || $this->ave->mkdir($output)){
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
 			echo " Invalid output folder\r\n";
 			goto set_output;
 		}
@@ -171,7 +171,7 @@ class MediaTools {
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || $this->ave->mkdir($output)){
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
 			echo " Invalid output folder\r\n";
 			goto set_output;
 		}
@@ -251,7 +251,7 @@ class MediaTools {
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || $this->ave->mkdir($output)){
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
 			echo " Invalid output folder\r\n";
 			goto set_output;
 		}
