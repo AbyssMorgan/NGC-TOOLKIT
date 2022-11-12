@@ -109,7 +109,7 @@ class MySQLTools {
 		$db['user'] = $this->ave->get_input();
 
 		echo " DB Pass: ";
-		$db['password'] = $this->ave->get_input();
+		$db['password'] = $this->ave->get_input_no_trim();
 
 		echo " DB Name: ";
 		$db['name'] = $this->ave->get_input();
@@ -245,7 +245,8 @@ class MySQLTools {
 
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		echo " Initialize backup service\r\n";
-		$backup = new DataBaseBackup($ini->get('BACKUP_PATH'), $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('SET_MAX_ALLOWED_PACKET'), $ini->get('FOLDER_DATE_FORMAT'));
+		$path = $ini->get('BACKUP_PATH').DIRECTORY_SEPARATOR.$label;
+		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('SET_MAX_ALLOWED_PACKET'), $ini->get('FOLDER_DATE_FORMAT'));
 
 		echo " Connecting to: ".$ini->get('DB_HOST').':'.$ini->get('DB_PORT').'@'.$ini->get('DB_USER')."\r\n";
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
@@ -265,6 +266,8 @@ class MySQLTools {
 		echo "\n";
 		$this->ave->write_log("Finish backup for \"$label\"");
 
+		$this->ave->open_logs(true);
+		$this->ave->open_file($path);
 		$this->ave->pause(" Backup for \"$label\" done, press enter to back to menu");
 		return false;
 	}
