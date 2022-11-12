@@ -31,6 +31,7 @@ class NamesGenerator {
 			' 5 - Pretty file name',
 			' 6 - Remove YouTube quality tag',
 			' 7 - Series episode editor',
+			' 8 - Add file name prefix/suffix',
 		]);
 	}
 
@@ -46,6 +47,7 @@ class NamesGenerator {
 			case '5': return $this->ToolPrettyFileName();
 			case '6': return $this->ToolRemoveYouTubeQualityTag();
 			case '7': return $this->ToolSeriesEpisodeEditor();
+			case '8': return $this->ToolAddFileNamePrefixSuffix();
 		}
 		return false;
 	}
@@ -915,6 +917,66 @@ class NamesGenerator {
 		if($round == 0){
 			$round++;
 			goto change_names;
+		}
+		return true;
+	}
+
+	public function ToolAddFileNamePrefixSuffix() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("AddFileNamePrefixSuffix");
+
+		echo " Folders: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+
+		echo " Empty for all, separate with spaces for multiple.\r\n";
+		echo " Extensions: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		echo " Prefix (may be empty): ";
+		$prefix = $this->ave->get_input_no_trim();
+		if($prefix == '#') return false;
+		$prefix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
+
+		echo " Suffix (may be empty): ";
+		$suffix = $this->ave->get_input_no_trim();
+		if($suffix == '#') return false;
+		$suffix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
+
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$prefix.pathinfo($file, PATHINFO_FILENAME).$suffix.".".pathinfo($file, PATHINFO_EXTENSION);
+				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
+					$errors++;
+				} else {
+					if($this->ave->rename($file, $new_name)){
+						$progress++;
+					} else {
+						$errors++;
+					}
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->set_folder_done($folder);
 		}
 		return true;
 	}

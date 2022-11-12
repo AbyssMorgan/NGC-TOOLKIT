@@ -26,6 +26,10 @@ class CommandLine {
 		return trim(readline());
 	}
 
+	public function get_input_no_trim() : string {
+		return readline();
+	}
+
 	public function pause(?string $message = null) : void {
 		if(!is_null($message)) echo $message;
 		system("PAUSE > nul");
