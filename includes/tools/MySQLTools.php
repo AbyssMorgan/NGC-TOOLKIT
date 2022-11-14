@@ -29,7 +29,7 @@ class MySQLTools {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Configure connection',
-			' 0 - Remove connection',
+			' 1 - Remove connection',
 			' 2 - Open config folder',
 			' 3 - Show connections',
 			' 4 - Make backup',
