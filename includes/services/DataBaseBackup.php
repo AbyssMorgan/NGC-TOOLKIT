@@ -150,7 +150,7 @@ class DataBaseBackup {
 								} else {
 									$values[] = "b'".decbin(intval($row->$column))."'";
 								}
-							} else if($type == 'blob' || $type == 'binary'){
+							} else if($type == 'blob' || $type == 'binary' || $type == 'longblob'){
 								if(empty($row->$column)){
 									$values[] = "''";
 								} else {
@@ -164,7 +164,7 @@ class DataBaseBackup {
 								}
 							}
 						}
-						$query .= '('.implode(', ',$values).'),'."\n";
+						$query .= '('.implode(',',$values).'),'."\n";
 						unset($values);
 						$seek++;
 						if($seek >= $this->insert_limit){
@@ -172,9 +172,11 @@ class DataBaseBackup {
 							fwrite($file, substr($query, 0, -2).";\n");
 							unset($query);
 						}
+						$offset++;
+						$percent = sprintf("%.02f", ($offset / $count) * 100.0);
+						echo " Table: $table Progress: $percent %        \r";
 					}
-					$offset += $rows->rowCount();
-					$percent = sprintf("%.02f", max(($offset / $count) * 100.0, 100.0));
+					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
 					echo " Table: $table Progress: $percent %        \r";
 					unset($rows);
 				}
