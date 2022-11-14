@@ -178,6 +178,10 @@ class DataBaseBackup {
 					echo " Table: $table Progress: $percent %        \r";
 					unset($rows);
 				}
+				if(isset($query)){
+					fwrite($file, substr($query, 0, -2).";\n");
+					unset($query);
+				}
 			} else {
 				echo " Table: $table Progress: 100.00 %        \r";
 			}
