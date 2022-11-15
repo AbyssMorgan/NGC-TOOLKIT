@@ -284,16 +284,16 @@ class MySQLTools {
 			system("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 			echo "\r\n";
 			if(file_exists("$output.7z")){
-				echo " Compress backup into \"$output.sql\" success\r\n";
-				$this->ave->write_log("Compress backup into \"$output.sql\" success");
+				echo " Compress backup into \"$output.7z\" success\r\n";
+				$this->ave->write_log("Compress backup into \"$output.7z\" success");
 				foreach($tables as $table){
 					$this->ave->unlink($output.DIRECTORY_SEPARATOR."$table.sql");
 				}
 				$this->ave->rmdir($output);
 				$this->ave->open_file($ini->get('BACKUP_PATH'));
 			} else {
-				echo " Compress backup into \"$output.sql\" fail\r\n";
-				$this->ave->write_log("Compress backup into \"$output.sql\" fail");
+				echo " Compress backup into \"$output.7z\" fail\r\n";
+				$this->ave->write_log("Compress backup into \"$output.7z\" fail");
 				$this->ave->open_file($output);
 			}
 		} else {
