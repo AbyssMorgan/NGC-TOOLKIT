@@ -29,7 +29,7 @@ class AVE extends CommandLine {
 	public bool $open_log = false;
 
 	private string $app_name = "AVE";
-	private string $version = "1.4.1";
+	private string $version = "1.4.2";
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
@@ -42,6 +42,7 @@ class AVE extends CommandLine {
 	private array $folders_to_scan = [
 		'bin',
 		'includes',
+		'commands',
 	];
 
 	private array $files_to_scan = [
@@ -190,6 +191,15 @@ class AVE extends CommandLine {
 
 	public function execute() : void {
 		switch(strtolower($this->command ?? '')){
+			case '--make-backup': {
+				if(empty($this->arguments[0] ?? '')){
+					$this->print_help([" Usage: --make-backup <label>"]);
+				} else {
+					$this->tool = new MySQLTools($this);
+					$this->tool->ToolMakeBackupCMD($this->arguments[0] ?? '');
+				}
+				break;
+			}
 			case '--guard-generate': {
 				$guard = new GuardDriver($this->guard_file);
 				$cwd = getcwd();

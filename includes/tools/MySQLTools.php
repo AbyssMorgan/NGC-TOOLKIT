@@ -279,7 +279,7 @@ class MySQLTools {
 		$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
 		if($ini->get('BACKUP_COMPRESS', false)){
 			echo " Compressing backup\r\n";
-			$this->ave->write_log("Compress backup");
+			$this->ave->write_log("Compressing backup");
 			$sql = $output.DIRECTORY_SEPARATOR."*.sql";
 			system("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 			echo "\r\n";
@@ -394,6 +394,74 @@ class MySQLTools {
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Clone for \"$source\" to \"$destination\" done, press enter to back to menu");
 		return false;
+	}
+
+	public function ToolMakeBackupCMD(string $label) : bool {
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+			echo " Invalid label \"$label\"\r\n";
+			return false;
+		}
+
+		if(!file_exists($this->getConfigPath($label))){
+			echo " Label \"$label\" not exists.\r\n";
+			return false;
+		}
+
+		$ini = $this->getConfig($label);
+		$path = $ini->get('BACKUP_PATH').DIRECTORY_SEPARATOR.$label;
+
+		if(!$this->ave->is_valid_device($path)){
+			echo " Output device \"$path\" is not available.\r\n";
+			return false;
+		}
+
+		$this->ave->write_log("Initialize backup for \"$label\"");
+		echo " Initialize backup service\r\n";
+		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
+
+		echo " Connecting to: ".$ini->get('DB_HOST').':'.$ini->get('DB_PORT').'@'.$ini->get('DB_USER')."\r\n";
+		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))){
+			echo " Failed connect to database.\r\n";
+			return false;
+		}
+
+		echo " Create backup\r\n\r\n";
+		$tables = $backup->getTables();
+		$total = count($tables);
+		foreach($tables as $table){
+			$this->ave->write_log("Create backup for table $table");
+			$backup->backupTable($table, $ini->get('BACKUP_TYPE_STRUCTURE'), $ini->get('BACKUP_TYPE_DATA'));
+			echo "\n";
+		}
+		echo "\n";
+		$this->ave->write_log("Finish backup for \"$label\"");
+		$backup->disconnect();
+
+		$output = $backup->getOutput();
+		$cl = $this->ave->config->get('AVE_BACKUP_COMPRESS_LEVEL');
+		$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
+		if($ini->get('BACKUP_COMPRESS', false)){
+			echo " Compressing backup\r\n";
+			$this->ave->write_log("Compressing backup");
+			$sql = $output.DIRECTORY_SEPARATOR."*.sql";
+			system("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
+			echo "\r\n";
+			if(file_exists("$output.7z")){
+				echo " Compress backup into \"$output.7z\" success.\r\n";
+				$this->ave->write_log("Compress backup into \"$output.7z\" success.");
+				foreach($tables as $table){
+					$this->ave->unlink($output.DIRECTORY_SEPARATOR."$table.sql");
+				}
+				$this->ave->rmdir($output);
+			} else {
+				echo " Compress backup into \"$output.7z\" fail.\r\n";
+				$this->ave->write_log("Compress backup into \"$output.7z\" fail.");
+			}
+		}
+
+		echo " Backup for \"$label\" done.\r\n";
+		$this->ave->write_log(" Backup for \"$label\" done.");
+		return true;
 	}
 
 }
