@@ -292,7 +292,7 @@ class MediaTools {
 						$errors++;
 					} else {
 						foreach($variants as $variant){
-							$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."@$variant.png";
+							$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."@$variant.".pathinfo($file, PATHINFO_EXTENSION);
 							if($detector->saveVariantImage(floatval($variant), $file, $new_name, $size)){
 								$this->ave->write_log("WRITE VARIANT $variant FOR \"$file\"");
 							}
