@@ -96,7 +96,17 @@ class CommandLine {
 	}
 
 	public function is_valid_device(string $path) : bool {
-		return file_exists(substr($path,0,3));
+		if(substr($path, 1, 1) == ':'){
+			return file_exists(substr($path, 0, 3));
+		} else if(substr($path, 0, 2) == "\\\\"){
+			$device = substr($path, 2);
+			if(strpos($device, "\\") !== false){
+				$parts = explode("\\", $device);
+				return file_exists("\\\\".$parts[0]."\\".$parts[1]);
+			} else {
+				return false;
+			}
+		}
 	}
 
 }
