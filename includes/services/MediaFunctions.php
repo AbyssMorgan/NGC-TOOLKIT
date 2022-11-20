@@ -10,7 +10,7 @@ use App\Dictionaries\MediaOrientation;
 
 class MediaFunctions {
 
-	public function getImageFromPath(string $path) : ?GdImage {
+	public function getImageFromPath(string $path) : GdImage|bool|null {
 		if(!file_exists($path)) return null;
 		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
 			case 'bmp': return @imagecreatefrombmp($path);
