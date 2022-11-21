@@ -29,7 +29,7 @@ class AVE extends CommandLine {
 	public bool $open_log = false;
 
 	private string $app_name = "AVE";
-	private string $version = "1.4.2";
+	private string $version = "1.4.3";
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
@@ -77,6 +77,8 @@ class AVE extends CommandLine {
 				$changed = true;
 			}
 		}
+
+		popen('color '.$this->config->get('AVE_COLOR'), 'w');
 
 		$version_changed = false;
 		$check_for_updates = false;
@@ -208,6 +210,11 @@ class AVE extends CommandLine {
 				$guard->setFiles($this->files_to_scan);
 				$guard->generate();
 				chdir($cwd);
+				break;
+			}
+			case '--sort-settings': {
+				$config = new IniFile("$this->path/config/default.ini", true);
+				$config->save();
 				break;
 			}
 			case '--put-version': {
@@ -455,7 +462,9 @@ class AVE extends CommandLine {
 			if($file->isDir() || $file->isLink()) continue;
 			if(!is_null($extensions) && !in_array(strtolower($file->getExtension()), $extensions)) continue;
 			if(!is_null($except) && in_array(strtolower($file->getExtension()), $except)) continue;
-			array_push($data, $file->getRealPath());
+			$fp = $file->getRealPath();
+			if(!$fp) continue;
+			array_push($data, $fp);
 		}
 		return $data;
 	}

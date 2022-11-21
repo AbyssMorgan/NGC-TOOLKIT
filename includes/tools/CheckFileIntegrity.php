@@ -113,7 +113,7 @@ class CheckFileIntegrity {
 		$line = $this->ave->get_input();
 		if($line == '#') return false;
 		foreach($this->ave->get_folders($line) as $file){
-			$pattern->addFiles(str_replace($input, "", $file));
+			$pattern->addFiles(str_replace([$input.DIRECTORY_SEPARATOR,$input], "", $file));
 		}
 
 		if(!empty($line)){
@@ -128,7 +128,9 @@ class CheckFileIntegrity {
 
 		$this->ave->open_file($output);
 
-		return true;
+		$this->ave->open_logs(false);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolGuardGenerate() : bool {
@@ -161,7 +163,7 @@ class CheckFileIntegrity {
 		$folders = count($pattern->getFolders());
 		echo " Loaded $folders folders and $files files\r\n";
 
-		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), pathinfo($input, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard");
+		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), $input.DIRECTORY_SEPARATOR.pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard");
 
 		$cwd = getcwd();
 		chdir($input);
@@ -172,7 +174,9 @@ class CheckFileIntegrity {
 
 		$this->ave->open_file(pathinfo($pattern_file, PATHINFO_DIRNAME));
 
-		return true;
+		$this->ave->open_logs(false);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolCheckIntegrity() : bool {
@@ -245,7 +249,9 @@ class CheckFileIntegrity {
 		$this->ave->write_data("\r\nUnknown:");
 		$this->ave->write_data($errors['unknown'] ?? []);
 
-		return true;
+		$this->ave->open_logs(false);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolGetFilesTree() : bool {
@@ -278,7 +284,9 @@ class CheckFileIntegrity {
 
 		$this->ave->open_file($tree_file);
 
-		return true;
+		$this->ave->open_logs(false);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolUpdateRemoveMissing() : bool {
@@ -287,8 +295,9 @@ class CheckFileIntegrity {
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
-		$this->ave->open_log = true;
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolUpdateAddUnknown() : bool {
@@ -297,8 +306,9 @@ class CheckFileIntegrity {
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
-		$this->ave->open_log = true;
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolUpdateChanged() : bool {
@@ -307,8 +317,9 @@ class CheckFileIntegrity {
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
-		$this->ave->open_log = true;
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolUpdateMissingAndUnknown() : bool {
@@ -317,8 +328,9 @@ class CheckFileIntegrity {
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);
-		$this->ave->open_log = true;
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolGuardSetFile() : ?string {

@@ -19,7 +19,7 @@ class CommandLine {
 	}
 
 	public function cls() : void {
-		echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
+		popen('cls', 'w');
 	}
 
 	public function get_input() : string {
