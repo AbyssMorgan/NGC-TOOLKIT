@@ -62,7 +62,7 @@ class GuardDriver {
 	}
 
 	public function load(IniFile $guard) : void {
-		$this->data = $guard->allExcept(['files','keys','files_to_scan','folders_to_scan']);
+		$this->data = $guard->allExcept(['files', 'keys', 'files_to_scan', 'folders_to_scan']);
 		$this->file_list = $guard->get('files');
 		$this->keys = $guard->get('keys');
 		$this->files_to_scan = $guard->get('files_to_scan');
@@ -189,12 +189,12 @@ class GuardDriver {
 	public function getTree() : array {
 		$guard = new IniFile($this->file, true);
 		$data = [];
-		foreach($guard->get('keys',[]) as $key => $value){
+		foreach($guard->get('keys', []) as $key => $value){
 			$guard->rename($key, $value);
 			$guard->extract_path($data, $value);
 		}
 		$guard->setAll($data);
-		foreach($guard->get('.',[]) as $key => $value){
+		foreach($guard->get('.', []) as $key => $value){
 			$guard->set($key, $value);
 		}
 		$guard->unset('.');

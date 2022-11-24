@@ -11,7 +11,7 @@ class CommandLine {
 	}
 
 	public function cmd_escape(string $text) : string {
-		return str_replace([">","<"],["^>","^<"], $text);
+		return str_replace([">", "<"], ["^>", "^<"], $text);
 	}
 
 	public function title(string $title) : void {
@@ -43,19 +43,19 @@ class CommandLine {
 		$offset = 0;
 
 		while($offset < $length){
-			if(substr($string,$offset,1) == '"'){
-				$end = strpos($string,'"',$offset+1);
-				array_push($folders,substr($string,$offset+1,$end - $offset-1));
+			if(substr($string, $offset, 1) == '"'){
+				$end = strpos($string, '"', $offset+1);
+				array_push($folders, substr($string, $offset+1, $end - $offset-1));
 				$offset = $end + 1;
-			} else if(substr($string,$offset,1) == ' '){
+			} else if(substr($string, $offset, 1) == ' '){
 				$offset++;
 			} else {
-				$end = strpos($string,' ',$offset);
+				$end = strpos($string, ' ', $offset);
 				if($end !== false){
-					array_push($folders,substr($string,$offset,$end - $offset));
+					array_push($folders, substr($string, $offset, $end - $offset));
 					$offset = $end + 1;
 				} else {
-					array_push($folders,substr($string,$offset));
+					array_push($folders, substr($string, $offset));
 					$offset = $length;
 				}
 			}

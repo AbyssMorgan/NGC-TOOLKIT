@@ -50,7 +50,7 @@ class FaceDetector {
 		$image = new Imagick();
 		$image->readImage($input);
 		$image->cropImage((int)$rect['width'], (int)$rect['height'], (int)$rect['x'], (int)$rect['y']);
-		if($size > 0) $image->resizeImage($size, $size,Imagick::FILTER_LANCZOS, 1);
+		if($size > 0) $image->resizeImage($size, $size, Imagick::FILTER_LANCZOS, 1);
 		$image->setImageCompressionQuality(100);
 		$image->writeImage($output);
 		$image->clear();
@@ -140,7 +140,7 @@ class FaceDetector {
 			$w = (int)(20*$scale);
 			$endx = $width - $w - 1;
 			$endy = $height - $w - 1;
-			$step = (int)(max($scale,2));
+			$step = (int)(max($scale, 2));
 			$inv_area = 1 / ($w*$w);
 			for($y = 0; $y < $endy; $y += $step){
 				for($x = 0; $x < $endx; $x += $step){

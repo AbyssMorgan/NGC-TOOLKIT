@@ -27,11 +27,11 @@ class IniFile {
 	}
 
 	protected function create() : bool {
-		$folder = pathinfo($this->path,PATHINFO_DIRNAME);
+		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
 		if(!file_exists($folder)) mkdir($folder, 0777, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
-		fwrite($file,"");
+		fwrite($file, "");
 		fclose($file);
 		return file_exists($this->path);
 	}
@@ -54,7 +54,7 @@ class IniFile {
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		$file = fopen($this->path,"r");
+		$file = fopen($this->path, "r");
 		if(!$file) return false;
 		$this->data = [];
 		while(($line = fgets($file)) !== false){
@@ -68,15 +68,15 @@ class IniFile {
 	}
 
 	public function parse_line(string $line, &$key, int|bool|string|array|float|null &$data, bool $escape = true) : bool {
-		if($escape) $line = str_replace("\n","",str_replace("\r","",str_replace("\xEF\xBB\xBF","",$line)));
+		if($escape) $line = str_replace("\n", "", str_replace("\r", "", str_replace("\xEF\xBB\xBF", "", $line)));
 		if(strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
-		$option = explode("=",$line,2);
-		if(!empty($option[0])){
-			$key = $option[0];
+		$option = explode("=", $line, 2);
+		if(!empty(trim($option[0]))){
+			$key = trim($option[0]);
 			if(!isset($option[1])){
 				$data = null;
 			} else if(is_numeric($option[1])){
-				if(strpos($option[1],".") !== false){
+				if(strpos($option[1], ".") !== false){
 					$data = floatval($option[1]);
 				} else {
 					$data = intval($option[1]);
@@ -90,13 +90,13 @@ class IniFile {
 			} else if($option[1] == 'null'){
 				$data = null;
 			} else {
-				if(substr($option[1],0,1) == '"' && substr($option[1],-1,1) == '"'){
-					$data = substr($option[1],1,-1);
+				if(substr($option[1], 0, 1) == '"' && substr($option[1], -1, 1) == '"'){
+					$data = substr($option[1], 1, -1);
 				} else {
 					$data = $option[1];
 				}
-				if(substr($data,0,5) == 'JSON:'){
-					$data = json_decode(base64_decode(substr($data,5)),true);
+				if(substr($data, 0, 5) == 'JSON:'){
+					$data = json_decode(base64_decode(substr($data, 5)), true);
 				}
 			}
 		}
@@ -143,7 +143,7 @@ class IniFile {
 
 	public function update(array $data, bool $save = false) : void {
 		foreach($data as $key => $value){
-			$this->set($key,$value);
+			$this->set($key, $value);
 		}
 		if($save) $this->save();
 	}
@@ -189,7 +189,7 @@ class IniFile {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->isSet($key)){
-				$this->set($key,$value);
+				$this->set($key, $value);
 			}
 		}
 	}
@@ -200,24 +200,24 @@ class IniFile {
 			chmod($this->path, 0777);
 			unlink($this->path);
 		}
-		$file = fopen($this->path,"w");
+		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		if($this->sort) ksort($this->data);
 		foreach($this->data as $key => $value){
 			if(is_numeric($value)){
-				fwrite($file,"$key=$value\r\n");
+				fwrite($file, "$key=$value\r\n");
 			} else if(is_null($value)){
-				fwrite($file,"$key=null\r\n");
+				fwrite($file, "$key=null\r\n");
 			} else if(is_bool($value)){
 				$value = $value ? 'true' : 'false';
-				fwrite($file,"$key=$value\r\n");
+				fwrite($file, "$key=$value\r\n");
 			} else if(empty($value) && !is_array($value)){
-				fwrite($file,"$key=\"\"\r\n");
+				fwrite($file, "$key=\"\"\r\n");
 			} else if(is_array($value)){
 				$value = "JSON:".base64_encode(json_encode($value));
-				fwrite($file,"$key=\"$value\"\r\n");
+				fwrite($file, "$key=\"$value\"\r\n");
 			} else {
-				fwrite($file,"$key=\"$value\"\r\n");
+				fwrite($file, "$key=\"$value\"\r\n");
 			}
 		}
 		fclose($file);
@@ -249,7 +249,7 @@ class IniFile {
 
 	public function getModificationDate() : string {
 		if(!$this->isValid()) return '0000-00-00 00:00:00';
-		return date("Y-m-d H:i:s",filemtime($this->path));
+		return date("Y-m-d H:i:s", filemtime($this->path));
 	}
 
 	public function toJson() : string|false {
@@ -276,8 +276,8 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos($key,$search) !== false){
-				array_push($results,$key);
+			if(strpos($key, $search) !== false){
+				array_push($results, $key);
 			}
 		}
 		return $results;
@@ -287,8 +287,8 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos('#'.$key,'#'.$search) !== false){
-				array_push($results,$key);
+			if(strpos('#'.$key, '#'.$search) !== false){
+				array_push($results, $key);
 			}
 		}
 		return $results;
@@ -298,8 +298,8 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos($key.'#',$search.'#') !== false){
-				array_push($results,$key);
+			if(strpos($key.'#', $search.'#') !== false){
+				array_push($results, $key);
 			}
 		}
 		return $results;
@@ -326,7 +326,7 @@ class IniFile {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
 		foreach($this->keys() as $key){
-			if(!in_array($key,$keys)) $data[$key] = $this->get($key);
+			if(!in_array($key, $keys)) $data[$key] = $this->get($key);
 		}
 		return $data;
 	}

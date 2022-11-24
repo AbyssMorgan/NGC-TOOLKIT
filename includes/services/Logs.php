@@ -19,30 +19,30 @@ class Logs {
 	}
 
 	protected function create() : bool {
-		$folder = pathinfo($this->path,PATHINFO_DIRNAME);
+		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
 		if(!file_exists($folder)) mkdir($folder, 0777, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
-		fwrite($file,"");
+		fwrite($file, "");
 		fclose($file);
 		return file_exists($this->path);
 	}
 
 	protected function writeString(string $line) : bool {
-		if(!$this->file) $this->file = fopen($this->path,"a");
+		if(!$this->file) $this->file = fopen($this->path, "a");
 		if(!$this->file) return false;
-		if($this->timestamp) fwrite($this->file,"[".date("Y-m-d H:i:s")."] ");
-		fwrite($this->file,$line."\r\n");
+		if($this->timestamp) fwrite($this->file, "[".date("Y-m-d H:i:s")."] ");
+		fwrite($this->file, $line."\r\n");
 		if(!$this->hold_open) $this->close();
 		return true;
 	}
 
 	protected function writeArray(array $lines) : bool {
-		if(!$this->file) $this->file = fopen($this->path,"a");
+		if(!$this->file) $this->file = fopen($this->path, "a");
 		if(!$this->file) return false;
 		foreach($lines as $line){
-			if($this->timestamp) fwrite($this->file,"[".date("Y-m-d H:i:s")."] ");
-			fwrite($this->file,$line."\r\n");
+			if($this->timestamp) fwrite($this->file, "[".date("Y-m-d H:i:s")."] ");
+			fwrite($this->file, $line."\r\n");
 		}
 		if(!$this->hold_open) $this->close();
 		return true;

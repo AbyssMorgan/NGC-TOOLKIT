@@ -64,7 +64,7 @@ class GuardPattern {
 	}
 
 	public function load(string $pattern) : void {
-		$data = explode("\n", str_replace(["\r\n","\r"],"\n", $pattern));
+		$data = explode("\n", str_replace(["\r\n", "\r"], "\n", $pattern));
 		$folders = [];
 		$files = [];
 		foreach($data as $pat){

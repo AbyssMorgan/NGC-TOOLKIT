@@ -66,12 +66,12 @@ class AVE extends CommandLine {
 		$this->guard_file = "$this->path/AVE.ave-guard";
 		foreach($config_default->getAll() as $key => $value){
 			if(!$this->config->isSet($key)){
-				$this->config->set($key,$value);
+				$this->config->set($key, $value);
 				$changed = true;
 			}
 		}
 
-		foreach($this->config->allExcept(['APP_NEXT_CHECK_FOR_UPDATE','APP_VERSION']) as $key => $value){
+		foreach($this->config->allExcept(['APP_NEXT_CHECK_FOR_UPDATE', 'APP_VERSION']) as $key => $value){
 			if(!$config_default->isSet($key)){
 				$this->config->unset($key);
 				$changed = true;
@@ -152,7 +152,7 @@ class AVE extends CommandLine {
 		echo " Download update...\r\n";
 		$file = $this->path.DIRECTORY_SEPARATOR."AVE-PHP.7z";
 		if(file_exists($file)) unlink($file);
-		$fh = fopen($file,"wb");
+		$fh = fopen($file, "wb");
 		$ch = curl_init("https://github.com/AbyssMorgan/AVE-PHP/releases/download/v$version/AVE-PHP.7z");
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -451,8 +451,8 @@ class AVE extends CommandLine {
 	public function formatBytes(int $bytes, int $precision = 2) : string {
 		if($bytes <= 0) return '0.00 B';
 		$i = floor(log($bytes)/log(1024));
-		$sizes = ['B','KB','MB','GB','TB','PB','EB','ZB','YB'];
-		return sprintf('%.'.$precision.'f',$bytes/pow(1024,$i)).' '.$sizes[$i];
+		$sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.$sizes[$i];
 	}
 
 	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {
