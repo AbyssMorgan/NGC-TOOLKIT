@@ -62,6 +62,7 @@ class FileFunctions {
 		if(!in_array($this->params['mode'],['a','b'])) goto set_mode;
 		if(!in_array($this->params['action'],['1','2'])) goto set_mode;
 
+		$this->ave->clear();
 		echo " Folders: ";
 		$line = $this->ave->get_input();
 		if($line == '#') return false;
