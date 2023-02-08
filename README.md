@@ -10,6 +10,3 @@ Windows console tool for media
 
 #### Informations
 - By defaults logs save into C:\Users\%USERNAME%\AppData\Roaming\AVE you can change this by edit [AVE_LOG_FOLDER](https://github.com/AbyssMorgan/AVE-PHP/wiki/config#AVE_LOG_FOLDER) and [AVE_DATA_FOLDER](https://github.com/AbyssMorgan/AVE-PHP/wiki/config#AVE_DATA_FOLDER)
-
-#### Contact
-- [Discord](https://discord.gg/abTtrf2vsz)
