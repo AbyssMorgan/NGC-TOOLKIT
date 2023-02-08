@@ -68,14 +68,25 @@ class MediaFunctions {
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
-	public function getVideoThumbnail(string $path) : bool {
-		if(file_exists("$path"."_s.jpg")) return true;
+	public function getVideoDuration(string $path) : string {
+		exec("ffprobe -i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
+		$file_duration = trim($output[0]);
+		$h = $m = $s = 0;
+		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
+		return sprintf("%02d:%02d:%02d", $h, $m, $s);
+	}
+
+	public function getVideoThumbnail(string $path, ?string $output = null) : bool {
 		$folder = pathinfo($path, PATHINFO_DIRNAME);
+		if(is_null($output)) $output = $folder;
+		$image_path = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME)."_s.jpg";
+		if(file_exists($image_path)) return true;
 		$w = $this->config->get('AVE_THUMBNAIL_WIDTH');
 		$r = $this->config->get('AVE_THUMBNAIL_ROWS');
 		$c = $this->config->get('AVE_THUMBNAIL_COLUMN');
-		exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$folder\" >nul 2>nul", $output);
-		return file_exists("$path"."_s.jpg");
+		$out = [];
+		exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
+		return file_exists($image_path);
 	}
 
 	public function getMediaOrientation(int $width, int $height) : int {
