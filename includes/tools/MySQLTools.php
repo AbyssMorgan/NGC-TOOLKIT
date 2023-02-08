@@ -72,7 +72,10 @@ class MySQLTools {
 		echo " Label: ";
 		$label = $this->ave->get_input();
 		if($label == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+			echo " Invalid label\r\n";
+			goto set_label;
+		}
 
 		if(file_exists($this->getConfigPath($label))){
 			echo " Label \"$label\" already in use.\r\n";
@@ -184,7 +187,10 @@ class MySQLTools {
 		echo " Label: ";
 		$label = $this->ave->get_input();
 		if($label == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+			echo " Invalid label\r\n";
+			goto set_label;
+		}
 
 		$path = $this->getConfigPath($label);
 		if(!file_exists($path)){
@@ -236,7 +242,10 @@ class MySQLTools {
 		echo " Label: ";
 		$label = $this->ave->get_input();
 		if($label == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)) goto set_label;
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+			echo " Invalid label\r\n";
+			goto set_label;
+		}
 
 		if(!file_exists($this->getConfigPath($label))){
 			echo " Label \"$label\" not exists.\r\n";
@@ -313,7 +322,10 @@ class MySQLTools {
 		echo " Source label: ";
 		$source = $this->ave->get_input();
 		if($source == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $source)) goto set_label_source;
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $source)){
+			echo " Invalid label\r\n";
+			goto set_label_source;
+		}
 
 		if(!file_exists($this->getConfigPath($source))){
 			echo " Source label \"$source\" not exists.\r\n";
@@ -334,7 +346,10 @@ class MySQLTools {
 		echo " Destination label: ";
 		$destination = $this->ave->get_input();
 		if($destination == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $destination)) goto set_label_destination;
+		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $destination)){
+			echo " Invalid label\r\n";
+			goto set_label_destination;
+		}
 
 		if(!file_exists($this->getConfigPath($destination))){
 			echo " Destination label \"$destination\" not exists.\r\n";
