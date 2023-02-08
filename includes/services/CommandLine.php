@@ -10,6 +10,8 @@ class CommandLine {
 
 	}
 
+	public int $version = 10100;
+
 	public function cmd_escape(string $text) : string {
 		return str_replace([">", "<"], ["^>", "^<"], $text);
 	}
@@ -107,6 +109,10 @@ class CommandLine {
 				return false;
 			}
 		}
+	}
+
+	public function get_file_path(string $path) : string {
+		return str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
 	}
 
 }
