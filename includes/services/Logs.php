@@ -11,7 +11,9 @@ class Logs {
 	private bool $hold_open;
 	private $file;
 
-	function __construct(string $path, $timestamp = true, $hold_open = false){
+	public int $version = 10100;
+
+	function __construct(string $path, bool $timestamp = true, bool $hold_open = false){
 		$this->path = $path;
 		$this->timestamp = $timestamp;
 		$this->hold_open = $hold_open;
