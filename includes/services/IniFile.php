@@ -12,7 +12,7 @@ class IniFile {
 	protected bool $sort;
 	protected array $original;
 
-	public int $version = 20100;
+	public int $version = 20300;
 
 	function __construct(?string $path = null, bool $sort = false){
 		$this->path = $path;
@@ -68,7 +68,7 @@ class IniFile {
 	}
 
 	public function parse_line(string $line, &$key, int|bool|string|array|float|null &$data, bool $escape = true) : bool {
-		if($escape) $line = str_replace("\n", "", str_replace("\r", "", str_replace("\xEF\xBB\xBF", "", $line)));
+		if($escape) $line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
 		if(strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
 		$option = explode("=", $line, 2);
 		if(!empty(trim($option[0]))){
@@ -197,8 +197,10 @@ class IniFile {
 	public function save() : bool {
 		if(!$this->isValid()) return false;
 		if(file_exists($this->path)){
-			chmod($this->path, 0777);
-			unlink($this->path);
+			if(file_exists($this->path)){
+				chmod($this->path, 0777);
+				unlink($this->path);
+			}
 		}
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
@@ -335,13 +337,11 @@ class IniFile {
 		$this->set_nested_array_value($data, $key, $this->get($key), $delimiter);
 	}
 
-	public function set_nested_array_value(array &$array, string $path, array $value, $delimiter = '/') : mixed {
+	public function set_nested_array_value(array &$array, string $path, array $value, string $delimiter = '/') : void {
 		$pathParts = explode($delimiter, $path);
 		$current = &$array;
 		foreach($pathParts as $key) $current = &$current[$key];
-		$backup = $current;
 		$current = $value;
-		return $backup;
 	}
 
 }
