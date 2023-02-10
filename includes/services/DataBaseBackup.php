@@ -97,7 +97,7 @@ class DataBaseBackup {
 	}
 
 	public function escape(mixed $string) : string {
-		return preg_replace('~[\x00\x0A\x0D\x1A\x22\x27\x5C]~u', '\\\$0', strval($string));
+		return preg_replace('~[\x00\x0A\x0D\x1A\x22\x27\x5C]~u', '\\\$0', strval($string)) ?? '';
 	}
 
 	public function isDestinationEmpty() : bool {
