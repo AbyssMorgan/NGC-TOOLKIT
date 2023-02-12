@@ -401,7 +401,7 @@ class NamesGenerator {
 					}
 				}
 				if($this->params['thumbnail']){
-					$thumbnail = $media->getVideoThumbnail($file);
+					$thumbnail = $media->getVideoThumbnail($file, $directory, $this->ave->config->get('AVE_THUMBNAIL_WIDTH'), $this->ave->config->get('AVE_THUMBNAIL_ROWS'), $this->ave->config->get('AVE_THUMBNAIL_COLUMN'));
 				} else {
 					$thumbnail = false;
 				}

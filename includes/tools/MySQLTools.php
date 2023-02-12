@@ -22,7 +22,7 @@ class MySQLTools {
 	public function __construct(AVE $ave){
 		$this->ave = $ave;
 		$this->ave->set_tool($this->name);
-		$this->path = $this->ave->path.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'mysql';
+		$this->path = $this->ave->get_file_path($this->ave->path."/config/mysql");
 	}
 
 	public function help() : void {
@@ -52,7 +52,7 @@ class MySQLTools {
 	}
 
 	public function getConfigPath(string $label) : string {
-		return $this->path.DIRECTORY_SEPARATOR."$label.ini";
+		return $this->ave->get_file_path("$this->path/$label.ini");
 	}
 
 	public function getConfig(string $label) : IniFile {
@@ -253,7 +253,7 @@ class MySQLTools {
 		}
 
 		$ini = $this->getConfig($label);
-		$path = $ini->get('BACKUP_PATH').DIRECTORY_SEPARATOR.$label;
+		$path = $this->ave->get_file_path($ini->get('BACKUP_PATH')."/$label");
 
 		if(!$this->ave->is_valid_device($path)){
 			echo " Output device \"$path\" is not available.\r\n";
@@ -289,14 +289,14 @@ class MySQLTools {
 		if($ini->get('BACKUP_COMPRESS', false)){
 			echo " Compressing backup\r\n";
 			$this->ave->write_log("Compressing backup");
-			$sql = $output.DIRECTORY_SEPARATOR."*.sql";
+			$sql = $this->ave->get_file_path("$output./*.sql");
 			system("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 			echo "\r\n";
 			if(file_exists("$output.7z")){
 				echo " Compress backup into \"$output.7z\" success\r\n";
 				$this->ave->write_log("Compress backup into \"$output.7z\" success");
 				foreach($tables as $table){
-					$this->ave->unlink($output.DIRECTORY_SEPARATOR."$table.sql");
+					$this->ave->unlink($this->ave->get_file_path("$output/$table.sql"));
 				}
 				$this->ave->rmdir($output);
 				$this->ave->open_file($ini->get('BACKUP_PATH'));
@@ -333,7 +333,7 @@ class MySQLTools {
 		}
 
 		$ini_source = $this->getConfig($source);
-		$path = $ini_source->get('BACKUP_PATH').DIRECTORY_SEPARATOR.$source;
+		$path = $this->ave->get_file_path($ini_source->get('BACKUP_PATH')."/$source");
 
 		$this->ave->write_log("Initialize backup for \"$source\"");
 		echo " Initialize backup service\r\n";
@@ -423,7 +423,7 @@ class MySQLTools {
 		}
 
 		$ini = $this->getConfig($label);
-		$path = $ini->get('BACKUP_PATH').DIRECTORY_SEPARATOR.$label;
+		$path = $this->ave->get_file_path($ini->get('BACKUP_PATH')."/$label");
 
 		if(!$this->ave->is_valid_device($path)){
 			echo " Output device \"$path\" is not available.\r\n";
@@ -458,14 +458,14 @@ class MySQLTools {
 		if($ini->get('BACKUP_COMPRESS', false)){
 			echo " Compressing backup\r\n";
 			$this->ave->write_log("Compressing backup");
-			$sql = $output.DIRECTORY_SEPARATOR."*.sql";
+			$sql = $this->ave->get_file_path("$output/*.sql");
 			system("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 			echo "\r\n";
 			if(file_exists("$output.7z")){
 				echo " Compress backup into \"$output.7z\" success.\r\n";
 				$this->ave->write_log("Compress backup into \"$output.7z\" success.");
 				foreach($tables as $table){
-					$this->ave->unlink($output.DIRECTORY_SEPARATOR."$table.sql");
+					$this->ave->unlink($this->ave->get_file_path("$output/$table.sql"));
 				}
 				$this->ave->rmdir($output);
 			} else {

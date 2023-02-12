@@ -28,8 +28,9 @@ class AVE extends CommandLine {
 	public bool $abort = false;
 	public bool $open_log = false;
 
-	private string $app_name = "AVE";
-	private string $version = "1.4.3";
+	public string $app_name = "AVE";
+	public string $version = "1.4.4";
+
 	private ?string $command;
 	private array $arguments;
 	private string $logo;
@@ -53,17 +54,17 @@ class AVE extends CommandLine {
 	public function __construct(array $arguments){
 		parent::__construct();
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
-		$this->path = __DIR__.DIRECTORY_SEPARATOR."..";
+		$this->path = $this->get_file_path(__DIR__."/..");
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);
 		$this->arguments = array_values($arguments);
 		$this->logo = "\r\n AVE-PHP Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
-		$config_default = new IniFile("$this->path/config/default.ini", true);
-		$this->config = new IniFile("$this->path/config/user.ini", true);
-		$this->mkvmerge = new IniFile("$this->path/config/mkvmerge.ini", true);
-		$this->guard_file = "$this->path/AVE.ave-guard";
+		$config_default = new IniFile($this->get_file_path("$this->path/config/default.ini", true));
+		$this->config = new IniFile($this->get_file_path("$this->path/config/user.ini", true));
+		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/config/mkvmerge.ini", true));
+		$this->guard_file = $this->get_file_path("$this->path/AVE.ave-guard");
 		foreach($config_default->getAll() as $key => $value){
 			if(!$this->config->isSet($key)){
 				$this->config->set($key, $value);
@@ -116,14 +117,14 @@ class AVE extends CommandLine {
 		$this->init_logs();
 		ini_set('memory_limit', $this->config->get('AVE_MAX_MEMORY_LIMIT'));
 
-		$dev = file_exists($this->path.DIRECTORY_SEPARATOR."_get_package.cmd");
+		$dev = file_exists($this->get_file_path("$this->path/_get_package.cmd"));
 
 		if($version_changed && !$dev){
 			echo " Check for remove unused files...\r\n";
 			$validation = $this->validate(['damaged' => false, 'unknown' => true, 'missing' => false]);
 			foreach($validation as $error){
 				if($error['type'] == 'unknown'){
-					$this->unlink($this->path.DIRECTORY_SEPARATOR.$error['file']);
+					$this->unlink($this->get_file_path("$this->path/".$error['file']));
 				}
 			}
 		}
@@ -148,9 +149,9 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function download_update($version){
+	public function download_update(string $version) : void {
 		echo " Download update...\r\n";
-		$file = $this->path.DIRECTORY_SEPARATOR."AVE-PHP.7z";
+		$file = $this->get_file_path("$this->path/AVE-PHP.7z");
 		if(file_exists($file)) unlink($file);
 		$fh = fopen($file, "wb");
 		$ch = curl_init("https://github.com/AbyssMorgan/AVE-PHP/releases/download/v$version/AVE-PHP.7z");
@@ -166,7 +167,7 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function tool_update(bool $response = false){
+	public function tool_update(bool $response = false) : void {
 		echo " Check for updates ...\r\n";
 		$version = '';
 		if($this->check_for_updates($version)){
@@ -420,6 +421,21 @@ class AVE extends CommandLine {
 		}
 	}
 
+	public function copy(string $from, string $to) : bool {
+		if($from == $to) return true;
+		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
+			$this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXIST");
+			return false;
+		}
+		if(copy($from, $to)){
+			$this->write_log("COPY \"$from\" \"$to\"");
+			return true;
+		} else {
+			$this->write_error("FAILED COPY \"$from\" \"$to\"");
+			return false;
+		}
+	}
+
 	public function print_help(array $help) : void {
 		echo implode("\r\n", $help)."\r\n\r\n";
 	}
@@ -505,9 +521,9 @@ class AVE extends CommandLine {
 
 	public function init_logs(){
 		$timestamp = date("Y-m-d His");
-		$this->log_event = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Event.txt", true, true);
-		$this->log_error = new Logs($this->config->get('AVE_LOG_FOLDER').DIRECTORY_SEPARATOR."$timestamp-Error.txt", true, true);
-		$this->log_data = new Logs($this->config->get('AVE_DATA_FOLDER').DIRECTORY_SEPARATOR."$timestamp.txt", false, true);
+		$this->log_event = new Logs($this->get_file_path($this->config->get('AVE_LOG_FOLDER')."/$timestamp-Event.txt"), true, true);
+		$this->log_error = new Logs($this->get_file_path($this->config->get('AVE_LOG_FOLDER')."/$timestamp-Error.txt"), true, true);
+		$this->log_data = new Logs($this->get_file_path($this->config->get('AVE_DATA_FOLDER')."/$timestamp.txt"), false, true);
 	}
 
 	public function open_logs(bool $open_event = false, bool $init = true) : void {

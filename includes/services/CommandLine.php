@@ -10,8 +10,6 @@ class CommandLine {
 
 	}
 
-	public int $version = 10100;
-
 	public function cmd_escape(string $text) : string {
 		return str_replace([">", "<"], ["^>", "^<"], $text);
 	}

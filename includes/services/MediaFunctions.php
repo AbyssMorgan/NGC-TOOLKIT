@@ -76,17 +76,11 @@ class MediaFunctions {
 		return sprintf("%02d:%02d:%02d", $h, $m, $s);
 	}
 
-	public function getVideoThumbnail(string $path, ?string $output = null) : bool {
+	public function getVideoThumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
+		if(file_exists($path."_s.jpg")) return true;
 		$folder = pathinfo($path, PATHINFO_DIRNAME);
-		if(is_null($output)) $output = $folder;
-		$image_path = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME)."_s.jpg";
-		if(file_exists($image_path)) return true;
-		$w = $this->config->get('AVE_THUMBNAIL_WIDTH');
-		$r = $this->config->get('AVE_THUMBNAIL_ROWS');
-		$c = $this->config->get('AVE_THUMBNAIL_COLUMN');
-		$out = [];
 		exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
-		return file_exists($image_path);
+		return file_exists($path."_s.jpg");
 	}
 
 	public function getMediaOrientation(int $width, int $height) : int {

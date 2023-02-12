@@ -119,7 +119,7 @@ class MediaTools {
 				$errors++;
 			} else {
 				$audio = $files_audio[$key];
-				$out = $output.DIRECTORY_SEPARATOR.$key.".mkv";
+				$out = $this->ave->get_file_path("$output/$key.mkv");
 				if(file_exists($out)){
 					$this->ave->write_error("FILE ALREADY EXISTS \"$out\"");
 					$errors++;
@@ -187,8 +187,8 @@ class MediaTools {
 		foreach($files as $file){
 			$items++;
 			if(!file_exists($file)) continue;
-			$srt = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
-			$out = $output.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+			$srt = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".srt");
+			$out = $this->ave->get_file_path("$output/".pathinfo($file, PATHINFO_BASENAME));
 			if(file_exists($out)){
 				$this->ave->write_error("FILE ALREADY EXISTS \"$out\"");
 				$errors++;
@@ -265,7 +265,7 @@ class MediaTools {
 		$progress = 0;
 		$errors = 0;
 
-		$detector = new FaceDetector($this->ave->path.DIRECTORY_SEPARATOR.'bin'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'FaceDetector.dat');
+		$detector = new FaceDetector($this->ave->get_file_path($this->ave->path."/bin/data/FaceDetector.dat"));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -292,7 +292,7 @@ class MediaTools {
 						$errors++;
 					} else {
 						foreach($variants as $variant){
-							$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."@$variant.".pathinfo($file, PATHINFO_EXTENSION);
+							$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."@$variant.".pathinfo($file, PATHINFO_EXTENSION));
 							if($detector->saveVariantImage(floatval($variant), $file, $new_name, $size)){
 								$this->ave->write_log("WRITE VARIANT $variant FOR \"$file\"");
 							}

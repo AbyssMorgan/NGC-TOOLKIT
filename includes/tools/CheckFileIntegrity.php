@@ -99,7 +99,7 @@ class CheckFileIntegrity {
 		$line = $this->ave->get_input();
 		if($line == '#') return false;
 		foreach($this->ave->get_folders($line) as $folder){
-			$pattern->addFolders(str_replace([$input.DIRECTORY_SEPARATOR,$input], "", $folder));
+			$pattern->addFolders(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
 		}
 
 		if(!empty($line)){
@@ -113,7 +113,7 @@ class CheckFileIntegrity {
 		$line = $this->ave->get_input();
 		if($line == '#') return false;
 		foreach($this->ave->get_folders($line) as $file){
-			$pattern->addFiles(str_replace([$input.DIRECTORY_SEPARATOR,$input], "", $file));
+			$pattern->addFiles(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
 		}
 
 		if(!empty($line)){
@@ -122,7 +122,7 @@ class CheckFileIntegrity {
 			if(strtoupper($line[0] ?? 'N') == 'Y') goto set_files;
 		}
 
-		$file_name = $output.DIRECTORY_SEPARATOR.$pattern_file;
+		$file_name = $this->ave->get_file_path("$output/$pattern_file");
 
 		file_put_contents($file_name, $pattern->get());
 
@@ -163,7 +163,7 @@ class CheckFileIntegrity {
 		$folders = count($pattern->getFolders());
 		echo " Loaded $folders folders and $files files\r\n";
 
-		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), $input.DIRECTORY_SEPARATOR.pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard");
+		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), $this->ave->get_file_path("$input/".pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard"));
 
 		$cwd = getcwd();
 		chdir($input);

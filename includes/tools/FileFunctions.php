@@ -156,7 +156,7 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$new_name = pathinfo($file,PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($file,PATHINFO_FILENAME).".".$extension_new;
+				$new_name = $this->ave->get_file_path(pathinfo($file,PATHINFO_DIRNAME)."/".pathinfo($file,PATHINFO_FILENAME).".$extension_new");
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
