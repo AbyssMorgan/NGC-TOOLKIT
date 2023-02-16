@@ -289,7 +289,7 @@ class MySQLTools {
 		if($ini->get('BACKUP_COMPRESS', false)){
 			echo " Compressing backup\r\n";
 			$this->ave->write_log("Compressing backup");
-			$sql = $this->ave->get_file_path("$output./*.sql");
+			$sql = $this->ave->get_file_path("$output/*.sql");
 			system("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 			echo "\r\n";
 			if(file_exists("$output.7z")){

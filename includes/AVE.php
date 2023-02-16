@@ -29,7 +29,7 @@ class AVE extends CommandLine {
 	public bool $open_log = false;
 
 	public string $app_name = "AVE";
-	public string $version = "1.4.4";
+	public string $version = "1.4.5";
 
 	private ?string $command;
 	private array $arguments;
@@ -267,13 +267,13 @@ class AVE extends CommandLine {
 	public function set_progress(int $progress, int $errors) : void {
 		$title = "$this->app_name v$this->version > $this->tool_name";
 		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
-		$this->title("[$title] Files: $progress Errors: $errors");
+		$this->title("$title > Files: $progress Errors: $errors");
 	}
 
 	public function set_progress_ex(string $label, int $progress, int $total) : void {
 		$title = "$this->app_name v$this->version > $this->tool_name";
 		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
-		$this->title("[$title] $label: $progress / $total");
+		$this->title("$title > $label: $progress / $total");
 	}
 
 	public function select_tool() : bool {

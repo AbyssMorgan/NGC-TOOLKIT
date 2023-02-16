@@ -80,7 +80,7 @@ class MediaFunctions {
 		if(file_exists($path."_s.jpg")) return true;
 		$folder = pathinfo($path, PATHINFO_DIRNAME);
 		exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
-		return file_exists($path."_s.jpg");
+		return file_exists($output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME)."_s.jpg");
 	}
 
 	public function getMediaOrientation(int $width, int $height) : int {
