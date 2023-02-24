@@ -226,6 +226,8 @@ class DataBaseBackup {
 			} else {
 				echo " Table: $table Progress: 100.00 %        \r";
 			}
+		} else {
+			echo " Table: $table Progress: 100.00 %        \r";
 		}
 
 		fwrite($file, "\n".$this->getFooter()."\n");

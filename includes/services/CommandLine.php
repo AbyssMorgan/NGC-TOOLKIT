@@ -70,7 +70,7 @@ class CommandLine {
 	}
 
 	public function open_file(string $path) : void {
-		exec("START \"\" \"$path\"");
+		exec("START /MIN \"\" \"$path\"");
 	}
 
 	public function get_file_attributes(string $path) : array {
