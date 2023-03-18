@@ -69,8 +69,10 @@ class CommandLine {
 		return $var[0] ?? '';
 	}
 
-	public function open_file(string $path) : void {
-		exec("START /MIN \"\" \"$path\"");
+	public function open_file(string $path, string $params = '/MIN') : void {
+		if(file_exists($path)){
+			exec("START $params \"\" \"$path\"");
+		}
 	}
 
 	public function get_file_attributes(string $path) : array {

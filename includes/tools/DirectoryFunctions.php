@@ -78,7 +78,10 @@ class DirectoryFunctions {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolForceLoadIcon() : bool {
@@ -113,7 +116,10 @@ class DirectoryFunctions {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolCountFiles() : bool {
@@ -173,7 +179,9 @@ class DirectoryFunctions {
 
 		unset($data);
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolCloneFolderStructure() : bool {
@@ -226,7 +234,10 @@ class DirectoryFunctions {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 }

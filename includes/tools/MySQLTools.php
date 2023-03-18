@@ -22,7 +22,7 @@ class MySQLTools {
 	public function __construct(AVE $ave){
 		$this->ave = $ave;
 		$this->ave->set_tool($this->name);
-		$this->path = $this->ave->get_file_path($this->ave->path."/config/mysql");
+		$this->path = $this->ave->get_file_path($this->ave->app_data."/MySQL");
 	}
 
 	public function help() : void {

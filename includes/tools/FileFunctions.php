@@ -123,7 +123,9 @@ class FileFunctions {
 
 		unset($keys);
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolExtensionChange() : bool {
@@ -169,7 +171,9 @@ class FileFunctions {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolValidateCheckSum() : bool {
@@ -271,7 +275,9 @@ class FileFunctions {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolValidateCheckSumAlgoName(string $mode) : string {

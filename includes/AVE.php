@@ -30,7 +30,7 @@ class AVE extends CommandLine {
 	public bool $open_log = false;
 
 	public string $app_name = "AVE";
-	public string $version = "1.4.5";
+	public string $version = "1.5.0";
 
 	private ?string $command;
 	private array $arguments;
@@ -357,7 +357,7 @@ class AVE extends CommandLine {
 				break;
 			}
 			case 'C': {
-				$this->open_file($this->app_data);
+				$this->open_file($this->app_data, "");
 				break;
 			}
 			case 'U': {
@@ -389,6 +389,7 @@ class AVE extends CommandLine {
 	}
 
 	public function setup_folders(array $folders) : void {
+		$this->folders_state = [];
 		foreach($folders as $folder){
 			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXISTS]';
 			$this->write_log("Scan: $folder");

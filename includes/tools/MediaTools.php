@@ -138,7 +138,9 @@ class MediaTools {
 			$this->ave->set_progress($progress, $errors);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolMergeVideoSubtitles() : bool {
@@ -209,7 +211,9 @@ class MediaTools {
 			$this->ave->set_progress($progress, $errors);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolAvatarGenerator() : bool {
@@ -305,7 +309,9 @@ class MediaTools {
 			$this->ave->set_progress($progress, $errors);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 }

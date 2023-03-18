@@ -67,7 +67,7 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				$directory = $folder.DIRECTORY_SEPARATOR."$extension";
+				$directory = $this->ave->get_file_path("$folder/$extension");
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
 						$errors++;
@@ -75,7 +75,7 @@ class MediaSorter {
 						continue 1;
 					}
 				}
-				$new_name = $folder.DIRECTORY_SEPARATOR."$extension".DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+				$new_name = $this->ave->get_file_path("$folder/$extension".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
@@ -88,7 +88,9 @@ class MediaSorter {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolSortMedia() : bool {
@@ -165,11 +167,11 @@ class MediaSorter {
 					}
 				}
 				if($this->params['resolution'] && $this->params['quality']){
-					$directory = $folder.DIRECTORY_SEPARATOR.$orientation.DIRECTORY_SEPARATOR.$quality;
+					$directory = $this->ave->get_file_path("$folder/$orientation/$quality");
 				} else if($this->params['resolution']){
-					$directory = $folder.DIRECTORY_SEPARATOR.$orientation;
+					$directory = $this->ave->get_file_path("$folder/$orientation");
 				} else if($this->params['quality']){
-					$directory = $folder.DIRECTORY_SEPARATOR.$quality;
+					$directory = $this->ave->get_file_path("$folder/$quality");
 				}
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
@@ -177,7 +179,7 @@ class MediaSorter {
 						continue;
 					}
 				}
-				if($this->ave->rename($file, $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME))){
+				if($this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
 					$progress++;
 				} else {
 					$errors++;
@@ -189,7 +191,9 @@ class MediaSorter {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolSortGifAnimated() : bool {
@@ -217,9 +221,9 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				if($media->isGifAnimated($file)){
-					$directory = $folder.DIRECTORY_SEPARATOR."Animated";
+					$directory = $this->ave->get_file_path("$folder/Animated");
 				} else {
-					$directory = $folder.DIRECTORY_SEPARATOR."NotAnimated";
+					$directory = $this->ave->get_file_path("$folder/NotAnimated");
 				}
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
@@ -228,7 +232,7 @@ class MediaSorter {
 						continue 1;
 					}
 				}
-				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
@@ -241,7 +245,9 @@ class MediaSorter {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public array $tool_sortdate_mode = [
@@ -328,11 +334,13 @@ class MediaSorter {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolSortDateGetPattern(string $folder, string $mode, string $file, string $separator) : string {
-		return $folder.DIRECTORY_SEPARATOR.str_replace("-", $separator, $this->ToolSortDateFormatDate($mode, filemtime($file))).DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+		return $this->ave->get_file_path("$folder/".str_replace("-", $separator, $this->ToolSortDateFormatDate($mode, filemtime($file)))."/".pathinfo($file, PATHINFO_BASENAME));
 	}
 
 	public function ToolSortDateFormatDate(string $mode, int $date) : string {
@@ -374,7 +382,7 @@ class MediaSorter {
 				if(!file_exists($file)) continue 1;
 				$colors = $media->getImageColorCount($file);
 				$group = $media->getImageColorGroup($colors);
-				$directory = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$group;
+				$directory = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$group");
 				if(!file_exists($directory)){
 					if(!$this->ave->mkdir($directory)){
 						$errors++;
@@ -382,7 +390,7 @@ class MediaSorter {
 						continue 1;
 					}
 				}
-				$new_name = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_BASENAME);
+				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
@@ -395,7 +403,9 @@ class MediaSorter {
 			$this->ave->set_folder_done($folder);
 		}
 
-		return true;
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 }
