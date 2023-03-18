@@ -25,6 +25,7 @@ class AVE extends CommandLine {
 	public Logs $log_data;
 
 	public string $path;
+	public string $app_data;
 	public bool $abort = false;
 	public bool $open_log = false;
 
@@ -46,11 +47,6 @@ class AVE extends CommandLine {
 		'commands',
 	];
 
-	private array $files_to_scan = [
-		'config/default.ini',
-		'config/mkvmerge.ini',
-	];
-
 	public function __construct(array $arguments){
 		parent::__construct();
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
@@ -61,10 +57,41 @@ class AVE extends CommandLine {
 		$this->arguments = array_values($arguments);
 		$this->logo = "\r\n AVE-PHP Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
-		$config_default = new IniFile($this->get_file_path("$this->path/config/default.ini", true));
-		$this->config = new IniFile($this->get_file_path("$this->path/config/user.ini", true));
-		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/config/mkvmerge.ini", true));
+
+		$this->app_data = $this->get_variable("%LOCALAPPDATA%")."/AVE";
+		$old_config = $this->get_file_path("$this->path/config/user.ini");
+		$new_config = $this->get_file_path("$this->app_data/config.ini");
+		$old_mysql_config = $this->get_file_path("$this->path/config/mysql");
+		$new_mysql_config = $this->get_file_path("$this->app_data/MySQL");
+
+		if(!file_exists($this->app_data)) mkdir($this->app_data);
+		if(!file_exists($new_mysql_config)) mkdir($new_mysql_config);
+
+		if(file_exists($old_config)){
+			$this->config = new IniFile($old_config, true);
+			$this->rename($old_config, $new_config, false);
+		}
+
+		if(file_exists($old_mysql_config)){
+			$files = $this->getFiles($old_mysql_config, ['ini']);
+			foreach($files as $file){
+				$this->rename($file, $this->get_file_path("$new_mysql_config/".pathinfo($file, PATHINFO_BASENAME)), false);
+			}
+			@rmdir($old_mysql_config);
+		}
+
+		$old_config_folder = $this->get_file_path("$this->path/config");
+		if(file_exists($old_config_folder)) @rmdir($old_config_folder);
+
+		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
+		$this->config = new IniFile($new_config, true);
+		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/includes/config/mkvmerge.ini"), true);
 		$this->guard_file = $this->get_file_path("$this->path/AVE.ave-guard");
+
+		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10500){
+			$this->config->unset(['AVE_LOG_FOLDER','AVE_DATA_FOLDER','AVE_EXTENSIONS_AUDIO']);
+		}
+
 		foreach($config_default->getAll() as $key => $value){
 			if(!$this->config->isSet($key)){
 				$this->config->set($key, $value);
@@ -132,6 +159,11 @@ class AVE extends CommandLine {
 		if($check_for_updates && !$dev){
 			$this->tool_update();
 		}
+	}
+
+	public function get_version_number(string $version) : int {
+		$ver = explode(".", $version);
+		return 10000 * intval($ver[0]) + 100*intval($ver[1]) + intval($ver[2]);
 	}
 
 	public function check_for_updates(string &$version) : bool {
@@ -208,7 +240,6 @@ class AVE extends CommandLine {
 				$cwd = getcwd();
 				chdir($this->path);
 				$guard->setFolders($this->folders_to_scan);
-				$guard->setFiles($this->files_to_scan);
 				$guard->generate();
 				chdir($cwd);
 				break;
@@ -245,7 +276,6 @@ class AVE extends CommandLine {
 		$cwd = getcwd();
 		chdir($this->path);
 		$guard->setFolders($this->folders_to_scan);
-		$guard->setFiles($this->files_to_scan);
 		$validation = $guard->validate($flags);
 		chdir($cwd);
 		return $validation;
@@ -291,6 +321,7 @@ class AVE extends CommandLine {
 			' 4 - Media Tools',
 			' 5 - Check File Integrity',
 			' 6 - MySQL Tools',
+			' C - Open config folder',
 			' U - Check for updates',
 		]);
 
@@ -323,6 +354,10 @@ class AVE extends CommandLine {
 			}
 			case '6': {
 				$this->tool = new MySQLTools($this);
+				break;
+			}
+			case 'C': {
+				$this->open_file($this->app_data);
 				break;
 			}
 			case 'U': {
@@ -373,65 +408,65 @@ class AVE extends CommandLine {
 		}
 	}
 
-	public function rmdir(string $path) : bool {
+	public function rmdir(string $path, bool $log = true) : bool {
 		if(!file_exists($path) || !is_dir($path)) return false;
 		if(rmdir($path)){
-			$this->write_log("DELETE \"$path\"");
+			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			$this->write_error("FAILED DELETE \"$path\"");
+			if($log) $this->write_error("FAILED DELETE \"$path\"");
 			return false;
 		}
 	}
 
-	public function unlink(string $path) : bool {
+	public function unlink(string $path, bool $log = true) : bool {
 		if(!file_exists($path) || is_dir($path)) return false;
 		if(unlink($path)){
-			$this->write_log("DELETE \"$path\"");
+			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			$this->write_error("FAILED DELETE \"$path\"");
+			if($log) $this->write_error("FAILED DELETE \"$path\"");
 			return false;
 		}
 	}
 
-	public function mkdir(string $path) : bool {
+	public function mkdir(string $path, bool $log = true) : bool {
 		if(file_exists($path) && is_dir($path)) return true;
 		if(mkdir($path, 0777, true)){
-			$this->write_log("MKDIR \"$path\"");
+			if($log) $this->write_log("MKDIR \"$path\"");
 			return true;
 		} else {
-			$this->write_error("FAILED MKDIR \"$path\"");
+			if($log) $this->write_error("FAILED MKDIR \"$path\"");
 			return false;
 		}
 	}
 
-	public function rename(string $from, string $to) : bool {
+	public function rename(string $from, string $to, bool $log = true) : bool {
 		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
-			$this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
+			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
 		if(rename($from, $to)){
-			$this->write_log("RENAME \"$from\" \"$to\"");
+			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
-			$this->write_error("FAILED RENAME \"$from\" \"$to\"");
+			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\"");
 			return false;
 		}
 	}
 
-	public function copy(string $from, string $to) : bool {
+	public function copy(string $from, string $to, bool $log = true) : bool {
 		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
-			$this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXIST");
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
 		if(copy($from, $to)){
-			$this->write_log("COPY \"$from\" \"$to\"");
+			if($log) $this->write_log("COPY \"$from\" \"$to\"");
 			return true;
 		} else {
-			$this->write_error("FAILED COPY \"$from\" \"$to\"");
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\"");
 			return false;
 		}
 	}
