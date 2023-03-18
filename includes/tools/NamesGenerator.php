@@ -144,7 +144,10 @@ class NamesGenerator {
 			}
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolCheckSumAlgoName(string $mode) : string {
@@ -164,14 +167,14 @@ class NamesGenerator {
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
-			case '0': return $folder.DIRECTORY_SEPARATOR."$hash.$extension";
-			case '1': return $folder.DIRECTORY_SEPARATOR."$name $hash.$extension";
-			case '2': return $folder.DIRECTORY_SEPARATOR."$foldername $hash.$extension";
-			case '3': return $folder.DIRECTORY_SEPARATOR."$foldername ".sprintf("%04d",$file_id)." $hash.$extension";
-			case '4': return $folder.DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." $hash.$extension";
-			case '5': return $folder.DIRECTORY_SEPARATOR.date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension";
-			case '6': return $folder.DIRECTORY_SEPARATOR.sprintf("%04d",$file_id)." $hash.$extension";
-			case '7': return $folder.DIRECTORY_SEPARATOR.sprintf("%06d",$file_id)." $hash.$extension";
+			case '0': return $this->ave->get_file_path("$folder/$hash.$extension");
+			case '1': return $this->ave->get_file_path("$folder/$name $hash.$extension");
+			case '2': return $this->ave->get_file_path("$folder/$foldername $hash.$extension");
+			case '3': return $this->ave->get_file_path("$folder/$foldername ".sprintf("%04d",$file_id)." $hash.$extension");
+			case '4': return $this->ave->get_file_path("$folder/".date("Y-m-d",filemtime($file))." $hash.$extension");
+			case '5': return $this->ave->get_file_path("$folder/".date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension");
+			case '6': return $this->ave->get_file_path("$folder/".sprintf("%04d",$file_id)." $hash.$extension");
+			case '7': return $this->ave->get_file_path("$folder/".sprintf("%06d",$file_id)." $hash.$extension");
 		}
 		return '';
 	}
@@ -221,13 +224,13 @@ class NamesGenerator {
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
-			case '0': return $folder.DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '1': return $input.DIRECTORY_SEPARATOR.sprintf("%03d",$part_id).DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '2': return $input.DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '3': return $folder.DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%06d",$file_id).".$extension";
-			case '4': return $folder.DIRECTORY_SEPARATOR."$prefix$foldername"."_".sprintf("%04d",$file_id).".$extension";
-			case '5': return $folder.DIRECTORY_SEPARATOR."$prefix".sprintf("%06d",$file_id).".$extension";
-			case '6': return $folder.DIRECTORY_SEPARATOR.sprintf("%06d",$file_id).".$extension";
+			case '0': return $this->ave->get_file_path("$folder/$prefix".sprintf("%06d",$file_id).".$extension");
+			case '1': return $this->ave->get_file_path("$input/".sprintf("%03d",$part_id)."/$prefix".sprintf("%06d",$file_id).".$extension");
+			case '2': return $this->ave->get_file_path("$input/$prefix".sprintf("%06d",$file_id).".$extension");
+			case '3': return $this->ave->get_file_path("$folder/$prefix$foldername"."_".sprintf("%06d",$file_id).".$extension");
+			case '4': return $this->ave->get_file_path("$folder/$prefix$foldername"."_".sprintf("%04d",$file_id).".$extension");
+			case '5': return $this->ave->get_file_path("$folder/$prefix".sprintf("%06d",$file_id).".$extension");
+			case '6': return $this->ave->get_file_path("$folder/".sprintf("%06d",$file_id).".$extension");
 		}
 		return null;
 	}
@@ -281,7 +284,10 @@ class NamesGenerator {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolNumberActionSingle() : bool {
@@ -298,7 +304,10 @@ class NamesGenerator {
 			$this->ToolNumberAction($folder, $progress, $errors);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolNumberActionGroup() : bool {
@@ -316,13 +325,17 @@ class NamesGenerator {
 			$subfolders = scandir($folder);
 			foreach($subfolders as $subfoolder){
 				if($subfoolder == '.' || $subfoolder == '..') continue;
-				if(is_dir($folder.DIRECTORY_SEPARATOR."$subfoolder")){
-					$this->ToolNumberAction($folder.DIRECTORY_SEPARATOR."$subfoolder", $progress, $errors);
+				$dir = $this->ave->get_file_path("$folder/$subfoolder");
+				if(is_dir($dir)){
+					$this->ToolNumberAction($dir, $progress, $errors);
 				}
 			}
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolVideoGenerator() : bool {
@@ -405,7 +418,7 @@ class NamesGenerator {
 				} else {
 					$thumbnail = false;
 				}
-				$new_name = $directory.DIRECTORY_SEPARATOR."$name.$extension";
+				$new_name = $this->ave->get_file_path("$directory/$name.$extension");
 				$renamed = false;
 				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
@@ -433,8 +446,8 @@ class NamesGenerator {
 					}
 				}
 
-				$name_old = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME)."_s.jpg";
-				$name_new = $directory.DIRECTORY_SEPARATOR."$name"."_s.jpg";
+				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."_s.jpg");
+				$name_new = $this->ave->get_file_path("$directory/$name"."_s.jpg");
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
 						$renamed = true;
@@ -443,8 +456,8 @@ class NamesGenerator {
 					}
 				}
 
-				$name_old = $directory.DIRECTORY_SEPARATOR.pathinfo($file, PATHINFO_FILENAME).".srt";
-				$name_new = $directory.DIRECTORY_SEPARATOR."$name.srt";
+				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME).".srt");
+				$name_new = $this->ave->get_file_path("$directory/$name.srt");
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
 						$renamed = true;
@@ -459,7 +472,10 @@ class NamesGenerator {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolGenerateSeriesName() : bool {
@@ -498,7 +514,7 @@ class NamesGenerator {
 				}
 
 				if(!empty($escaped_name)){
-					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".pathinfo($file, PATHINFO_EXTENSION));
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
@@ -517,7 +533,10 @@ class NamesGenerator {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolEscapeFileNameWWW() : bool {
@@ -552,7 +571,7 @@ class NamesGenerator {
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".pathinfo($file, PATHINFO_EXTENSION));
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
@@ -571,7 +590,10 @@ class NamesGenerator {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolPrettyFileName() : bool {
@@ -608,7 +630,7 @@ class NamesGenerator {
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".pathinfo($file, PATHINFO_EXTENSION));
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
@@ -627,7 +649,10 @@ class NamesGenerator {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolRemoveYouTubeQualityTag() : bool {
@@ -676,7 +701,7 @@ class NamesGenerator {
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$escaped_name.".".pathinfo($file, PATHINFO_EXTENSION);
+					$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".pathinfo($file, PATHINFO_EXTENSION));
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
@@ -695,7 +720,10 @@ class NamesGenerator {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolSeriesEpisodeEditor() : bool {
@@ -783,7 +811,7 @@ class NamesGenerator {
 					$directory = pathinfo($file, PATHINFO_DIRNAME);
 					$extension = pathinfo($file, PATHINFO_EXTENSION);
 					$file_name = "S$new_season".substr($file_name, 3);
-					$new_name = $directory.DIRECTORY_SEPARATOR."$file_name.$extension";
+					$new_name = $this->ave->get_file_path("$directory/$file_name.$extension");
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
@@ -803,7 +831,10 @@ class NamesGenerator {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolSeriesEpisodeEditorActionEpisode() : bool {
@@ -887,7 +918,7 @@ class NamesGenerator {
 				if($episode <= $episode_end && $episode >= $episode_start){
 					$directory = pathinfo($file, PATHINFO_DIRNAME);
 					$extension = pathinfo($file, PATHINFO_EXTENSION);
-					$new_name = $directory.DIRECTORY_SEPARATOR.$season.'E'.$media->format_episode($episode + $episode_step, $digits, $max)."$name.$extension";
+					$new_name = $this->ave->get_file_path("$directory/$season"."E".$media->format_episode($episode + $episode_step, $digits, $max)."$name.$extension");
 					array_push($list,[
 						'input' => $file,
 						'output' => $new_name,
@@ -920,7 +951,10 @@ class NamesGenerator {
 			$round++;
 			goto change_names;
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolAddFileNamePrefixSuffix() : bool {
@@ -964,7 +998,7 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$prefix.pathinfo($file, PATHINFO_FILENAME).$suffix.".".pathinfo($file, PATHINFO_EXTENSION);
+				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$prefix".pathinfo($file, PATHINFO_FILENAME).$suffix.".".pathinfo($file, PATHINFO_EXTENSION));
 				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
@@ -980,7 +1014,10 @@ class NamesGenerator {
 			}
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 	public function ToolRemoveKeywordsFromFileName() : bool {
@@ -1030,7 +1067,7 @@ class NamesGenerator {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$name = str_replace($keywords, '', pathinfo($file, PATHINFO_FILENAME));
-				$new_name = pathinfo($file, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.$name.".".pathinfo($file, PATHINFO_EXTENSION);
+				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".pathinfo($file, PATHINFO_EXTENSION));
 				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
@@ -1046,7 +1083,10 @@ class NamesGenerator {
 			}
 			$this->ave->set_folder_done($folder);
 		}
-		return true;
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 }
