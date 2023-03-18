@@ -245,7 +245,7 @@ class AVE extends CommandLine {
 				break;
 			}
 			case '--sort-settings': {
-				$config = new IniFile("$this->path/config/default.ini", true);
+				$config = new IniFile("$this->path/includes/config/default.ini", true);
 				$config->save();
 				break;
 			}
