@@ -77,7 +77,7 @@ class CommandLine {
 
 	public function get_file_attributes(string $path) : array {
 		exec("ATTRIB \"$path\"", $var);
-		$attributes = str_replace($path, '', $var[0]);
+		$attributes = substr($var[0],0,21);
 		return [
 			'R' => (strpos($attributes, "R") !== false),
 			'A' => (strpos($attributes, "A") !== false),

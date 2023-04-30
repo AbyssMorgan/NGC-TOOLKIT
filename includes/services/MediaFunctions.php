@@ -63,6 +63,12 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
+	public function getVideoFPS(string $path) : float {
+		exec("ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>nul", $output);
+		eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $output[0])).';');
+		return $fps;
+	}
+
 	public function getVideoResolution(string $path) : string {
 		exec("ffprobe -v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
 		return rtrim($output[0] ?? '0x0', 'x');

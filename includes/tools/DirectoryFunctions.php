@@ -106,9 +106,12 @@ class DirectoryFunctions {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				if(!file_exists($this->ave->get_file_path("$file/desktop.ini"))) continue 1;
+				$ini = $this->ave->get_file_path("$file/desktop.ini");
+				if(!file_exists($ini)) continue 1;
 				$a = $this->ave->get_file_attributes($file);
 				$this->ave->set_file_attributes($file, true, $a['A'], $a['S'], $a['H']);
+				$a = $this->ave->get_file_attributes($ini);
+				$this->ave->set_file_attributes($ini, $a['R'], $a['A'], $a['S'], true);
 				$progress++;
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
