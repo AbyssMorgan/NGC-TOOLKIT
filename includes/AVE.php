@@ -30,7 +30,7 @@ class AVE extends CommandLine {
 	public bool $open_log = false;
 
 	public string $app_name = "AVE";
-	public string $version = "1.5.0";
+	public string $version = "1.5.1";
 
 	private ?string $command;
 	private array $arguments;
@@ -186,7 +186,7 @@ class AVE extends CommandLine {
 		$file = $this->get_file_path("$this->path/AVE-PHP.7z");
 		if(file_exists($file)) unlink($file);
 		$fh = fopen($file, "wb");
-		$ch = curl_init("https://github.com/AbyssMorgan/AVE-PHP/releases/download/v$version/AVE-PHP.7z");
+		$ch = curl_init("https://adm.ct8.pl/ave-php/AVE-PHP_v$version.7z");
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_FILE, $fh);

@@ -4,6 +4,6 @@ SET PATH=%PATH%;%CD%\bin\main;%CD%\bin\php;%CD%\bin\imagick
 "%CD%\bin\php\php.exe" "%CD%\includes\main.php" --sort-settings
 "%CD%\bin\php\php.exe" "%CD%\includes\main.php" --put-version
 "%CD%\bin\php\php.exe" "%CD%\includes\main.php" --guard-generate
-IF EXIST "%CD%\AVE-PHP.7z" DEL /Q /A "%CD%\AVE-PHP.7z"
-"%CD%\bin\main\7z.exe" a -mx9 -t7z "%CD%\AVE-PHP.7z" "bin" "includes" "commands" "AVE-PHP.cmd" "AVE.ave-guard" "README.md" "LICENSE"
+FOR /F "tokens=*" %%s IN ('TYPE "%CD%\version"') DO SET _VERSION=%%s
+"%CD%\bin\main\7z.exe" a -mx9 -t7z "%CD%\AVE-PHP_v%_VERSION%.7z" "bin" "includes" "commands" "AVE-PHP.cmd" "AVE.ave-guard" "README.md" "LICENSE"
 PAUSE
