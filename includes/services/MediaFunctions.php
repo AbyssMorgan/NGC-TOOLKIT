@@ -83,10 +83,18 @@ class MediaFunctions {
 	}
 
 	public function getVideoThumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
-		if(file_exists($path."_s.jpg")) return true;
-		$folder = pathinfo($path, PATHINFO_DIRNAME);
-		exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
-		return file_exists($output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME)."_s.jpg");
+		$input_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_FILENAME)."_s.jpg";
+		$output_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME).".webp";
+		if(file_exists($output_file)) return true;
+		if(!file_exists($input_file)){
+			exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
+			if(!file_exists($input_file)) return false;
+		}
+		$image = new Imagick();
+		$image->readImage($input_file);
+		$image->writeImage($output_file);
+		unlink($input_file);
+		return file_exists($output_file);
 	}
 
 	public function getMediaOrientation(int $width, int $height) : int {
@@ -97,6 +105,15 @@ class MediaFunctions {
 		} else {
 			return MediaOrientation::MEDIA_ORIENTATION_SQUARE;
 		}
+	}
+
+	public function getMediaOrientationName(int $orientation) : string {
+		switch($orientation){
+			case MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL: return 'Horizontal';
+			case MediaOrientation::MEDIA_ORIENTATION_VERTICAL: return 'Vertical';
+			case MediaOrientation::MEDIA_ORIENTATION_SQUARE: return 'Square';
+		}
+		return 'Unknown';
 	}
 
 	public function getMediaQuality(int $width, int $height) : string {

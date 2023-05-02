@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Services\IniFile;
 use App\Services\Logs;
 use App\Services\CommandLine;
-use App\Services\GuardDriver;
 
 use App\Tools\NamesGenerator;
 use App\Tools\FileFunctions;
@@ -30,7 +29,7 @@ class AVE extends CommandLine {
 	public bool $open_log = false;
 
 	public string $app_name = "AVE";
-	public string $version = "1.5.1";
+	public string $version = "1.5.2";
 
 	private ?string $command;
 	private array $arguments;
@@ -38,7 +37,6 @@ class AVE extends CommandLine {
 	private string $tool_name;
 	private string $subtool_name;
 	private array $folders_state = [];
-	private string $guard_file;
 	private $tool;
 
 	private array $folders_to_scan = [
@@ -86,7 +84,6 @@ class AVE extends CommandLine {
 		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
 		$this->config = new IniFile($new_config, true);
 		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/includes/config/mkvmerge.ini"), true);
-		$this->guard_file = $this->get_file_path("$this->path/AVE.ave-guard");
 
 		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10500){
 			$this->config->unset(['AVE_LOG_FOLDER','AVE_DATA_FOLDER','AVE_EXTENSIONS_AUDIO']);
@@ -146,16 +143,6 @@ class AVE extends CommandLine {
 
 		$dev = file_exists($this->get_file_path("$this->path/_get_package.cmd"));
 
-		if($version_changed && !$dev){
-			echo " Check for remove unused files...\r\n";
-			$validation = $this->validate(['damaged' => false, 'unknown' => true, 'missing' => false]);
-			foreach($validation as $error){
-				if($error['type'] == 'unknown'){
-					$this->unlink($this->get_file_path("$this->path/".$error['file']));
-				}
-			}
-		}
-
 		if($check_for_updates && !$dev){
 			$this->tool_update();
 		}
@@ -176,7 +163,7 @@ class AVE extends CommandLine {
 			return ($this->version != $response);
 		} else {
 			$error = curl_error($ch);
-  		echo " Failed check for updates: $error\r\n";
+			echo " Failed check for updates: $error\r\n";
 			return false;
 		}
 	}
@@ -195,7 +182,7 @@ class AVE extends CommandLine {
 			exec("START \"\" \"\"");
 			$this->abort = true;
 		} else {
-  		echo " Failed download updates: $error\r\n";
+			echo " Failed download updates: $error\r\n";
 		}
 	}
 
@@ -235,15 +222,6 @@ class AVE extends CommandLine {
 				}
 				break;
 			}
-			case '--guard-generate': {
-				$guard = new GuardDriver($this->guard_file);
-				$cwd = getcwd();
-				chdir($this->path);
-				$guard->setFolders($this->folders_to_scan);
-				$guard->generate();
-				chdir($cwd);
-				break;
-			}
 			case '--sort-settings': {
 				$config = new IniFile("$this->path/includes/config/default.ini", true);
 				$config->save();
@@ -251,10 +229,6 @@ class AVE extends CommandLine {
 			}
 			case '--put-version': {
 				file_put_contents("$this->path/version", $this->version);
-				break;
-			}
-			case '--guard-validate': {
-				echo print_r($this->validate(), true);
 				break;
 			}
 			case '--interactive': {
@@ -269,16 +243,6 @@ class AVE extends CommandLine {
 				break;
 			}
 		}
-	}
-
-	public function validate(array $flags = ['damaged' => true, 'unknown' => true, 'missing' => true]) : array {
-		$guard = new GuardDriver($this->guard_file);
-		$cwd = getcwd();
-		chdir($this->path);
-		$guard->setFolders($this->folders_to_scan);
-		$validation = $guard->validate($flags);
-		chdir($cwd);
-		return $validation;
 	}
 
 	public function set_tool(string $name) : void {
@@ -566,7 +530,7 @@ class AVE extends CommandLine {
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();
-		if($open_event && file_exists($this->log_event->getPath())){
+		if($this->config->get('AVE_OPEN_LOG_EVENT') && $open_event && file_exists($this->log_event->getPath())){
 			$this->open_file($this->log_event->getPath());
 		}
 		if(file_exists($this->log_data->getPath())){

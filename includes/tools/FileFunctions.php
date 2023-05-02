@@ -117,6 +117,7 @@ class FileFunctions {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -167,6 +168,7 @@ class FileFunctions {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -271,6 +273,7 @@ class FileFunctions {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}

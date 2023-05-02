@@ -6,6 +6,7 @@ namespace App\Tools;
 
 use AVE;
 
+use App\Dictionaries\MediaOrientation;
 use App\Services\MediaFunctions;
 use App\Services\FaceDetector;
 
@@ -28,6 +29,7 @@ class MediaTools {
 			' 0 - Merge:  Video + Audio',
 			' 1 - Merge:  Video + SRT',
 			' 2 - Avatar generator',
+			' 3 - Video: Fetch media info',
 		]);
 	}
 
@@ -38,6 +40,7 @@ class MediaTools {
 			case '0': return $this->ToolMergeVideoAudio();
 			case '1': return $this->ToolMergeVideoSubtitles();
 			case '2': return $this->ToolAvatarGenerator();
+			case '3': return $this->ToolVideoFetchMediaInfo();
 		}
 		return false;
 	}
@@ -137,6 +140,7 @@ class MediaTools {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
@@ -210,6 +214,7 @@ class MediaTools {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
@@ -308,6 +313,85 @@ class MediaTools {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
+		$this->ave->progress($items, $total);
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolVideoFetchMediaInfo() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("VideoFetchMediaInfo");
+
+		set_input:
+		echo " Input:  ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		$media = new MediaFunctions();
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		$this->ave->write_data('"File path";"Dir name";"File name";"Extension";"Resolution";"Quality";"Duration";"Size";"Orientation"');
+
+		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		$files = $this->ave->getFiles($input, $video_extensions);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+			$resolution = $media->getVideoResolution($file);
+			if($resolution == '0x0'){
+				$this->ave->write_error("FAILED GET_MEDIA_RESOLUTION \"$file\"");
+				$errors++;
+				continue;
+			}
+			$size = explode('x', $resolution);
+			$orientation = $media->getMediaOrientation(intval($size[0]), intval($size[1]));
+			$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]));
+			switch($orientation){
+				case MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL: {
+					$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_HORIZONTAL');
+					break;
+				}
+				case MediaOrientation::MEDIA_ORIENTATION_VERTICAL: {
+					$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_VERTICAL');
+					break;
+				}
+				case MediaOrientation::MEDIA_ORIENTATION_SQUARE: {
+					$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_SQUARE');
+					break;
+				}
+			}
+			$meta = [
+				'"'.str_replace("\\\\", "\\", addslashes($file)).'"',
+				'"'.str_replace("\\\\", "\\", addslashes(pathinfo(pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))).'"',
+				'"'.str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_FILENAME))).'"',
+				'"'.str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_EXTENSION))).'"',
+				'"'.$resolution.'"',
+				'"'.$quality.'"',
+				'"'.$media->getVideoDuration($file).'"',
+				'"'.$this->ave->formatBytes(filesize($file)).'"',
+				'"'.$media->getMediaOrientationName($orientation).'"',
+			];
+			$this->ave->write_data(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
+			$progress++;
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");

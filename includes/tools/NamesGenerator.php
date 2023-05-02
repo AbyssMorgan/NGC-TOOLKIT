@@ -136,6 +136,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			if($this->params['list_only']){
 				$count = count($list);
@@ -284,6 +285,7 @@ class NamesGenerator {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
@@ -446,8 +448,8 @@ class NamesGenerator {
 					}
 				}
 
-				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."_s.jpg");
-				$name_new = $this->ave->get_file_path("$directory/$name"."_s.jpg");
+				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
+				$name_new = $this->ave->get_file_path("$directory/$new_name.webp");
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
 						$renamed = true;
@@ -469,6 +471,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -530,6 +533,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -587,6 +591,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -646,6 +651,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -717,6 +723,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
@@ -831,6 +838,7 @@ class NamesGenerator {
 			$this->ave->progress($items, $total);
 			$this->ave->set_progress($progress, $errors);
 		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
@@ -947,6 +955,7 @@ class NamesGenerator {
 			$this->ave->set_progress($progress, $errors);
 			unset($list[$key]);
 		}
+		$this->ave->progress($items, $total);
 		if($round == 0){
 			$round++;
 			goto change_names;
@@ -1012,6 +1021,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
 		}
 
@@ -1081,6 +1091,7 @@ class NamesGenerator {
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
 			}
+			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
 		}
 
