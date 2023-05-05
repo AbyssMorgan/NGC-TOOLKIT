@@ -449,7 +449,7 @@ class NamesGenerator {
 				}
 
 				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
-				$name_new = $this->ave->get_file_path("$directory/$new_name.webp");
+				$name_new = $this->ave->get_file_path("$directory/$name.$extension.webp");
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
 						$renamed = true;
