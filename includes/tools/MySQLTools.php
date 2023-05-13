@@ -72,7 +72,7 @@ class MySQLTools {
 		echo " Label: ";
 		$label = $this->ave->get_input();
 		if($label == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+		if(!$this->ave->is_valid_label($label)){
 			echo " Invalid label\r\n";
 			goto set_label;
 		}
@@ -187,7 +187,7 @@ class MySQLTools {
 		echo " Label: ";
 		$label = $this->ave->get_input();
 		if($label == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+		if(!$this->ave->is_valid_label($label)){
 			echo " Invalid label\r\n";
 			goto set_label;
 		}
@@ -242,7 +242,7 @@ class MySQLTools {
 		echo " Label: ";
 		$label = $this->ave->get_input();
 		if($label == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+		if(!$this->ave->is_valid_label($label)){
 			echo " Invalid label\r\n";
 			goto set_label;
 		}
@@ -322,7 +322,7 @@ class MySQLTools {
 		echo " Source label: ";
 		$source = $this->ave->get_input();
 		if($source == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $source)){
+		if(!$this->ave->is_valid_label($source)){
 			echo " Invalid label\r\n";
 			goto set_label_source;
 		}
@@ -346,7 +346,7 @@ class MySQLTools {
 		echo " Destination label: ";
 		$destination = $this->ave->get_input();
 		if($destination == '#') return false;
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $destination)){
+		if(!$this->ave->is_valid_label($destination)){
 			echo " Invalid label\r\n";
 			goto set_label_destination;
 		}
@@ -412,7 +412,7 @@ class MySQLTools {
 	}
 
 	public function ToolMakeBackupCMD(string $label) : bool {
-		if(!preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label)){
+		if(!$this->ave->is_valid_label($label)){
 			echo " Invalid label \"$label\"\r\n";
 			return false;
 		}

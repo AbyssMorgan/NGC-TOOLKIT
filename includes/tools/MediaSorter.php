@@ -29,6 +29,7 @@ class MediaSorter {
 			' 2 - Sort Gif:    Animated',
 			' 3 - Sort Media:  Quality',
 			' 4 - Sort Images: Colors count',
+			' 5 - Sort Videos: Auto detect series name',
 		]);
 	}
 
@@ -41,6 +42,7 @@ class MediaSorter {
 			case '2': return $this->ToolSortGifAnimated();
 			case '3': return $this->ToolSortMedia();
 			case '4': return $this->ToolSortImagesColor();
+			case '5': return $this->ToolSortVideosAutoDetectSeriesName();
 		}
 		return false;
 	}
@@ -407,6 +409,96 @@ class MediaSorter {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolSortVideosAutoDetectSeriesName() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("SortVideosAutoDetectSeriesName");
+
+		set_input:
+		echo " Input:  ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		$media = new MediaFunctions();
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		$files = $this->ave->getFiles($input, $video_extensions);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+
+			$file_name = str_replace(['SEASON','EPISODE',' '], ['S','E',''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
+			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
+				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				$marker = $mathes[0];
+			} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
+				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				$marker = $mathes[0];
+			} else if(preg_match("/\[S[0-9]{2}\.E[0-9]{1,3}\]/", $file_name, $mathes) == 1){
+				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				$marker = $mathes[0];
+			} else if(preg_match("/(\[S0\.)(E[0-9]{1,3})\]/", $file_name, $mathes) == 1){
+				$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2]);
+				$marker = $mathes[2];
+			} else {
+				$escaped_name = '';
+				$this->ave->write_error("FAILED GET SERIES ID \"$file\"");
+				$errors++;
+			}
+			if(!empty($escaped_name)){
+				$end = strpos($file_name, $marker);
+				if($end === false){
+					$this->ave->write_error("FAILED GET MARKER \"$file\"");
+					$errors++;
+				} else {
+					$folder_name = str_replace(['_', '.', "\u{00A0}"], ' ', substr(pathinfo($file, PATHINFO_FILENAME), 0, $end));
+					$folder_name = str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $folder_name);
+					while(strpos($folder_name, '  ') !== false){
+						$folder_name = str_replace('  ', ' ', $folder_name);
+					}
+					$folder_name = trim($folder_name, ' ');
+					if(empty($folder_name)){
+						$this->ave->write_error("ESCAPED FOLDER NAME IS EMPTY \"$file\"");
+						$errors++;
+					} else {
+						$new_name = $this->ave->get_file_path("$input/$folder_name/".pathinfo($file, PATHINFO_BASENAME));
+						$new_path = $this->ave->get_file_path("$input/$folder_name");
+						if(!file_exists($new_path)) $this->ave->mkdir($new_path);
+						if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+							$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
+							$errors++;
+						} else {
+							if($this->ave->rename($file, $new_name)){
+								$progress++;
+							} else {
+								$errors++;
+							}
+						}
+					}
+				}
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");

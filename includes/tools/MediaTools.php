@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tools;
 
 use AVE;
+use Imagick;
 
 use App\Dictionaries\MediaOrientation;
 use App\Services\MediaFunctions;
@@ -30,6 +31,7 @@ class MediaTools {
 			' 1 - Merge:  Video + SRT',
 			' 2 - Avatar generator',
 			' 3 - Video: Fetch media info',
+			' 4 - Image converter'
 		]);
 	}
 
@@ -41,6 +43,7 @@ class MediaTools {
 			case '1': return $this->ToolMergeVideoSubtitles();
 			case '2': return $this->ToolAvatarGenerator();
 			case '3': return $this->ToolVideoFetchMediaInfo();
+			case '4': return $this->ToolImageConverter();
 		}
 		return false;
 	}
@@ -392,6 +395,147 @@ class MediaTools {
 			$this->ave->set_progress($progress, $errors);
 		}
 		$this->ave->progress($items, $total);
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolImageConverter() : bool {
+		$this->ave->set_subtool("ImageConverter");
+
+		set_mode:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Modes:',
+			' 0 - Image > WEBP',
+			' 1 - Image > JPG',
+			' 2 - Image > PNG',
+			' 3 - Image > GIF',
+		]);
+
+		echo " Mode: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+		];
+
+		if(!in_array($this->params['mode'],['0','1','2','3'])) goto set_mode;
+		$this->ave->clear();
+
+		set_input:
+		echo " Input:  ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			echo " Invalid input folder\r\n";
+			goto set_input;
+		}
+
+		set_output:
+		echo " Output: ";
+		$line = $this->ave->get_input();
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_output;
+		$output = $folders[0];
+
+		if($input == $output){
+			echo " Output folder must be different than input folder\r\n";
+			goto set_output;
+		}
+
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
+			echo " Invalid output folder\r\n";
+			goto set_output;
+		}
+
+		$progress = 0;
+		$errors = 0;
+
+		$extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
+		$files = $this->ave->getFiles($input);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			$this->ave->set_progress($progress, $errors);
+			if(!file_exists($file)) continue;
+			if(!in_array(pathinfo($file, PATHINFO_EXTENSION), $extensions)){
+				$this->ave->write_error("FILE FORMAT NOT SUPORTED \"$file\"");
+				$errors++;
+				continue;
+			}
+			$folder = pathinfo($file, PATHINFO_DIRNAME);
+			$directory = str_replace($input, $output, $folder);
+			if(!file_exists($directory)){
+				if($this->ave->mkdir($directory)){
+					$progress++;
+				} else {
+					$errors++;
+					continue;
+				}
+			}
+			$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME));
+			if(file_exists($new_name)){
+				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
+				$errors++;
+				continue;
+			}
+			$image = new Imagick($file);
+			if(!$image->valid()){
+				$this->ave->write_error("FAILED READ IMAGE \"$file\" BY IMAGICK");
+				$errors++;
+				continue;
+			}
+			switch(intval($this->params['mode'])){
+				case 0: {
+					$image->setImageFormat('webp');
+					$image->setOption('webp:lossless', 'true');
+					$new_name .= ".webp";
+					break;
+				}
+				case 1: {
+					$image->setImageFormat('jpeg');
+					$new_name .= ".jpg";
+					break;
+				}
+				case 2: {
+					$image->setImageFormat('png');
+					$new_name .= ".png";
+					break;
+				}
+				case 3: {
+					$image->setImageFormat('gif');
+					$new_name .= ".gif";
+					break;
+				}
+			}
+			$image->setImageCompressionQuality(100);
+			try {
+				$image->writeImage($new_name);
+			}
+			catch(\Exception $e){
+				$this->ave->write_error($e->getMessage());
+			}
+			$image->destroy();
+			if(!file_exists($new_name)){
+				$this->ave->write_error("FAILED SAVE FILE \"$new_name\"");
+				$errors++;
+				continue;
+			} else {
+				$this->ave->write_log("CONVERT \"$file\" TO \"$new_name\"");
+				$progress++;
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+		}
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
