@@ -22,7 +22,7 @@ class Logs {
 
 	protected function create() : bool {
 		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, 0777, true);
+		if(!file_exists($folder)) mkdir($folder, 0755, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		fwrite($file, "");

@@ -10,9 +10,9 @@ use RecursiveDirectoryIterator;
 use FilesystemIterator;
 use DirectoryIterator;
 
-class AveCore extends CommandLine {
+class AveCore {
 
-	public int $core_version = 2;
+	public int $core_version = 3;
 
 	public IniFile $config;
 
@@ -20,6 +20,9 @@ class AveCore extends CommandLine {
 	public Logs $log_error;
 	public Logs $log_data;
 
+	public ?string $command;
+	public array $arguments;
+	public bool $windows;
 	public string $logo;
 	public string $path;
 	public string $tool_name;
@@ -28,8 +31,12 @@ class AveCore extends CommandLine {
 	public $tool;
 
 	public function __construct(array $arguments){
-		parent::__construct($arguments);
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
+		unset($arguments[0]);
+		$this->command = $arguments[1] ?? null;
+		if(isset($arguments[1])) unset($arguments[1]);
+		$this->arguments = array_values($arguments);
+		$this->windows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 		$this->path = $this->get_file_path(__DIR__."/../..");
 		$this->logo = '';
 	}
@@ -39,8 +46,7 @@ class AveCore extends CommandLine {
 			$this->clear();
 			$this->title("$this->app_name v$this->version > $this->tool_name");
 			$this->tool->help();
-			echo " Action: ";
-			$line = $this->get_input();
+			$line = $this->get_input(" Action: ");
 			if($line == '#') return false;
 			$response = $this->tool->action($line);
 		}
@@ -65,7 +71,7 @@ class AveCore extends CommandLine {
 	public function print_folders_state() : void {
 		$this->clear();
 		foreach($this->folders_state as $folder_name => $state){
-			echo " Scan: \"$folder_name\" $state\r\n";
+			$this->echo(" Scan: \"$folder_name\" $state");
 		}
 	}
 
@@ -155,6 +161,7 @@ class AveCore extends CommandLine {
 	}
 
 	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {
+		if(!file_exists($path)) return [];
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
 		foreach($files as $file){
@@ -169,6 +176,7 @@ class AveCore extends CommandLine {
 	}
 
 	public function getFolders(string $path) : array {
+		if(!file_exists($path)) return [];
 		$data = [];
 		$files = new DirectoryIterator($path);
 		array_push($data, $path);
@@ -236,6 +244,24 @@ class AveCore extends CommandLine {
 		$this->log_data->write($data);
 	}
 
+	public function rrmdir(string $dir) : bool {
+		if(!file_exists($dir)) return false;
+		if(is_dir($dir)){
+			$objects = scandir($dir);
+			foreach($objects as $object){
+				if($object == "." || $object == "..") continue;
+				$subdir = $this->get_file_path("$dir/$object");
+				if(is_dir($subdir) && !is_link($subdir)){
+					$this->rrmdir($subdir);
+				} else {
+					$this->unlink($subdir);
+				}
+			}
+			$this->rmdir($dir);
+		}
+		return true;
+	}
+
 	public function rmdir(string $path, bool $log = true) : bool {
 		if(!file_exists($path) || !is_dir($path)) return false;
 		if(rmdir($path)){
@@ -301,6 +327,169 @@ class AveCore extends CommandLine {
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\"");
 			return false;
 		}
+	}
+
+	public function delete_files(string $path, array|null $extensions = null, array|null $except = null) : void {
+		$files = $this->getFiles($path, $extensions, $except);
+		foreach($files as $file){
+			$this->unlink($file);
+		}
+	}
+
+	public function cmd_escape(string $text) : string {
+		return str_replace([">", "<"], ["^>", "^<"], $text);
+	}
+
+	public function title(string $title) : void {
+		if($this->windows){
+			system("TITLE ".$this->cmd_escape($title));
+		}
+	}
+
+	public function cls() : void {
+		if($this->windows){
+			popen('cls', 'w');
+		}
+	}
+
+	public function get_input(string $message = '') : string {
+		if(!empty($message)) echo $message;
+		return trim(readline());
+	}
+
+	public function get_input_no_trim() : string {
+		return readline();
+	}
+
+	public function pause(?string $message = null) : void {
+		if(!is_null($message)) echo $message;
+		if($this->windows){
+			system("PAUSE > nul");
+		}
+	}
+
+	public function get_folders(string $string) : array {
+		$string = trim($string);
+		$folders = [];
+
+		$length = strlen($string);
+		$offset = 0;
+
+		while($offset < $length){
+			if(substr($string, $offset, 1) == '"'){
+				$end = strpos($string, '"', $offset+1);
+				array_push($folders, $this->get_file_path(substr($string, $offset+1, $end - $offset-1)));
+				$offset = $end + 1;
+			} else if(substr($string, $offset, 1) == ' '){
+				$offset++;
+			} else {
+				$end = strpos($string, ' ', $offset);
+				if($end !== false){
+					array_push($folders, $this->get_file_path(substr($string, $offset, $end - $offset)));
+					$offset = $end + 1;
+				} else {
+					array_push($folders, $this->get_file_path(substr($string, $offset)));
+					$offset = $length;
+				}
+			}
+		}
+
+		return array_unique($folders);
+	}
+
+	public function echo(string $string = '') : void {
+		echo "$string\r\n";
+	}
+
+	public function get_variable(string $string) : string {
+		exec("echo $string", $var);
+		return $var[0] ?? '';
+	}
+
+	public function open_file(string $path, string $params = '/MIN') : void {
+		if($this->windows && file_exists($path)){
+			exec("START $params \"\" \"$path\"");
+		}
+	}
+
+	public function open_url(string $url) : void {
+		if(strpos($url, "https://") !== false || strpos($url, "http://") !== false){
+			exec("START \"\" \"$url\"");
+		}
+	}
+
+	public function get_file_attributes(string $path) : array {
+		if($this->windows){
+			exec("ATTRIB \"$path\"", $var);
+			$attributes = str_replace($path, '', $var[0]);
+			return [
+				'R' => (strpos($attributes, "R") !== false),
+				'A' => (strpos($attributes, "A") !== false),
+				'S' => (strpos($attributes, "S") !== false),
+				'H' => (strpos($attributes, "H") !== false),
+				'I' => (strpos($attributes, "I") !== false),
+			];
+		} else {
+			return [
+				'R' => false,
+				'A' => false,
+				'S' => false,
+				'H' => false,
+				'I' => false,
+			];
+		}
+	}
+
+	public function set_file_attributes(string $path, bool|null $r = null, bool|null $a = null, bool|null $s = null, bool|null $h = null, bool|null $i = null) : void {
+		if($this->windows){
+			$attributes = '';
+			if(!is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
+			if(!is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
+			if(!is_null($s)) $attributes .= ($s ? '+' : '-').'S ';
+			if(!is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
+			if(!is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
+			exec("ATTRIB $attributes \"$path\"");
+		}
+	}
+
+	public function is_valid_device(string $path) : bool {
+		if(!$this->windows) return true;
+		if(substr($path, 1, 1) == ':'){
+			return file_exists(substr($path, 0, 3));
+		} else if(substr($path, 0, 2) == "\\\\"){
+			$device = substr($path, 2);
+			if(strpos($device, "\\") !== false){
+				$parts = explode("\\", $device);
+				return file_exists("\\\\".$parts[0]."\\".$parts[1]);
+			} else {
+				return false;
+			}
+		}
+	}
+
+	public function get_file_path(string $path) : string {
+		return str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
+	}
+
+	public function getComputerName() : string {
+		if($this->windows){
+			return $this->get_variable("%COMPUTERNAME%");
+		} else {
+			return shell_exec('hostname');
+		}
+	}
+
+	public function get_arguments_folders(array $arguments) : string {
+		$output = '';
+		foreach($arguments as $argument){
+			$argument = $this->get_file_path($argument);
+			if(substr($argument, 0, 1) == '"'){
+				$output .= ' '.$argument;
+			} else {
+				$output .= ' "'.$argument.'"';
+			}
+		}
+		return $output;
 	}
 
 }

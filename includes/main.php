@@ -14,7 +14,6 @@
 	require_once("$includes_path/dictionaries/MediaOrientation.php");
 	require_once("$includes_path/services/Logs.php");
 	require_once("$includes_path/services/IniFile.php");
-	require_once("$includes_path/services/CommandLine.php");
 	require_once("$includes_path/services/AveCore.php");
 	require_once("$includes_path/services/GuardPattern.php");
 	require_once("$includes_path/services/GuardDriver.php");

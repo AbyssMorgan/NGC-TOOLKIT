@@ -12,7 +12,7 @@ class IniFile {
 	protected bool $sort;
 	protected array $original;
 
-	public int $version = 20300;
+	public int $version = 20400;
 
 	function __construct(?string $path = null, bool $sort = false){
 		$this->path = $path;
@@ -28,7 +28,7 @@ class IniFile {
 
 	protected function create() : bool {
 		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, 0777, true);
+		if(!file_exists($folder)) mkdir($folder, 0755, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		fwrite($file, "");
@@ -152,6 +152,10 @@ class IniFile {
 		return $this->data[$key] ?? $default;
 	}
 
+	public function getString(string $key, int|bool|string|array|float|null $default = null) : string {
+		return strval($this->data[$key] ?? $default);
+	}
+
 	public function getOriginal(string $key, int|bool|string|array|float|null $default = null) : mixed {
 		return $this->original[$key] ?? $default;
 	}
@@ -197,9 +201,12 @@ class IniFile {
 	public function save() : bool {
 		if(!$this->isValid()) return false;
 		if(file_exists($this->path)){
-			if(file_exists($this->path)){
-				chmod($this->path, 0777);
+			try {
+				chmod($this->path, 0755);
 				unlink($this->path);
+			}
+			catch(\Exception $e){
+
 			}
 		}
 		$file = fopen($this->path, "w");
