@@ -357,7 +357,8 @@ class AveCore {
 		return trim(readline());
 	}
 
-	public function get_input_no_trim() : string {
+	public function get_input_no_trim(string $message = '') : string {
+		if(!empty($message)) echo $message;
 		return readline();
 	}
 
