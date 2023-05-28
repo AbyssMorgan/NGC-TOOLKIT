@@ -45,8 +45,7 @@ class DirectoryFunctions {
 	public function ToolDeleteEmptyDirs() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("DeleteEmptyDirs");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -88,8 +87,7 @@ class DirectoryFunctions {
 	public function ToolForceLoadIcon() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("ForceLoadIcon");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -131,8 +129,7 @@ class DirectoryFunctions {
 		$this->ave->clear();
 		$this->ave->set_subtool("CountFiles");
 
-		echo " Extensions (empty for all): ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Extensions (empty for all): ");
 		if($line == '#') return false;
 
 		if($line == '' || $line == '*'){
@@ -141,8 +138,7 @@ class DirectoryFunctions {
 			$extensions = explode(" ", $line);
 		}
 
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -195,28 +191,26 @@ class DirectoryFunctions {
 		$this->ave->set_subtool("CloneFolderStructure");
 
 		set_input:
-		echo " Input (Folder): ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Input (Folder): ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
 		set_output:
-		echo " Output (Folder): ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Output (Folder): ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
 		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
-			echo " Invalid output folder\r\n";
+			$this->ave->echo(" Invalid output folder");
 			goto set_output;
 		}
 
