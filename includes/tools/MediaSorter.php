@@ -50,8 +50,7 @@ class MediaSorter {
 	public function ToolSortExtension() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("SortExtension");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -108,8 +107,7 @@ class MediaSorter {
 			' 2 - Quality:    17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params['mode'] = strtolower($line[0] ?? '?');
@@ -117,8 +115,7 @@ class MediaSorter {
 		$this->params['resolution'] = in_array($this->params['mode'],['0','1']);
 		$this->params['quality'] = in_array($this->params['mode'],['0','2']);
 
-		$this->ave->clear();
-		echo " Folders: ";
+		$this->ave->clear(" Folders: ");
 		$line = $this->ave->get_input();
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
@@ -203,8 +200,7 @@ class MediaSorter {
 	public function ToolSortGifAnimated() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("SortGifAnimated");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -277,8 +273,7 @@ class MediaSorter {
 		}
 		$this->ave->print_help($help);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params['mode'] = strtolower($line[0] ?? '?');
@@ -291,16 +286,14 @@ class MediaSorter {
 			' . - _ \ @',
 		]);
 
-		echo " Separator: ";
-		$separator = $this->ave->get_input();
+		$separator = $this->ave->get_input(" Separator: ");
 		if($separator == '#') return false;
 		$this->params['separator'] = strtolower($separator[0] ?? '?');
 		if(!in_array($this->params['separator'],['.','-','_','\\','@'])) goto set_separator;
 		if($this->params['separator'] == '\\') $this->params['separator'] = DIRECTORY_SEPARATOR;
 
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -366,8 +359,7 @@ class MediaSorter {
 	public function ToolSortImagesColor() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("SortImagesColor");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -420,15 +412,14 @@ class MediaSorter {
 		$this->ave->set_subtool("SortVideosAutoDetectSeriesName");
 
 		set_input:
-		echo " Input:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
