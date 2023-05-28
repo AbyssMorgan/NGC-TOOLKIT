@@ -60,7 +60,7 @@ class DataBaseBackup {
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->source = new PDO("mysql:dbname=$dbname;host=$host;port=$port", $user, $password, $options);
+			$this->source = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -78,7 +78,7 @@ class DataBaseBackup {
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->destination = new PDO("mysql:dbname=$dbname;host=$host;port=$port", $user, $password, $options);
+			$this->destination = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -97,7 +97,9 @@ class DataBaseBackup {
 	}
 
 	public function escape(mixed $string) : string {
-		return preg_replace('~[\x00\x0A\x0D\x1A\x22\x27\x5C]~u', '\\\$0', strval($string)) ?? '';
+		$string = strval($string) ?? '';
+		if(empty($string)) return '';
+		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}
 
 	public function isDestinationEmpty() : bool {
@@ -150,13 +152,14 @@ class DataBaseBackup {
 		return "INSERT INTO `$table` ($columns_string)";
 	}
 
-	public function backupTable(string $table, bool $backup_structure = true, bool $backup_data = true) : void {
-		if(!file_exists($this->path)) mkdir($this->path, 0777, true);
+	public function backupTable(string $table, bool $backup_structure = true, bool $backup_data = true) : array {
+		if(!file_exists($this->path)) mkdir($this->path, 0755, true);
+		$errors = [];
 		$offset = 0;
 		$file_path = $this->path.DIRECTORY_SEPARATOR."$table.sql";
 		$columns = $this->getColumns($table);
 		if(file_exists($file_path)) unlink($file_path);
-		$file = fopen($file_path, "w");
+		$file = fopen($file_path, "wb");
 
 		fwrite($file, "-- やあ --\n\n");
 		fwrite($file, $this->getHeader()."\n\n");
@@ -166,18 +169,113 @@ class DataBaseBackup {
 		}
 
 		if($backup_data){
+			try {
+				echo " Table: $table Progress: 0.00 %        \r";
+				$insert = $this->getInsert($table, array_keys($columns))." VALUES\n";
+				$this->source->query("LOCK TABLE `$table` WRITE");
+				$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
+				$row = $results->fetch(PDO::FETCH_OBJ);
+				$count = $row->cnt;
+				if($count > 0){
+					do {
+						$percent = sprintf("%.02f", ($offset / $count) * 100.0);
+						echo " Table: $table Progress: $percent %        \r";
+						$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
+						$seek = 0;
+						$query = '';
+						foreach($rows as $row){
+							if($seek == 0){
+								$query .= $insert;
+							}
+							$values = [];
+							foreach($columns as $column => $type){
+								if(is_null($row->$column)){
+									$values[] = "NULL";
+								} else if($type == 'bit'){
+									if(empty($row->$column)){
+										$values[] = "b'0'";
+									} else {
+										$values[] = "b'".decbin(intval($row->$column))."'";
+									}
+								} else if($type == 'blob' || $type == 'binary' || $type == 'longblob'){
+									if(empty($row->$column)){
+										$values[] = "''";
+									} else {
+										$values[] = "0x".bin2hex($row->$column);
+									}
+								} else {
+									if(in_array($type, $this->types_no_quotes)){
+										$values[] = $row->$column;
+									} else {
+										$values[] = "'".$this->escape($row->$column)."'";
+									}
+								}
+							}
+							$query .= '('.implode(',',$values).')';
+							unset($values);
+							$seek++;
+							if($seek >= $this->insert_limit){
+								$seek = 0;
+								$query .= ";\n";
+							} else {
+								$query .= ",\n";
+							}
+							$offset++;
+						}
+						if(!empty($query)) fwrite($file, substr($query, 0, -2).";\n");
+						unset($query);
+					} while($rows->rowCount() > 0);
+					if(isset($rows)) unset($rows);
+				}
+				$this->source->query("UNLOCK TABLES");
+				echo " Table: $table Progress: 100.00 %        \r";
+			}
+			catch(PDOException $e){
+				try {
+					$this->source->query("UNLOCK TABLES");
+				}
+				catch(PDOException $ee){
+
+				}
+				echo " Failed make backup for table $table, skipping\r\n";
+				echo " ".$e->getMessage()."\r\n";
+				$errors[] = "Failed make backup for table $table reason: ".$e->getMessage();
+			}
+		} else {
+			echo " Table: $table Progress: 100.00 %        \r";
+		}
+
+		fwrite($file, "\n".$this->getFooter()."\n");
+
+		fclose($file);
+		return $errors;
+	}
+
+	public function cloneTable(string $table) : array {
+		$errors = [];
+		$offset = 0;
+		$columns = $this->getColumns($table);
+
+		$this->destination->query($this->getHeader());
+		$this->destination->query($this->getDrop($table));
+		$this->destination->query($this->getCreation($table));
+
+		try {
+			echo " Table: $table Progress: 0.00 %        \r";
+			$insert = $this->getInsert($table, array_keys($columns))." VALUES\n";
+			$this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
 			$row = $results->fetch(PDO::FETCH_OBJ);
 			$count = $row->cnt;
 			if($count > 0){
-				while($offset < $count){
+				do {
 					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
 					echo " Table: $table Progress: $percent %        \r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					foreach($rows as $row){
 						if($seek == 0){
-							$query = $this->getInsert($table, array_keys($columns))." VALUES\n";
+							$query = $insert;
 						}
 						$values = [];
 						foreach($columns as $column => $type){
@@ -208,117 +306,53 @@ class DataBaseBackup {
 						$seek++;
 						if($seek >= $this->insert_limit){
 							$seek = 0;
-							fwrite($file, substr($query, 0, -2).";\n");
+							$this->destination->query(substr($query, 0, -2).";");
 							unset($query);
 						}
 						$offset++;
-						$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-						echo " Table: $table Progress: $percent %        \r";
 					}
-					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table: $table Progress: $percent %        \r";
-					unset($rows);
-				}
+				} while($rows->rowCount() > 0);
+				if(isset($rows)) unset($rows);
 				if(isset($query)){
-					fwrite($file, substr($query, 0, -2).";\n");
+					$this->destination->query(substr($query, 0, -2).";");
 					unset($query);
 				}
-			} else {
-				echo " Table: $table Progress: 100.00 %        \r";
 			}
-		} else {
+			$this->source->query("UNLOCK TABLES");
 			echo " Table: $table Progress: 100.00 %        \r";
 		}
-
-		fwrite($file, "\n".$this->getFooter()."\n");
-
-		fclose($file);
-	}
-
-	public function cloneTable(string $table) : void {
-		$offset = 0;
-		$columns = $this->getColumns($table);
-
-		$this->destination->query($this->getHeader());
-		$this->destination->query($this->getDrop($table));
-		$this->destination->query($this->getCreation($table));
-
-		$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
-		$row = $results->fetch(PDO::FETCH_OBJ);
-		$count = $row->cnt;
-		if($count > 0){
-			while($offset < $count){
-				$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-				echo " Table: $table Progress: $percent %        \r";
-				$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
-				$seek = 0;
-				foreach($rows as $row){
-					if($seek == 0){
-						$query = $this->getInsert($table, array_keys($columns))." VALUES\n";
-					}
-					$values = [];
-					foreach($columns as $column => $type){
-						if(is_null($row->$column)){
-							$values[] = "NULL";
-						} else if($type == 'bit'){
-							if(empty($row->$column)){
-								$values[] = "b'0'";
-							} else {
-								$values[] = "b'".decbin(intval($row->$column))."'";
-							}
-						} else if($type == 'blob' || $type == 'binary' || $type == 'longblob'){
-							if(empty($row->$column)){
-								$values[] = "''";
-							} else {
-								$values[] = "0x".bin2hex($row->$column);
-							}
-						} else {
-							if(in_array($type, $this->types_no_quotes)){
-								$values[] = $row->$column;
-							} else {
-								$values[] = "'".$this->escape($row->$column)."'";
-							}
-						}
-					}
-					$query .= '('.implode(',',$values).'),'."\n";
-					unset($values);
-					$seek++;
-					if($seek >= $this->insert_limit){
-						$seek = 0;
-						$this->destination->query(substr($query, 0, -2).";");
-						unset($query);
-					}
-					$offset++;
-					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table: $table Progress: $percent %        \r";
-				}
-				$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-				echo " Table: $table Progress: $percent %        \r";
-				unset($rows);
+		catch(PDOException $e){
+			try {
+				$this->source->query("UNLOCK TABLES");
 			}
-			if(isset($query)){
-				$this->destination->query(substr($query, 0, -2).";");
-				unset($query);
+			catch(PDOException $ee){
+
 			}
-		} else {
-			echo " Table: $table Progress: 100.00 %        \r";
+			echo " Failed clone table $table skipping\r\n";
+			echo " ".$e->getMessage()."\r\n";
+			$errors[] = "Failed clone table $table reason: ".$e->getMessage();
 		}
 
 		$this->destination->query($this->getFooter());
+		return $errors;
 	}
 
-	public function backupAll(bool $backup_structure = true, bool $backup_data = true) : void {
+	public function backupAll(bool $backup_structure = true, bool $backup_data = true) : array {
+		$errors = [];
 		$tables = $this->getTables();
 		foreach($tables as $table){
-			$this->backupTable($table);
+			array_merge($errors, $this->backupTable($table));
 		}
+		return $errors;
 	}
 
-	public function cloneAll() : void {
+	public function cloneAll() : array {
+		$errors = [];
 		$tables = $this->getTables();
 		foreach($tables as $table){
-			$this->cloneTable($table);
+			array_merge($errors, $this->cloneTable($table));
 		}
+		return $errors;
 	}
 
 }
