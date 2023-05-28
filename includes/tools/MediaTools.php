@@ -53,46 +53,43 @@ class MediaTools {
 		$this->ave->set_subtool("MergeVideoAudio");
 
 		set_video:
-		echo " Video:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Video:  ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_video;
 		$video = $folders[0];
 
 		if(!file_exists($video) || !is_dir($video)){
-			echo " Invalid video folder\r\n";
+			$this->ave->echo(" Invalid video folder");
 			goto set_video;
 		}
 
 		set_audio:
-		echo " Audio:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Audio:  ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_audio;
 		$audio = $folders[0];
 
 		if(!file_exists($audio) || !is_dir($audio)){
-			echo " Invalid audio folder\r\n";
+			$this->ave->echo(" Invalid audio folder");
 			goto set_audio;
 		}
 
 		set_output:
-		echo " Output: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
 		if($audio == $output || $video == $output){
-			echo " Output folder must be different than audio/video folder\r\n";
+			$this->ave->echo(" Output folder must be different than audio/video folder");
 			goto set_output;
 		}
 
 		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
-			echo " Invalid output folder\r\n";
+			$this->ave->echo(" Invalid output folder");
 			goto set_output;
 		}
 
@@ -155,33 +152,31 @@ class MediaTools {
 		$this->ave->set_subtool("MergeVideoSubtitles");
 
 		set_input:
-		echo " Input:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Input:  ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
 		set_output:
-		echo " Output: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
 		if($input == $output){
-			echo " Output folder must be different than input folder\r\n";
+			$this->ave->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
 		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
-			echo " Invalid output folder\r\n";
+			$this->ave->echo(" Invalid output folder");
 			goto set_output;
 		}
 
@@ -229,29 +224,26 @@ class MediaTools {
 		$this->ave->set_subtool("AvatarGenerator");
 
 		set_input:
-		echo " Input:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Input:  ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
 		set_output:
-		echo " Output: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
 		set_size:
-		echo " Width (0 - no resize): ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Width (0 - no resize): ");
 		if($line == '#') return false;
 		$size = preg_replace('/\D/', '', $line);
 		if($size == '') goto set_size;
@@ -259,12 +251,12 @@ class MediaTools {
 		if($size < 0) goto set_size;
 
 		if($input == $output){
-			echo " Output folder must be different than input folder\r\n";
+			$this->ave->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
 		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
-			echo " Invalid output folder\r\n";
+			$this->ave->echo(" Invalid output folder");
 			goto set_output;
 		}
 
@@ -277,7 +269,7 @@ class MediaTools {
 		$progress = 0;
 		$errors = 0;
 
-		$detector = new FaceDetector($this->ave->get_file_path($this->ave->path."/bin/data/FaceDetector.dat"));
+		$detector = new FaceDetector($this->ave->get_file_path($this->ave->path."/includes/data/FaceDetector.dat"));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -328,15 +320,14 @@ class MediaTools {
 		$this->ave->set_subtool("VideoFetchMediaInfo");
 
 		set_input:
-		echo " Input:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Input:  ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
@@ -414,8 +405,7 @@ class MediaTools {
 			' 3 - Image > GIF',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -426,33 +416,31 @@ class MediaTools {
 		$this->ave->clear();
 
 		set_input:
-		echo " Input:  ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Input:  ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
 		set_output:
-		echo " Output: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
 		if($input == $output){
-			echo " Output folder must be different than input folder\r\n";
+			$this->ave->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
 		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
-			echo " Invalid output folder\r\n";
+			$this->ave->echo(" Invalid output folder");
 			goto set_output;
 		}
 
