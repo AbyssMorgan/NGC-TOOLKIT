@@ -50,8 +50,7 @@ class FileFunctions {
 			' a2       b2     Delete',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -63,8 +62,7 @@ class FileFunctions {
 		if(!in_array($this->params['action'],['1','2'])) goto set_mode;
 
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
@@ -132,17 +130,14 @@ class FileFunctions {
 	public function ToolExtensionChange() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("ExtensionChange");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
-		echo " Extension old: ";
-		$extension_old = strtolower($this->ave->get_input());
+		$extension_old = strtolower($this->ave->get_input(" Extension old: "));
 		if($extension_old == '#') return false;
 
-		echo " Extension new: ";
-		$extension_new = $this->ave->get_input();
+		$extension_new = $this->ave->get_input(" Extension new: ");
 		if($extension_new == '#') return false;
 
 		$this->ave->setup_folders($folders);
@@ -193,8 +188,7 @@ class FileFunctions {
 			' ?3  - whirlpool',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -208,8 +202,7 @@ class FileFunctions {
 		if(!in_array($this->params['algo'],['0','1','2','3'])) goto set_mode;
 
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
