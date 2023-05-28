@@ -76,8 +76,7 @@ class NamesGenerator {
 			' ??l - List only',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -91,8 +90,7 @@ class NamesGenerator {
 		if(!in_array($this->params['algo'],['0','1','2','3'])) goto set_mode;
 
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -196,8 +194,7 @@ class NamesGenerator {
 			' g6    s6    "DDDDDD"                  000001 - 999999',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -294,8 +291,7 @@ class NamesGenerator {
 
 	public function ToolNumberActionSingle() : bool {
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -314,8 +310,7 @@ class NamesGenerator {
 
 	public function ToolNumberActionGroup() : bool {
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -358,8 +353,7 @@ class NamesGenerator {
 			' ?3 - whirlpool',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -376,8 +370,7 @@ class NamesGenerator {
 		$this->params['thumbnail'] = in_array($this->params['mode'],['2','3']);
 
 		$this->ave->clear();
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -484,8 +477,7 @@ class NamesGenerator {
 	public function ToolGenerateSeriesName() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("GenerateSeriesName");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -546,11 +538,12 @@ class NamesGenerator {
 	public function ToolEscapeFileNameWWW() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("EscapeFileNameWWW");
-		echo " Double spaces reduce\r\n";
-		echo " Characters after escape: A-Z a-z 0-9 _ -\r\n";
-		echo " Be careful to prevent use on Japanese, Chinese, Korean, etc. file names\r\n\r\n";
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$this->ave->print_help([
+			" Double spaces reduce",
+			" Characters after escape: A-Z a-z 0-9 _ - .",
+			" Be careful to prevent use on Japanese, Chinese, Korean, etc. file names",
+		]);
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -569,7 +562,7 @@ class NamesGenerator {
 				while(strpos($escaped_name, '  ') !== false){
 					$escaped_name = str_replace('  ', ' ', $escaped_name);
 				}
-				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-]/', '', str_replace(' ', '_', $escaped_name)), ' ');
+				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-.]/', '', str_replace(' ', '_', $escaped_name)), ' ');
 
 				if(empty($escaped_name)){
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
@@ -604,12 +597,13 @@ class NamesGenerator {
 	public function ToolPrettyFileName() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("PrettyFileName");
-		echo " Double spaces reduce\r\n";
-		echo " Replace nbsp into space\r\n";
-		echo " Replace _ and . into space\r\n";
-		echo " Remove characters: ; @ # ~ ! $ % ^ &\r\n\r\n";
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$this->ave->print_help([
+			" Double spaces reduce",
+			" Replace nbsp into space",
+			" Replace _ and . into space",
+			" Remove characters: ; @ # ~ ! $ % ^ &",
+		]);
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -664,8 +658,7 @@ class NamesGenerator {
 	public function ToolRemoveYouTubeQualityTag() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveYouTubeQualityTag");
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
@@ -744,8 +737,7 @@ class NamesGenerator {
 			' 1   - Change episode numbers',
 		]);
 
-		echo " Mode: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Mode: ");
 		if($line == '#') return false;
 
 		$this->params = [
@@ -767,33 +759,32 @@ class NamesGenerator {
 		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeSeason");
 
 		set_input:
-		echo " Attention filename must begin with the season and episode number in the format:\r\n";
-		echo " \"S00E00{whatever}.{extension}>\"\r\n";
-		echo " \"S00E000{whatever}.{extension}>\"\r\n\r\n";
-		echo " Folder: ";
-		$line = $this->ave->get_input();
+		$this->ave->print_help([
+			" Attention filename must begin with the season and episode number in the format:",
+			" \"S00E00{whatever}.{extension}>\"",
+			" \"S00E000{whatever}.{extension}>\"",
+		]);
+		$line = $this->ave->get_input(" Folder: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
-		echo " Example: 1 or 01 (up to 99)\r\n";
+		$this->ave->echo(" Example: 1 or 01 (up to 99)");
 		set_season_current:
-		echo " Current season: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Current season: ");
 		if($line == '#') return false;
 		$current_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if($current_season == '') goto set_season_current;
 		if(strlen($current_season) == 1) $current_season = "0$current_season";
 
 		set_season_new:
-		echo " New season:     ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" New season:     ");
 		if($line == '#') return false;
 		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if($new_season == '') goto set_season_new;
@@ -850,26 +841,26 @@ class NamesGenerator {
 		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeEpisodeNumbers");
 
 		set_input:
-		echo " Attention filename must begin with the season and episode number in the format:\r\n";
-		echo " \"S00E00{whatever}.{extension}\"\r\n";
-		echo " \"S00E000{whatever}.{extension}\"\r\n\r\n";
-		echo " Folder: ";
-		$line = $this->ave->get_input();
+		$this->ave->print_help([
+			" Attention filename must begin with the season and episode number in the format:",
+			" \"S00E00{whatever}.{extension}\"",
+			" \"S00E000{whatever}.{extension}\"",
+		]);
+		$line = $this->ave->get_input(" Folder: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
 		if(!file_exists($input) || !is_dir($input)){
-			echo " Invalid input folder\r\n";
+			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
 
-		echo " Choose episodes to edit (example 01 or 001)\r\n";
+		$this->ave->echo(" Choose episodes to edit (example 01 or 001)");
 
 		set_start:
-		echo " Start: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Start: ");
 		if($line == '#') return false;
 		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_start == '') goto set_start;
@@ -877,17 +868,15 @@ class NamesGenerator {
 		$episode_start = intval($episode_start);
 
 		set_end:
-		echo " End:   ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" End:   ");
 		if($line == '#') return false;
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_end == '') goto set_end;
 		if($episode_end[0] == '0') $episode_end = substr($episode_end,1);
 		$episode_end = intval($episode_end);
 
-		echo " Choose step as integer (example 5 or -5)\r\n";
-		echo " Step:  ";
-		$line = $this->ave->get_input();
+		$this->ave->echo(" Choose step as integer (example 5 or -5)");
+		$line = $this->ave->get_input(" Step:  ");
 		if($line == '#') return false;
 		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
@@ -970,14 +959,12 @@ class NamesGenerator {
 		$this->ave->clear();
 		$this->ave->set_subtool("AddFileNamePrefixSuffix");
 
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
-		echo " Empty for all, separate with spaces for multiple.\r\n";
-		echo " Extensions: ";
-		$line = $this->ave->get_input();
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
 		if($line == '#') return false;
 		if(empty($line)){
 			$extensions = null;
@@ -985,13 +972,11 @@ class NamesGenerator {
 			$extensions = explode(" ", $line);
 		}
 
-		echo " Prefix (may be empty): ";
-		$prefix = $this->ave->get_input_no_trim();
+		$prefix = $this->ave->get_input_no_trim(" Prefix (may be empty): ");
 		if($prefix == '#') return false;
 		$prefix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
 
-		echo " Suffix (may be empty): ";
-		$suffix = $this->ave->get_input_no_trim();
+		$suffix = $this->ave->get_input_no_trim(" Suffix (may be empty): ");
 		if($suffix == '#') return false;
 		$suffix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
 
@@ -1034,14 +1019,12 @@ class NamesGenerator {
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveKeywordsFromFileName");
 
-		echo " Folders: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 
-		echo " Empty for all, separate with spaces for multiple.\r\n";
-		echo " Extensions: ";
-		$line = $this->ave->get_input();
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
 		if($line == '#') return false;
 		if(empty($line)){
 			$extensions = null;
@@ -1049,19 +1032,17 @@ class NamesGenerator {
 			$extensions = explode(" ", $line);
 		}
 
-		echo " Put numbers how much keywords you want add to remove.\r\n";
+		$this->ave->echo(" Put numbers how much keywords you want to remove");
 
 		set_quantity:
-		echo " Quantity: ";
-		$line = $this->ave->get_input();
+		$line = $this->ave->get_input(" Quantity: ");
 		if($line == '#') return false;
 		$quantity = intval(preg_replace('/\D/', '', $line));
 		if($quantity <= 0) goto set_quantity;
 
 		$keywords = [];
 		for($i = 0; $i < $quantity; $i++){
-			echo " Keyword ".($i+1).": ";
-			$keywords[$i] = $this->ave->get_input_no_trim();
+			$keywords[$i] = $this->ave->get_input_no_trim(" Keyword ".($i+1).": ");
 		}
 
 		$this->ave->setup_folders($folders);
