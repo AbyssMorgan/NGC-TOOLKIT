@@ -228,7 +228,7 @@ class DataBaseBackup {
 					if(isset($rows)) unset($rows);
 				}
 				$this->source->query("UNLOCK TABLES");
-				echo " Table: $table Progress: 100.00 %        \r";
+				echo " Table: $table Progress: 100.00 %        \r\n";
 			}
 			catch(PDOException $e){
 				try {
@@ -237,12 +237,12 @@ class DataBaseBackup {
 				catch(PDOException $ee){
 
 				}
-				echo " Failed make backup for table $table, skipping\r\n";
+				echo "\n Failed make backup for table $table, skipping\r\n";
 				echo " ".$e->getMessage()."\r\n";
 				$errors[] = "Failed make backup for table $table reason: ".$e->getMessage();
 			}
 		} else {
-			echo " Table: $table Progress: 100.00 %        \r";
+			echo " Table: $table Progress: 100.00 %        \r\n";
 		}
 
 		fwrite($file, "\n".$this->getFooter()."\n");

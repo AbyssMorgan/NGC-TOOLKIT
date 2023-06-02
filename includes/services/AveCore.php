@@ -41,14 +41,19 @@ class AveCore {
 		$this->logo = '';
 	}
 
-	public function select_action() : bool {
+	public function select_action(?string $trigger_action = null) : bool {
 		do {
 			$this->clear();
 			$this->title("$this->app_name v$this->version > $this->tool_name");
-			$this->tool->help();
-			$line = $this->get_input(" Action: ");
-			if($line == '#') return false;
-			$response = $this->tool->action($line);
+			if(is_null($trigger_action)){
+				$this->tool->help();
+				$line = $this->get_input(" Action: ");
+				if($line == '#') return false;
+				$response = $this->tool->action($line);
+			} else {
+				$response = $this->tool->action($trigger_action);
+			}
+			$trigger_action = null;
 		}
 		while(!$response);
 		return true;
@@ -350,6 +355,13 @@ class AveCore {
 		if($this->windows){
 			popen('cls', 'w');
 		}
+	}
+
+	public function get_confirm(string $question) : bool {
+		ask_confirm:
+		$answer = strtoupper($this->get_input($question));
+		if(!in_array($answer, ['Y', 'N'])) goto ask_confirm;
+		return ($answer == 'Y');
 	}
 
 	public function get_input(string $message = '') : string {

@@ -51,10 +51,10 @@ class DataBase {
 		return $this->db->query($query, $fetchMode);
 	}
 
-	public function resultsToString(array $results) : string {
-		$data = " ".implode("|", array_keys($results[0]))."\r\n";
+	public function resultsToString(array $results, string $separator = '|') : string {
+		$data = " ".implode($separator, array_keys($results[0]))."\r\n";
 		foreach($results as $result){
-			$data .= " ".implode("|", $result)."\r\n";
+			$data .= " ".implode($separator, $result)."\r\n";
 		}
 		return $data;
 	}

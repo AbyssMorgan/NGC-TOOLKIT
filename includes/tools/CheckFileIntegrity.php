@@ -99,8 +99,7 @@ class CheckFileIntegrity {
 		}
 
 		if(!empty($line)){
-			$line = $this->ave->get_input(" More (Y/N): ");
-			if(strtoupper($line[0] ?? 'N') == 'Y') goto set_folders;
+			if($this->ave->get_confirm(" More (Y/N): ")) goto set_folders;
 		}
 
 		set_files:
@@ -111,8 +110,7 @@ class CheckFileIntegrity {
 		}
 
 		if(!empty($line)){
-			$line = $this->ave->get_input(" More (Y/N): ");
-			if(strtoupper($line[0] ?? 'N') == 'Y') goto set_files;
+			if($this->ave->get_confirm(" More (Y/N): ")) goto set_files;
 		}
 
 		$file_name = $this->ave->get_file_path("$output/$pattern_file");

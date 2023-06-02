@@ -37,7 +37,7 @@ class MySQLTools {
 			' 4 - Make backup',
 			' 5 - Clone DB1 to DB2 (overwrite)',
 			' 6 - Open backup folder',
-			' 7 - MySQL console',
+			' 7 - MySQL Console',
 			' 8 - Backup selected tables',
 		]);
 	}
@@ -88,8 +88,7 @@ class MySQLTools {
 
 		if(file_exists($this->getConfigPath($label))){
 			$this->ave->echo(" Label \"$label\" already in use");
-			$line = $this->ave->get_input(" Overwrite (Y/N): ");
-			if(strtoupper($line[0] ?? 'N') == 'N') goto set_label;
+			if(!$this->ave->get_confirm(" Overwrite (Y/N): ")) goto set_label;
 		}
 
 		$this->ave->clear();
@@ -130,8 +129,7 @@ class MySQLTools {
 		catch(PDOException $e){
 			$this->ave->echo(" Failed to connect:");
 			$this->ave->echo(" ".$e->getMessage());
-			$answer = strtoupper($this->ave->get_input(" Retry (Y/N): "));
-			if($answer == 'Y') goto try_login_same;
+			if($this->ave->get_confirm(" Retry (Y/N): ")) goto try_login_same;
 			goto set_db_connection;
 		}
 		$conn = null;
@@ -142,17 +140,9 @@ class MySQLTools {
 			" Set additional config for label: \"$label\"",
 		]);
 
-		set_backup_structure:
-		$backup['structure'] = strtoupper($this->ave->get_input(" Backup structure (Y/N): "));
-		if(!in_array($backup['structure'][0] ?? '?', ['Y', 'N'])) goto set_backup_structure;
-
-		set_backup_data:
-		$backup['data'] = strtoupper($this->ave->get_input(" Backup data (Y/N): "));
-		if(!in_array($backup['data'][0] ?? '?', ['Y', 'N'])) goto set_backup_data;
-
-		set_backup_compress:
-		$backup['compress'] = strtoupper($this->ave->get_input(" Compress after backup (Y/N): "));
-		if(!in_array($backup['compress'][0] ?? '?', ['Y', 'N'])) goto set_backup_compress;
+		$backup['structure'] = $this->ave->get_confirm(" Backup structure (Y/N): ");
+		$backup['data'] = $this->ave->get_confirm(" Backup data (Y/N): ");
+		$backup['compress'] = $this->ave->get_confirm(" Compress after backup (Y/N): ");
 
 		$ini = $this->getConfig($label);
 		$ini->update([
@@ -164,9 +154,9 @@ class MySQLTools {
 			'FOLDER_DATE_FORMAT' => "Y-m-d_His",
 			'BACKUP_QUERY_LIMIT' => 50000,
 			'BACKUP_INSERT_LIMIT' => 100,
-			'BACKUP_TYPE_STRUCTURE' => $backup['structure'][0] == 'Y',
-			'BACKUP_TYPE_DATA' => $backup['data'][0] == 'Y',
-			'BACKUP_COMPRESS' => $backup['compress'][0] == 'Y',
+			'BACKUP_TYPE_STRUCTURE' => $backup['structure'],
+			'BACKUP_TYPE_DATA' => $backup['data'],
+			'BACKUP_COMPRESS' => $backup['compress'],
 			'BACKUP_PATH' => $output,
 		], true);
 
@@ -264,10 +254,9 @@ class MySQLTools {
 		}
 
 		if(!is_null($callback)){
-			ask_for_call_maintenance:
-			$answer = strtoupper($this->ave->get_input(" Toggle website into maintenance (Y/N): "));
-			if(!in_array($answer, ['Y', 'N'])) goto ask_for_call_maintenance;
-			if($answer == 'N') $callback = null;
+			if(!$this->ave->get_confirm(" Toggle website into maintenance (Y/N): ")){
+				$callback = null;
+			}
 		}
 
 		$this->ave->write_log("Initialize backup for \"$label\"");
@@ -293,13 +282,12 @@ class MySQLTools {
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
 				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $table], true);
 			}
-			$this->ave->echo();
 			$this->ave->set_progress_ex('Tables', $progress, $total);
 		}
 		$this->ave->echo();
@@ -368,10 +356,9 @@ class MySQLTools {
 		$request = new Request();
 
 		if(!is_null($callback)){
-			ask_for_call_maintenance:
-			$answer = strtoupper($this->ave->get_input(" Toggle website into maintenance (Y/N): "));
-			if(!in_array($answer, ['Y', 'N'])) goto ask_for_call_maintenance;
-			if($answer == 'N') $callback = null;
+			if(!$this->ave->get_confirm(" Toggle website into maintenance (Y/N): ")){
+				$callback = null;
+			}
 		}
 
 		$this->ave->write_log("Initialize backup for \"$source\"");
@@ -410,17 +397,14 @@ class MySQLTools {
 		if(!$backup->connect_destination($ini_dest->get('DB_HOST'), $ini_dest->get('DB_USER'), $ini_dest->get('DB_PASSWORD'), $ini_dest->get('DB_NAME'), $ini_dest->get('DB_PORT'))) goto set_label_destination;
 
 		if(!$backup->isDestinationEmpty()){
-			$confirmation = strtoupper($this->ave->get_input(" Output database is not empty, continue (Y/N): "));
-			if($confirmation != 'Y'){
+			if(!$this->ave->get_confirm(" Output database is not empty, continue (Y/N): ")){
 				$this->ave->pause(" Clone \"$source\" to \"$destination\" aborted, press enter to back to menu");
 				return false;
 			}
 		}
 
 		$v = $this->ave->config->get('AVE_BACKUP_MAX_ALLOWED_PACKET');
-		$this->ave->echo(" Try call SET GLOBAL `max_allowed_packet` = $v; (Y/N): ");
-		$confirmation = strtoupper($this->ave->get_input());
-		if($confirmation == 'Y'){
+		if($this->ave->get_confirm(" Try call SET GLOBAL `max_allowed_packet` = $v; (Y/N): ")){
 			if(!$backup->set_max_allowed_packet($v)){
 				$this->ave->echo("SET GLOBAL `max_allowed_packet` = $v; fail, continue");
 			}
@@ -442,13 +426,12 @@ class MySQLTools {
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
 				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $table], true);
 			}
-			$this->ave->echo();
 			$this->ave->set_progress_ex('Tables', $progress, $total);
 		}
 		$this->ave->echo();
@@ -510,7 +493,7 @@ class MySQLTools {
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
@@ -600,8 +583,7 @@ class MySQLTools {
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
 
-		$line = $this->ave->get_input(" Save query results in data file (Y/N): ");
-		$save_output = strtoupper($line[0] ?? 'N') == 'Y';
+		$save_output = $this->ave->get_confirm(" Save query results in data file (Y/N): ");
 		if($save_output){
 			$this->ave->write_data([" Query results for: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'), ""]);
 		}
@@ -609,7 +591,7 @@ class MySQLTools {
 		clear:
 		$this->ave->clear();
 		$this->ave->print_help([
-			" MySQL console: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER')." Save results: ".($save_output ? 'Enabled' : 'Disabled'),
+			" MySQL Console: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER')." Save results: ".($save_output ? 'Enabled' : 'Disabled'),
 			" Additional commands: ",
 			" @exit  - close connection",
 			" @clear - clear console",
@@ -646,7 +628,7 @@ class MySQLTools {
 					if($save_output) $this->ave->write_data(" Done");
 				}
 			} else {
-				$results = $db->resultsToString($results);
+				$results = $db->resultsToString($results, $ini->get('SAVE_RESULTS_SEPARATOR'));
 				$this->ave->echo($results);
 				if($save_output) $this->ave->write_data($results);
 			}
@@ -697,10 +679,9 @@ class MySQLTools {
 		}
 
 		if(!is_null($callback)){
-			ask_for_call_maintenance:
-			$answer = strtoupper($this->ave->get_input(" Toggle website into maintenance (Y/N): "));
-			if(!in_array($answer, ['Y', 'N'])) goto ask_for_call_maintenance;
-			if($answer == 'N') $callback = null;
+			if(!$this->ave->get_confirm(" Toggle website into maintenance (Y/N): ")){
+				$callback = null;
+			}
 		}
 
 		$this->ave->print_help([
@@ -735,7 +716,7 @@ class MySQLTools {
 					if($ini->get('BACKUP_CURL_SEND_ERRORS')){
 						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
 					} else {
-						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table];
+						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
 					}
 					if(!is_null($callback)) $request->get($callback, $cdata, true);
 				} else {
@@ -745,7 +726,6 @@ class MySQLTools {
 				$this->ave->echo(" Table: $table not exists, skipping");
 				$this->ave->write_error("Create backup for table $table failed, table not exists");
 			}
-			$this->ave->echo();
 			$this->ave->set_progress_ex('Tables', $progress, $total);
 		}
 		$this->ave->echo();
@@ -797,6 +777,7 @@ class MySQLTools {
 		if(!$config->isSet('BACKUP_TYPE_DATA')) $config->set('BACKUP_TYPE_DATA', true);
 		if(!$config->isSet('BACKUP_COMPRESS')) $config->set('BACKUP_COMPRESS', true);
 		if(!$config->isSet('FOLDER_DATE_FORMAT')) $config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
+		if(!$config->isSet('SAVE_RESULTS_SEPARATOR')) $config->set('SAVE_RESULTS_SEPARATOR', '|');
 		if($config->isChanged()) $config->save();
 	}
 
