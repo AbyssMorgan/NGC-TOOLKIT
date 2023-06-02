@@ -1,0 +1,72 @@
+v1.5.3:
+- Add tool: Media Sorter > Sort Videos: Auto detect series name
+- Add tool: Media Tools > Image converter
+- Improvements
+
+v1.5.2:
+- Added tool: Media Tools > Video: Fetch media info
+
+v1.5.1:
+- Fixed tool "Directory Functions > Force load icon (desktop.ini)"
+
+v1.5.0:
+- Improve navigation (don't exit app after operation)
+- Move config to %LOCALAPPDATA%\AVE
+- Overwrite user config for keys AVE_LOG_FOLDER, AVE_DATA_FOLDER, AVE_EXTENSIONS_AUDIO
+- Added option for open config folder
+
+v1.4.5:
+- Critical fixes in MySQL make backup
+
+v1.4.4:
+- Fixes and improvements
+
+v1.4.3:
+- Fixes
+
+v1.4.2:
+- Add option for run MySQLTools > Make backup as command line
+- Fix output format on Avatar Generator
+
+v1.4.1:
+- Add tool: MySQL Tools > Clone DB1 to DB2 (overwrite)
+- Fixes and improvements for MySQL Tools
+- Fixes set path on AVE-PHP.cmd
+
+v1.4.0:
+- Fixes and improvements for Check File Integrity
+- Fix timezone on logs
+- Optimize navigation
+- Add tool: MySQL Tools
+- Add tool: Media Tools > Avatar generator
+- Add tool: Names Generator > Add file name prefix/suffix
+- Add tool: Names Generator > Remove keywords from file name
+
+v1.3.1:
+- Remove color from config
+- Add pause when critical error
+- Fixes
+
+v1.3.0:
+- Fixed black screen on init when version changed
+- Added tools:
+Names Generator > Escape file name (WWW)
+Names Generator > Pretty file name
+Names Generator > Remove YouTube quality tag
+Names Generator > Series episode editor
+- Directory Functions > Clone folder structure
+- Check for updates
+- Added new params to config AVE_LOG_EVENT, AVE_LOG_ERROR, AVE_IGNORE_VALIDATE_EXTENSIONS, AVE_EXTENSIONS_VIDEO_FOLLOW, AVE_EXTENSIONS_AUDIO
+- Fixes
+
+v1.2.0:
+- Update movie thumbnailer 3.4.2
+- Update ffmpeg to latest
+- Add auto check for updates
+- Add cauto clear unused files from bin folder
+
+v1.1.0:
+- Add new tool Names Generator > Generate series name
+
+v1.0.0:
+- Initial release

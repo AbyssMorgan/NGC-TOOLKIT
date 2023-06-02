@@ -1032,7 +1032,7 @@ class NamesGenerator {
 			$extensions = explode(" ", $line);
 		}
 
-		$this->ave->echo(" Put numbers how much keywords you want to remove");
+		$this->ave->echo(" Put numbers how much keywords you want remove");
 
 		set_quantity:
 		$line = $this->ave->get_input(" Quantity: ");

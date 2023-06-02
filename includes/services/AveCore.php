@@ -264,7 +264,7 @@ class AveCore {
 
 	public function rmdir(string $path, bool $log = true) : bool {
 		if(!file_exists($path) || !is_dir($path)) return false;
-		if(rmdir($path)){
+		if(@rmdir($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
@@ -275,7 +275,7 @@ class AveCore {
 
 	public function unlink(string $path, bool $log = true) : bool {
 		if(!file_exists($path) || is_dir($path)) return false;
-		if(unlink($path)){
+		if(@unlink($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
@@ -286,7 +286,7 @@ class AveCore {
 
 	public function mkdir(string $path, bool $log = true) : bool {
 		if(file_exists($path) && is_dir($path)) return true;
-		if(mkdir($path, 0755, true)){
+		if(@mkdir($path, 0755, true)){
 			if($log) $this->write_log("MKDIR \"$path\"");
 			return true;
 		} else {
@@ -303,7 +303,7 @@ class AveCore {
 		}
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
-		if(rename($from, $to)){
+		if(@rename($from, $to)){
 			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -320,7 +320,7 @@ class AveCore {
 		}
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
-		if(copy($from, $to)){
+		if(@copy($from, $to)){
 			if($log) $this->write_log("COPY \"$from\" \"$to\"");
 			return true;
 		} else {
