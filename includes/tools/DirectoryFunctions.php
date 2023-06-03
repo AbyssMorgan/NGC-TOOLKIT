@@ -23,9 +23,9 @@ class DirectoryFunctions {
 	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
-			' 0 - Delete empty dirs',
+			' 0 - Delete empty folders',
 			' 1 - Force load icon (desktop.ini)',
-			' 2 - Count files in every dirs',
+			' 2 - Count files in every folder',
 			' 3 - Clone folder structure',
 		]);
 	}
@@ -34,7 +34,7 @@ class DirectoryFunctions {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolDeleteEmptyDirs();
+			case '0': return $this->ToolDeleteEmptyFolders();
 			case '1': return $this->ToolForceLoadIcon();
 			case '2': return $this->ToolCountFiles();
 			case '3': return $this->ToolCloneFolderStructure();
@@ -42,9 +42,9 @@ class DirectoryFunctions {
 		return false;
 	}
 
-	public function ToolDeleteEmptyDirs() : bool {
+	public function ToolDeleteEmptyFolders() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("DeleteEmptyDirs");
+		$this->ave->set_subtool("DeleteEmptyFolders");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);

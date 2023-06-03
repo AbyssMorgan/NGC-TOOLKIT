@@ -158,11 +158,22 @@ class AveCore {
 		return $cnt;
 	}
 
+	public function unitSizes() : array {
+		return ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	}
+
 	public function formatBytes(int $bytes, int $precision = 2) : string {
 		if($bytes <= 0) return '0.00 B';
 		$i = floor(log($bytes)/log(1024));
-		$sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.$sizes[$i];
+		$sizes = $this->unitSizes();
+		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.($sizes[$i] ?? '');
+	}
+
+	public function unitToBytes(int $value, string $unit) : int {
+		$sizes = $this->unitSizes();
+		$index = array_search(strtoupper($unit), $sizes);
+		if($index === false) return -1;
+		return intval($value * pow(1024, $index));
 	}
 
 	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {

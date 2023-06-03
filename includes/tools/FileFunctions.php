@@ -25,6 +25,7 @@ class FileFunctions {
 			' 0 - Anti Duplicates',
 			' 1 - Extension Change',
 			' 2 - Validate CheckSum',
+			' 3 - Random file generator',
 		]);
 	}
 
@@ -35,6 +36,7 @@ class FileFunctions {
 			case '0': return $this->ToolAntiDuplicates();
 			case '1': return $this->ToolExtensionChange();
 			case '2': return $this->ToolValidateCheckSum();
+			case '3': return $this->ToolRandomFileGenerator();
 		}
 		return false;
 	}
@@ -45,6 +47,7 @@ class FileFunctions {
 		set_mode:
 		$this->ave->clear();
 		$this->ave->print_help([
+			' Modes:',
 			' CheckSum Name   Action',
 			' a1       b1     Rename',
 			' a2       b2     Delete',
@@ -58,8 +61,8 @@ class FileFunctions {
 			'action' => strtolower($line[1] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['a','b'])) goto set_mode;
-		if(!in_array($this->params['action'],['1','2'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['a', 'b'])) goto set_mode;
+		if(!in_array($this->params['action'], ['1', '2'])) goto set_mode;
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
@@ -154,7 +157,7 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$new_name = $this->ave->get_file_path(pathinfo($file,PATHINFO_DIRNAME)."/".pathinfo($file,PATHINFO_FILENAME).".$extension_new");
+				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".$extension_new");
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
@@ -198,8 +201,8 @@ class FileFunctions {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1'])) goto set_mode;
-		if(!in_array($this->params['algo'],['0','1','2','3'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1'])) goto set_mode;
+		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
@@ -294,6 +297,157 @@ class FileFunctions {
 			case '3': return 128;
 		}
 		return 32;
+	}
+
+	public function ToolRandomFileGenerator() : bool {
+		$this->ave->set_subtool("RandomFileGenerator");
+
+		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
+		$write_buffer = $this->ave->unitToBytes(intval($size[0]), $size[1] ?? '?');
+		if($write_buffer <= 0){
+			$this->ave->clear();
+			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
+			return false;
+		}
+
+		set_mode:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Modes:',
+			' 0 - Single file',
+			' 1 - Multiple files (size for one)',
+			' 2 - Multiple files (size for all)',
+		]);
+
+		$line = $this->ave->get_input(" Mode: ");
+		if($line == '#') return false;
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+		];
+
+		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;
+
+		set_size:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Type integer and unit separate by space, example: 1 GB',
+			' Size units: B, KB, MB, GB, TB',
+		]);
+
+		$line = $this->ave->get_input(" Size: ");
+		if($line == '#') return false;
+		$size = explode(' ', $line);
+		if(!isset($size[1])) goto set_size;
+		$size[0] = preg_replace('/\D/', '', $size[0]);
+		if(empty($size[0])) goto set_size;
+		if(!in_array(strtoupper($size[1]), ['KB', 'MB', 'GB', 'TB'])) goto set_size;
+		$bytes = $this->ave->unitToBytes(intval($size[0]), $size[1]);
+		if($bytes <= 0) goto set_size;
+
+		if(in_array($this->params['mode'], ['1', '2'])){
+			set_quantity:
+			$line = $this->ave->get_input(" Quantity: ");
+			if($line == '#') return false;
+			$quantity = preg_replace('/\D/', '', $line);
+			if(empty($quantity)) goto set_quantity;
+			$quantity = intval($quantity);
+			if($quantity < 1) goto set_quantity;
+		} else {
+			$quantity = 1;
+		}
+
+		set_output:
+		$this->ave->clear();
+		$line = $this->ave->get_input(" Folder: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_output;
+		$output = $folders[0];
+
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
+			$this->ave->echo(" Invalid output folder");
+			goto set_output;
+		}
+
+		switch($this->params['mode']){
+			case '0': {
+				$this->ave->print_help([" Creating single file of size ".$this->ave->formatBytes($bytes, 0)]);
+				$per_file_size = $bytes;
+				break;
+			}
+			case '1': {
+				$this->ave->print_help([" Creating $quantity files of size ".$this->ave->formatBytes($bytes, 0)." in total ".$this->ave->formatBytes($bytes * $quantity, 0)]);
+				$per_file_size = $bytes;
+				break;
+			}
+			case '2': {
+				$this->ave->print_help([" Creating $quantity files of size ".$this->ave->formatBytes(intval(floor($bytes / $quantity)), 0)." in total ".$this->ave->formatBytes($bytes, 0)]);
+				$per_file_size = intval(floor($bytes / $quantity));
+				break;
+			}
+		}
+
+		$small_mode = $per_file_size < $write_buffer;
+		$size_text = $this->ave->formatBytes($per_file_size);
+		for($i = 1; $i <= $quantity; $i++){
+			$file_path = $this->ave->get_file_path($output."/AVE-RANDOM-".hash('md5', uniqid().$i).".tmp");
+			if(file_exists($file_path)) $this->ave->unlink($file_path);
+			$fp = fopen($file_path, "w");
+			if($small_mode){
+				echo " Files: $i / $quantity                                       \r";
+			} else {
+				echo " Files: $i / $quantity Progress: 0.00 %                      \r";
+			}
+			if($fp){
+				$this->ave->write_log("FILE CREATE WITH DISK ALLOCATION \"$file_path\" Size: $size_text");
+				fseek($fp, $per_file_size - 1);
+				fwrite($fp, "\0");
+				fclose($fp);
+				$fp = fopen($file_path, "r+w");
+				fseek($fp, 0);
+				$bytes_needle = $per_file_size;
+				$current_size = 0;
+				while($bytes_needle > 0){
+					$percent = sprintf("%.02f", ($current_size / $per_file_size) * 100.0);
+					if($small_mode){
+						echo " Files: $i / $quantity                                           \r";
+					} else {
+						echo " Files: $i / $quantity Progress: $percent %                      \r";
+					}
+					if($bytes_needle > $write_buffer){
+						$current_size += $write_buffer;
+						$buffer = '';
+						for($si = 0; $si < $write_buffer; $si++){
+							$buffer .= chr(rand(0, 255));
+						}
+						fwrite($fp, $buffer, $write_buffer);
+						$bytes_needle -= $write_buffer;
+					} else {
+						$current_size += $bytes_needle;
+						$buffer = '';
+						for($si = 0; $si < $bytes_needle; $si++){
+							$buffer .= chr(rand(0, 255));
+						}
+						fwrite($fp, $buffer, $bytes_needle);
+						$bytes_needle = 0;
+					}
+				}
+				if($small_mode){
+					echo " Files: $i / $quantity                                           \r";
+				} else {
+					echo " Files: $i / $quantity Progress: 100.00 %                        \r";
+				}
+				fclose($fp);
+				$this->ave->write_log("FILE CREATION FINISH \"$file_path\"");
+			} else {
+				$this->ave->write_error("FAILED CREATE FILE \"$file_path\"");
+			}
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
 	}
 
 }

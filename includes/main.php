@@ -3,10 +3,12 @@
 	error_reporting(E_ALL);
 
 	set_exception_handler(function(Throwable $e){
-		echo $e->getMessage()."\r\n";
-		echo $e->getFile().':'.$e->getLine()."\r\n";
-		echo $e->getTraceAsString()."\r\n\r\n";
-		echo "ABORT, PRESS ENTER TO EXIT\r\n";
+		$error = $e->getMessage()."\r\n";
+		$error .= $e->getFile().':'.$e->getLine()."\r\n";
+		$error .= $e->getTraceAsString()."\r\n\r\n";
+		$error .= "ABORT, PRESS ENTER TO EXIT\r\n";
+		echo $error;
+		file_put_contents('AVE-PHP-CRASH-'.date('Y-m-d His').'.txt', $error);
 		system("PAUSE > nul");
 	});
 
