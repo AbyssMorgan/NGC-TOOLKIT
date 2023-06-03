@@ -113,7 +113,7 @@ class AveSettings {
 		$response = $request->get("https://raw.githubusercontent.com/AbyssMorgan/AVE-PHP/master/version");
 		if($response['code'] == 200){
 			$version = $response['data'];
-			return ($this->ave->version != $response);
+			return ($this->ave->version != $version);
 		} else {
 			$this->ave->echo(" Failed check for updates: ".$response['code']);
 			return false;
