@@ -21,8 +21,8 @@ class AVE extends AveCore {
 	public string $app_data;
 	public bool $abort = false;
 
-	public string $version = "1.5.3";
 	public string $app_name = "AVE-PHP";
+	public string $version = "1.6.0";
 	public string $utilities_version = "1.0.0";
 
 	private array $folders_to_scan = [
@@ -33,10 +33,30 @@ class AVE extends AveCore {
 
 	public function __construct(array $arguments){
 		parent::__construct($arguments);
+		dl('php_imagick.dll');
 		$this->logo = "\r\n $this->app_name Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
 
-		$this->app_data = $this->get_variable("%LOCALAPPDATA%")."/AVE";
+		$ave_utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
+
+		$ave_utilities = false;
+		if(file_exists($ave_utilities_path)){
+			$ave_utilities_main = new IniFile($this->get_file_path("$ave_utilities_path/main.ini"));
+			$ave_utilities_imagick = new IniFile($this->get_file_path("$ave_utilities_path/imagick.ini"));
+			if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
+				$ave_utilities = true;
+			}
+		}
+
+		if(!$ave_utilities){
+			$this->echo();
+			$this->echo(" Invalid AVE-UTILITIES version detected: v".$ave_utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
+			$this->echo();
+			$this->pause();
+			die("");
+		}
+
+		$this->app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE");
 		$old_config = $this->get_file_path("$this->path/config/user.ini");
 		$new_config = $this->get_file_path("$this->app_data/config.ini");
 		$old_mysql_config = $this->get_file_path("$this->path/config/mysql");

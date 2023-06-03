@@ -6,6 +6,7 @@ namespace App\Tools;
 
 use AVE;
 use App\Services\MediaFunctions;
+use App\Services\StringConverter;
 
 class NamesGenerator {
 
@@ -597,12 +598,45 @@ class NamesGenerator {
 	public function ToolPrettyFileName() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("PrettyFileName");
+
+		set_mode:
+		$this->ave->clear();
 		$this->ave->print_help([
-			" Double spaces reduce",
-			" Replace nbsp into space",
-			" Replace _ and . into space",
-			" Remove characters: ; @ # ~ ! $ % ^ &",
+			' Flags (type in one line, default BC):',
+			' B   - Basic replacement',
+			' C   - Basic remove',
+			' L   - Replace language characters',
+			' 0   - Chinese to PinYin',
+			' 1   - Hiragama to Romaji',
+			' 2   - Katakana to Romaji',
 		]);
+
+		$line = strtoupper($this->ave->get_input(" Flags: "));
+		if($line == '#') return false;
+		if(empty($line)) $line = 'BC';
+		if(str_replace(['B', 'C', 'L', '0', '1', '2'], '', $line) != '') goto set_mode;
+		$flags = (object)[
+			'basic_replace' => (strpos($line, 'B') !== false),
+			'basic_remove' => (strpos($line, 'C') !== false),
+			'language_replace' => (strpos($line, 'L') !== false),
+			'ChineseToPinYin' => (strpos($line, '0') !== false),
+			'HiragamaToRomaji' => (strpos($line, '1') !== false),
+			'KatakanaToRomaji' => (strpos($line, '2') !== false),
+		];
+		$converter = new StringConverter();
+		if($flags->language_replace){
+			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/LanguageReplacement.ini"));
+		}
+		if($flags->ChineseToPinYin){
+			$converter->importPinYin($this->ave->get_file_path($this->ave->path."/includes/data/PinYin.ini"));
+		}
+		if($flags->HiragamaToRomaji){
+			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Hiragama.ini"));
+		}
+		if($flags->KatakanaToRomaji){
+			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
+		}
+		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
@@ -618,13 +652,17 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$escaped_name = str_replace(['_', '.', "\u{00A0}"], ' ', pathinfo($file, PATHINFO_FILENAME));
-				$escaped_name = str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $escaped_name);
-				while(strpos($escaped_name, '  ') !== false){
-					$escaped_name = str_replace('  ', ' ', $escaped_name);
+				$escaped_name = pathinfo($file, PATHINFO_FILENAME);
+				if($flags->basic_replace || $flags->language_replace || $flags->HiragamaToRomaji || $flags->KatakanaToRomaji){
+					$escaped_name = $converter->convert($escaped_name);
 				}
-				$escaped_name = trim($escaped_name, ' ');
-
+				if($flags->basic_remove){
+					$escaped_name = $converter->clean($escaped_name);
+				}
+				if($flags->ChineseToPinYin){
+					$escaped_name = $converter->stringToPinYin($escaped_name);
+				}
+				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
 				if(empty($escaped_name)){
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;

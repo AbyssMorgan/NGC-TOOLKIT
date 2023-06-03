@@ -2,7 +2,10 @@
 chcp 65001
 CD /D "%~dp0\.."
 CLS
-SET PATH=%PATH%;%CD%\bin\main;%CD%\bin\php;%CD%\bin\imagick
-COLOR 9F
-"%CD%\bin\php\php.exe" "%CD%\includes\main.php" --make-backup "%~1"
+SET PHP=%PROGRAMFILES%\AVE-UTILITIES\php\8.1
+IF NOT EXIST "%PROGRAMFILES%\AVE-UTILITIES\main" ECHO.&ECHO AVE-UTILITIES AVE-PHP is required&ECHO.&PAUSE>nul&EXIT
+IF NOT EXIST "%PROGRAMFILES%\AVE-UTILITIES\imagick" ECHO.&ECHO AVE-UTILITIES AVE-PHP is required&ECHO.&PAUSE>nul&EXIT
+IF NOT EXIST "%PHP%" ECHO.&ECHO AVE-UTILITIES PHP 8.1 is required&ECHO.&PAUSE>nul&EXIT
+SET PATH=%PATH%;%PHP%;%PROGRAMFILES%\AVE-UTILITIES\main;%PROGRAMFILES%\AVE-UTILITIES\imagick
+"%PHP%\php.exe" "%CD%\includes\main.php" --make-backup "%~1"
 GOTO :eof

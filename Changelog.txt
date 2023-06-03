@@ -1,3 +1,20 @@
+v1.6.0:
+- Now AVE-PHP is separated into AVE-PHP and AVE-UTILITIES Setup (AVE-UTILITIES contains binaries that dont need update every time)
+- Merged CommandLine service into AveCore V3
+- Improve performance for MySQL Tools > Make backup and MySQL Tools > Clone DB1 to DB2
+- MySQL Tools: When an error is occurred during the backup, the table will be skipped with an error entry
+- MySQL Tools: Changed params order for connection setup
+- MySQL Tools: Added ability to toggle maintenance into website
+- Names Generator > Escape file name (WWW): Added character . to white list
+- Added tool: MySQL Tools > MySQL Console
+- Added tool: MySQL Tools > Backup selected tables
+- Added tool: Help
+- Added tool: File Functions > Random file generator
+- Removed config param AVE_MAX_MEMORY_LIMIT now AVE-PHP will be work without memory limit
+- Added missing config in documentation AVE_COLOR
+- Added ability to set tool and sub tool at once by typing <tool id>.<sub tool id> example if you type 0 0 then press enter then you will be redirected to Names Generator > Generate names: CheckSum
+- Added flags into tool: Names Generator > Pretty file name (New flags: Replace language characters, Chinese to PinYin, Hiragama to Romaji, Katakana to Romaji)
+
 v1.5.3:
 - Add tool: Media Sorter > Sort Videos: Auto detect series name
 - Add tool: Media Tools > Image converter
