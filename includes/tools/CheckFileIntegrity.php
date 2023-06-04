@@ -343,14 +343,14 @@ class CheckFileIntegrity {
 		return $guard_file;
 	}
 
-	public function ToolGuardUpdate(string $guard_file) : void {
+	public function ToolGuardUpdate(string $guard_file, array $params) : void {
 		$ini = new IniFile($guard_file, true);
 		$input = pathinfo($guard_file, PATHINFO_DIRNAME);
 		$cwd = getcwd();
 		chdir($input);
 		$this->ave->echo(" Validate files from $guard_file");
 		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
-		$validation = $guard->validate(['damaged' => false, 'unknown' => true, 'missing' => true]);
+		$validation = $guard->validate($params);
 
 		$guard->load($ini);
 
