@@ -3,12 +3,11 @@
 	error_reporting(E_ALL);
 
 	set_exception_handler(function(Throwable $e){
-		$error = $e->getMessage()."\r\n";
-		$error .= $e->getFile().':'.$e->getLine()."\r\n";
-		$error .= $e->getTraceAsString()."\r\n\r\n";
-		$error .= "ABORT, PRESS ENTER TO EXIT\r\n";
-		echo $error;
-		file_put_contents('AVE-PHP-CRASH-'.date('Y-m-d His').'.txt', $error);
+		$error = $e->getMessage()."\r\n".$e->getFile().':'.$e->getLine()."\r\n".$e->getTraceAsString()."\r\n\r\n";
+		echo $error."ABORT, PRESS ENTER TO EXIT\r\n";
+		if(file_exists('.git')){
+			file_put_contents('AVE-PHP-CRASH-'.date('Y-m-d His').'.txt', $error);
+		}
 		system("PAUSE > nul");
 	});
 

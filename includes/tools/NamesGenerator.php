@@ -782,8 +782,6 @@ class NamesGenerator {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if($this->params['algo'] == '?') $this->params['algo'] = '0';
-
 		if(!in_array($this->params['mode'],['0','1'])) goto set_mode;
 		switch($this->params['mode']){
 			case '0': return $this->ToolSeriesEpisodeEditorActionSeason();
@@ -799,8 +797,8 @@ class NamesGenerator {
 		set_input:
 		$this->ave->print_help([
 			" Attention filename must begin with the season and episode number in the format:",
-			" \"S00E00{whatever}.{extension}>\"",
-			" \"S00E000{whatever}.{extension}>\"",
+			" \"S00E00{whatever}.{extension}\"",
+			" \"S00E000{whatever}.{extension}\"",
 		]);
 		$line = $this->ave->get_input(" Folder: ");
 		if($line == '#') return false;
