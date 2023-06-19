@@ -115,8 +115,8 @@ class MediaSorter {
 		$this->params['resolution'] = in_array($this->params['mode'],['0','1']);
 		$this->params['quality'] = in_array($this->params['mode'],['0','2']);
 
-		$this->ave->clear(" Folders: ");
-		$line = $this->ave->get_input();
+		$this->ave->clear();
+		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
