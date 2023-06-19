@@ -8,9 +8,9 @@ use AVE;
 use App\Services\MediaFunctions;
 use App\Services\StringConverter;
 
-class NamesGenerator {
+class FileNamesEditor {
 
-	private string $name = "NamesGenerator";
+	private string $name = "FileNamesEditor";
 
 	private array $params = [];
 	private string $action;
@@ -24,16 +24,17 @@ class NamesGenerator {
 	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
-			' 0 - Generate names: CheckSum',
-			' 1 - Generate names: Number (Video/Images)',
-			' 2 - Generate video: CheckSum/Resolution/Thumbnail',
-			' 3 - Generate series name: S00E00 etc.',
-			' 4 - Escape file name (WWW)',
-			' 5 - Pretty file name',
-			' 6 - Remove YouTube quality tag',
-			' 7 - Series episode editor',
-			' 8 - Add file name prefix/suffix',
-			' 9 - Remove keywords from file name',
+			' 0  - Generate names: CheckSum',
+			' 1  - Generate names: Number (Video/Images)',
+			' 2  - Generate video: CheckSum/Resolution/Thumbnail',
+			' 3  - Generate series name: S00E00 etc.',
+			' 4  - Escape file name (WWW)',
+			' 5  - Pretty file name',
+			' 6  - Remove YouTube quality tag',
+			' 7  - Series episode editor',
+			' 8  - Add file name prefix/suffix',
+			' 9  - Remove keywords from file name',
+			' 10 - Insert string into file name',
 		]);
 	}
 
@@ -51,6 +52,7 @@ class NamesGenerator {
 			case '7': return $this->ToolSeriesEpisodeEditor();
 			case '8': return $this->ToolAddFileNamePrefixSuffix();
 			case '9': return $this->ToolRemoveKeywordsFromFileName();
+			case '10': return $this->ToolInsertStringIntoFileName();
 		}
 		return false;
 	}
@@ -1055,6 +1057,24 @@ class NamesGenerator {
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveKeywordsFromFileName");
 
+		set_mode:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Modes:',
+			' 0 - Type keywords',
+			' 1 - Load from file (new line every keyword)',
+		]);
+
+		$line = $this->ave->get_input(" Mode: ");
+		if($line == '#') return false;
+
+		$this->params = [
+			'mode' => strtolower($line[0] ?? '?'),
+		];
+
+		if(!in_array($this->params['mode'],['0','1'])) goto set_mode;
+
+		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
@@ -1068,17 +1088,43 @@ class NamesGenerator {
 			$extensions = explode(" ", $line);
 		}
 
-		$this->ave->echo(" Put numbers how much keywords you want remove");
-
-		set_quantity:
-		$line = $this->ave->get_input(" Quantity: ");
-		if($line == '#') return false;
-		$quantity = intval(preg_replace('/\D/', '', $line));
-		if($quantity <= 0) goto set_quantity;
-
 		$keywords = [];
-		for($i = 0; $i < $quantity; $i++){
-			$keywords[$i] = $this->ave->get_input_no_trim(" Keyword ".($i+1).": ");
+		if($this->params['mode'] == '0'){
+			$this->ave->echo(" Put numbers how much keywords you want remove");
+
+			set_quantity:
+			$line = $this->ave->get_input(" Quantity: ");
+			if($line == '#') return false;
+			$quantity = intval(preg_replace('/\D/', '', $line));
+			if($quantity <= 0) goto set_quantity;
+
+			for($i = 0; $i < $quantity; $i++){
+				$keywords[$i] = $this->ave->get_input_no_trim(" Keyword ".($i+1).": ");
+			}
+		} else if($this->params['mode'] == '1'){
+			set_keyword_file:
+			$line = $this->ave->get_input(" Keywords file: ");
+			if($line == '#') return false;
+			$line = $this->ave->get_folders($line);
+			if(!isset($line[0])) goto set_keyword_file;
+			$input = $line[0];
+
+			if(!file_exists($input) || is_dir($input)){
+				$this->ave->echo(" Invalid keywords file");
+				goto set_keyword_file;
+			}
+
+			$fp = fopen($input, 'r');
+			if(!$fp){
+				$this->ave->echo(" Failed open keywords file");
+				goto set_keyword_file;
+			}
+			while(($line = fgets($fp)) !== false){
+				$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+				if(!empty(trim($line))) continue;
+				array_push($keywords, $line);
+			}
+			fclose($fp);
 		}
 
 		$this->ave->setup_folders($folders);
@@ -1093,9 +1139,12 @@ class NamesGenerator {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$name = str_replace($keywords, '', pathinfo($file, PATHINFO_FILENAME));
+				$name = trim(str_replace($keywords, '', pathinfo($file, PATHINFO_FILENAME)));
 				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".pathinfo($file, PATHINFO_EXTENSION));
-				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+				if(empty($new_name)){
+					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
+					$errors++;
+				} else if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -1103,6 +1152,90 @@ class NamesGenerator {
 						$progress++;
 					} else {
 						$errors++;
+					}
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolInsertStringIntoFileName() : bool {
+		$this->ave->set_subtool("InsertStringIntoFileName");
+
+		set_offset:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Specify the string offset where you want insert into filename',
+			' Offset = 0 - means the beginning, i.e. the string will be inserted before the file name (prefix)',
+			' Offset > 0 - means that the string will be inserted after skipping N characters',
+			' Offset < 0 - means that the string will be inserted after skipping N characters from the end',
+		]);
+		$line = $this->ave->get_input(" Offset: ");
+		if($line == '#') return false;
+		$offset = preg_replace("/[^0-9\-]/", '', $line);
+		if($offset == '') goto set_offset;
+		$offset = intval($offset);
+
+		$this->ave->print_help([
+			' Specify the string you want to inject the filename, may contain spaces',
+		]);
+		$insert_string = $this->ave->get_input_no_trim(" String: ");
+
+		$this->ave->clear();
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$name = pathinfo($file, PATHINFO_FILENAME);
+				if(abs($offset) > strlen($name)){
+					$this->ave->write_error("ILLEGAL OFFSET FOR FILE NAME \"$file\"");
+					$errors++;
+				} else {
+					if($offset > 0){
+						$name = substr($name, 0, $offset).$insert_string.substr($name, $offset);
+					} else if($offset < 0){
+						$name = substr($name, 0, strlen($name) + $offset).$insert_string.substr($name, $offset);
+					} else {
+						$name = $insert_string.$name;
+					}
+	 				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".pathinfo($file, PATHINFO_EXTENSION));
+					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
+						$errors++;
+					} else {
+						if($this->ave->rename($file, $new_name)){
+							$progress++;
+						} else {
+							$errors++;
+						}
 					}
 				}
 				$this->ave->progress($items, $total);

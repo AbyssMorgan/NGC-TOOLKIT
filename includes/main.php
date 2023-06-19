@@ -26,13 +26,14 @@
 	require_once("$includes_path/services/StringConverter.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/AveSettings.php");
-	require_once("$includes_path/tools/NamesGenerator.php");
+	require_once("$includes_path/tools/FileNamesEditor.php");
 	require_once("$includes_path/tools/FileFunctions.php");
 	require_once("$includes_path/tools/MediaSorter.php");
 	require_once("$includes_path/tools/DirectoryFunctions.php");
 	require_once("$includes_path/tools/MediaTools.php");
 	require_once("$includes_path/tools/CheckFileIntegrity.php");
 	require_once("$includes_path/tools/MySQLTools.php");
+	require_once("$includes_path/tools/FileEditor.php");
 
 	$ave = new AVE($argv);
 	if(!$ave->abort) $ave->execute();

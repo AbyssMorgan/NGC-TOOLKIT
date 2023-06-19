@@ -1,3 +1,27 @@
+v1.7.0:
+- Renamed tool: Names Generator into File Names Editor 
+- Removed tool: MySQL Tools > Backup selected tables
+- Added tool: File Functions > Overwrite folders content
+- Added tool: MySQL Tools > Backup selected: Tables structure
+- Added tool: MySQL Tools > Backup selected: Tables data
+- Added tool: MySQL Tools > Backup selected: Views
+- Added tool: MySQL Tools > Backup selected: Functions
+- Added tool: MySQL Tools > Backup selected: Procedures
+- Added tool: MySQL Tools > Backup selected: Events
+- Added tool: MySQL Tools > Backup selected: Triggers
+- Added tool: File Editor > Replace keywords in files
+- Added tool: File Editor > Remove keywords in files
+- Added tool: File Editor > Remove duplicate lines in file
+- Added tool: File Names Editor > Insert string into file name
+- MySQL Tools: Added label list when select connection label
+- MySQL Tools: Added connection config BACKUP_LOCK_TABLES default false
+- MySQL Tools: Added question in manual backup "Lock tables during backup"
+- MySQL Tools: Now every bakcup types are separated in subfolders
+- MySQL Tools: Improve save file performance
+- Fixed tools: "CheckFileIntegrity > Update guard *" won't update correctly guard file
+- Added modes in tool: Remove keywords from file name
+- Updated tool: File Names Editor > Remove keywords from file name: Trim name after remove all keywords
+
 v1.6.0:
 - Now AVE-PHP is separated into AVE-PHP and AVE-UTILITIES Setup (AVE-UTILITIES contains binaries that dont need update every time)
 - Merged CommandLine service into AveCore V3
@@ -5,19 +29,19 @@ v1.6.0:
 - MySQL Tools: When an error is occurred during the backup, the table will be skipped with an error entry
 - MySQL Tools: Changed params order for connection setup
 - MySQL Tools: Added ability to toggle maintenance into website
-- Names Generator > Escape file name (WWW): Added character . to white list
+- File Names Editor > Escape file name (WWW): Added character . to white list
 - Added tool: MySQL Tools > MySQL Console
 - Added tool: MySQL Tools > Backup selected tables
 - Added tool: Help
 - Added tool: File Functions > Random file generator
 - Removed config param AVE_MAX_MEMORY_LIMIT now AVE-PHP will be work without memory limit
 - Added missing config in documentation AVE_COLOR
-- Added ability to set tool and sub tool at once by typing <tool id>.<sub tool id> example if you type 0 0 then press enter then you will be redirected to Names Generator > Generate names: CheckSum
-- Added flags into tool: Names Generator > Pretty file name (New flags: Replace language characters, Chinese to PinYin, Hiragama to Romaji, Katakana to Romaji)
+- Added ability to set tool and sub tool at once by typing <tool id>.<sub tool id> example if you type 0 0 then press enter then you will be redirected to File Names Editor > Generate names: CheckSum
+- Added flags into tool: File Names Editor > Pretty file name (New flags: Replace language characters, Chinese to PinYin, Hiragama to Romaji, Katakana to Romaji)
 
 v1.5.3:
-- Add tool: Media Sorter > Sort Videos: Auto detect series name
-- Add tool: Media Tools > Image converter
+- Added tool: Media Sorter > Sort Videos: Auto detect series name
+- Added tool: Media Tools > Image converter
 - Improvements
 
 v1.5.2:
@@ -46,7 +70,7 @@ v1.4.2:
 - Fix output format on Avatar Generator
 
 v1.4.1:
-- Add tool: MySQL Tools > Clone DB1 to DB2 (overwrite)
+- Added tool: MySQL Tools > Clone DB1 to DB2 (overwrite)
 - Fixes and improvements for MySQL Tools
 - Fixes set path on AVE-PHP.cmd
 
@@ -54,10 +78,10 @@ v1.4.0:
 - Fixes and improvements for Check File Integrity
 - Fix timezone on logs
 - Optimize navigation
-- Add tool: MySQL Tools
-- Add tool: Media Tools > Avatar generator
-- Add tool: Names Generator > Add file name prefix/suffix
-- Add tool: Names Generator > Remove keywords from file name
+- Added tool: MySQL Tools
+- Added tool: Media Tools > Avatar generator
+- Added tool: File Names Editor > Add file name prefix/suffix
+- Added tool: File Names Editor > Remove keywords from file name
 
 v1.3.1:
 - Remove color from config
@@ -67,10 +91,10 @@ v1.3.1:
 v1.3.0:
 - Fixed black screen on init when version changed
 - Added tools:
-Names Generator > Escape file name (WWW)
-Names Generator > Pretty file name
-Names Generator > Remove YouTube quality tag
-Names Generator > Series episode editor
+File Names Editor > Escape file name (WWW)
+File Names Editor > Pretty file name
+File Names Editor > Remove YouTube quality tag
+File Names Editor > Series episode editor
 - Directory Functions > Clone folder structure
 - Check for updates
 - Added new params to config AVE_LOG_EVENT, AVE_LOG_ERROR, AVE_IGNORE_VALIDATE_EXTENSIONS, AVE_EXTENSIONS_VIDEO_FOLLOW, AVE_EXTENSIONS_AUDIO
@@ -83,7 +107,7 @@ v1.2.0:
 - Add cauto clear unused files from bin folder
 
 v1.1.0:
-- Add new tool Names Generator > Generate series name
+- Add new tool File Names Editor > Generate series name
 
 v1.0.0:
 - Initial release

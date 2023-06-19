@@ -392,7 +392,7 @@ class AveCore {
 		}
 	}
 
-	public function get_folders(string $string) : array {
+	public function get_folders(string $string, bool $unique = true) : array {
 		$string = trim($string);
 		$folders = [];
 
@@ -418,6 +418,7 @@ class AveCore {
 			}
 		}
 
+		if(!$unique) return $folders;
 		return array_unique($folders);
 	}
 

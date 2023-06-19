@@ -112,8 +112,11 @@ class AveSettings {
 		$request = new Request(false);
 		$response = $request->get("https://raw.githubusercontent.com/AbyssMorgan/AVE-PHP/master/version");
 		if($response['code'] == 200){
-			$version = $response['data'];
-			return ($this->ave->version != $version);
+			$ver_current = explode(".", $this->ave->version);
+			$ver_repo = explode(".", $response['data']);
+			$ver_current = intval($ver_current[0])*10000 + intval($ver_current[1])*100 + intval($ver_current[2]);
+			$ver_repo = intval($ver_repo[0])*10000 + intval($ver_repo[1])*100 + intval($ver_repo[2]);
+			return ($ver_repo > $ver_current);
 		} else {
 			$this->ave->echo(" Failed check for updates: ".$response['code']);
 			return false;

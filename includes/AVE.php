@@ -6,13 +6,14 @@ use App\Services\IniFile;
 use App\Services\AveCore;
 
 use App\Tools\AveSettings;
-use App\Tools\NamesGenerator;
+use App\Tools\FileNamesEditor;
 use App\Tools\FileFunctions;
 use App\Tools\MediaSorter;
 use App\Tools\DirectoryFunctions;
 use App\Tools\MediaTools;
 use App\Tools\CheckFileIntegrity;
 use App\Tools\MySQLTools;
+use App\Tools\FileEditor;
 
 class AVE extends AveCore {
 
@@ -22,7 +23,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.6.0";
+	public string $version = "1.7.0";
 	public string $utilities_version = "1.0.0";
 
 	private array $folders_to_scan = [
@@ -191,13 +192,14 @@ class AVE extends AveCore {
 		$this->tool_name = '';
 		$this->print_help([
 			' Tools:',
-			' 0 - Names Generator',
+			' 0 - File Names Editor',
 			' 1 - File Functions',
 			' 2 - Media Sorter',
 			' 3 - Directory Functions',
 			' 4 - Media Tools',
 			' 5 - Check File Integrity',
 			' 6 - MySQL Tools',
+			' 7 - File Editor',
 			' H - Help',
 		]);
 
@@ -205,7 +207,7 @@ class AVE extends AveCore {
 		$dynamic_action = explode(' ', $line);
 		switch(strtoupper($dynamic_action[0])){
 			case '0': {
-				$this->tool = new NamesGenerator($this);
+				$this->tool = new FileNamesEditor($this);
 				break;
 			}
 			case '1': {
@@ -230,6 +232,10 @@ class AVE extends AveCore {
 			}
 			case '6': {
 				$this->tool = new MySQLTools($this);
+				break;
+			}
+			case '7': {
+				$this->tool = new FileEditor($this);
 				break;
 			}
 			case 'H': {

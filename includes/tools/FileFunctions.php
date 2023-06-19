@@ -26,6 +26,7 @@ class FileFunctions {
 			' 1 - Extension Change',
 			' 2 - Validate CheckSum',
 			' 3 - Random file generator',
+			' 4 - Overwrite folders content',
 		]);
 	}
 
@@ -37,6 +38,7 @@ class FileFunctions {
 			case '1': return $this->ToolExtensionChange();
 			case '2': return $this->ToolValidateCheckSum();
 			case '3': return $this->ToolRandomFileGenerator();
+			case '4': return $this->ToolOverwriteFoldersContent();
 		}
 		return false;
 	}
@@ -359,7 +361,7 @@ class FileFunctions {
 
 		set_output:
 		$this->ave->clear();
-		$line = $this->ave->get_input(" Folder: ");
+		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_output;
@@ -443,6 +445,78 @@ class FileFunctions {
 			} else {
 				$this->ave->write_error("FAILED CREATE FILE \"$file_path\"");
 			}
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolOverwriteFoldersContent() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("OverwriteFoldersContent");
+
+		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
+		$write_buffer = $this->ave->unitToBytes(intval($size[0]), $size[1] ?? '?');
+		if($write_buffer <= 0){
+			$this->ave->clear();
+			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
+			return false;
+		}
+
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$bytes_needle = filesize($file);
+				$current_size = 0;
+				$fp = fopen($file, "r+w");
+				if(!$fp){
+					$this->ave->write_errow("FILE OVERWRITE FAILED \"$file\"");
+					$errors++;
+				} else {
+					$this->ave->write_log("FILE OVERWRITE START \"$file\"");
+					fseek($fp, 0);
+					while($bytes_needle > 0){
+						if($bytes_needle > $write_buffer){
+							$current_size += $write_buffer;
+							$buffer = '';
+							for($si = 0; $si < $write_buffer; $si++){
+								$buffer .= chr(rand(0, 255));
+							}
+							fwrite($fp, $buffer, $write_buffer);
+							$bytes_needle -= $write_buffer;
+						} else {
+							$current_size += $bytes_needle;
+							$buffer = '';
+							for($si = 0; $si < $bytes_needle; $si++){
+								$buffer .= chr(rand(0, 255));
+							}
+							fwrite($fp, $buffer, $bytes_needle);
+							$bytes_needle = 0;
+						}
+					}
+					fclose($fp);
+					$this->ave->write_log("FILE OVERWRITE END \"$file\"");
+				}
+				$progress++;
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->progress($items, $total);
+			unset($files);
+			$this->ave->set_folder_done($folder);
 		}
 
 		$this->ave->open_logs(true);

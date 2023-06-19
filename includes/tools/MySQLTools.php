@@ -21,24 +21,33 @@ class MySQLTools {
 	private string $path;
 	private AVE $ave;
 
+	private $select_label = [];
+
 	public function __construct(AVE $ave){
 		$this->ave = $ave;
 		$this->ave->set_tool($this->name);
 		$this->path = $this->ave->get_file_path($this->ave->app_data."/MySQL");
+		$this->select_label = [];
 	}
 
 	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
-			' 0 - Configure connection',
-			' 1 - Remove connection',
-			' 2 - Open config folder',
-			' 3 - Show connections',
-			' 4 - Make backup',
-			' 5 - Clone DB1 to DB2 (overwrite)',
-			' 6 - Open backup folder',
-			' 7 - MySQL Console',
-			' 8 - Backup selected tables',
+			' 0  - Configure connection',
+			' 1  - Remove connection',
+			' 2  - Open config folder',
+			' 3  - Show connections',
+			' 4  - Make backup',
+			' 5  - Clone DB1 to DB2 (overwrite)',
+			' 6  - Open backup folder',
+			' 7  - MySQL Console',
+			' 8  - Backup selected: Table structure',
+			' 9  - Backup selected: Table data',
+			' 10 - Backup selected: Views',
+			' 11 - Backup selected: Functions',
+			' 12 - Backup selected: Procedures',
+			' 13 - Backup selected: Events',
+			' 14 - Backup selected: Triggers',
 		]);
 	}
 
@@ -54,9 +63,34 @@ class MySQLTools {
 			case '5': return $this->ToolMakeClone();
 			case '6': return $this->ToolOpenBackupFolder();
 			case '7': return $this->ToolMySQLConsole();
-			case '8': return $this->ToolBackupSelectedTables();
+			case '8': return $this->ToolBackupSelectedTablesStructure();
+			case '9': return $this->ToolBackupSelectedTablesData();
+			case '10': return $this->ToolBackupSelectedViews();
+			case '11': return $this->ToolBackupSelectedFunctions();
+			case '12': return $this->ToolBackupSelectedProcedures();
+			case '13': return $this->ToolBackupSelectedEvents();
+			case '14': return $this->ToolBackupSelectedTriggers();
 		}
 		return false;
+	}
+
+	public function getSelectLabel() : void {
+		$this->select_label = [];
+		$i = 0;
+		$files = scandir($this->path);
+		foreach($files as $file){
+			if($file == '..' || $file == '.') continue;
+			$label = pathinfo($file, PATHINFO_FILENAME);
+			$this->select_label[$i] = $label;
+			$i++;
+		}
+		if(!empty($this->select_label)){
+			$this->ave->echo(" Labels: ");
+			foreach($this->select_label as $i => $label){
+				$this->ave->echo(" $i - $label");
+			}
+			$this->ave->echo();
+		}
 	}
 
 	public function getConfigPath(string $label) : string {
@@ -94,7 +128,6 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->print_help([
 		 	" Setup label: \"$label\"",
-			" Default port is: 3306",
 		]);
 
 		set_output:
@@ -111,7 +144,9 @@ class MySQLTools {
 
 		set_db_connection:
 		$db['host'] = $this->ave->get_input(" DB Host: ");
-		$db['port'] = $this->ave->get_input(" DB Port: ");
+		set_port:
+		$db['port'] = preg_replace('/\D/', '', $this->ave->get_input(" DB Port (Defualt 3306): "));
+		if($db['port'] == '') goto set_port;
 		$db['name'] = $this->ave->get_input(" DB Name: ");
 		$db['user'] = $this->ave->get_input(" DB User: ");
 		$db['password'] = $this->ave->get_input_no_trim(" DB Pass: ");
@@ -143,6 +178,7 @@ class MySQLTools {
 		$backup['structure'] = $this->ave->get_confirm(" Backup structure (Y/N): ");
 		$backup['data'] = $this->ave->get_confirm(" Backup data (Y/N): ");
 		$backup['compress'] = $this->ave->get_confirm(" Compress after backup (Y/N): ");
+		$backup['lock_tables'] = $this->ave->get_confirm(" Lock tables during background backup (Y/N): ");
 
 		$ini = $this->getConfig($label);
 		$ini->update([
@@ -158,6 +194,7 @@ class MySQLTools {
 			'BACKUP_TYPE_DATA' => $backup['data'],
 			'BACKUP_COMPRESS' => $backup['compress'],
 			'BACKUP_PATH' => $output,
+			'BACKUP_LOCK_TABLES' => $backup['lock_tables'],
 		], true);
 
 		$this->ave->write_log("Setup connection for \"$label\"");
@@ -172,9 +209,11 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveConnection");
 
+		$this->getSelectLabel();
 		set_label:
-		$label = $this->ave->get_input(" Label: ");
+		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
+		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label");
 			goto set_label;
@@ -226,9 +265,11 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("MakeBackup");
 
+		$this->getSelectLabel();
 		set_label:
-		$label = $this->ave->get_input(" Label: ");
+		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
+		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label");
 			goto set_label;
@@ -259,37 +300,163 @@ class MySQLTools {
 			}
 		}
 
+		$lock_tables = $this->ave->get_confirm(" Lock tables during backup (Y/N): ");
+
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
+		$backup->toggleLockTables($lock_tables);
 
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
 
 		$this->ave->echo(" Create backup");
-		$tables = $backup->getTables();
+
+		$items = $backup->getTables();
 		$progress = 0;
-		$total = count($tables);
-		$this->ave->set_progress_ex('Tables', $progress, $total);
-		foreach($tables as $table){
+		$total = count($items);
+		$this->ave->set_progress_ex('Table', $progress, $total);
+		foreach($items as $item){
 			$progress++;
-			$this->ave->write_log("Create backup for table $table");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $table], true);
-			$errors = $backup->backupTable($table, $ini->get('BACKUP_TYPE_STRUCTURE'), $ini->get('BACKUP_TYPE_DATA'));
+			$this->ave->write_log("Create backup for table $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if($ini->get('BACKUP_TYPE_STRUCTURE')){
+				$errors_structure = $backup->backupTableStructure($item);
+			}
+			if($ini->get('BACKUP_TYPE_DATA')){
+				$errors_data = $backup->backupTableData($item);
+			}
+			$errors = array_merge($errors_structure ?? [], $errors_data ?? []);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $table], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
 			}
-			$this->ave->set_progress_ex('Tables', $progress, $total);
+			$this->ave->set_progress_ex('Table', $progress, $total);
 		}
+
+		$items = $backup->getViews();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('View', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Create backup for view $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupView($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('View', $progress, $total);
+		}
+
+		$items = $backup->getFunctions();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Function', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Create backup for function $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupFunction($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Function', $progress, $total);
+		}
+
+		$items = $backup->getProcedures();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Procedure', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Create backup for procedure $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupProcedure($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Procedure', $progress, $total);
+		}
+
+		$items = $backup->getEvents();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Event', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Create backup for event $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupEvent($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Event', $progress, $total);
+		}
+
+		$items = $backup->getTriggers();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Trigger', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Create backup for trigger $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupTrigger($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Trigger', $progress, $total);
+		}
+
 		$this->ave->echo();
 		$this->ave->write_log("Finish backup for \"$label\"");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
@@ -297,29 +464,7 @@ class MySQLTools {
 
 		$output = $backup->getOutput();
 		if($ini->get('BACKUP_COMPRESS', false)){
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
-			$this->ave->echo(" Compressing backup");
-			$this->ave->write_log("Compressing backup");
-			$sql = $this->ave->get_file_path("$output/*.sql");
-			$cl = $this->ave->config->get('AVE_BACKUP_COMPRESS_LEVEL');
-			$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
-			exec("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
-			$this->ave->echo();
-			if(file_exists("$output.7z")){
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
-				$this->ave->echo(" Compress backup into \"$output.7z\" success");
-				$this->ave->write_log("Compress backup into \"$output.7z\" success");
-				foreach($tables as $table){
-					$this->ave->unlink($this->ave->get_file_path("$output/$table.sql"));
-				}
-				$this->ave->rmdir($output);
-				$this->ave->open_file($ini->get('BACKUP_PATH'));
-			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
-				$this->ave->echo(" Compress backup into \"$output.7z\" fail");
-				$this->ave->write_log("Compress backup into \"$output.7z\" fail");
-				$this->ave->open_file($output);
-			}
+			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
 		} else {
 			$this->ave->open_file($output);
 		}
@@ -333,9 +478,11 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("MakeClone");
 
+		$this->getSelectLabel();
 		set_label_source:
-		$source = $this->ave->get_input(" Source label: ");
+		$source = $this->ave->get_input(" Source label / ID: ");
 		if($source == '#') return false;
+		if(isset($this->select_label[$source])) $source = $this->select_label[$source];
 		if(!$this->ave->is_valid_label($source)){
 			$this->ave->echo(" Invalid label");
 			goto set_label_source;
@@ -352,7 +499,7 @@ class MySQLTools {
 		} else {
 			$path = $this->ave->get_file_path($ini_source->get('BACKUP_PATH'));
 		}
-		$callback = $ini->get('BACKUP_CURL_CALLBACK');
+		$callback = $ini_source->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
 
 		if(!is_null($callback)){
@@ -361,9 +508,12 @@ class MySQLTools {
 			}
 		}
 
+		$lock_tables = $this->ave->get_confirm(" Lock tables during clone (Y/N): ");
+
 		$this->ave->write_log("Initialize backup for \"$source\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini_source->get('BACKUP_QUERY_LIMIT'), $ini_source->get('BACKUP_INSERT_LIMIT'), $ini_source->get('FOLDER_DATE_FORMAT'));
+		$backup->toggleLockTables($lock_tables);
 
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
@@ -371,6 +521,7 @@ class MySQLTools {
 		set_label_destination:
 		$destination = $this->ave->get_input(" Destination label: ");
 		if($destination == '#') return false;
+		if(isset($this->select_label[$destination])) $destination = $this->select_label[$destination];
 		if(!$this->ave->is_valid_label($destination)){
 			$this->ave->echo(" Invalid label");
 			goto set_label_destination;
@@ -412,28 +563,167 @@ class MySQLTools {
 
 		$this->ave->echo(" Clone \"$source\" to \"$destination\"");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
-		$tables = $backup->getTables();
+
+		$items = $backup->getTables();
 		$progress = 0;
-		$total = count($tables);
-		$this->ave->set_progress_ex('Tables', $progress, $total);
-		foreach($tables as $table){
+		$total = count($items);
+		$this->ave->set_progress_ex('Table Structure', $progress, $total);
+		foreach($items as $item){
 			$progress++;
-			$this->ave->write_log("Clone table $table");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $table], true);
-			$errors = $backup->cloneTable($table);
+			$this->ave->write_log("Clone table Structure $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneTableStructure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $table], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
 			}
-			$this->ave->set_progress_ex('Tables', $progress, $total);
+			$this->ave->set_progress_ex('Table Structure', $progress, $total);
 		}
+
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Table Data', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Clone table data $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneTableData($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Table Data', $progress, $total);
+		}
+
+		$items = $backup->getViews();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('View', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Clone view $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneView($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('View', $progress, $total);
+		}
+
+		$items = $backup->getFunctions();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Function', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Clone function $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneFunction($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Function', $progress, $total);
+		}
+
+		$items = $backup->getProcedures();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Procedure', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Clone procedure $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneProcedure($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Procedure', $progress, $total);
+		}
+
+		$items = $backup->getEvents();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Event', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Clone event $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneEvent($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Event', $progress, $total);
+		}
+
+		$items = $backup->getTriggers();
+		$progress = 0;
+		$total = count($items);
+		$this->ave->set_progress_ex('Trigger', $progress, $total);
+		foreach($items as $item){
+			$progress++;
+			$this->ave->write_log("Clone trigger $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->cloneTrigger($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+			$this->ave->set_progress_ex('Trigger', $progress, $total);
+		}
+
 		$this->ave->echo();
 		$this->ave->write_log("Finish clone \"$source\" to \"$destination\"");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_END'], true);
@@ -473,6 +763,7 @@ class MySQLTools {
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
+		$backup->toggleLockTables($ini->get('BACKUP_LOCK_TABLES'));
 
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
@@ -482,25 +773,108 @@ class MySQLTools {
 		}
 
 		$this->ave->echo(" Create backup");
-		$tables = $backup->getTables();
-		$total = count($tables);
-		foreach($tables as $table){
-			$this->ave->write_log("Create backup for table $table");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $table], true);
-			$errors = $backup->backupTable($table, $ini->get('BACKUP_TYPE_STRUCTURE'), $ini->get('BACKUP_TYPE_DATA'));
+
+		$items = $backup->getTables();
+		$total = count($items);
+		foreach($items as $item){
+			$this->ave->write_log("Create backup for table $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if($ini->get('BACKUP_TYPE_STRUCTURE')){
+				$errors_structure = $backup->backupTableStructure($item);
+			}
+			if($ini->get('BACKUP_TYPE_DATA')){
+				$errors_data = $backup->backupTableData($item);
+			}
+			$errors = array_merge($errors_structure ?? [], $errors_data ?? []);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $table], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
 			}
-			$this->ave->echo();
 		}
+
+		$items = $backup->getViews();
+		$total = count($items);
+		foreach($items as $item){
+			$this->ave->write_log("Create backup for view $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupView($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+		}
+
+		$items = $backup->getFunctions();
+		$total = count($items);
+		foreach($items as $item){
+			$this->ave->write_log("Create backup for function $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupFunction($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+		}
+
+		$items = $backup->getEvents();
+		$total = count($items);
+		foreach($items as $item){
+			$this->ave->write_log("Create backup for event $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupEvent($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+		}
+
+		$items = $backup->getTriggers();
+		$total = count($items);
+		foreach($items as $item){
+			$this->ave->write_log("Create backup for trigger $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			$errors = $backup->backupTrigger($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+			}
+		}
+
 		$this->ave->echo();
 		$this->ave->write_log("Finish backup for \"$label\"");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
@@ -508,27 +882,9 @@ class MySQLTools {
 
 		$output = $backup->getOutput();
 		if($ini->get('BACKUP_COMPRESS', false)){
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
-			$this->ave->echo(" Compressing backup");
-			$this->ave->write_log("Compressing backup");
-			$sql = $this->ave->get_file_path("$output/*.sql");
-			$cl = $this->ave->config->get('AVE_BACKUP_COMPRESS_LEVEL');
-			$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
-			exec("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
-			$this->ave->echo();
-			if(file_exists("$output.7z")){
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
-				$this->ave->echo(" Compress backup into \"$output.7z\" success");
-				$this->ave->write_log("Compress backup into \"$output.7z\" success");
-				foreach($tables as $table){
-					$this->ave->unlink($this->ave->get_file_path("$output/$table.sql"));
-				}
-				$this->ave->rmdir($output);
-			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
-				$this->ave->echo(" Compress backup into \"$output.7z\" fail");
-				$this->ave->write_log("Compress backup into \"$output.7z\" fail");
-			}
+			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
+		} else {
+			$this->ave->open_file($output);
 		}
 
 		$this->ave->echo(" Backup for \"$label\" done");
@@ -540,9 +896,11 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("OpenBackupFolder");
 
+		$this->getSelectLabel();
 		set_label:
-		$label = $this->ave->get_input(" Label: ");
+		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
+		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label");
 			goto set_label;
@@ -564,9 +922,11 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("MySQLConsole");
 
+		$this->getSelectLabel();
 		set_label:
-		$label = $this->ave->get_input(" Label: ");
+		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
+		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label");
 			goto set_label;
@@ -591,7 +951,7 @@ class MySQLTools {
 		clear:
 		$this->ave->clear();
 		$this->ave->print_help([
-			" MySQL Console: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER')." Save results: ".($save_output ? 'Enabled' : 'Disabled'),
+			" MySQL Console: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER')." [$label] Save results: ".($save_output ? 'Enabled' : 'Disabled'),
 			" Additional commands: ",
 			" @exit  - close connection",
 			" @clear - clear console",
@@ -600,7 +960,7 @@ class MySQLTools {
 
 		try {
 			query:
-			$this->ave->write_data("");
+			if($save_output) $this->ave->write_data("");
 			$query = $this->ave->get_input_no_trim(" MySQL: ");
 			$lquery = strtolower($query);
 			if($lquery == '@exit'){
@@ -647,13 +1007,85 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolBackupSelectedTables() : bool {
-		$this->ave->clear();
-		$this->ave->set_subtool("BackupSelectedTables");
+	public function ToolBackupSelectedTablesStructure() : bool {
+		return $this->BackupSelected('Table Structure', false);
+	}
 
+	public function ToolBackupSelectedTablesData() : bool {
+		return $this->BackupSelected('Table Data', true);
+	}
+
+	public function ToolBackupSelectedViews() : bool {
+		return $this->BackupSelected('View', false);
+	}
+
+	public function ToolBackupSelectedFunctions() : bool {
+		return $this->BackupSelected('Function', false);
+	}
+
+	public function ToolBackupSelectedProcedures() : bool {
+		return $this->BackupSelected('Procedure', false);
+	}
+
+	public function ToolBackupSelectedEvents() : bool {
+		return $this->BackupSelected('Event', false);
+	}
+
+	public function ToolBackupSelectedTriggers() : bool {
+		return $this->BackupSelected('Trigger', false);
+	}
+
+	public function checkConfig(IniFile $config) : void {
+		if(!$config->isSet('BACKUP_ADD_LABEL_TO_PATH')) $config->set('BACKUP_ADD_LABEL_TO_PATH', true);
+		if(!$config->isSet('BACKUP_CURL_SEND_ERRORS')) $config->set('BACKUP_CURL_SEND_ERRORS', false);
+		if(!$config->isSet('BACKUP_CURL_CALLBACK')) $config->set('BACKUP_CURL_CALLBACK', null);
+		if(!$config->isSet('BACKUP_QUERY_LIMIT')) $config->set('BACKUP_QUERY_LIMIT', 50000);
+		if(!$config->isSet('BACKUP_INSERT_LIMIT')) $config->set('BACKUP_INSERT_LIMIT', 100);
+		if(!$config->isSet('BACKUP_TYPE_STRUCTURE')) $config->set('BACKUP_TYPE_STRUCTURE', true);
+		if(!$config->isSet('BACKUP_TYPE_DATA')) $config->set('BACKUP_TYPE_DATA', true);
+		if(!$config->isSet('BACKUP_COMPRESS')) $config->set('BACKUP_COMPRESS', true);
+		if(!$config->isSet('FOLDER_DATE_FORMAT')) $config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
+		if(!$config->isSet('SAVE_RESULTS_SEPARATOR')) $config->set('SAVE_RESULTS_SEPARATOR', '|');
+		if(!$config->isSet('BACKUP_LOCK_TABLES')) $config->set('BACKUP_LOCK_TABLES', false);
+		if($config->isChanged()) $config->save();
+	}
+
+	public function compress(?string $callback, string $output, string $backup_path, Request $request) : void {
+		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
+		$this->ave->echo(" Compressing backup");
+		$this->ave->write_log("Compressing backup");
+		$sql = $this->ave->get_file_path("$output/*");
+		$cl = $this->ave->config->get('AVE_BACKUP_COMPRESS_LEVEL');
+		$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
+		exec("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
+		$this->ave->echo();
+		if(file_exists("$output.7z")){
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
+			$this->ave->echo(" Compress backup into \"$output.7z\" success");
+			$this->ave->write_log("Compress backup into \"$output.7z\" success");
+			$this->ave->rrmdir($output);
+			$this->ave->open_file($backup_path);
+		} else {
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
+			$this->ave->echo(" Compress backup into \"$output.7z\" fail");
+			$this->ave->write_log("Compress backup into \"$output.7z\" fail");
+			$this->ave->open_file($output);
+		}
+	}
+
+	public function BackupSelected(string $type, bool $need_lock) : bool {
+		$ftype = explode(" ", $type);
+		$ftype = $ftype[0];
+		$stype = strtolower($type);
+		$type = str_replace(" ", "", $type);
+		$this->ave->clear();
+		$this->ave->set_subtool("BackupSelected".$type);
+
+		$this->getSelectLabel();
 		set_label:
-		$label = $this->ave->get_input(" Label: ");
+		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
+		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label");
 			goto set_label;
@@ -684,49 +1116,60 @@ class MySQLTools {
 			}
 		}
 
+		if($need_lock){
+			$lock_tables = $this->ave->get_confirm(" Lock tables during backup (Y/N): ");
+		} else {
+			$lock_tables = false;
+		}
+
+		$compress = $this->ave->get_confirm(" Compress backup (Y/N): ");
+
 		$this->ave->print_help([
-			' Type tables you want to backup, separate with a space',
-			' Use double quotes " for escape name',
+			" Type $stype you want to backup, separate with a space",
+			" Use double quotes \" for escape name",
 		]);
-		$line = $this->ave->get_input(" Tables: ");
+		$line = $this->ave->get_input(" Names: ");
 		if($line == '#') return false;
-		$tables = $this->ave->get_folders($line);
+		$items = $this->ave->get_folders($line);
 
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
+		$backup->toggleLockTables($lock_tables);
 
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
 
 		$this->ave->echo(" Create backup");
-		$tables_in_db = $backup->getTables();
+		$func = "get".$ftype."s";
+		$items_in_db = $backup->$func();
 		$progress = 0;
-		$total = count($tables);
-		$this->ave->set_progress_ex('Tables', $progress, $total);
-		foreach($tables as $table){
+		$total = count($items);
+		$this->ave->set_progress_ex($type, $progress, $total);
+		foreach($items as $item){
 			$progress++;
-			if(in_array($table, $tables_in_db)){
-				$this->ave->write_log("Create backup for table $table");
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $table], true);
-				$errors = $backup->backupTable($table, $ini->get('BACKUP_TYPE_STRUCTURE'), $ini->get('BACKUP_TYPE_DATA'));
+			if(in_array($item, $items_in_db)){
+				$this->ave->write_log("Create backup for $stype $item");
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+				$func = "backup".$type;
+				$errors = $backup->$func($item);
 				if(!empty($errors)){
 					$this->ave->write_error($errors);
 					if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => $errors];
+						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
 					} else {
-						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $table, 'errors' => ['Error reporting is disabled']];
+						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
 					}
 					if(!is_null($callback)) $request->get($callback, $cdata, true);
 				} else {
-					if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $table], true);
+					if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
 				}
 			} else {
-				$this->ave->echo(" Table: $table not exists, skipping");
-				$this->ave->write_error("Create backup for table $table failed, table not exists");
+				$this->ave->echo(" $type: $item not exists, skipping");
+				$this->ave->write_error("Create backup for $stype $item failed, $stype not exists");
 			}
-			$this->ave->set_progress_ex('Tables', $progress, $total);
+			$this->ave->set_progress_ex($type, $progress, $total);
 		}
 		$this->ave->echo();
 		$this->ave->write_log("Finish backup for \"$label\"");
@@ -734,30 +1177,8 @@ class MySQLTools {
 		$backup->disconnect();
 
 		$output = $backup->getOutput();
-		if($ini->get('BACKUP_COMPRESS', false)){
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
-			$this->ave->echo(" Compressing backup");
-			$this->ave->write_log("Compressing backup");
-			$sql = $this->ave->get_file_path("$output/*.sql");
-			$cl = $this->ave->config->get('AVE_BACKUP_COMPRESS_LEVEL');
-			$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
-			exec("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
-			$this->ave->echo();
-			if(file_exists("$output.7z")){
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
-				$this->ave->echo(" Compress backup into \"$output.7z\" success");
-				$this->ave->write_log("Compress backup into \"$output.7z\" success");
-				foreach($tables as $table){
-					$this->ave->unlink($this->ave->get_file_path("$output/$table.sql"));
-				}
-				$this->ave->rmdir($output);
-				$this->ave->open_file($ini->get('BACKUP_PATH'));
-			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
-				$this->ave->echo(" Compress backup into \"$output.7z\" fail");
-				$this->ave->write_log("Compress backup into \"$output.7z\" fail");
-				$this->ave->open_file($output);
-			}
+		if($compress){
+			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
 		} else {
 			$this->ave->open_file($output);
 		}
@@ -765,20 +1186,6 @@ class MySQLTools {
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Backup for \"$label\" done, press enter to back to menu");
 		return false;
-	}
-
-	public function checkConfig(IniFile $config) : void {
-		if(!$config->isSet('BACKUP_ADD_LABEL_TO_PATH')) $config->set('BACKUP_ADD_LABEL_TO_PATH', true);
-		if(!$config->isSet('BACKUP_CURL_SEND_ERRORS')) $config->set('BACKUP_CURL_SEND_ERRORS', false);
-		if(!$config->isSet('BACKUP_CURL_CALLBACK')) $config->set('BACKUP_CURL_CALLBACK', null);
-		if(!$config->isSet('BACKUP_QUERY_LIMIT')) $config->set('BACKUP_QUERY_LIMIT', 50000);
-		if(!$config->isSet('BACKUP_INSERT_LIMIT')) $config->set('BACKUP_INSERT_LIMIT', 100);
-		if(!$config->isSet('BACKUP_TYPE_STRUCTURE')) $config->set('BACKUP_TYPE_STRUCTURE', true);
-		if(!$config->isSet('BACKUP_TYPE_DATA')) $config->set('BACKUP_TYPE_DATA', true);
-		if(!$config->isSet('BACKUP_COMPRESS')) $config->set('BACKUP_COMPRESS', true);
-		if(!$config->isSet('FOLDER_DATE_FORMAT')) $config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
-		if(!$config->isSet('SAVE_RESULTS_SEPARATOR')) $config->set('SAVE_RESULTS_SEPARATOR', '|');
-		if($config->isChanged()) $config->save();
 	}
 
 }
