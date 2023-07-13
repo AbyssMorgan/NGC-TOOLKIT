@@ -24,12 +24,13 @@ class MediaSorter {
 	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
-			' 0 - Sort Files:  Date',
-			' 1 - Sort Files:  Extension',
-			' 2 - Sort Gif:    Animated',
-			' 3 - Sort Media:  Quality',
+			' 0 - Sort Files: Date',
+			' 1 - Sort Files: Extension',
+			' 2 - Sort Gif: Animated',
+			' 3 - Sort Media: Quality',
 			' 4 - Sort Images: Colors count',
 			' 5 - Sort Videos: Auto detect series name',
+			' 6 - Sort Media: Duration',
 		]);
 	}
 
@@ -40,9 +41,10 @@ class MediaSorter {
 			case '0': return $this->ToolSortDate();
 			case '1': return $this->ToolSortExtension();
 			case '2': return $this->ToolSortGifAnimated();
-			case '3': return $this->ToolSortMedia();
+			case '3': return $this->ToolSortMediaQuality();
 			case '4': return $this->ToolSortImagesColor();
 			case '5': return $this->ToolSortVideosAutoDetectSeriesName();
+			case '6': return $this->ToolSortMediaDuration();
 		}
 		return false;
 	}
@@ -68,14 +70,6 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				$directory = $this->ave->get_file_path("$folder/$extension");
-				if(!file_exists($directory)){
-					if(!$this->ave->mkdir($directory)){
-						$errors++;
-						$this->ave->set_progress($progress, $errors);
-						continue 1;
-					}
-				}
 				$new_name = $this->ave->get_file_path("$folder/$extension".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
@@ -95,8 +89,8 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortMedia() : bool {
-		$this->ave->set_subtool("SortMedia");
+	public function ToolSortMediaQuality() : bool {
+		$this->ave->set_subtool("SortMediaQuality");
 
 		set_mode:
 		$this->ave->clear();
@@ -104,7 +98,7 @@ class MediaSorter {
 			' Modes:',
 			' 0 - Orientation + Quality',
 			' 1 - Orientation: Vertical / Horizontal / Square',
-			' 2 - Quality:    17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
+			' 2 - Quality: 17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
 		]);
 
 		$line = $this->ave->get_input(" Mode: ");
@@ -173,12 +167,6 @@ class MediaSorter {
 				} else if($this->params['quality']){
 					$directory = $this->ave->get_file_path("$folder/$quality");
 				}
-				if(!file_exists($directory)){
-					if(!$this->ave->mkdir($directory)){
-						$errors++;
-						continue;
-					}
-				}
 				if($this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
 					$progress++;
 				} else {
@@ -224,13 +212,6 @@ class MediaSorter {
 					$directory = $this->ave->get_file_path("$folder/Animated");
 				} else {
 					$directory = $this->ave->get_file_path("$folder/NotAnimated");
-				}
-				if(!file_exists($directory)){
-					if(!$this->ave->mkdir($directory)){
-						$errors++;
-						$this->ave->set_progress($progress, $errors);
-						continue 1;
-					}
 				}
 				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
@@ -312,14 +293,6 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$new_name = $this->ToolSortDateGetPattern($folder, $this->params['mode'], $file, $this->params['separator']);
-				$directory = pathinfo($new_name, PATHINFO_DIRNAME);
-				if(!file_exists($directory)){
-					if(!$this->ave->mkdir($directory)){
-						$errors++;
-						$this->ave->set_progress($progress, $errors);
-						continue 1;
-					}
-				}
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
 				} else {
@@ -381,13 +354,6 @@ class MediaSorter {
 				$colors = $media->getImageColorCount($file);
 				$group = $media->getImageColorGroup($colors);
 				$directory = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$group");
-				if(!file_exists($directory)){
-					if(!$this->ave->mkdir($directory)){
-						$errors++;
-						$this->ave->set_progress($progress, $errors);
-						continue 1;
-					}
-				}
 				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$progress++;
@@ -472,7 +438,6 @@ class MediaSorter {
 					} else {
 						$new_name = $this->ave->get_file_path("$input/$folder_name/".pathinfo($file, PATHINFO_BASENAME));
 						$new_path = $this->ave->get_file_path("$input/$folder_name");
-						if(!file_exists($new_path)) $this->ave->mkdir($new_path);
 						if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 							$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 							$errors++;
@@ -490,6 +455,92 @@ class MediaSorter {
 			$this->ave->set_progress($progress, $errors);
 		}
 		$this->ave->progress($items, $total);
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolSortMediaDuration() : bool {
+		$this->ave->set_subtool("SortMediaDuration");
+
+		set_interval:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Type integer and unit separate by space, example: 30 sec',
+			' Interval units: sec, min, hour, day',
+		]);
+
+		$line = $this->ave->get_input(" Interval: ");
+		if($line == '#') return false;
+		$size = explode(' ', $line);
+		if(!isset($size[1])) goto set_interval;
+		$size[0] = preg_replace('/\D/', '', $size[0]);
+		if(empty($size[0])) goto set_interval;
+		if(!in_array(strtolower($size[1]), ['sec', 'min', 'hour', 'day'])) goto set_interval;
+		$interval = $this->ave->timeUnitToSeconds(intval($size[0]), $size[1]);
+		if($interval <= 0) goto set_interval;
+
+		$this->ave->clear();
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		$extensions = array_merge(explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO')), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO')));
+		$media = new MediaFunctions();
+		foreach($folders as $folder){
+			$files = $this->ave->getFiles($folder, $extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$duration = $media->getVideoDurationSeconds($file);
+				$multiplier = floor($duration / $interval);
+				$start = str_replace(":", "_", $media->SecToTime(intval($interval * $multiplier)));
+				$end = str_replace(":", "_", $media->SecToTime(intval($interval * ($multiplier + 1)) - 1));
+				$directory = $this->ave->get_file_path("$folder/$start - $end");
+				if($this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
+					$renamed = true;
+					$progress++;
+				} else {
+					$renamed = false;
+					$errors++;
+				}
+				if($renamed){
+					$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
+					foreach($follow_extensions as $a){
+						if(file_exists("$file.$a")){
+							if(!$this->ave->rename("$file.$a","$new_name.$a")) $errors++;
+						}
+					}
+
+					$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
+					$name_new = $this->ave->get_file_path("$directory/$name.$extension.webp");
+					if(file_exists($name_old)){
+						if(!$this->ave->rename($name_old, $name_new)){
+							$errors++;
+						}
+					}
+
+					$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME).".srt");
+					$name_new = $this->ave->get_file_path("$directory/$name.srt");
+					if(file_exists($name_old)){
+						if(!$this->ave->rename($name_old, $name_new)){
+							$errors++;
+						}
+					}
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->progress($items, $total);
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");

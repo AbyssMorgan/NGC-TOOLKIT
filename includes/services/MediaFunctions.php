@@ -82,6 +82,30 @@ class MediaFunctions {
 		return sprintf("%02d:%02d:%02d", $h, $m, $s);
 	}
 
+	public function getVideoDurationSeconds(string $path) : int {
+		exec("ffprobe -i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
+		$file_duration = trim($output[0]);
+		$h = $m = $s = 0;
+		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
+		return (intval($h) * 3600) + (intval($m) * 60) + intval($s);
+	}
+
+	public function SecToTime(int $s) : string {
+		$d = intval(floor($s / 86400));
+		$s -= ($d * 86400);
+		$h = intval(floor($s / 3600));
+		$s -= ($h * 3600);
+		$m = intval(floor($s / 60));
+		$s -= ($m * 60);
+		if($d > 0){
+			return sprintf("%d:%02d:%02d:%02d", $d, $h, $m, $s);
+		} else if($h > 0){
+			return sprintf("%02d:%02d:%02d", $h, $m, $s);
+		} else {
+			return sprintf("%02d:%02d", $m, $s);
+		}
+	}
+
 	public function getVideoThumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
 		$input_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_FILENAME)."_s.jpg";
 		$output_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME).".webp";

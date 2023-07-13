@@ -48,6 +48,8 @@ class MySQLTools {
 			' 12 - Backup selected: Procedures',
 			' 13 - Backup selected: Events',
 			' 14 - Backup selected: Triggers',
+			' 15 - Fetch data base info',
+			' 16 - Compare data base info',
 		]);
 	}
 
@@ -70,6 +72,8 @@ class MySQLTools {
 			case '12': return $this->ToolBackupSelectedProcedures();
 			case '13': return $this->ToolBackupSelectedEvents();
 			case '14': return $this->ToolBackupSelectedTriggers();
+			case '15': return $this->ToolFetchDataBaseInfo();
+			case '16': return $this->ToolCompareDataBaseInfo();
 		}
 		return false;
 	}
@@ -1185,6 +1189,176 @@ class MySQLTools {
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Backup for \"$label\" done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolFetchDataBaseInfo() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("FetchDataBaseInfo");
+
+		$this->getSelectLabel();
+		set_label:
+		$label = $this->ave->get_input(" Label / ID: ");
+		if($label == '#') return false;
+		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
+		if(!$this->ave->is_valid_label($label)){
+			$this->ave->echo(" Invalid label");
+			goto set_label;
+		}
+
+		if(!file_exists($this->getConfigPath($label))){
+			$this->ave->echo(" Label \"$label\" not exists");
+			goto set_label;
+		}
+
+		$ini = $this->getConfig($label);
+
+		$db = new DataBase();
+		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+
+		$separator = $ini->get('SAVE_RESULTS_SEPARATOR');
+		$this->ave->write_data(str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
+
+		$db_name = $ini->get('DB_NAME');
+		$items = $db->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$data_size = $this->ave->formatBytes(intval($item->DATA_LENGTH));
+			$index_size = $this->ave->formatBytes(intval($item->INDEX_LENGTH));
+			$this->ave->write_data(str_replace("|", $separator, "$item->TABLE_NAME|$item->ENGINE|$item->TABLE_COLLATION|$item->TABLE_ROWS|$data_size|$item->DATA_LENGTH|$index_size|$item->INDEX_LENGTH|$item->ROW_FORMAT"));
+		}
+
+		$db->disconnect();
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Connection \"$label\" closed, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolCompareDataBaseInfo() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("CompareDataBaseInfo");
+
+		$this->getSelectLabel();
+		set_label_source:
+		$source = $this->ave->get_input(" Source label / ID: ");
+		if($source == '#') return false;
+		if(isset($this->select_label[$source])) $source = $this->select_label[$source];
+		if(!$this->ave->is_valid_label($source)){
+			$this->ave->echo(" Invalid label");
+			goto set_label_source;
+		}
+
+		if(!file_exists($this->getConfigPath($source))){
+			$this->ave->echo(" Source label \"$source\" not exists");
+			goto set_label_source;
+		}
+
+		$db_source = new DataBase();
+		$ini_source = $this->getConfig($source);
+		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
+		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
+
+		set_label_destination:
+		$destination = $this->ave->get_input(" Destination label: ");
+		if($destination == '#') return false;
+		if(isset($this->select_label[$destination])) $destination = $this->select_label[$destination];
+		if(!$this->ave->is_valid_label($destination)){
+			$this->ave->echo(" Invalid label");
+			goto set_label_destination;
+		}
+
+		if(!file_exists($this->getConfigPath($destination))){
+			$this->ave->echo(" Destination label \"$destination\" not exists");
+			goto set_label_destination;
+		}
+
+		if($source == $destination){
+			$this->ave->echo(" Destination label must be different than source label");
+			goto set_label_destination;
+		}
+
+		$db_destination = new DataBase();
+		$ini_destination = $this->getConfig($destination);
+		$this->ave->echo(" Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
+		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'))) goto set_label_destination;
+
+		$info_source = [];
+		$info_dest = [];
+
+		$db_name = $ini_source->get('DB_NAME');
+		$this->ave->echo(" Fetch data base info for \"$source\"");
+		$items = $db_source->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$info_source[$item->TABLE_NAME]['engine'] = $item->ENGINE;
+			$info_source[$item->TABLE_NAME]['collation'] = $item->TABLE_COLLATION;
+			$info_source[$item->TABLE_NAME]['rows'] = $item->TABLE_ROWS;
+			$info_source[$item->TABLE_NAME]['data_size'] = $item->DATA_LENGTH;
+			$info_source[$item->TABLE_NAME]['index_size'] = $item->INDEX_LENGTH;
+			$info_source[$item->TABLE_NAME]['row_format'] = $item->ROW_FORMAT;
+		}
+		$db_source->disconnect();
+
+		$db_name = $ini_destination->get('DB_NAME');
+		$this->ave->echo(" Fetch data base info for \"$destination\"");
+		$items = $db_destination->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$info_dest[$item->TABLE_NAME]['engine'] = $item->ENGINE;
+			$info_dest[$item->TABLE_NAME]['collation'] = $item->TABLE_COLLATION;
+			$info_dest[$item->TABLE_NAME]['rows'] = $item->TABLE_ROWS;
+			$info_dest[$item->TABLE_NAME]['data_size'] = $item->DATA_LENGTH;
+			$info_dest[$item->TABLE_NAME]['index_size'] = $item->INDEX_LENGTH;
+			$info_dest[$item->TABLE_NAME]['row_format'] = $item->ROW_FORMAT;
+		}
+		$db_destination->disconnect();
+
+		$this->ave->echo(" Check data base info differences");
+		$this->ave->write_data([
+			"Data base info differences",
+			"Source:      ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'),
+			"Destination: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'),
+			"",
+		]);
+		$errors = [
+			'not_exists' => [],
+			'engine' => [],
+			'collation' => [],
+			'rows' => [],
+			'data_size' => [],
+			'index_size' => [],
+			'row_format' => [],
+		];
+		foreach($info_source as $table_name => $table_data){
+			if(!isset($info_dest[$table_name])){
+				array_push($errors['not_exists'], "Table \"$table_name\" not exists in destination");
+			} else {
+				if($info_source[$table_name]['engine'] != $info_dest[$table_name]['engine']){
+					array_push($errors['engine'], "Table \"$table_name\" engine are different. Source: ".$info_source[$table_name]['engine']." Destination: ".$info_dest[$table_name]['engine']);
+				}
+				if($info_source[$table_name]['collation'] != $info_dest[$table_name]['collation']){
+					array_push($errors['collation'], "Table \"$table_name\" collation are different. Source: ".$info_source[$table_name]['collation']." Destination: ".$info_dest[$table_name]['collation']);
+				}
+				if($info_source[$table_name]['rows'] != $info_dest[$table_name]['rows']){
+					array_push($errors['rows'], "Table \"$table_name\" rows count are different. Source: ".$info_source[$table_name]['rows']." Destination: ".$info_dest[$table_name]['rows']);
+				}
+				if($info_source[$table_name]['data_size'] != $info_dest[$table_name]['data_size']){
+					array_push($errors['data_size'], "Table \"$table_name\" data size are different. Source: ".$this->ave->formatBytes($info_source[$table_name]['data_size'])." (".$info_source[$table_name]['data_size'].") Destination: ".$this->ave->formatBytes($info_dest[$table_name]['data_size'])." (".$info_dest[$table_name]['data_size'].")");
+				}
+				if($info_source[$table_name]['index_size'] != $info_dest[$table_name]['index_size']){
+					array_push($errors['index_size'], "Table \"$table_name\" index size are different. Source: ".$this->ave->formatBytes($info_source[$table_name]['index_size'])." (".$info_source[$table_name]['index_size'].") Destination: ".$this->ave->formatBytes($info_dest[$table_name]['index_size'])." (".$info_dest[$table_name]['index_size'].")");
+				}
+				if($info_source[$table_name]['row_format'] != $info_dest[$table_name]['row_format']){
+					array_push($errors['row_format'], "Table \"$table_name\" row format are different. Source: ".$info_source[$table_name]['row_format']." Destination: ".$info_dest[$table_name]['row_format']);
+				}
+			}
+		}
+
+		foreach($errors as $error_type => $error_data){
+			if(!empty($error_data)) $this->ave->write_data($error_data);
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Comparison \"$source\" to \"$destination\" done, press enter to back to menu");
 		return false;
 	}
 

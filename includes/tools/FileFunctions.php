@@ -305,7 +305,7 @@ class FileFunctions {
 		$this->ave->set_subtool("RandomFileGenerator");
 
 		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->ave->unitToBytes(intval($size[0]), $size[1] ?? '?');
+		$write_buffer = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->ave->clear();
 			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
@@ -344,7 +344,7 @@ class FileFunctions {
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
 		if(!in_array(strtoupper($size[1]), ['KB', 'MB', 'GB', 'TB'])) goto set_size;
-		$bytes = $this->ave->unitToBytes(intval($size[0]), $size[1]);
+		$bytes = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 
 		if(in_array($this->params['mode'], ['1', '2'])){
@@ -457,7 +457,7 @@ class FileFunctions {
 		$this->ave->set_subtool("OverwriteFoldersContent");
 
 		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->ave->unitToBytes(intval($size[0]), $size[1] ?? '?');
+		$write_buffer = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->ave->clear();
 			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");

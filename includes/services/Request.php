@@ -51,7 +51,7 @@ class Request {
 		}
 		curl_setopt_array($curl, $options);
 		$response = curl_exec($curl);
-		if($response === false) $response = curl_error($curl);
+		if(!$response) return ['code' => curl_getinfo($curl, CURLINFO_HTTP_CODE), 'data' => ['error' => curl_error($curl)]];
 		curl_close($curl);
 		return [
 			'code' => curl_getinfo($curl, CURLINFO_HTTP_CODE),

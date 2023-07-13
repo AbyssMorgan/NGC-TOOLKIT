@@ -27,8 +27,8 @@ class MediaTools {
 	public function help() : void {
 		$this->ave->print_help([
 			' Actions:',
-			' 0 - Merge:  Video + Audio',
-			' 1 - Merge:  Video + SRT',
+			' 0 - Merge: Video + Audio',
+			' 1 - Merge: Video + SRT',
 			' 2 - Avatar generator',
 			' 3 - Video: Fetch media info',
 			' 4 - Image converter'
@@ -53,7 +53,7 @@ class MediaTools {
 		$this->ave->set_subtool("MergeVideoAudio");
 
 		set_video:
-		$line = $this->ave->get_input(" Video:  ");
+		$line = $this->ave->get_input(" Video: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_video;
@@ -65,7 +65,7 @@ class MediaTools {
 		}
 
 		set_audio:
-		$line = $this->ave->get_input(" Audio:  ");
+		$line = $this->ave->get_input(" Audio: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_audio;
@@ -152,7 +152,7 @@ class MediaTools {
 		$this->ave->set_subtool("MergeVideoSubtitles");
 
 		set_input:
-		$line = $this->ave->get_input(" Input:  ");
+		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
@@ -224,7 +224,7 @@ class MediaTools {
 		$this->ave->set_subtool("AvatarGenerator");
 
 		set_input:
-		$line = $this->ave->get_input(" Input:  ");
+		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
@@ -320,7 +320,7 @@ class MediaTools {
 		$this->ave->set_subtool("VideoFetchMediaInfo");
 
 		set_input:
-		$line = $this->ave->get_input(" Input:  ");
+		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;
@@ -416,7 +416,7 @@ class MediaTools {
 		$this->ave->clear();
 
 		set_input:
-		$line = $this->ave->get_input(" Input:  ");
+		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		if(!isset($folders[0])) goto set_input;

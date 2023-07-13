@@ -13,7 +13,7 @@ class DataBaseBackup {
 	protected ?PDO $destination;
 	protected string $database;
 
-	private string $path;
+	private ?string $path;
 	private string $alters;
 	private bool $lock_tables = false;
 	private int $query_limit;
@@ -32,11 +32,11 @@ class DataBaseBackup {
 		'year',
 	];
 
-	public function __construct(string $path, int $query_limit = 50000, int $insert_limit = 100, string $date_format = "Y-m-d_His"){
+	public function __construct(?string $path = null, int $query_limit = 50000, int $insert_limit = 100, string $date_format = "Y-m-d_His"){
 		$date = date($date_format);
 		$this->query_limit = $query_limit;
 		$this->insert_limit = $insert_limit;
-		$this->path = $path.DIRECTORY_SEPARATOR.$date;
+		if(!is_null($path)) $this->path = $path.DIRECTORY_SEPARATOR.$date;
 		$this->header = base64_decode("U0VUIFNRTF9NT0RFID0gIk5PX0FVVE9fVkFMVUVfT05fWkVSTyI7ClNUQVJUIFRSQU5TQUNUSU9OOwpTRVQgdGltZV96b25lID0gIiswMDowMCI7CgovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX0NMSUVOVD1AQENIQVJBQ1RFUl9TRVRfQ0xJRU5UICovOwovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFM9QEBDSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBAT0xEX0NPTExBVElPTl9DT05ORUNUSU9OPUBAQ09MTEFUSU9OX0NPTk5FQ1RJT04gKi87Ci8qITQwMTAxIFNFVCBOQU1FUyB1dGY4bWI0ICovOw==");
 		$this->footer = base64_decode("Q09NTUlUOwoKLyohNDAxMDEgU0VUIENIQVJBQ1RFUl9TRVRfQ0xJRU5UPUBPTERfQ0hBUkFDVEVSX1NFVF9DTElFTlQgKi87Ci8qITQwMTAxIFNFVCBDSEFSQUNURVJfU0VUX1JFU1VMVFM9QE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBDT0xMQVRJT05fQ09OTkVDVElPTj1AT0xEX0NPTExBVElPTl9DT05ORUNUSU9OICovOw==");
 		$this->alters = '';

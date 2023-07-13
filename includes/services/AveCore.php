@@ -169,11 +169,21 @@ class AveCore {
 		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.($sizes[$i] ?? '');
 	}
 
-	public function unitToBytes(int $value, string $unit) : int {
+	public function sizeUnitToBytes(int $value, string $unit) : int {
 		$sizes = $this->unitSizes();
 		$index = array_search(strtoupper($unit), $sizes);
 		if($index === false) return -1;
 		return intval($value * pow(1024, $index));
+	}
+
+	public function timeUnitToSeconds(int $value, string $unit) : int {
+		switch(strtolower($unit)){
+			case 'sec': return $value;
+			case 'min': return $value * 60;
+			case 'hour': return $value * 3600;
+			case 'day': return $value * 86400;
+		}
+		return 0;
 	}
 
 	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {

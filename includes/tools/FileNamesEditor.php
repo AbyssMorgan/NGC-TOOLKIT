@@ -35,6 +35,7 @@ class FileNamesEditor {
 			' 8  - Add file name prefix/suffix',
 			' 9  - Remove keywords from file name',
 			' 10 - Insert string into file name',
+			' 11 - Replace keywords in file name',
 		]);
 	}
 
@@ -53,6 +54,7 @@ class FileNamesEditor {
 			case '8': return $this->ToolAddFileNamePrefixSuffix();
 			case '9': return $this->ToolRemoveKeywordsFromFileName();
 			case '10': return $this->ToolInsertStringIntoFileName();
+			case '11': return $this->ToolReplaceKeywordsInFileName();
 		}
 		return false;
 	}
@@ -399,6 +401,8 @@ class FileNamesEditor {
 				if($this->params['checksum'] && !file_exists("$file.$algo")){
 					$hash = hash_file($algo, $file, false);
 					if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
+				} else {
+					$hash = null;
 				}
 				if($this->params['resolution']){
 					$resolution = $media->getVideoResolution($file);
@@ -447,9 +451,7 @@ class FileNamesEditor {
 				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
 				$name_new = $this->ave->get_file_path("$directory/$name.$extension.webp");
 				if($renamed && file_exists($name_old)){
-					if($this->ave->rename($name_old, $name_new)){
-						$renamed = true;
-					} else {
+					if(!$this->ave->rename($name_old, $name_new)){
 						$errors++;
 					}
 				}
@@ -457,9 +459,7 @@ class FileNamesEditor {
 				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME).".srt");
 				$name_new = $this->ave->get_file_path("$directory/$name.srt");
 				if($renamed && file_exists($name_old)){
-					if($this->ave->rename($name_old, $name_new)){
-						$renamed = true;
-					} else {
+					if(!$this->ave->rename($name_old, $name_new)){
 						$errors++;
 					}
 				}
@@ -822,7 +822,7 @@ class FileNamesEditor {
 		if(strlen($current_season) == 1) $current_season = "0$current_season";
 
 		set_season_new:
-		$line = $this->ave->get_input(" New season:     ");
+		$line = $this->ave->get_input(" New season: ");
 		if($line == '#') return false;
 		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if($new_season == '') goto set_season_new;
@@ -906,7 +906,7 @@ class FileNamesEditor {
 		$episode_start = intval($episode_start);
 
 		set_end:
-		$line = $this->ave->get_input(" End:   ");
+		$line = $this->ave->get_input(" End: ");
 		if($line == '#') return false;
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_end == '') goto set_end;
@@ -914,7 +914,7 @@ class FileNamesEditor {
 		$episode_end = intval($episode_end);
 
 		$this->ave->echo(" Choose step as integer (example 5 or -5)");
-		$line = $this->ave->get_input(" Step:  ");
+		$line = $this->ave->get_input(" Step: ");
 		if($line == '#') return false;
 		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
@@ -1121,7 +1121,7 @@ class FileNamesEditor {
 			}
 			while(($line = fgets($fp)) !== false){
 				$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
-				if(!empty(trim($line))) continue;
+				if(empty(trim($line))) continue;
 				array_push($keywords, $line);
 			}
 			fclose($fp);
@@ -1236,6 +1236,100 @@ class FileNamesEditor {
 						} else {
 							$errors++;
 						}
+					}
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolReplaceKeywordsInFileName() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("ReplaceKeywordsInFileName");
+
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		set_keyword_file:
+		$replacements = [];
+		$line = $this->ave->get_input(" Keywords file: ");
+		if($line == '#') return false;
+		$line = $this->ave->get_folders($line);
+		if(!isset($line[0])) goto set_keyword_file;
+		$input = $line[0];
+
+		if(!file_exists($input) || is_dir($input)){
+			$this->ave->echo(" Invalid keywords file");
+			goto set_keyword_file;
+		}
+
+		$fp = fopen($input, 'r');
+		if(!$fp){
+			$this->ave->echo(" Failed open keywords file");
+			goto set_keyword_file;
+		}
+		$i = 0;
+		$errors = 0;
+		while(($line = fgets($fp)) !== false){
+			$i++;
+			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+			if(empty(trim($line))) continue;
+			$replace = $this->ave->get_folders($line, false);
+			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
+				$this->ave->echo(" Failed parse replacement in line $i content: '$line'");
+				$errors++;
+			} else {
+				$replacements[$replace[0]] = $replace[1];
+			}
+		}
+		fclose($fp);
+
+		if($errors > 0){
+			if(!$this->ave->get_confirm(" Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
+		}
+
+		$this->ave->setup_folders($folders);
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, $extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$name = trim(str_replace(array_keys($replacements), $replacements, pathinfo($file, PATHINFO_FILENAME)));
+				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".pathinfo($file, PATHINFO_EXTENSION));
+				if(empty($new_name)){
+					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
+					$errors++;
+				} else if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
+					$errors++;
+				} else {
+					if($this->ave->rename($file, $new_name)){
+						$progress++;
+					} else {
+						$errors++;
 					}
 				}
 				$this->ave->progress($items, $total);
