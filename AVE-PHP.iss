@@ -1,5 +1,5 @@
 #define MyAppName "AVE-PHP"
-#define MyAppVersion "1.7.0"
+#define MyAppVersion "1.8.0"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "AVE-PHP.cmd"
@@ -42,6 +42,7 @@ Source: "{#SourcePath}\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\ave-php.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\ave-php.png"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\Changelog.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}\example.ave-php"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{cmd}"; Parameters: "/c ""{app}\{#MyAppExeName}"""; WorkingDir: "{app}"; IconFilename: "{app}\ave-php.ico"; Tasks: desktopicon

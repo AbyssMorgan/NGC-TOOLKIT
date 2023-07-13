@@ -26,6 +26,7 @@
 	require_once("$includes_path/services/StringConverter.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/AveSettings.php");
+	require_once("$includes_path/tools/AveConsole.php");
 	require_once("$includes_path/tools/FileNamesEditor.php");
 	require_once("$includes_path/tools/FileFunctions.php");
 	require_once("$includes_path/tools/MediaSorter.php");

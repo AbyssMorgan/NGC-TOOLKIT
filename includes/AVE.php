@@ -6,6 +6,7 @@ use App\Services\IniFile;
 use App\Services\AveCore;
 
 use App\Tools\AveSettings;
+use App\Tools\AveConsole;
 use App\Tools\FileNamesEditor;
 use App\Tools\FileFunctions;
 use App\Tools\MediaSorter;
@@ -23,8 +24,9 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.7.0";
+	public string $version = "1.8.0";
 	public string $utilities_version = "1.0.0";
+	public string $ave_utilities_path;
 
 	private array $folders_to_scan = [
 		'bin',
@@ -38,12 +40,12 @@ class AVE extends AveCore {
 		$this->logo = "\r\n $this->app_name Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
 
-		$ave_utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
+		$this->ave_utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
 
 		$ave_utilities = false;
-		if(file_exists($ave_utilities_path)){
-			$ave_utilities_main = new IniFile($this->get_file_path("$ave_utilities_path/main.ini"));
-			$ave_utilities_imagick = new IniFile($this->get_file_path("$ave_utilities_path/imagick.ini"));
+		if(file_exists($this->ave_utilities_path)){
+			$ave_utilities_main = new IniFile($this->get_file_path("$this->ave_utilities_path/main.ini"));
+			$ave_utilities_imagick = new IniFile($this->get_file_path("$this->ave_utilities_path/imagick.ini"));
 			if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
 				$ave_utilities = true;
 			}
@@ -175,6 +177,18 @@ class AVE extends AveCore {
 					$this->abort = $this->select_tool();
 				}
 				$this->exit(10, false);
+				break;
+			}
+			case '--script': {
+				$this->logo = '';
+				$path = $this->arguments[0] ?? '';
+				if(empty($path) || !file_exists($path)){
+					$this->echo(" File \"$path\" not exists");
+				} else {
+					$this->tool = new AveConsole($this);
+					$this->tool->execute($path);
+					$this->exit(0, false);
+				}
 				break;
 			}
 			default: {

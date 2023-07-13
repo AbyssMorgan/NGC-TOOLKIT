@@ -12,7 +12,7 @@ use DirectoryIterator;
 
 class AveCore {
 
-	public int $core_version = 3;
+	public int $core_version = 4;
 
 	public IniFile $config;
 
@@ -37,7 +37,7 @@ class AveCore {
 		if(isset($arguments[1])) unset($arguments[1]);
 		$this->arguments = array_values($arguments);
 		$this->windows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-		$this->path = $this->get_file_path(__DIR__."/../..");
+		$this->path = realpath($this->get_file_path(__DIR__."/../.."));
 		$this->logo = '';
 	}
 
@@ -107,7 +107,7 @@ class AveCore {
 
 	public function clear() : void {
 		$this->cls();
-		if($this->config->get('AVE_SHOW_LOGO', false)){
+		if($this->config->get('AVE_SHOW_LOGO', false) && !empty($this->logo)){
 			echo "$this->logo\r\n";
 		} else {
 			echo "\r\n";
@@ -217,7 +217,7 @@ class AveCore {
 	public function exit(int $seconds = 10, bool $open_log = false) : void {
 		$this->write_log("Exit");
 		$this->open_logs($open_log, false);
-		$this->timeout($seconds);
+		if($seconds > 0) $this->timeout($seconds);
 	}
 
 	public function init_logs(){
@@ -294,7 +294,7 @@ class AveCore {
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			if($log) $this->write_error("FAILED DELETE \"$path\"");
+			if($log) $this->write_error("FAILED RMDIR \"$path\"");
 			return false;
 		}
 	}
@@ -305,7 +305,7 @@ class AveCore {
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			if($log) $this->write_error("FAILED DELETE \"$path\"");
+			if($log) $this->write_error("FAILED UNLINK \"$path\"");
 			return false;
 		}
 	}
@@ -327,6 +327,19 @@ class AveCore {
 			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
+		$dir = pathinfo($to, PATHINFO_DIRNAME);
+		if(!file_exists($dir)) $this->mkdir($dir);
+		if(@rename($from, $to)){
+			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
+			return true;
+		} else {
+			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\"");
+			return false;
+		}
+	}
+
+	public function rename_case(string $from, string $to, bool $log = true) : bool {
+		if(strcmp($from, $to) == 0) return true;
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
 		if(@rename($from, $to)){
@@ -525,6 +538,51 @@ class AveCore {
 			}
 		}
 		return $output;
+	}
+
+	public function getHashAlghoritm(int $id) : array {
+		switch($id){
+			case 0: return ['name' => 'md5', 'length' => 32];
+			case 1: return ['name' => 'sha256', 'length' => 64];
+			case 2: return ['name' => 'crc32', 'length' => 8];
+			case 3: return ['name' => 'whirlpool', 'length' => 128];
+		}
+		return ['name' => 'md5', 'length' => 32];
+	}
+
+	public function isTextFile(string $path) : bool {
+		if(!file_exists($path)) return false;
+		$finfo = finfo_open(FILEINFO_MIME);
+		return (substr(finfo_file($finfo, $path), 0, 4) == 'text');
+	}
+
+	public function exec(string $program, string $command, array &$output = null, int &$result_code = null) : string|false {
+		$program = $this->get_file_path("$this->ave_utilities_path/main/$program.exe");
+		return exec("\"$program\" $command", $output, $result_code);
+	}
+
+	public function isAdmin() : bool {
+		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
+	}
+
+	public function get_size(string $name) : int|bool {
+		set_size:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Type integer and unit separate by space, example: 1 GB',
+			' Size units: B, KB, MB, GB, TB',
+		]);
+
+		$line = $this->ave->get_input($name);
+		if($line == '#') return false;
+		$size = explode(' ', $line);
+		if(!isset($size[1])) goto set_size;
+		$size[0] = preg_replace('/\D/', '', $size[0]);
+		if(empty($size[0])) goto set_size;
+		if(!in_array(strtoupper($size[1]), ['B', 'KB', 'MB', 'GB', 'TB'])) goto set_size;
+		$bytes = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1]);
+		if($bytes <= 0) goto set_size;
+		return $bytes;
 	}
 
 }

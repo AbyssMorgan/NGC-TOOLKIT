@@ -1061,7 +1061,7 @@ class MySQLTools {
 		$sql = $this->ave->get_file_path("$output/*");
 		$cl = $this->ave->config->get('AVE_BACKUP_COMPRESS_LEVEL');
 		$at = $this->ave->config->get('AVE_BACKUP_COMPRESS_TYPE');
-		exec("7z a -mx$cl -t$at \"$output.7z\" \"$sql\"");
+		$this->ave->exec("7z", "a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 		$this->ave->echo();
 		if(file_exists("$output.7z")){
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);

@@ -120,7 +120,7 @@ class MediaSorter {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$extensions = array_merge($image_extensions, $video_extensions);
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			$files = $this->ave->getFiles($folder, $extensions);
 			$items = 0;
@@ -198,7 +198,7 @@ class MediaSorter {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
@@ -342,7 +342,7 @@ class MediaSorter {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->getFiles($folder, $image_extensions);
@@ -389,7 +389,7 @@ class MediaSorter {
 			goto set_input;
 		}
 
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 
 		$progress = 0;
 		$errors = 0;
@@ -404,16 +404,16 @@ class MediaSorter {
 
 			$file_name = str_replace(['SEASON','EPISODE',' '], ['S','E',''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
 			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
-				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				$marker = $mathes[0];
 			} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
-				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				$marker = $mathes[0];
 			} else if(preg_match("/\[S[0-9]{2}\.E[0-9]{1,3}\]/", $file_name, $mathes) == 1){
-				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				$marker = $mathes[0];
 			} else if(preg_match("/(\[S0\.)(E[0-9]{1,3})\]/", $file_name, $mathes) == 1){
-				$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2]);
+				$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
 				$marker = $mathes[2];
 			} else {
 				$escaped_name = '';
@@ -490,7 +490,7 @@ class MediaSorter {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		$extensions = array_merge(explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO')), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO')));
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			$files = $this->ave->getFiles($folder, $extensions);
 			$items = 0;
@@ -500,8 +500,12 @@ class MediaSorter {
 				if(!file_exists($file)) continue 1;
 				$duration = $media->getVideoDurationSeconds($file);
 				$multiplier = floor($duration / $interval);
-				$start = str_replace(":", "_", $media->SecToTime(intval($interval * $multiplier)));
-				$end = str_replace(":", "_", $media->SecToTime(intval($interval * ($multiplier + 1)) - 1));
+				if($multiplier == 0){
+					$start = '00_00';
+				} else {
+					$start = str_replace(":", "_", $media->SecToTime(intval($interval * $multiplier) + 1));
+				}
+				$end = str_replace(":", "_", $media->SecToTime(intval($interval * ($multiplier + 1))));
 				$directory = $this->ave->get_file_path("$folder/$start - $end");
 				if($this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
 					$renamed = true;

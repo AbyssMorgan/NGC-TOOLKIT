@@ -1,5 +1,24 @@
+v1.8.0:
+- Added tool: Help > Install .ave-php script support (administrator required). After install this feature you can execute PHP scripts by change extension into .ave-php
+- Added tool: Media Sorter > Sort Media: Duration
+- Added tool: File Names Editor > Replace keywords in file name
+- Added tool: MySQL Tools > Fetch data base info
+- Added tool: MySQL Tools > Compare data base info
+- Added tool: File Editor > Split file by lines count
+- Added tool: File Editor > Split file by size (Binary)
+- Added tool: File Editor > Reverse text file lines
+- Added tool: File Functions > Copy files with structure
+- Added tool: File Functions > Move files with structure
+- Moved tool: File Functions > Extension change to File Names Editor > Extension change
+- Update tool: File Names Editor > Pretty file name (Added flags for uppercase/lowercase)
+- Improved tool: File Names Editor > Extension change (Type empty new extension for remove extension)
+- Added new modes to tool: File Names Editor > Pretty file name (To upper case / To lower case)
+- Fixed tool: File Names Editor > Generate video: CheckSum/Resolution/Thumbnail (For some unknown reason, it sometimes entered a checksum of the previous file)
+- Fixed issue that you cannot use bytes unit in size input
+- Fixed an issue where the Generate series name tool could replace the same expression multiple times
+
 v1.7.0:
-- Renamed tool: Names Generator into File Names Editor 
+- Renamed tool: Names Generator into File Names Editor
 - Removed tool: MySQL Tools > Backup selected tables
 - Added tool: File Functions > Overwrite folders content
 - Added tool: MySQL Tools > Backup selected: Tables structure

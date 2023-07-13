@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use AVE;
 use GdImage;
 use Imagick;
+use Exception;
 use App\Dictionaries\MediaOrientation;
 
 class MediaFunctions {
+
+	public function __construct(AVE $ave){
+		$this->ave = $ave;
+	}
 
 	public function getImageFromPath(string $path) : GdImage|bool|null {
 		if(!file_exists($path)) return null;
@@ -42,7 +48,7 @@ class MediaFunctions {
 				$image->clear();
 				return $w."x".$h;
 			}
-			catch(\Exception $e){
+			catch(Exception $e){
 				return $this->getVideoResolution($path);
 			}
 		}
@@ -64,18 +70,18 @@ class MediaFunctions {
 	}
 
 	public function getVideoFPS(string $path) : float {
-		exec("ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>nul", $output);
 		eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $output[0])).';');
 		return $fps;
 	}
 
 	public function getVideoResolution(string $path) : string {
-		exec("ffprobe -v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
 	public function getVideoDuration(string $path) : string {
-		exec("ffprobe -i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
+		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
 		$file_duration = trim($output[0]);
 		$h = $m = $s = 0;
 		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
@@ -83,7 +89,7 @@ class MediaFunctions {
 	}
 
 	public function getVideoDurationSeconds(string $path) : int {
-		exec("ffprobe -i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
+		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
 		$file_duration = trim($output[0]);
 		$h = $m = $s = 0;
 		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
@@ -111,7 +117,7 @@ class MediaFunctions {
 		$output_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME).".webp";
 		if(file_exists($output_file)) return true;
 		if(!file_exists($input_file)){
-			exec("mtn -w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
+			$this->ave->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
 			if(!file_exists($input_file)) return false;
 		}
 		$image = new Imagick();

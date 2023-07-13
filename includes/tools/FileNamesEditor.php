@@ -36,6 +36,7 @@ class FileNamesEditor {
 			' 9  - Remove keywords from file name',
 			' 10 - Insert string into file name',
 			' 11 - Replace keywords in file name',
+			' 12 - Extension change',
 		]);
 	}
 
@@ -55,6 +56,7 @@ class FileNamesEditor {
 			case '9': return $this->ToolRemoveKeywordsFromFileName();
 			case '10': return $this->ToolInsertStringIntoFileName();
 			case '11': return $this->ToolReplaceKeywordsInFileName();
+			case '12': return $this->ToolExtensionChange();
 		}
 		return false;
 	}
@@ -99,7 +101,7 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->ToolCheckSumAlgoName($this->params['algo']);
+		$algo = $this->ave->getHashAlghoritm(intval($this->params['algo']))['name'];
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
@@ -152,16 +154,6 @@ class FileNamesEditor {
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
 		return false;
-	}
-
-	public function ToolCheckSumAlgoName(string $mode) : string {
-		switch($mode){
-			case '0': return 'md5';
-			case '1': return 'sha256';
-			case '2': return 'crc32';
-			case '3': return 'whirlpool';
-		}
-		return 'md5';
 	}
 
 	public function ToolCheckSumGetPattern(string $mode, string $file, string $hash, int $file_id) : string {
@@ -379,12 +371,12 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->ToolCheckSumAlgoName($this->params['algo']);
+		$algo = $this->ave->getHashAlghoritm(intval($this->params['algo']))['name'];
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
@@ -451,7 +443,9 @@ class FileNamesEditor {
 				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
 				$name_new = $this->ave->get_file_path("$directory/$name.$extension.webp");
 				if($renamed && file_exists($name_old)){
-					if(!$this->ave->rename($name_old, $name_new)){
+					if($this->ave->rename($name_old, $name_new)){
+						$renamed = true;
+					} else {
 						$errors++;
 					}
 				}
@@ -459,7 +453,9 @@ class FileNamesEditor {
 				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME).".srt");
 				$name_new = $this->ave->get_file_path("$directory/$name.srt");
 				if($renamed && file_exists($name_old)){
-					if(!$this->ave->rename($name_old, $name_new)){
+					if($this->ave->rename($name_old, $name_new)){
+						$renamed = true;
+					} else {
 						$errors++;
 					}
 				}
@@ -498,13 +494,13 @@ class FileNamesEditor {
 				if(!file_exists($file)) continue 1;
 				$file_name = str_replace(['SEASON','EPISODE',' '], ['S','E',''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
 				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				} else if(preg_match("/\[S[0-9]{2}\.E[0-9]{1,3}\]/", $file_name, $mathes) == 1){
-					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0]);
+					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				} else if(preg_match("/(\[S0\.)(E[0-9]{1,3})\]/", $file_name, $mathes) == 1){
-					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2]);
+					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
 				} else {
 					$escaped_name = '';
 					$this->ave->write_error("FAILED GET SERIES ID \"$file\"");
@@ -611,12 +607,14 @@ class FileNamesEditor {
 			' 0   - Chinese to PinYin',
 			' 1   - Hiragama to Romaji',
 			' 2   - Katakana to Romaji',
+			' +   - To upper case',
+			' -   - To lower case',
 		]);
 
 		$line = strtoupper($this->ave->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
-		if(str_replace(['B', 'C', 'L', '0', '1', '2'], '', $line) != '') goto set_mode;
+		if(str_replace(['B', 'C', 'L', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
 			'basic_replace' => (strpos($line, 'B') !== false),
 			'basic_remove' => (strpos($line, 'C') !== false),
@@ -624,6 +622,8 @@ class FileNamesEditor {
 			'ChineseToPinYin' => (strpos($line, '0') !== false),
 			'HiragamaToRomaji' => (strpos($line, '1') !== false),
 			'KatakanaToRomaji' => (strpos($line, '2') !== false),
+			'UpperCase' => (strpos($line, '+') !== false),
+			'LowerCase' => (strpos($line, '-') !== false),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
@@ -664,6 +664,11 @@ class FileNamesEditor {
 				if($flags->ChineseToPinYin){
 					$escaped_name = $converter->stringToPinYin($escaped_name);
 				}
+				if($flags->UpperCase){
+					$escaped_name = mb_strtoupper($escaped_name);
+				} else if($flags->LowerCase){
+					$escaped_name = mb_strtolower($escaped_name);
+				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
 				if(empty($escaped_name)){
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
@@ -674,7 +679,7 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
+						if($this->ave->rename_case($file, $new_name)){
 							$progress++;
 						} else {
 							$errors++;
@@ -924,7 +929,7 @@ class FileNamesEditor {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
 		$files = $this->ave->getFiles($input, array_merge($video_extensions, $follow_extensions));
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 		foreach($files as $file){
 			if(!file_exists($file)) continue 1;
 			$file_name = pathinfo($file, PATHINFO_FILENAME);
@@ -1336,6 +1341,54 @@ class FileNamesEditor {
 				$this->ave->set_progress($progress, $errors);
 			}
 			$this->ave->progress($items, $total);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolExtensionChange() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("ExtensionChange");
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+
+		set_extension_old:
+		$extension_old = strtolower($this->ave->get_input(" Extension old: "));
+		if($extension_old == '#') return false;
+
+		$extension_new = $this->ave->get_input(" Extension new: ");
+		if($extension_new == '#') return false;
+
+		$this->ave->setup_folders($folders);
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->getFiles($folder, [$extension_old]);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME));
+				if(!empty($extension_new)) $new_name .= ".$extension_new";
+				if($this->ave->rename($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_progress($progress, $errors);
+			}
+			$this->ave->progress($items, $total);
+			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
 

@@ -31,6 +31,7 @@ class AveSettings {
 			' 4 - Open program folder',
 			' 5 - Check for updates',
 			' 6 - Restore default settings',
+			' 7 - Install .ave-php script support',
 		]);
 	}
 
@@ -45,6 +46,7 @@ class AveSettings {
 			case '4': return $this->ToolOpenProgramFolder();
 			case '5': return $this->ToolCheckForUpdates();
 			case '6': return $this->ToolRestoreDefaultSettings();
+			case '7': return $this->ToolInstallAvePHPScript();
 		}
 		return false;
 	}
@@ -120,6 +122,29 @@ class AveSettings {
 		} else {
 			$this->ave->echo(" Failed check for updates: ".$response['code']);
 			return false;
+		}
+		return false;
+	}
+
+	public function ToolInstallAvePHPScript() : bool {
+		$this->ave->clear();
+		if(!$this->ave->isAdmin()){
+			$this->ave->echo(" You must run ".$this->ave->app_name." as administrator to use this feature");
+			$this->ave->pause(" Press enter to back to menu");
+		} else {
+			if($this->ave->get_confirm(" Install .ave-php scripts support (Y/N): ")){
+				$program_path = realpath($this->ave->get_file_path($this->ave->path));
+				echo $program_path;
+				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\.ave-php /ve /d "'.$this->ave->app_name.'" /f'));
+				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP /ve /d "'.$this->ave->app_name.' Executable" /f'));
+				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\DefaultIcon /ve /d "\"'.$program_path.'\ave-php.ico\"" /f'));
+				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell /f'));
+				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open /f'));
+				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open\command /ve /d "\"'.$program_path.'\commands\AVE-PHP-SCRIPT.cmd\" \"%1\"" /f'));
+				$this->ave->pause(" Operation done, press enter to back to menu");
+			} else {
+				$this->ave->pause(" Operation aborted, press enter to back to menu");
+			}
 		}
 		return false;
 	}

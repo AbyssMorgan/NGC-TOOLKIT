@@ -23,10 +23,11 @@ class FileFunctions {
 		$this->ave->print_help([
 			' Actions:',
 			' 0 - Anti Duplicates',
-			' 1 - Extension Change',
-			' 2 - Validate CheckSum',
-			' 3 - Random file generator',
-			' 4 - Overwrite folders content',
+			' 1 - Validate CheckSum',
+			' 2 - Random file generator',
+			' 3 - Overwrite folders content',
+			' 4 - Move files with structure',
+			' 5 - Copy files with structure',
 		]);
 	}
 
@@ -35,10 +36,11 @@ class FileFunctions {
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->ToolAntiDuplicates();
-			case '1': return $this->ToolExtensionChange();
-			case '2': return $this->ToolValidateCheckSum();
-			case '3': return $this->ToolRandomFileGenerator();
-			case '4': return $this->ToolOverwriteFoldersContent();
+			case '1': return $this->ToolValidateCheckSum();
+			case '2': return $this->ToolRandomFileGenerator();
+			case '3': return $this->ToolOverwriteFoldersContent();
+			case '4': return $this->ToolMoveFilesWithStructure();
+			case '5': return $this->ToolCopyFilesWithStructure();
 		}
 		return false;
 	}
@@ -132,52 +134,6 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolExtensionChange() : bool {
-		$this->ave->clear();
-		$this->ave->set_subtool("ExtensionChange");
-		$line = $this->ave->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
-
-		$extension_old = strtolower($this->ave->get_input(" Extension old: "));
-		if($extension_old == '#') return false;
-
-		$extension_new = $this->ave->get_input(" Extension new: ");
-		if($extension_new == '#') return false;
-
-		$this->ave->setup_folders($folders);
-
-		$progress = 0;
-		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
-
-		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, [$extension_old]);
-			$items = 0;
-			$total = count($files);
-			foreach($files as $file){
-				$items++;
-				if(!file_exists($file)) continue 1;
-				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".$extension_new");
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
-					$errors++;
-				}
-				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
-			}
-			$this->ave->progress($items, $total);
-			unset($files);
-			$this->ave->set_folder_done($folder);
-		}
-
-		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
-		return false;
-	}
-
 	public function ToolValidateCheckSum() : bool {
 		$this->ave->set_subtool("ValidateCheckSum");
 
@@ -211,8 +167,9 @@ class FileFunctions {
 		if($line == '#') return false;
 		$folders = $this->ave->get_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->ToolValidateCheckSumAlgoName($this->params['algo']);
-		$algo_length = $this->ToolValidateCheckSumAlgoLength($this->params['algo']);
+
+		$algo = $this->ave->getHashAlghoritm(intval($this->params['algo']));
+
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
@@ -230,10 +187,10 @@ class FileFunctions {
 				if(!file_exists($file)) continue 1;
 				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
 				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
-				$hash = hash_file($algo, $file, false);
+				$hash = hash_file($algo['name'], $file, false);
 				$progress++;
 				if($this->params['mode'] == '0'){
-					$checksum_file = "$file.$algo";
+					$checksum_file = "$file.".$algo['name'];
 					if(!file_exists($checksum_file)){
 						$this->ave->write_error("FILE NOT FOUND \"$checksum_file\"");
 						$errors++;
@@ -248,17 +205,17 @@ class FileFunctions {
 					}
 				} else {
 					$len = strlen($file_name);
-					if($len < $algo_length){
+					if($len < $algo['length']){
 						$this->ave->write_error("INVALID FILE NAME \"$file\"");
 						$errors++;
 					} else {
-						if($len > $algo_length){
+						if($len > $algo['length']){
 							$start = strpos($file_name, '[');
 							if($start !== false){
 								$end = strpos($file_name, ']', $start);
 								$file_name = str_replace(' '.substr($file_name, $start, $end - $start + 1), '', $file_name);
 							}
-							$file_name = substr($file_name, strlen($file_name) - $algo_length, $algo_length);
+							$file_name = substr($file_name, strlen($file_name) - $algo['length'], $algo['length']);
 						}
 						if($file_name != $hash){
 							$this->ave->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $file_name");
@@ -279,26 +236,6 @@ class FileFunctions {
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
 		return false;
-	}
-
-	public function ToolValidateCheckSumAlgoName(string $mode) : string {
-		switch($mode){
-			case '0': return 'md5';
-			case '1': return 'sha256';
-			case '2': return 'crc32';
-			case '3': return 'whirlpool';
-		}
-		return 'md5';
-	}
-
-	public function ToolValidateCheckSumAlgoLength(string $mode) : int {
-		switch($mode){
-			case '0': return 32;
-			case '1': return 64;
-			case '2': return 8;
-			case '3': return 128;
-		}
-		return 32;
 	}
 
 	public function ToolRandomFileGenerator() : bool {
@@ -330,22 +267,8 @@ class FileFunctions {
 
 		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;
 
-		set_size:
-		$this->ave->clear();
-		$this->ave->print_help([
-			' Type integer and unit separate by space, example: 1 GB',
-			' Size units: B, KB, MB, GB, TB',
-		]);
-
-		$line = $this->ave->get_input(" Size: ");
-		if($line == '#') return false;
-		$size = explode(' ', $line);
-		if(!isset($size[1])) goto set_size;
-		$size[0] = preg_replace('/\D/', '', $size[0]);
-		if(empty($size[0])) goto set_size;
-		if(!in_array(strtoupper($size[1]), ['KB', 'MB', 'GB', 'TB'])) goto set_size;
-		$bytes = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1]);
-		if($bytes <= 0) goto set_size;
+		$bytes = $this->ave->get_size(" Size: ");
+		if(!$bytes) return false;
 
 		if(in_array($this->params['mode'], ['1', '2'])){
 			set_quantity:
@@ -518,6 +441,202 @@ class FileFunctions {
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolMoveFilesWithStructure() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("MoveFilesWithStructure");
+
+		set_input:
+		$line = $this->ave->get_input(" Input: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			$this->ave->echo(" Invalid input folder");
+			goto set_input;
+		}
+
+		set_output:
+		$line = $this->ave->get_input(" Output: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_output;
+		$output = $folders[0];
+
+		if($input == $output){
+			$this->ave->echo(" Output folder must be different than input folder");
+			goto set_output;
+		}
+
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
+			$this->ave->echo(" Invalid output folder");
+			goto set_output;
+		}
+
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		$this->ave->echo(" Empty for none, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Name filter: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$name_filter = null;
+		} else {
+			$name_filter = explode(" ", $line);
+		}
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		$files = $this->ave->getFiles($input, $extensions);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+			if(!is_null($filters)){
+				$can_move = false;
+				$name = pathinfo($file, PATHINFO_BASENAME);
+				foreach($filters as $filter){
+					if(strpos($name, $filter) !== false){
+						$can_move = true;
+						continue 1;
+					}
+				}
+			} else {
+				$can_move = true;
+			}
+			if(!$can_move){
+				$this->ave->progress($items, $total);
+				continue;
+			}
+			$new_name = str_replace($input, $output, $file);
+			if(file_exists($new_name)){
+				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
+				$errors++;
+			} else {
+				if($this->ave->rename($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
+				}
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+		}
+		$this->ave->progress($items, $total);
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolCopyFilesWithStructure() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("CopyFilesWithStructure");
+
+		set_input:
+		$line = $this->ave->get_input(" Input: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			$this->ave->echo(" Invalid input folder");
+			goto set_input;
+		}
+
+		set_output:
+		$line = $this->ave->get_input(" Output: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_folders($line);
+		if(!isset($folders[0])) goto set_output;
+		$output = $folders[0];
+
+		if($input == $output){
+			$this->ave->echo(" Output folder must be different than input folder");
+			goto set_output;
+		}
+
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
+			$this->ave->echo(" Invalid output folder");
+			goto set_output;
+		}
+
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		$this->ave->echo(" Empty for none, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Name filter: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$filters = null;
+		} else {
+			$filters = explode(" ", $line);
+		}
+
+		$progress = 0;
+		$errors = 0;
+		$this->ave->set_progress($progress, $errors);
+
+		$files = $this->ave->getFiles($input, $extensions);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+			if(!is_null($filters)){
+				$can_move = false;
+				$name = pathinfo($file, PATHINFO_BASENAME);
+				foreach($filters as $filter){
+					if(strpos($name, $filter) !== false){
+						$can_move = true;
+						continue 1;
+					}
+				}
+			} else {
+				$can_move = true;
+			}
+			if(!$can_move){
+				$this->ave->progress($items, $total);
+				continue;
+			}
+			$new_name = str_replace($input, $output, $file);
+			if(file_exists($new_name)){
+				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
+				$errors++;
+			} else {
+				if($this->ave->copy($file, $new_name)){
+					$progress++;
+				} else {
+					$errors++;
+				}
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_progress($progress, $errors);
+		}
+		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");

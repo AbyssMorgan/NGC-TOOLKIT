@@ -6,6 +6,7 @@ namespace App\Tools;
 
 use AVE;
 use Imagick;
+use Exception;
 
 use App\Dictionaries\MediaOrientation;
 use App\Services\MediaFunctions;
@@ -127,7 +128,7 @@ class MediaTools {
 					$this->ave->write_error("FILE ALREADY EXISTS \"$out\"");
 					$errors++;
 				} else {
-					exec("mkvmerge -o \"$out\" --no-audio --no-subtitles \"$file\" --no-video \"$audio\"");
+					$this->ave->exec("mkvmerge", "-o \"$out\" --no-audio --no-subtitles \"$file\" --no-video \"$audio\"");
 					if(!file_exists($out)){
 						$this->ave->write_error("FAILED MERGE \"$file\" + \"$audio\" INTO \"$out\"");
 						$errors++;
@@ -200,7 +201,7 @@ class MediaTools {
 				$this->ave->write_error("FILE NOT EXISTS \"$srt\"");
 				$errors++;
 			} else {
-				exec("mkvmerge -o \"$out\" --default-track 0 --sub-charset 0:UTF-8 --language 0:$lang \"$srt\" \"$file\"");
+				$this->ave->exec("mkvmerge", "-o \"$out\" --default-track 0 --sub-charset 0:UTF-8 --language 0:$lang \"$srt\" \"$file\"");
 				if(!file_exists($out)){
 					$this->ave->write_error("FAILED MERGE \"$file\" + \"$srt\" INTO \"$out\"");
 					$errors++;
@@ -260,7 +261,7 @@ class MediaTools {
 			goto set_output;
 		}
 
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$variants = explode(" ", $this->ave->config->get('AVE_AVATAR_GENERATOR_VARIANTS'));
@@ -331,7 +332,7 @@ class MediaTools {
 			goto set_input;
 		}
 
-		$media = new MediaFunctions();
+		$media = new MediaFunctions($this->ave);
 
 		$progress = 0;
 		$errors = 0;
@@ -509,7 +510,7 @@ class MediaTools {
 			try {
 				$image->writeImage($new_name);
 			}
-			catch(\Exception $e){
+			catch(Exception $e){
 				$this->ave->write_error($e->getMessage());
 			}
 			$image->destroy();
