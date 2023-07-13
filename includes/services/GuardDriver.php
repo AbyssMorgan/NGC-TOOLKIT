@@ -7,6 +7,7 @@ namespace App\Services;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use FilesystemIterator;
+use Exception;
 
 class GuardDriver {
 
@@ -105,7 +106,7 @@ class GuardDriver {
 					try {
 						$hash = strtoupper(hash_file('md5', $file));
 					}
-					catch (\Exception $e){
+					catch (Exception $e){
 						$hash = "#UNKNOWN";
 					}
 					if($this->data[$key][$file_name] != $hash){
@@ -144,7 +145,7 @@ class GuardDriver {
 				try {
 					$hash = strtoupper(hash_file('md5', $file));
 				}
-				catch (\Exception $e){
+				catch (Exception $e){
 					$hash = "#UNKNOWN";
 				}
 				if($this->data[$key][$file_name] != $hash){

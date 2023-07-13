@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Exception;
+
 class IniFile {
 
 	protected ?string $path;
@@ -205,7 +207,7 @@ class IniFile {
 				chmod($this->path, 0755);
 				unlink($this->path);
 			}
-			catch(\Exception $e){
+			catch(Exception $e){
 
 			}
 		}
