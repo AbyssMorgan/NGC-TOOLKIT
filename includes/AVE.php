@@ -24,7 +24,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.8.0";
+	public string $version = "1.8.1";
 	public string $utilities_version = "1.0.0";
 	public string $ave_utilities_path;
 

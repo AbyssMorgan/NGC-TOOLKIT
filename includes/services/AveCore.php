@@ -567,20 +567,20 @@ class AveCore {
 
 	public function get_size(string $name) : int|bool {
 		set_size:
-		$this->ave->clear();
-		$this->ave->print_help([
+		$this->clear();
+		$this->print_help([
 			' Type integer and unit separate by space, example: 1 GB',
 			' Size units: B, KB, MB, GB, TB',
 		]);
 
-		$line = $this->ave->get_input($name);
+		$line = $this->get_input($name);
 		if($line == '#') return false;
 		$size = explode(' ', $line);
 		if(!isset($size[1])) goto set_size;
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
 		if(!in_array(strtoupper($size[1]), ['B', 'KB', 'MB', 'GB', 'TB'])) goto set_size;
-		$bytes = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1]);
+		$bytes = $this->sizeUnitToBytes(intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 		return $bytes;
 	}
