@@ -59,7 +59,7 @@ class CheckFileIntegrity {
 		set_input:
 		$line = $this->ave->get_input(" Input (Folder): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -71,7 +71,7 @@ class CheckFileIntegrity {
 		set_output:
 		$line = $this->ave->get_input(" Output (Folder): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -84,7 +84,7 @@ class CheckFileIntegrity {
 		$line = $this->ave->get_input(" Name: ");
 		if($line == '#') return false;
 
-		$pattern_file = $this->ave->get_folders($line);
+		$pattern_file = $this->ave->get_input_folders($line);
 		if(!isset($pattern_file[0])) goto set_name;
 		$pattern_file = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pattern_file[0]).".ave-pat";
 
@@ -94,7 +94,7 @@ class CheckFileIntegrity {
 		set_folders:
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		foreach($this->ave->get_folders($line) as $folder){
+		foreach($this->ave->get_input_folders($line) as $folder){
 			$pattern->addFolders(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
 		}
 
@@ -105,7 +105,7 @@ class CheckFileIntegrity {
 		set_files:
 		$line = $this->ave->get_input(" Files: ");
 		if($line == '#') return false;
-		foreach($this->ave->get_folders($line) as $file){
+		foreach($this->ave->get_input_folders($line) as $file){
 			$pattern->addFiles(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
 		}
 
@@ -131,7 +131,7 @@ class CheckFileIntegrity {
 		set_pattern:
 		$line = $this->ave->get_input(" Pattern (.ave-pat): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_pattern;
 		$pattern_file = $folders[0];
 
@@ -176,7 +176,7 @@ class CheckFileIntegrity {
 		set_guard:
 		$line = $this->ave->get_input(" Guard (.ave-guard): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_guard;
 		$guard_file = $folders[0];
 
@@ -250,7 +250,7 @@ class CheckFileIntegrity {
 		set_guard:
 		$line = $this->ave->get_input(" Guard (.ave-guard): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_guard;
 		$guard_file = $folders[0];
 
@@ -325,7 +325,7 @@ class CheckFileIntegrity {
 		set_guard:
 		$line = $this->ave->get_input(" Guard (.ave-guard): ");
 		if($line == '#') return null;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_guard;
 		$guard_file = $folders[0];
 

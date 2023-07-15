@@ -47,7 +47,7 @@ class DirectoryFunctions {
 		$this->ave->set_subtool("DeleteEmptyFolders");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -57,7 +57,7 @@ class DirectoryFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = array_reverse($this->ave->getFolders($folder));
+			$files = array_reverse($this->ave->get_folders($folder));
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -89,7 +89,7 @@ class DirectoryFunctions {
 		$this->ave->set_subtool("ForceLoadIcon");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -99,7 +99,7 @@ class DirectoryFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFolders($folder);
+			$files = $this->ave->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -140,7 +140,7 @@ class DirectoryFunctions {
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -152,7 +152,7 @@ class DirectoryFunctions {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$this->ave->write_log($files);
 			$items = 0;
 			$total = count($files);
@@ -193,7 +193,7 @@ class DirectoryFunctions {
 		set_input:
 		$line = $this->ave->get_input(" Input (Folder): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -205,7 +205,7 @@ class DirectoryFunctions {
 		set_output:
 		$line = $this->ave->get_input(" Output (Folder): ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -218,7 +218,7 @@ class DirectoryFunctions {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 
-		$folders = $this->ave->getFolders($input);
+		$folders = $this->ave->get_folders($input);
 		$items = 0;
 		$total = count($folders);
 		foreach($folders as $folder){

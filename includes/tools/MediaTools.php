@@ -56,7 +56,7 @@ class MediaTools {
 		set_video:
 		$line = $this->ave->get_input(" Video: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_video;
 		$video = $folders[0];
 
@@ -68,7 +68,7 @@ class MediaTools {
 		set_audio:
 		$line = $this->ave->get_input(" Audio: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_audio;
 		$audio = $folders[0];
 
@@ -80,7 +80,7 @@ class MediaTools {
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -101,12 +101,12 @@ class MediaTools {
 		$files_video = [];
 		$files_audio = [];
 
-		$files = $this->ave->getFiles($video, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
+		$files = $this->ave->get_files($video, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
 		foreach($files as $file){
 			$files_video[pathinfo($file, PATHINFO_FILENAME)] = $file;
 		}
 
-		$files = $this->ave->getFiles($audio, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
+		$files = $this->ave->get_files($audio, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
 		foreach($files as $file){
 			$files_audio[pathinfo($file, PATHINFO_FILENAME)] = $file;
 		}
@@ -155,7 +155,7 @@ class MediaTools {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -167,7 +167,7 @@ class MediaTools {
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -186,7 +186,7 @@ class MediaTools {
 		$this->ave->set_progress($progress, $errors);
 
 		$lang = $this->ave->config->get('AVE_SUBTITLES_LANGUAGE');
-		$files = $this->ave->getFiles($input, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
+		$files = $this->ave->get_files($input, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -227,7 +227,7 @@ class MediaTools {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -239,7 +239,7 @@ class MediaTools {
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -265,7 +265,7 @@ class MediaTools {
 
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$variants = explode(" ", $this->ave->config->get('AVE_AVATAR_GENERATOR_VARIANTS'));
-		$files = $this->ave->getFiles($input, $image_extensions);
+		$files = $this->ave->get_files($input, $image_extensions);
 
 		$progress = 0;
 		$errors = 0;
@@ -323,7 +323,7 @@ class MediaTools {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -341,7 +341,7 @@ class MediaTools {
 		$this->ave->write_data('"File path";"Dir name";"File name";"Extension";"Resolution";"Quality";"Duration";"Size";"Orientation"');
 
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
-		$files = $this->ave->getFiles($input, $video_extensions);
+		$files = $this->ave->get_files($input, $video_extensions);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -378,7 +378,7 @@ class MediaTools {
 				'"'.$resolution.'"',
 				'"'.$quality.'"',
 				'"'.$media->getVideoDuration($file).'"',
-				'"'.$this->ave->formatBytes(filesize($file)).'"',
+				'"'.$this->ave->format_bytes(filesize($file)).'"',
 				'"'.$media->getMediaOrientationName($orientation).'"',
 			];
 			$this->ave->write_data(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
@@ -419,7 +419,7 @@ class MediaTools {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -431,7 +431,7 @@ class MediaTools {
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -449,7 +449,7 @@ class MediaTools {
 		$errors = 0;
 
 		$extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
-		$files = $this->ave->getFiles($input);
+		$files = $this->ave->get_files($input);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){

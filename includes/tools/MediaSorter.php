@@ -54,7 +54,7 @@ class MediaSorter {
 		$this->ave->set_subtool("SortExtension");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -63,7 +63,7 @@ class MediaSorter {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -112,7 +112,7 @@ class MediaSorter {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
@@ -122,7 +122,7 @@ class MediaSorter {
 		$extensions = array_merge($image_extensions, $video_extensions);
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -190,7 +190,7 @@ class MediaSorter {
 		$this->ave->set_subtool("SortGifAnimated");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -202,7 +202,7 @@ class MediaSorter {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, ['gif']);
+			$files = $this->ave->get_files($folder, ['gif']);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -276,7 +276,7 @@ class MediaSorter {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -286,7 +286,7 @@ class MediaSorter {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -334,7 +334,7 @@ class MediaSorter {
 		$this->ave->set_subtool("SortImagesColor");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -345,7 +345,7 @@ class MediaSorter {
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $image_extensions);
+			$files = $this->ave->get_files($folder, $image_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -380,7 +380,7 @@ class MediaSorter {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -395,7 +395,7 @@ class MediaSorter {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
-		$files = $this->ave->getFiles($input, $video_extensions);
+		$files = $this->ave->get_files($input, $video_extensions);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -478,13 +478,13 @@ class MediaSorter {
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_interval;
 		if(!in_array(strtolower($size[1]), ['sec', 'min', 'hour', 'day'])) goto set_interval;
-		$interval = $this->ave->timeUnitToSeconds(intval($size[0]), $size[1]);
+		$interval = $this->ave->time_unit_to_seconds(intval($size[0]), $size[1]);
 		if($interval <= 0) goto set_interval;
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
@@ -492,7 +492,7 @@ class MediaSorter {
 		$extensions = array_merge(explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO')), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO')));
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){

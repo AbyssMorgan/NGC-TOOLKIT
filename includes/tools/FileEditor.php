@@ -52,7 +52,7 @@ class FileEditor {
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
@@ -67,7 +67,7 @@ class FileEditor {
 		$replacements = [];
 		$line = $this->ave->get_input(" Keywords file: ");
 		if($line == '#') return false;
-		$line = $this->ave->get_folders($line);
+		$line = $this->ave->get_input_folders($line);
 		if(!isset($line[0])) goto set_keyword_file;
 		$input = $line[0];
 
@@ -87,7 +87,7 @@ class FileEditor {
 			$i++;
 			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
 			if(empty(trim($line))) continue;
-			$replace = $this->ave->get_folders($line, false);
+			$replace = $this->ave->get_input_folders($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->ave->echo(" Failed parse replacement in line $i content: '$line'");
 				$errors++;
@@ -107,7 +107,7 @@ class FileEditor {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -146,7 +146,7 @@ class FileEditor {
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
@@ -161,7 +161,7 @@ class FileEditor {
 		$keywords = [];
 		$line = $this->ave->get_input(" Keywords file: ");
 		if($line == '#') return false;
-		$line = $this->ave->get_folders($line);
+		$line = $this->ave->get_input_folders($line);
 		if(!isset($line[0])) goto set_keyword_file;
 		$input = $line[0];
 
@@ -188,7 +188,7 @@ class FileEditor {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -228,7 +228,7 @@ class FileEditor {
 		set_input:
 		$line = $this->ave->get_input(" File: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$file = $folders[0];
 
@@ -237,7 +237,7 @@ class FileEditor {
 			goto set_input;
 		}
 
-		if(!$this->ave->isTextFile($file)){
+		if(!$this->ave->is_text_file($file)){
 			if(!$this->ave->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 
@@ -306,7 +306,7 @@ class FileEditor {
 		set_input:
 		$line = $this->ave->get_input(" File: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$file = $folders[0];
 
@@ -315,7 +315,7 @@ class FileEditor {
 			goto set_input;
 		}
 
-		if(!$this->ave->isTextFile($file)){
+		if(!$this->ave->is_text_file($file)){
 			if(!$this->ave->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 
@@ -381,13 +381,13 @@ class FileEditor {
 		$this->ave->clear();
 		$this->ave->set_subtool("SplitFileBySize");
 
-		$bytes = $this->ave->get_size(" Size: ");
+		$bytes = $this->ave->get_input_bytes_size(" Size: ");
 		if(!$bytes) return false;
 
 		set_input:
 		$line = $this->ave->get_input(" File: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$file = $folders[0];
 
@@ -432,7 +432,7 @@ class FileEditor {
 		set_input:
 		$line = $this->ave->get_input(" File: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$file = $folders[0];
 
@@ -441,7 +441,7 @@ class FileEditor {
 			goto set_input;
 		}
 
-		if(!$this->ave->isTextFile($file)){
+		if(!$this->ave->is_text_file($file)){
 			if(!$this->ave->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 

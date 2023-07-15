@@ -74,7 +74,7 @@ class AVE extends AveCore {
 		}
 
 		if(file_exists($old_mysql_config)){
-			$files = $this->getFiles($old_mysql_config, ['ini']);
+			$files = $this->get_files($old_mysql_config, ['ini']);
 			foreach($files as $file){
 				$this->rename($file, $this->get_file_path("$new_mysql_config/".pathinfo($file, PATHINFO_BASENAME)), false);
 			}

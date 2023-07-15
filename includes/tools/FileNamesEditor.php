@@ -99,9 +99,9 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->ave->getHashAlghoritm(intval($this->params['algo']))['name'];
+		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']))['name'];
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
@@ -109,7 +109,7 @@ class FileNamesEditor {
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -236,7 +236,7 @@ class FileNamesEditor {
 		$prefix_id = $this->ToolNumberGetPrefixID();
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
-		$files = $this->ave->getFiles($folder, array_merge($image_extensions, $video_extensions));
+		$files = $this->ave->get_files($folder, array_merge($image_extensions, $video_extensions));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -290,7 +290,7 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
@@ -309,7 +309,7 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
@@ -369,9 +369,9 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$algo = $this->ave->getHashAlghoritm(intval($this->params['algo']))['name'];
+		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']))['name'];
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
@@ -381,7 +381,7 @@ class FileNamesEditor {
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = $this->ave->getFiles($folder, $video_extensions);
+			$files = $this->ave->get_files($folder, $video_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -478,7 +478,7 @@ class FileNamesEditor {
 		$this->ave->set_subtool("GenerateSeriesName");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
@@ -486,7 +486,7 @@ class FileNamesEditor {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $video_extensions);
+			$files = $this->ave->get_files($folder, $video_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -544,14 +544,14 @@ class FileNamesEditor {
 		]);
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -641,14 +641,14 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -705,7 +705,7 @@ class FileNamesEditor {
 		$this->ave->set_subtool("RemoveYouTubeQualityTag");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
@@ -714,7 +714,7 @@ class FileNamesEditor {
 		$audio_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, array_merge($video_extensions, $audio_extensions));
+			$files = $this->ave->get_files($folder, array_merge($video_extensions, $audio_extensions));
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -809,7 +809,7 @@ class FileNamesEditor {
 		]);
 		$line = $this->ave->get_input(" Folder: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -835,7 +835,7 @@ class FileNamesEditor {
 
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
-		$files = $this->ave->getFiles($input, array_merge($video_extensions, $follow_extensions));
+		$files = $this->ave->get_files($input, array_merge($video_extensions, $follow_extensions));
 		$items = 0;
 		$total = count($files);
 
@@ -891,7 +891,7 @@ class FileNamesEditor {
 		]);
 		$line = $this->ave->get_input(" Folder: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -928,7 +928,7 @@ class FileNamesEditor {
 		$list = [];
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
-		$files = $this->ave->getFiles($input, array_merge($video_extensions, $follow_extensions));
+		$files = $this->ave->get_files($input, array_merge($video_extensions, $follow_extensions));
 		$media = new MediaFunctions($this->ave);
 		foreach($files as $file){
 			if(!file_exists($file)) continue 1;
@@ -1004,7 +1004,7 @@ class FileNamesEditor {
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
@@ -1029,7 +1029,7 @@ class FileNamesEditor {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -1082,7 +1082,7 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
@@ -1110,7 +1110,7 @@ class FileNamesEditor {
 			set_keyword_file:
 			$line = $this->ave->get_input(" Keywords file: ");
 			if($line == '#') return false;
-			$line = $this->ave->get_folders($line);
+			$line = $this->ave->get_input_folders($line);
 			if(!isset($line[0])) goto set_keyword_file;
 			$input = $line[0];
 
@@ -1138,7 +1138,7 @@ class FileNamesEditor {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -1196,7 +1196,7 @@ class FileNamesEditor {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
@@ -1213,7 +1213,7 @@ class FileNamesEditor {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -1261,7 +1261,7 @@ class FileNamesEditor {
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
@@ -1276,7 +1276,7 @@ class FileNamesEditor {
 		$replacements = [];
 		$line = $this->ave->get_input(" Keywords file: ");
 		if($line == '#') return false;
-		$line = $this->ave->get_folders($line);
+		$line = $this->ave->get_input_folders($line);
 		if(!isset($line[0])) goto set_keyword_file;
 		$input = $line[0];
 
@@ -1296,7 +1296,7 @@ class FileNamesEditor {
 			$i++;
 			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
 			if(empty(trim($line))) continue;
-			$replace = $this->ave->get_folders($line, false);
+			$replace = $this->ave->get_input_folders($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->ave->echo(" Failed parse replacement in line $i content: '$line'");
 				$errors++;
@@ -1316,7 +1316,7 @@ class FileNamesEditor {
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, $extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -1354,7 +1354,7 @@ class FileNamesEditor {
 		$this->ave->set_subtool("ExtensionChange");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		set_extension_old:
 		$extension_old = strtolower($this->ave->get_input(" Extension old: "));
@@ -1371,7 +1371,7 @@ class FileNamesEditor {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder, [$extension_old]);
+			$files = $this->ave->get_files($folder, [$extension_old]);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){

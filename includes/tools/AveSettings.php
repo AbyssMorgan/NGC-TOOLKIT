@@ -128,13 +128,12 @@ class AveSettings {
 
 	public function ToolInstallAvePHPScript() : bool {
 		$this->ave->clear();
-		if(!$this->ave->isAdmin()){
+		if(!$this->ave->is_admin()){
 			$this->ave->echo(" You must run ".$this->ave->app_name." as administrator to use this feature");
 			$this->ave->pause(" Press enter to back to menu");
 		} else {
 			if($this->ave->get_confirm(" Install .ave-php scripts support (Y/N): ")){
 				$program_path = realpath($this->ave->get_file_path($this->ave->path));
-				echo $program_path;
 				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\.ave-php /ve /d "'.$this->ave->app_name.'" /f'));
 				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP /ve /d "'.$this->ave->app_name.' Executable" /f'));
 				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\DefaultIcon /ve /d "\"'.$program_path.'\ave-php.ico\"" /f'));

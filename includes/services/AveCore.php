@@ -12,7 +12,7 @@ use DirectoryIterator;
 
 class AveCore {
 
-	public int $core_version = 4;
+	public int $core_version = 5;
 
 	public IniFile $config;
 
@@ -29,6 +29,7 @@ class AveCore {
 	public string $subtool_name;
 	public array $folders_state = [];
 	public $tool;
+	public array $unit_sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 	public function __construct(array $arguments){
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
@@ -106,7 +107,7 @@ class AveCore {
 	}
 
 	public function clear() : void {
-		$this->cls();
+		if($this->windows) popen('cls', 'w');
 		if($this->config->get('AVE_SHOW_LOGO', false) && !empty($this->logo)){
 			echo "$this->logo\r\n";
 		} else {
@@ -141,7 +142,7 @@ class AveCore {
 		}
 	}
 
-	public function getHashFromIDX(string $path, array &$keys, bool $progress) : int {
+	public function get_hash_from_idx(string $path, array &$keys, bool $progress) : int {
 		if(!file_exists($path)) return 0;
 		$cnt = 0;
 		$size = filesize($path);
@@ -158,25 +159,19 @@ class AveCore {
 		return $cnt;
 	}
 
-	public function unitSizes() : array {
-		return ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-	}
-
-	public function formatBytes(int $bytes, int $precision = 2) : string {
+	public function format_bytes(int $bytes, int $precision = 2) : string {
 		if($bytes <= 0) return '0.00 B';
 		$i = floor(log($bytes)/log(1024));
-		$sizes = $this->unitSizes();
-		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.($sizes[$i] ?? '');
+		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.($this->unit_sizes[$i] ?? '');
 	}
 
-	public function sizeUnitToBytes(int $value, string $unit) : int {
-		$sizes = $this->unitSizes();
-		$index = array_search(strtoupper($unit), $sizes);
+	public function size_unit_to_bytes(int $value, string $unit) : int {
+		$index = array_search(strtoupper($unit), $this->unit_sizes);
 		if($index === false) return -1;
 		return intval($value * pow(1024, $index));
 	}
 
-	public function timeUnitToSeconds(int $value, string $unit) : int {
+	public function time_unit_to_seconds(int $value, string $unit) : int {
 		switch(strtolower($unit)){
 			case 'sec': return $value;
 			case 'min': return $value * 60;
@@ -186,7 +181,7 @@ class AveCore {
 		return 0;
 	}
 
-	public function getFiles(string $path, array|null $extensions = null, array|null $except = null) : array {
+	public function get_files(string $path, array|null $extensions = null, array|null $except = null) : array {
 		if(!file_exists($path)) return [];
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
@@ -201,14 +196,14 @@ class AveCore {
 		return $data;
 	}
 
-	public function getFolders(string $path) : array {
+	public function get_folders(string $path) : array {
 		if(!file_exists($path)) return [];
 		$data = [];
 		$files = new DirectoryIterator($path);
 		array_push($data, $path);
 		foreach($files as $file){
 			if($file->isDir() && !$file->isDot()){
-				$data = array_merge($data, $this->getFolders($file->getRealPath()));
+				$data = array_merge($data, $this->get_folders($file->getRealPath()));
 			}
 		}
 		return $data;
@@ -369,7 +364,7 @@ class AveCore {
 	}
 
 	public function delete_files(string $path, array|null $extensions = null, array|null $except = null) : void {
-		$files = $this->getFiles($path, $extensions, $except);
+		$files = $this->get_files($path, $extensions, $except);
 		foreach($files as $file){
 			$this->unlink($file);
 		}
@@ -382,12 +377,6 @@ class AveCore {
 	public function title(string $title) : void {
 		if($this->windows){
 			system("TITLE ".$this->cmd_escape($title));
-		}
-	}
-
-	public function cls() : void {
-		if($this->windows){
-			popen('cls', 'w');
 		}
 	}
 
@@ -415,7 +404,7 @@ class AveCore {
 		}
 	}
 
-	public function get_folders(string $string, bool $unique = true) : array {
+	public function get_input_folders(string $string, bool $unique = true) : array {
 		$string = trim($string);
 		$folders = [];
 
@@ -519,7 +508,7 @@ class AveCore {
 		return str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
 	}
 
-	public function getComputerName() : string {
+	public function get_computer_name() : string {
 		if($this->windows){
 			return $this->get_variable("%COMPUTERNAME%");
 		} else {
@@ -540,7 +529,7 @@ class AveCore {
 		return $output;
 	}
 
-	public function getHashAlghoritm(int $id) : array {
+	public function get_hash_alghoritm(int $id) : array {
 		switch($id){
 			case 0: return ['name' => 'md5', 'length' => 32];
 			case 1: return ['name' => 'sha256', 'length' => 64];
@@ -550,7 +539,7 @@ class AveCore {
 		return ['name' => 'md5', 'length' => 32];
 	}
 
-	public function isTextFile(string $path) : bool {
+	public function is_text_file(string $path) : bool {
 		if(!file_exists($path)) return false;
 		$finfo = finfo_open(FILEINFO_MIME);
 		return (substr(finfo_file($finfo, $path), 0, 4) == 'text');
@@ -561,11 +550,11 @@ class AveCore {
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 
-	public function isAdmin() : bool {
+	public function is_admin() : bool {
 		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
 	}
 
-	public function get_size(string $name) : int|bool {
+	public function get_bytes_size(string $name) : int|bool {
 		set_size:
 		$this->clear();
 		$this->print_help([
@@ -580,7 +569,7 @@ class AveCore {
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
 		if(!in_array(strtoupper($size[1]), ['B', 'KB', 'MB', 'GB', 'TB'])) goto set_size;
-		$bytes = $this->sizeUnitToBytes(intval($size[0]), $size[1]);
+		$bytes = $this->size_unit_to_bytes(intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 		return $bytes;
 	}

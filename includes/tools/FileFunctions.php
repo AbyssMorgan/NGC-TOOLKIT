@@ -71,7 +71,7 @@ class FileFunctions {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 
 		$this->ave->setup_folders($folders);
 
@@ -84,12 +84,12 @@ class FileFunctions {
 			if(!file_exists($folder)) continue;
 			$extension = strtolower(pathinfo($folder, PATHINFO_EXTENSION));
 			if(is_file($folder)){
-				$progress += $this->ave->getHashFromIDX($folder, $keys, true);
+				$progress += $this->ave->get_hash_from_idx($folder, $keys, true);
 				$this->ave->set_progress($progress, $errors);
 				$this->ave->set_folder_done($folder);
 				continue;
 			}
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -97,7 +97,7 @@ class FileFunctions {
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == 'idx' && $this->ave->config->get('AVE_LOAD_IDX_CHECKSUM')){
-					$progress += $this->ave->getHashFromIDX($file, $keys, false);
+					$progress += $this->ave->get_hash_from_idx($file, $keys, false);
 					$this->ave->set_progress($progress, $errors);
 					continue 1;
 				}
@@ -165,10 +165,10 @@ class FileFunctions {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 
-		$algo = $this->ave->getHashAlghoritm(intval($this->params['algo']));
+		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']));
 
 		$progress = 0;
 		$errors = 0;
@@ -179,7 +179,7 @@ class FileFunctions {
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = $this->ave->getFiles($folder, null, $except_extensions);
+			$files = $this->ave->get_files($folder, null, $except_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -242,7 +242,7 @@ class FileFunctions {
 		$this->ave->set_subtool("RandomFileGenerator");
 
 		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1] ?? '?');
+		$write_buffer = $this->ave->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->ave->clear();
 			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
@@ -267,7 +267,7 @@ class FileFunctions {
 
 		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;
 
-		$bytes = $this->ave->get_size(" Size: ");
+		$bytes = $this->ave->get_input_bytes_size(" Size: ");
 		if(!$bytes) return false;
 
 		if(in_array($this->params['mode'], ['1', '2'])){
@@ -286,7 +286,7 @@ class FileFunctions {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -297,24 +297,24 @@ class FileFunctions {
 
 		switch($this->params['mode']){
 			case '0': {
-				$this->ave->print_help([" Creating single file of size ".$this->ave->formatBytes($bytes, 0)]);
+				$this->ave->print_help([" Creating single file of size ".$this->ave->format_bytes($bytes, 0)]);
 				$per_file_size = $bytes;
 				break;
 			}
 			case '1': {
-				$this->ave->print_help([" Creating $quantity files of size ".$this->ave->formatBytes($bytes, 0)." in total ".$this->ave->formatBytes($bytes * $quantity, 0)]);
+				$this->ave->print_help([" Creating $quantity files of size ".$this->ave->format_bytes($bytes, 0)." in total ".$this->ave->format_bytes($bytes * $quantity, 0)]);
 				$per_file_size = $bytes;
 				break;
 			}
 			case '2': {
-				$this->ave->print_help([" Creating $quantity files of size ".$this->ave->formatBytes(intval(floor($bytes / $quantity)), 0)." in total ".$this->ave->formatBytes($bytes, 0)]);
+				$this->ave->print_help([" Creating $quantity files of size ".$this->ave->format_bytes(intval(floor($bytes / $quantity)), 0)." in total ".$this->ave->format_bytes($bytes, 0)]);
 				$per_file_size = intval(floor($bytes / $quantity));
 				break;
 			}
 		}
 
 		$small_mode = $per_file_size < $write_buffer;
-		$size_text = $this->ave->formatBytes($per_file_size);
+		$size_text = $this->ave->format_bytes($per_file_size);
 		for($i = 1; $i <= $quantity; $i++){
 			$file_path = $this->ave->get_file_path($output."/AVE-RANDOM-".hash('md5', uniqid().$i).".tmp");
 			if(file_exists($file_path)) $this->ave->unlink($file_path);
@@ -380,7 +380,7 @@ class FileFunctions {
 		$this->ave->set_subtool("OverwriteFoldersContent");
 
 		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->ave->sizeUnitToBytes(intval($size[0]), $size[1] ?? '?');
+		$write_buffer = $this->ave->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->ave->clear();
 			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
@@ -389,14 +389,14 @@ class FileFunctions {
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$progress = 0;
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->getFiles($folder);
+			$files = $this->ave->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -454,7 +454,7 @@ class FileFunctions {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -466,7 +466,7 @@ class FileFunctions {
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -502,7 +502,7 @@ class FileFunctions {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 
-		$files = $this->ave->getFiles($input, $extensions);
+		$files = $this->ave->get_files($input, $extensions);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -552,7 +552,7 @@ class FileFunctions {
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_input;
 		$input = $folders[0];
 
@@ -564,7 +564,7 @@ class FileFunctions {
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
 		if($line == '#') return false;
-		$folders = $this->ave->get_folders($line);
+		$folders = $this->ave->get_input_folders($line);
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
@@ -600,7 +600,7 @@ class FileFunctions {
 		$errors = 0;
 		$this->ave->set_progress($progress, $errors);
 
-		$files = $this->ave->getFiles($input, $extensions);
+		$files = $this->ave->get_files($input, $extensions);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
