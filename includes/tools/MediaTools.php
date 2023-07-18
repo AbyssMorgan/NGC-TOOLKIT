@@ -472,41 +472,48 @@ class MediaTools {
 				}
 			}
 			$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME));
-			if(file_exists($new_name)){
-				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
-				$errors++;
-				continue;
-			}
 			$image = new Imagick($file);
 			if(!$image->valid()){
 				$this->ave->write_error("FAILED READ IMAGE \"$file\" BY IMAGICK");
 				$errors++;
 				continue;
 			}
+			$source_extension = pathinfo($file, PATHINFO_EXTENSION);
 			switch(intval($this->params['mode'])){
 				case 0: {
 					$image->setImageFormat('webp');
-					$image->setOption('webp:lossless', 'true');
+					if($source_extension == 'png'){
+						$image->setOption('webp:lossless', 'true');
+						$image->setImageCompressionQuality(100);
+					}
 					$new_name .= ".webp";
 					break;
 				}
 				case 1: {
 					$image->setImageFormat('jpeg');
+					$image->setImageCompressionQuality(100);
 					$new_name .= ".jpg";
 					break;
 				}
 				case 2: {
 					$image->setImageFormat('png');
+					$image->setImageCompressionQuality(100);
 					$new_name .= ".png";
 					break;
 				}
 				case 3: {
 					$image->setImageFormat('gif');
+					$image->setImageCompressionQuality(100);
 					$new_name .= ".gif";
 					break;
 				}
 			}
-			$image->setImageCompressionQuality(100);
+			if(file_exists($new_name)){
+				$image->destroy();
+				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
+				$errors++;
+				continue;
+			}
 			try {
 				$image->writeImage($new_name);
 			}

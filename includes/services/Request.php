@@ -36,6 +36,10 @@ class Request {
 		$this->options = $options;
 	}
 
+	public function setOption(int $option, mixed $value) : void {
+		$this->options[$option] = $value;
+	}
+
 	public function get(string $url, array $data = [], bool $follow = false) : array {
 		return $this->request($url, 'GET', $data, $follow);
 	}

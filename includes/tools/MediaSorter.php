@@ -507,7 +507,8 @@ class MediaSorter {
 				}
 				$end = str_replace(":", "_", $media->SecToTime(intval($interval * ($multiplier + 1))));
 				$directory = $this->ave->get_file_path("$folder/$start - $end");
-				if($this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
+				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
+				if($this->ave->rename($file, $new_name)){
 					$renamed = true;
 					$progress++;
 				} else {
@@ -515,6 +516,9 @@ class MediaSorter {
 					$errors++;
 				}
 				if($renamed){
+					$name = pathinfo($file, PATHINFO_FILENAME);
+					$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
 					$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
 						if(file_exists("$file.$a")){
@@ -537,6 +541,8 @@ class MediaSorter {
 							$errors++;
 						}
 					}
+
+					$this->ave->pause('debug');
 				}
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);

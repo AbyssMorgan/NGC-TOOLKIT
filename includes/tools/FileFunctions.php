@@ -493,9 +493,9 @@ class FileFunctions {
 		$line = $this->ave->get_input(" Name filter: ");
 		if($line == '#') return false;
 		if(empty($line)){
-			$name_filter = null;
+			$filters = null;
 		} else {
-			$name_filter = explode(" ", $line);
+			$filters = explode(" ", $line);
 		}
 
 		$progress = 0;
