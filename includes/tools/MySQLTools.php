@@ -324,7 +324,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Create backup for table $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			if($ini->get('BACKUP_TYPE_STRUCTURE')){
 				$errors_structure = $backup->backupTableStructure($item);
 			}
@@ -335,128 +335,158 @@ class MySQLTools {
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 			$this->ave->set_progress_ex('Table', $progress, $total);
 		}
 
-		$items = $backup->getViews();
+		try {
+			$items = $backup->getViews();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get views");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('View', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Create backup for view $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
 			$errors = $backup->backupView($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
 			}
 			$this->ave->set_progress_ex('View', $progress, $total);
 		}
 
-		$items = $backup->getFunctions();
+		try {
+			$items = $backup->getFunctions();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get functions");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Function', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Create backup for function $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
 			$errors = $backup->backupFunction($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
 			}
 			$this->ave->set_progress_ex('Function', $progress, $total);
 		}
 
-		$items = $backup->getProcedures();
+		try {
+			$items = $backup->getProcedures();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get procedures");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Procedure', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Create backup for procedure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
 			$errors = $backup->backupProcedure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
 			}
 			$this->ave->set_progress_ex('Procedure', $progress, $total);
 		}
 
-		$items = $backup->getEvents();
+		try {
+			$items = $backup->getEvents();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get events");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Event', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Create backup for event $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
 			$errors = $backup->backupEvent($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
 			}
 			$this->ave->set_progress_ex('Event', $progress, $total);
 		}
 
-		$items = $backup->getTriggers();
+		try {
+			$items = $backup->getTriggers();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get triggers");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Trigger', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Create backup for trigger $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
 			$errors = $backup->backupTrigger($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
 			}
 			$this->ave->set_progress_ex('Trigger', $progress, $total);
 		}
@@ -575,18 +605,18 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone table Structure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			$errors = $backup->cloneTableStructure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 			$this->ave->set_progress_ex('Table Structure', $progress, $total);
 		}
@@ -597,133 +627,163 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone table data $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			$errors = $backup->cloneTableData($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 			$this->ave->set_progress_ex('Table Data', $progress, $total);
 		}
 
-		$items = $backup->getViews();
+		try {
+			$items = $backup->getViews();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get views");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('View', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone view $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
 			$errors = $backup->cloneView($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
 			}
 			$this->ave->set_progress_ex('View', $progress, $total);
 		}
 
-		$items = $backup->getFunctions();
+		try {
+			$items = $backup->getFunctions();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get functions");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Function', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone function $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
 			$errors = $backup->cloneFunction($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
 			}
 			$this->ave->set_progress_ex('Function', $progress, $total);
 		}
 
-		$items = $backup->getProcedures();
+		try {
+			$items = $backup->getProcedures();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get procedures");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Procedure', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone procedure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
 			$errors = $backup->cloneProcedure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
 			}
 			$this->ave->set_progress_ex('Procedure', $progress, $total);
 		}
 
-		$items = $backup->getEvents();
+		try {
+			$items = $backup->getEvents();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get events");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Event', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone event $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
 			$errors = $backup->cloneEvent($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
 			}
 			$this->ave->set_progress_ex('Event', $progress, $total);
 		}
 
-		$items = $backup->getTriggers();
+		try {
+			$items = $backup->getTriggers();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get triggers");
+		}
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Trigger', $progress, $total);
 		foreach($items as $item){
 			$progress++;
 			$this->ave->write_log("Clone trigger $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
 			$errors = $backup->cloneTrigger($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
-				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
 			}
 			$this->ave->set_progress_ex('Trigger', $progress, $total);
 		}
@@ -782,7 +842,7 @@ class MySQLTools {
 		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for table $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			if($ini->get('BACKUP_TYPE_STRUCTURE')){
 				$errors_structure = $backup->backupTableStructure($item);
 			}
@@ -793,89 +853,138 @@ class MySQLTools {
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 		}
 
-		$items = $backup->getViews();
+		try {
+			$items = $backup->getViews();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get views");
+		}
 		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for view $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
 			$errors = $backup->backupView($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
 			}
 		}
 
-		$items = $backup->getFunctions();
+		try {
+			$items = $backup->getFunctions();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get functions");
+		}
 		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for function $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
 			$errors = $backup->backupFunction($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
 			}
 		}
 
-		$items = $backup->getEvents();
+		try {
+			$items = $backup->getProcedures();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get procedures");
+		}
+		$total = count($items);
+		foreach($items as $item){
+			$this->ave->write_log("Create backup for procedure $item");
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
+			$errors = $backup->backupProcedure($item);
+			if(!empty($errors)){
+				$this->ave->write_error($errors);
+				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => $errors];
+				} else {
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => ['Error reporting is disabled']];
+				}
+				if(!is_null($callback)) $request->get($callback, $cdata, true);
+			} else {
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
+			}
+		}
+
+		try {
+			$items = $backup->getEvents();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get events");
+		}
 		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for event $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
 			$errors = $backup->backupEvent($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
 			}
 		}
 
-		$items = $backup->getTriggers();
+		try {
+			$items = $backup->getTriggers();
+		}
+		catch(PDOException $e){
+			$items = [];
+			$this->ave->write_error("Access denied for get triggers");
+		}
 		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for trigger $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
 			$errors = $backup->backupTrigger($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => $errors];
 				} else {
-					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => ['Error reporting is disabled']];
 				}
 				if(!is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
 			}
 		}
 
@@ -1081,6 +1190,7 @@ class MySQLTools {
 		$ftype = explode(" ", $type);
 		$ftype = $ftype[0];
 		$stype = strtolower($type);
+		$sftype = strtolower($ftype);
 		$type = str_replace(" ", "", $type);
 		$this->ave->clear();
 		$this->ave->set_subtool("BackupSelected".$type);
@@ -1155,19 +1265,19 @@ class MySQLTools {
 			$progress++;
 			if(in_array($item, $items_in_db)){
 				$this->ave->write_log("Create backup for $stype $item");
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => $item], true);
+				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "$stype:$item"], true);
 				$func = "backup".$type;
 				$errors = $backup->$func($item);
 				if(!empty($errors)){
 					$this->ave->write_error($errors);
 					if($ini->get('BACKUP_CURL_SEND_ERRORS')){
-						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => $errors];
+						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "$stype:$item", 'errors' => $errors];
 					} else {
-						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => $item, 'errors' => ['Error reporting is disabled']];
+						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "$stype:$item", 'errors' => ['Error reporting is disabled']];
 					}
 					if(!is_null($callback)) $request->get($callback, $cdata, true);
 				} else {
-					if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => $item], true);
+					if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "$stype:$item"], true);
 				}
 			} else {
 				$this->ave->echo(" $type: $item not exists, skipping");

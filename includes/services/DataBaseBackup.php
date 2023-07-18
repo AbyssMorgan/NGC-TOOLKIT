@@ -72,11 +72,11 @@ class DataBaseBackup {
 	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
 		$options = [
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;',
+			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;SET character_set_results = binary;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->source = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
+			$this->source = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=UTF8", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -90,11 +90,11 @@ class DataBaseBackup {
 	public function connect_destination(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
 		$options = [
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;',
+			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;SET character_set_results = binary;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->destination = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
+			$this->destination = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=UTF8", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
