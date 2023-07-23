@@ -456,37 +456,28 @@ class AveCore {
 	}
 
 	public function get_file_attributes(string $path) : array {
-		if($this->windows){
-			exec("ATTRIB \"$path\"", $var);
-			$attributes = str_replace($path, '', $var[0]);
-			return [
-				'R' => (strpos($attributes, "R") !== false),
-				'A' => (strpos($attributes, "A") !== false),
-				'S' => (strpos($attributes, "S") !== false),
-				'H' => (strpos($attributes, "H") !== false),
-				'I' => (strpos($attributes, "I") !== false),
-			];
-		} else {
-			return [
-				'R' => false,
-				'A' => false,
-				'S' => false,
-				'H' => false,
-				'I' => false,
-			];
-		}
+		$path = $this->get_file_path($path);
+		if(!$this->windows || !file_exists($path)) return ['R' => false, 'A' => false, 'S' => false, 'H' => false, 'I' => false];
+		$attributes = substr(shell_exec("attrib ".escapeshellarg($path)), 0, 21);
+		return [
+			'R' => (strpos($attributes, "R") !== false),
+			'A' => (strpos($attributes, "A") !== false),
+			'S' => (strpos($attributes, "S") !== false),
+			'H' => (strpos($attributes, "H") !== false),
+			'I' => (strpos($attributes, "I") !== false),
+		];
 	}
 
-	public function set_file_attributes(string $path, bool|null $r = null, bool|null $a = null, bool|null $s = null, bool|null $h = null, bool|null $i = null) : void {
-		if($this->windows){
-			$attributes = '';
-			if(!is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
-			if(!is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
-			if(!is_null($s)) $attributes .= ($s ? '+' : '-').'S ';
-			if(!is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
-			if(!is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
-			exec("ATTRIB $attributes \"$path\"");
-		}
+	public function set_file_attributes(string $path, bool|null $r = null, bool|null $a = null, bool|null $s = null, bool|null $h = null, bool|null $i = null) : bool {
+		if(!$this->windows || !file_exists($path)) return false;
+		$attributes = '';
+		if(!is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
+		if(!is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
+		if(!is_null($s)) $attributes .= ($s ? '+' : '-').'S ';
+		if(!is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
+		if(!is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
+		shell_exec("attrib $attributes ".escapeshellarg($path));
+		return true;
 	}
 
 	public function is_valid_device(string $path) : bool {

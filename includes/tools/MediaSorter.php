@@ -541,8 +541,6 @@ class MediaSorter {
 							$errors++;
 						}
 					}
-
-					$this->ave->pause('debug');
 				}
 				$this->ave->progress($items, $total);
 				$this->ave->set_progress($progress, $errors);
