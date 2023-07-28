@@ -1332,6 +1332,13 @@ class MySQLTools {
 		$this->ave->write_data(str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
 
 		$db_name = $ini->get('DB_NAME');
+
+		$items = $db->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$table = $item->{"Tables_in_$db_name"};
+			$db->query("ANALYZE TABLE `$table`");
+		}
+
 		$items = $db->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$data_size = $this->ave->format_bytes(intval($item->DATA_LENGTH));
@@ -1399,6 +1406,11 @@ class MySQLTools {
 
 		$db_name = $ini_source->get('DB_NAME');
 		$this->ave->echo(" Fetch data base info for \"$source\"");
+		$items = $db_source->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$table = $item->{"Tables_in_$db_name"};
+			$db_source->query("ANALYZE TABLE `$table`");
+		}
 		$items = $db_source->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$info_source[$item->TABLE_NAME]['engine'] = $item->ENGINE;
@@ -1411,6 +1423,11 @@ class MySQLTools {
 		$db_source->disconnect();
 
 		$db_name = $ini_destination->get('DB_NAME');
+		$items = $db_destination->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$table = $item->{"Tables_in_$db_name"};
+			$db_destination->query("ANALYZE TABLE `$table`");
+		}
 		$this->ave->echo(" Fetch data base info for \"$destination\"");
 		$items = $db_destination->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
 		foreach($items as $item){
