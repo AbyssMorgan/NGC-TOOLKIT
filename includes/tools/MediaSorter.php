@@ -31,6 +31,8 @@ class MediaSorter {
 			' 4 - Sort Images: Colors count',
 			' 5 - Sort Videos: Auto detect series name',
 			' 6 - Sort Media: Duration',
+			' 7 - Sort Files: Size',
+			' 8 - Sort Folders: Items quantity (First parent)',
 		]);
 	}
 
@@ -45,6 +47,8 @@ class MediaSorter {
 			case '4': return $this->ToolSortImagesColor();
 			case '5': return $this->ToolSortVideosAutoDetectSeriesName();
 			case '6': return $this->ToolSortMediaDuration();
+			case '7': return $this->ToolSortFilesSize();
+			case '8': return $this->ToolSortFoldersQuantity();
 		}
 		return false;
 	}
@@ -446,12 +450,12 @@ class MediaSorter {
 	}
 
 	public function ToolSortMediaDuration() : bool {
+		$this->ave->clear();
 		$this->ave->set_subtool("SortMediaDuration");
 
 		$interval = $this->ave->get_input_time_interval(" Interval: ");
 		if(!$interval) return false;
 
-		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -506,6 +510,90 @@ class MediaSorter {
 				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolSortFilesSize() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("SortFilesSize");
+
+		$interval = $this->ave->get_input_bytes_size(" Size: ");
+		if(!$interval) return false;
+
+		$prefix = $this->ave->get_confirm(" Add numeric prefix for better sort folders (Y/N): ");
+
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		$this->ave->setup_folders($folders);
+		$errors = 0;
+		$this->ave->set_errors($errors);
+		foreach($folders as $folder){
+			$files = $this->ave->get_files($folder);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$size = filesize($file);
+				$multiplier = floor(($size-1) / $interval);
+				if($size == 0) $multiplier = 0;
+				$end = $this->ave->format_bytes(intval($interval * ($multiplier + 1)));
+				if($prefix){
+					$directory = "$folder/".sprintf("%06d", $multiplier)." $end";
+				} else {
+					$directory = "$folder/$end";
+				}
+				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
+				if(!$this->ave->rename($file, $new_name)){
+					$errors++;
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_errors($errors);
+			}
+			$this->ave->progress($items, $total);
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press enter to back to menu");
+		return false;
+	}
+
+	public function ToolSortFoldersQuantity() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("SortFoldersQuantity");
+
+		$interval = $this->ave->get_input_integer(" Quantity interval: ");
+		if(!$interval) return false;
+
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		$this->ave->setup_folders($folders);
+		$errors = 0;
+		$this->ave->set_errors($errors);
+		foreach($folders as $folder){
+			$files = $this->ave->get_folders_ex($folder);
+			foreach($files as $file){
+				if(!file_exists($file)) continue 1;
+				$quantity = count($this->ave->get_files($file));
+				$multiplier = floor(($quantity-1) / $interval);
+				if($quantity == 0) $multiplier = 0;
+				$end = intval($interval * ($multiplier + 1));
+				$new_name = $this->ave->get_file_path("$folder/$end/".pathinfo($file, PATHINFO_BASENAME));
+				if(!$this->ave->rename($file, $new_name)){
+					$errors++;
+				}
+				$this->ave->set_errors($errors);
+			}
 			unset($files);
 			$this->ave->set_folder_done($folder);
 		}
