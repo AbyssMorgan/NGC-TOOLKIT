@@ -263,8 +263,9 @@ class AveCore {
 		$data = [];
 		$files = scandir($path);
 		foreach($files as $file){
-			if($file != '..' && $file != '.' && is_dir($file) && !is_link($file)){
-				array_push($data, $this->get_file_path("$path/$file"));
+			$full_path = $this->get_file_path("$path/$file");
+			if($file != '..' && $file != '.' && is_dir($full_path) && !is_link($full_path)){
+				array_push($data, $full_path);
 			}
 		}
 		return $data;
