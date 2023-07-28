@@ -8,9 +8,12 @@ use AVE;
 use GdImage;
 use Imagick;
 use Exception;
-use App\Dictionaries\MediaOrientation;
 
 class MediaFunctions {
+
+	const MEDIA_ORIENTATION_HORIZONTAL = 0;
+	const MEDIA_ORIENTATION_VERTICAL = 1;
+	const MEDIA_ORIENTATION_SQUARE = 2;
 
 	public function __construct(AVE $ave){
 		$this->ave = $ave;
@@ -113,8 +116,8 @@ class MediaFunctions {
 	}
 
 	public function getVideoThumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
-		$input_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_FILENAME)."_s.jpg";
-		$output_file = $output.DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_BASENAME).".webp";
+		$input_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
+		$output_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_BASENAME).".webp");
 		if(file_exists($output_file)) return true;
 		if(!file_exists($input_file)){
 			$this->ave->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
@@ -129,26 +132,28 @@ class MediaFunctions {
 
 	public function getMediaOrientation(int $width, int $height) : int {
 		if($width > $height){
-			return MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL;
+			return self::MEDIA_ORIENTATION_HORIZONTAL;
 		} else if($height > $width){
-			return MediaOrientation::MEDIA_ORIENTATION_VERTICAL;
+			return self::MEDIA_ORIENTATION_VERTICAL;
 		} else {
-			return MediaOrientation::MEDIA_ORIENTATION_SQUARE;
+			return self::MEDIA_ORIENTATION_SQUARE;
 		}
 	}
 
 	public function getMediaOrientationName(int $orientation) : string {
 		switch($orientation){
-			case MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL: return 'Horizontal';
-			case MediaOrientation::MEDIA_ORIENTATION_VERTICAL: return 'Vertical';
-			case MediaOrientation::MEDIA_ORIENTATION_SQUARE: return 'Square';
+			case self::MEDIA_ORIENTATION_HORIZONTAL: return 'Horizontal';
+			case self::MEDIA_ORIENTATION_VERTICAL: return 'Vertical';
+			case self::MEDIA_ORIENTATION_SQUARE: return 'Square';
 		}
 		return 'Unknown';
 	}
 
 	public function getMediaQuality(int $width, int $height) : string {
 		$v = max($width, $height);
-		if($v >= 30720){
+		if($v >= 61440){
+			return '34560';
+		} else if($v >= 30720){
 			return '17280';
 		} else if($v >= 15360){
 			return '8640';
@@ -175,22 +180,39 @@ class MediaFunctions {
 		}
 	}
 
-	public function getImageColorCount(string $path) : int {
-		$imagick = new Imagick($path);
-		return $imagick->getImageColors();
+	public function getImageColorCount(string $path) : int|null {
+		$image = new Imagick($path);
+		if(!$image->valid()) return null;
+		return $image->getImageColors();
 	}
 
 	public function getImageColorGroup(int $colors) : string {
-		if($colors >= 100000){
-			return 'Very-High';
-		} else if($colors >= 30000){
-			return 'High';
-		} else if($colors >= 10000){
-			return 'Medium';
-		} else if($colors >= 1000){
-			return 'Low';
+		if($colors > 500000){
+			return '500001 - 999999';
+	 	} else if($colors > 400000 && $colors <= 500000){
+			return '400001 - 500000';
+	 	} else if($colors > 300000 && $colors <= 400000){
+			return '300001 - 400000';
+	 	} else if($colors > 200000 && $colors <= 300000){
+			return '200001 - 300000';
+	 	} else if($colors > 100000 && $colors <= 200000){
+			return '100001 - 200000';
+	 	} else if($colors > 50000 && $colors <= 100000){
+			return '050001 - 100000';
+		} else if($colors > 40000 && $colors <= 50000){
+			return '040001 - 050000';
+		} else if($colors > 30000 && $colors <= 40000){
+			return '030001 - 040000';
+		} else if($colors > 20000 && $colors <= 30000){
+			return '020001 - 030000';
+		} else if($colors > 10000 && $colors <= 20000){
+			return '010001 - 020000';
+		} else if($colors > 5000 && $colors <= 10000){
+			return '005001 - 010000';
+		} else if($colors > 1000 && $colors <= 5000){
+			return '001001 - 005000';
 		} else {
-			return 'Very-Low';
+			return '000000 - 001000';
 		}
 	}
 

@@ -117,8 +117,6 @@ class CheckFileIntegrity {
 
 		file_put_contents($file_name, $pattern->get());
 
-		$this->ave->open_file($output);
-
 		$this->ave->open_logs(false);
 		$this->ave->pause(" Operation done, press enter to back to menu");
 		return false;
@@ -161,8 +159,6 @@ class CheckFileIntegrity {
 		$guard = new GuardDriver($guard_file, $pattern->getFolders(), $pattern->getFiles());
 		$guard->generate();
 		chdir($cwd);
-
-		$this->ave->open_file(pathinfo($pattern_file, PATHINFO_DIRNAME));
 
 		$this->ave->open_logs(false);
 		$this->ave->pause(" Operation done, press enter to back to menu");

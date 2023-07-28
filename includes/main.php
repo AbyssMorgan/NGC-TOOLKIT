@@ -11,8 +11,9 @@
 		system("PAUSE > nul");
 	});
 
+	require __DIR__.'/../vendor/autoload.php';
+
 	$includes_path = __DIR__;
-	require_once("$includes_path/dictionaries/MediaOrientation.php");
 	require_once("$includes_path/services/Logs.php");
 	require_once("$includes_path/services/IniFile.php");
 	require_once("$includes_path/services/AveCore.php");

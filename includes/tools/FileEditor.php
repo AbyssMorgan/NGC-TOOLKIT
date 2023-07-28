@@ -102,9 +102,8 @@ class FileEditor {
 		}
 
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, $extensions);
@@ -121,7 +120,6 @@ class FileEditor {
 					if($changed){
 						file_put_contents($file, $new_content);
 						$this->ave->write_log("EDIT FILE \"$file\"");
-						$progress++;
 					}
 				}
 				catch(Exception $e){
@@ -129,7 +127,7 @@ class FileEditor {
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
@@ -183,9 +181,8 @@ class FileEditor {
 		fclose($fp);
 
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, $extensions);
@@ -202,7 +199,6 @@ class FileEditor {
 					if($changed){
 						file_put_contents($file, $new_content);
 						$this->ave->write_log("EDIT FILE \"$file\"");
-						$progress++;
 					}
 				}
 				catch(Exception $e){
@@ -210,7 +206,7 @@ class FileEditor {
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
@@ -297,11 +293,8 @@ class FileEditor {
 		$this->ave->clear();
 		$this->ave->set_subtool("SplitFileByLinesCount");
 
-		set_lines_limit:
-		$line = $this->ave->get_input(" Lines limit: ");
-		if($line == '#') return false;
-		$lines_limit = intval(preg_replace('/\D/', '', $line));
-		if($lines_limit <= 0) goto set_lines_limit;
+		$lines_limit = $this->ave->get_input_integer(" Lines limit: ");
+		if(!$lines_limit) return false;
 
 		set_input:
 		$line = $this->ave->get_input(" File: ");

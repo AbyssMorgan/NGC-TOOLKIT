@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tools;
 
 use AVE;
-use App\Dictionaries\MediaOrientation;
+use Exception;
 use App\Services\MediaFunctions;
 
 class MediaSorter {
@@ -58,9 +58,8 @@ class MediaSorter {
 
 		$this->ave->setup_folders($folders);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder);
@@ -71,13 +70,11 @@ class MediaSorter {
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$new_name = $this->ave->get_file_path("$folder/$extension".pathinfo($file, PATHINFO_BASENAME));
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -114,9 +111,8 @@ class MediaSorter {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$extensions = array_merge($image_extensions, $video_extensions);
@@ -135,45 +131,43 @@ class MediaSorter {
 					$resolution = $media->getVideoResolution($file);
 				}
 				if($resolution == '0x0'){
-					$this->ave->write_error("FAILED GET_MEDIA_RESOLUTION \"$file\"");
+					$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
 					$errors++;
-					$this->ave->set_progress($progress, $errors);
+					$this->ave->set_errors($errors);
 					continue 1;
 				}
 				$size = explode("x",$resolution);
 				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]));
 
 				switch($media->getMediaOrientation(intval($size[0]), intval($size[1]))){
-					case MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL: {
+					case $media::MEDIA_ORIENTATION_HORIZONTAL: {
 						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_HORIZONTAL');
 						$orientation = "Horizontal";
 						break;
 					}
-					case MediaOrientation::MEDIA_ORIENTATION_VERTICAL: {
+					case $media::MEDIA_ORIENTATION_VERTICAL: {
 						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_VERTICAL');
 						$orientation = "Vertical";
 						break;
 					}
-					case MediaOrientation::MEDIA_ORIENTATION_SQUARE: {
+					case $media::MEDIA_ORIENTATION_SQUARE: {
 						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_SQUARE');
 						$orientation = "Square";
 						break;
 					}
 				}
 				if($this->params['resolution'] && $this->params['quality']){
-					$directory = $this->ave->get_file_path("$folder/$orientation/$quality");
+					$directory = "$folder/$orientation/$quality";
 				} else if($this->params['resolution']){
-					$directory = $this->ave->get_file_path("$folder/$orientation");
+					$directory = "$folder/$orientation";
 				} else if($this->params['quality']){
-					$directory = $this->ave->get_file_path("$folder/$quality");
+					$directory = "$folder/$quality";
 				}
-				if($this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -194,12 +188,10 @@ class MediaSorter {
 
 		$this->ave->setup_folders($folders);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
 		$media = new MediaFunctions($this->ave);
-
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, ['gif']);
@@ -209,18 +201,16 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				if($media->isGifAnimated($file)){
-					$directory = $this->ave->get_file_path("$folder/Animated");
+					$directory = "$folder/Animated";
 				} else {
-					$directory = $this->ave->get_file_path("$folder/NotAnimated");
+					$directory = "$folder/NotAnimated";
 				}
 				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -280,9 +270,8 @@ class MediaSorter {
 
 		$this->ave->setup_folders($folders);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
@@ -293,13 +282,11 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$new_name = $this->ToolSortDateGetPattern($folder, $this->params['mode'], $file, $this->params['separator']);
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -338,9 +325,8 @@ class MediaSorter {
 
 		$this->ave->setup_folders($folders);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
@@ -352,16 +338,17 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$colors = $media->getImageColorCount($file);
-				$group = $media->getImageColorGroup($colors);
-				$directory = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$group");
-				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
+				if(is_null($colors)){
+					$group = 'Unknown';
 				} else {
+					$group = $media->getImageColorGroup($colors);
+				}
+				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$group/".pathinfo($file, PATHINFO_BASENAME));
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -391,9 +378,8 @@ class MediaSorter {
 
 		$media = new MediaFunctions($this->ave);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$files = $this->ave->get_files($input, $video_extensions);
 		$items = 0;
@@ -442,9 +428,7 @@ class MediaSorter {
 							$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 							$errors++;
 						} else {
-							if($this->ave->rename($file, $new_name)){
-								$progress++;
-							} else {
+							if(!$this->ave->rename($file, $new_name)){
 								$errors++;
 							}
 						}
@@ -452,7 +436,7 @@ class MediaSorter {
 				}
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 
@@ -464,31 +448,16 @@ class MediaSorter {
 	public function ToolSortMediaDuration() : bool {
 		$this->ave->set_subtool("SortMediaDuration");
 
-		set_interval:
-		$this->ave->clear();
-		$this->ave->print_help([
-			' Type integer and unit separate by space, example: 30 sec',
-			' Interval units: sec, min, hour, day',
-		]);
-
-		$line = $this->ave->get_input(" Interval: ");
-		if($line == '#') return false;
-		$size = explode(' ', $line);
-		if(!isset($size[1])) goto set_interval;
-		$size[0] = preg_replace('/\D/', '', $size[0]);
-		if(empty($size[0])) goto set_interval;
-		if(!in_array(strtolower($size[1]), ['sec', 'min', 'hour', 'day'])) goto set_interval;
-		$interval = $this->ave->time_unit_to_seconds(intval($size[0]), $size[1]);
-		if($interval <= 0) goto set_interval;
+		$interval = $this->ave->get_input_time_interval(" Interval: ");
+		if(!$interval) return false;
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$extensions = array_merge(explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO')), explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO')));
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
@@ -506,7 +475,7 @@ class MediaSorter {
 					$start = str_replace(":", "_", $media->SecToTime(intval($interval * $multiplier) + 1));
 				}
 				$end = str_replace(":", "_", $media->SecToTime(intval($interval * ($multiplier + 1))));
-				$directory = $this->ave->get_file_path("$folder/$start - $end");
+				$directory = "$folder/$start - $end";
 				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$renamed = true;
@@ -526,15 +495,7 @@ class MediaSorter {
 						}
 					}
 
-					$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
-					$name_new = $this->ave->get_file_path("$directory/$name.$extension.webp");
-					if(file_exists($name_old)){
-						if(!$this->ave->rename($name_old, $name_new)){
-							$errors++;
-						}
-					}
-
-					$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME).".srt");
+					$name_old = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.srt");
 					$name_new = $this->ave->get_file_path("$directory/$name.srt");
 					if(file_exists($name_old)){
 						if(!$this->ave->rename($name_old, $name_new)){
@@ -543,7 +504,7 @@ class MediaSorter {
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);

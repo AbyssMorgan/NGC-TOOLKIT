@@ -12,7 +12,7 @@ use DirectoryIterator;
 
 class AveCore {
 
-	public int $core_version = 5;
+	public int $core_version = 6;
 
 	public IniFile $config;
 
@@ -30,8 +30,13 @@ class AveCore {
 	public array $folders_state = [];
 	public $tool;
 	public array $unit_sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	public bool $toggle_log_event = true;
+	public bool $toggle_log_error = true;
+	public string $utilities_path;
+	public string $utilities_version = "1.0.0";
+	public string $current_title;
 
-	public function __construct(array $arguments){
+	public function __construct(array $arguments, bool $require_utilities){
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
@@ -40,6 +45,27 @@ class AveCore {
 		$this->windows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 		$this->path = realpath($this->get_file_path(__DIR__."/../.."));
 		$this->logo = '';
+		$this->current_title = '';
+		$this->utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
+
+		if($require_utilities){
+			$ave_utilities = false;
+			if(file_exists($this->utilities_path)){
+				$ave_utilities_main = new IniFile($this->get_file_path("$this->utilities_path/main.ini"));
+				$ave_utilities_imagick = new IniFile($this->get_file_path("$this->utilities_path/imagick.ini"));
+				if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
+					$ave_utilities = true;
+				}
+			}
+
+			if(!$ave_utilities){
+				$this->echo();
+				$this->echo(" Invalid AVE-UTILITIES version detected: v".$ave_utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
+				$this->echo();
+				$this->pause();
+				die("");
+			}
+		}
 	}
 
 	public function select_action(?string $trigger_action = null) : bool {
@@ -81,37 +107,37 @@ class AveCore {
 		}
 	}
 
+	public function get_tool_name() : string {
+		$title = "$this->app_name v$this->version > $this->tool_name";
+		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
+		return $title;
+	}
+
 	public function set_tool(string $name) : void {
 		$this->tool_name = $name;
 		$this->subtool_name = '';
-		$this->title("$this->app_name v$this->version > $this->tool_name");
-		$this->write_log("Set Tool: $this->tool_name");
+		$this->title($this->get_tool_name());
 	}
 
 	public function set_subtool(string $name) : void {
 		$this->subtool_name = $name;
-		$this->title("$this->app_name v$this->version > $this->tool_name > $this->subtool_name");
-		$this->write_log("Set Tool: $this->tool_name > $this->subtool_name");
+		$this->title($this->get_tool_name());
 	}
 
-	public function set_progress(int $progress, int $errors) : void {
-		$title = "$this->app_name v$this->version > $this->tool_name";
-		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
-		$this->title("$title > Files: $progress Errors: $errors");
+	public function set_errors(int $errors) : void {
+		$this->title($this->get_tool_name()." > Errors: $errors");
 	}
 
 	public function set_progress_ex(string $label, int $progress, int $total) : void {
-		$title = "$this->app_name v$this->version > $this->tool_name";
-		if(!empty($this->subtool_name)) $title .= " > $this->subtool_name";
-		$this->title("$title > $label: $progress / $total");
+		$this->title($this->get_tool_name()." > $label: $progress / $total");
 	}
 
 	public function clear() : void {
 		if($this->windows) popen('cls', 'w');
 		if($this->config->get('AVE_SHOW_LOGO', false) && !empty($this->logo)){
-			echo "$this->logo\r\n";
+			$this->echo("$this->logo");
 		} else {
-			echo "\r\n";
+			$this->echo();
 		}
 	}
 
@@ -181,19 +207,30 @@ class AveCore {
 		return 0;
 	}
 
-	public function get_files(string $path, array|null $extensions = null, array|null $except = null) : array {
+	public function get_files(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
 		if(!file_exists($path)) return [];
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
 		foreach($files as $file){
 			if($file->isDir() || $file->isLink()) continue;
-			if(!is_null($extensions) && !in_array(strtolower($file->getExtension()), $extensions)) continue;
-			if(!is_null($except) && in_array(strtolower($file->getExtension()), $except)) continue;
+			$ext = strtolower($file->getExtension());
+			if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
+			if(!is_null($except) && in_array($ext, $except)) continue;
+			if(!is_null($filters) && !$this->filter($file->getBasename(), $filters)) continue;
 			$fp = $file->getRealPath();
 			if(!$fp) continue;
 			array_push($data, $fp);
 		}
 		return $data;
+	}
+
+	public function filter(string $search, array $filters) : bool {
+		foreach($filters as $filter){
+			if(strpos($search, $filter) !== false){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function get_folders(string $path) : array {
@@ -209,8 +246,31 @@ class AveCore {
 		return $data;
 	}
 
+	public function get_files_ex(string $path) : array {
+		if(!file_exists($path)) return [];
+		$data = [];
+		$files = scandir($path);
+		foreach($files as $file){
+			if($file != '..' && $file != '.' && !is_dir($file) && !is_link($file)){
+				array_push($data, $this->get_file_path("$path/$file"));
+			}
+		}
+		return $data;
+	}
+
+	public function get_folders_ex(string $path) : array {
+		if(!file_exists($path)) return [];
+		$data = [];
+		$files = scandir($path);
+		foreach($files as $file){
+			if($file != '..' && $file != '.' && is_dir($file) && !is_link($file)){
+				array_push($data, $this->get_file_path("$path/$file"));
+			}
+		}
+		return $data;
+	}
+
 	public function exit(int $seconds = 10, bool $open_log = false) : void {
-		$this->write_log("Exit");
 		$this->open_logs($open_log, false);
 		if($seconds > 0) $this->timeout($seconds);
 	}
@@ -250,13 +310,13 @@ class AveCore {
 	}
 
 	public function write_log(string|array $data) : void {
-		if($this->config->get('AVE_LOG_EVENT', true)){
+		if($this->config->get('AVE_LOG_EVENT', true) && $this->toggle_log_event){
 			$this->log_event->write($data);
 		}
 	}
 
 	public function write_error(string|array $data) : void {
-		if($this->config->get('AVE_LOG_ERROR', true)){
+		if($this->config->get('AVE_LOG_ERROR', true) && $this->toggle_log_error){
 			$this->log_error->write($data);
 		}
 	}
@@ -376,7 +436,11 @@ class AveCore {
 
 	public function title(string $title) : void {
 		if($this->windows){
-			system("TITLE ".$this->cmd_escape($title));
+			$title = $this->cmd_escape($title);
+			if($this->current_title != $title){
+				$this->current_title = $title;
+				system("TITLE $title");
+			}
 		}
 	}
 
@@ -537,7 +601,7 @@ class AveCore {
 	}
 
 	public function exec(string $program, string $command, array &$output = null, int &$result_code = null) : string|false {
-		$program = $this->get_file_path("$this->ave_utilities_path/main/$program.exe");
+		$program = $this->get_file_path("$this->utilities_path/main/$program.exe");
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 
@@ -545,7 +609,7 @@ class AveCore {
 		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
 	}
 
-	public function get_bytes_size(string $name) : int|bool {
+	public function get_input_bytes_size(string $name) : int|bool {
 		set_size:
 		$this->clear();
 		$this->print_help([
@@ -563,6 +627,57 @@ class AveCore {
 		$bytes = $this->size_unit_to_bytes(intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 		return $bytes;
+	}
+
+	public function get_input_time_interval(string $name) : int|bool {
+		set_interval:
+		$this->clear();
+		$this->print_help([
+			' Type integer and unit separate by space, example: 30 sec',
+			' Interval units: sec, min, hour, day',
+		]);
+
+		$line = $this->get_input($name);
+		if($line == '#') return false;
+		$size = explode(' ', $line);
+		if(!isset($size[1])) goto set_interval;
+		$size[0] = preg_replace('/\D/', '', $size[0]);
+		if(empty($size[0])) goto set_interval;
+		if(!in_array(strtolower($size[1]), ['sec', 'min', 'hour', 'day'])) goto set_interval;
+		$interval = $this->time_unit_to_seconds(intval($size[0]), $size[1]);
+		if($interval <= 0) goto set_interval;
+		return $interval;
+	}
+
+	public function get_input_integer(string $name, int $min = 1, int $max = 2147483647) : int|bool {
+		set_number:
+		$line = $this->get_input($name);
+		if($line == '#') return false;
+		$line = preg_replace('/\D/', '', $line);
+		if($line == ''){
+			$this->echo(" Type valid integer number");
+			goto set_number;
+		}
+		$number = intval($line);
+		if($number < $min){
+			$this->echo(" Number must be have greater than or equal $min");
+			goto set_number;
+		} else if($number > $max){
+			$this->echo(" Number must be have less than or equal $max");
+			goto set_number;
+		}
+		return $number;
+	}
+
+	public function get_write_buffer() : int|bool {
+		$size = explode(' ', $this->config->get('AVE_WRITE_BUFFER_SIZE'));
+		$write_buffer = $this->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
+		if($write_buffer <= 0){
+			$this->clear();
+			$this->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
+			return false;
+		}
+		return $write_buffer;
 	}
 
 }

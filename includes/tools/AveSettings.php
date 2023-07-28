@@ -134,12 +134,12 @@ class AveSettings {
 		} else {
 			if($this->ave->get_confirm(" Install .ave-php scripts support (Y/N): ")){
 				$program_path = realpath($this->ave->get_file_path($this->ave->path));
-				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\.ave-php /ve /d "'.$this->ave->app_name.'" /f'));
-				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP /ve /d "'.$this->ave->app_name.' Executable" /f'));
-				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\DefaultIcon /ve /d "\"'.$program_path.'\ave-php.ico\"" /f'));
-				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell /f'));
-				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open /f'));
-				$this->ave->echo(exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open\command /ve /d "\"'.$program_path.'\commands\AVE-PHP-SCRIPT.cmd\" \"%1\"" /f'));
+				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\.ave-php /ve /d "'.$this->ave->app_name.'" /f'));
+				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP /ve /d "'.$this->ave->app_name.' Executable" /f'));
+				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\DefaultIcon /ve /d "\"'.$program_path.'\ave-php.ico\"" /f'));
+				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell /f'));
+				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open /f'));
+				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open\command /ve /d "\"'.$program_path.'\commands\AVE-PHP-SCRIPT.cmd\" \"%1\"" /f'));
 				$this->ave->pause(" Operation done, press enter to back to menu");
 			} else {
 				$this->ave->pause(" Operation aborted, press enter to back to menu");

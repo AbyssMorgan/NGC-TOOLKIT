@@ -102,9 +102,8 @@ class FileNamesEditor {
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']))['name'];
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
@@ -120,7 +119,6 @@ class FileNamesEditor {
 				$new_name = $this->ToolCheckSumGetPattern($this->params['mode'], $file, $hash, $file_id++);
 				if($this->params['list_only']){
 					array_push($list,$new_name);
-					$progress++;
 				} else {
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
@@ -131,15 +129,13 @@ class FileNamesEditor {
 							if(!$this->ave->rename($file, "$file.tmp")) $errors++;
 						}
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename($file, $new_name)){
 							$errors++;
 						}
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -230,7 +226,7 @@ class FileNamesEditor {
 		return null;
 	}
 
-	public function ToolNumberAction(string $folder, int &$progress, int &$errors) : bool {
+	public function ToolNumberAction(string $folder, int &$errors) : bool {
 		if(!file_exists($folder)) return false;
 		$file_id = ($this->params['mode'] == 5) ? 999999 : 1;
 		$prefix_id = $this->ToolNumberGetPrefixID();
@@ -257,6 +253,7 @@ class FileNamesEditor {
 			if(!file_exists($directory)){
 				if(!$this->ave->mkdir($directory)){
 					$errors++;
+					$this->ave->set_errors($errors);
 					continue;
 				}
 			}
@@ -269,20 +266,15 @@ class FileNamesEditor {
 				$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 				$errors++;
 			} else {
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 			}
 			unset($files);
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
-
-		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
 		return false;
 	}
 
@@ -292,11 +284,10 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
-			$this->ToolNumberAction($folder, $progress, $errors);
+			$this->ToolNumberAction($folder, $errors);
 			$this->ave->set_folder_done($folder);
 		}
 
@@ -311,9 +302,8 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$subfolders = scandir($folder);
@@ -321,7 +311,7 @@ class FileNamesEditor {
 				if($subfoolder == '.' || $subfoolder == '..') continue;
 				$dir = $this->ave->get_file_path("$folder/$subfoolder");
 				if(is_dir($dir)){
-					$this->ToolNumberAction($dir, $progress, $errors);
+					$this->ToolNumberAction($dir, $errors);
 				}
 			}
 			$this->ave->set_folder_done($folder);
@@ -372,9 +362,8 @@ class FileNamesEditor {
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
 		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']))['name'];
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
@@ -399,7 +388,7 @@ class FileNamesEditor {
 				if($this->params['resolution']){
 					$resolution = $media->getVideoResolution($file);
 					if($resolution == '0x0'){
-						$this->ave->write_error("FAILED GET_MEDIA_RESOLUTION \"$file\"");
+						$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
 						$errors++;
 					} else {
 						if(strpos($name, " [$resolution]") === false){
@@ -411,6 +400,12 @@ class FileNamesEditor {
 					$thumbnail = $media->getVideoThumbnail($file, $directory, $this->ave->config->get('AVE_THUMBNAIL_WIDTH'), $this->ave->config->get('AVE_THUMBNAIL_ROWS'), $this->ave->config->get('AVE_THUMBNAIL_COLUMN'));
 				} else {
 					$thumbnail = false;
+				}
+				if($thumbnail){
+					$this->ave->write_log("GENERATE THUMBNAIL \"$file.webp\"");
+				} else {
+					$this->ave->write_error("FAILED GENERATE THUMBNAIL \"$file.webp\"");
+					$errors++;
 				}
 				$new_name = $this->ave->get_file_path("$directory/$name.$extension");
 				$renamed = false;
@@ -440,17 +435,7 @@ class FileNamesEditor {
 					}
 				}
 
-				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME).".webp");
-				$name_new = $this->ave->get_file_path("$directory/$name.$extension.webp");
-				if($renamed && file_exists($name_old)){
-					if($this->ave->rename($name_old, $name_new)){
-						$renamed = true;
-					} else {
-						$errors++;
-					}
-				}
-
-				$name_old = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME).".srt");
+				$name_old = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.srt");
 				$name_new = $this->ave->get_file_path("$directory/$name.srt");
 				if($renamed && file_exists($name_old)){
 					if($this->ave->rename($name_old, $name_new)){
@@ -459,9 +444,8 @@ class FileNamesEditor {
 						$errors++;
 					}
 				}
-				$progress++;
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -480,9 +464,8 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
@@ -513,16 +496,14 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename($file, $new_name)){
 							$errors++;
 						}
 					}
 				}
 
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -546,9 +527,8 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder);
@@ -572,16 +552,14 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename($file, $new_name)){
 							$errors++;
 						}
 					}
 				}
 
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -643,9 +621,8 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder);
@@ -679,16 +656,14 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename_case($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename_case($file, $new_name)){
 							$errors++;
 						}
 					}
 				}
 
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -707,9 +682,8 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$audio_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO'));
 		foreach($folders as $folder){
@@ -750,16 +724,14 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename($file, $new_name)){
 							$errors++;
 						}
 					}
 				}
 
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -839,9 +811,8 @@ class FileNamesEditor {
 		$items = 0;
 		$total = count($files);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($files as $file){
 			$items++;
 			if(!file_exists($file)) continue;
@@ -857,9 +828,7 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -870,7 +839,7 @@ class FileNamesEditor {
 			}
 
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 
@@ -923,7 +892,6 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
-		$progress = 0;
 		$errors = 0;
 		$list = [];
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
@@ -974,7 +942,6 @@ class FileNamesEditor {
 		$round = 0;
 		change_names:
 		foreach($list as $key => $item){
-			$progress++;
 			if(file_exists($item['output']) && $round == 0) continue;
 			$items++;
 			if(file_exists($item['output'])){
@@ -984,7 +951,7 @@ class FileNamesEditor {
 				if(!$this->ave->rename($item['input'], $item['output'])) $errors++;
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 			unset($list[$key]);
 		}
 		$this->ave->progress($items, $total);
@@ -1024,9 +991,8 @@ class FileNamesEditor {
 		$suffix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
 
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, $extensions);
@@ -1040,14 +1006,12 @@ class FileNamesEditor {
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if($this->ave->rename($file, $new_name)){
-						$progress++;
-					} else {
+					if(!$this->ave->rename($file, $new_name)){
 						$errors++;
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
@@ -1097,11 +1061,8 @@ class FileNamesEditor {
 		if($this->params['mode'] == '0'){
 			$this->ave->echo(" Put numbers how much keywords you want remove");
 
-			set_quantity:
-			$line = $this->ave->get_input(" Quantity: ");
-			if($line == '#') return false;
-			$quantity = intval(preg_replace('/\D/', '', $line));
-			if($quantity <= 0) goto set_quantity;
+			$quantity = $this->ave->get_input_integer(" Quantity: ");
+			if(!$quantity) return false;
 
 			for($i = 0; $i < $quantity; $i++){
 				$keywords[$i] = $this->ave->get_input_no_trim(" Keyword ".($i+1).": ");
@@ -1133,9 +1094,8 @@ class FileNamesEditor {
 		}
 
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, $extensions);
@@ -1153,14 +1113,12 @@ class FileNamesEditor {
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if($this->ave->rename($file, $new_name)){
-						$progress++;
-					} else {
+					if(!$this->ave->rename($file, $new_name)){
 						$errors++;
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
@@ -1208,9 +1166,8 @@ class FileNamesEditor {
 		}
 
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, $extensions);
@@ -1236,15 +1193,13 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if($this->ave->rename($file, $new_name)){
-							$progress++;
-						} else {
+						if(!$this->ave->rename($file, $new_name)){
 							$errors++;
 						}
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
@@ -1311,9 +1266,8 @@ class FileNamesEditor {
 		}
 
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder, $extensions);
@@ -1331,14 +1285,12 @@ class FileNamesEditor {
 					$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if($this->ave->rename($file, $new_name)){
-						$progress++;
-					} else {
+					if(!$this->ave->rename($file, $new_name)){
 						$errors++;
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			$this->ave->set_folder_done($folder);
@@ -1365,9 +1317,8 @@ class FileNamesEditor {
 
 		$this->ave->setup_folders($folders);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
@@ -1379,13 +1330,11 @@ class FileNamesEditor {
 				if(!file_exists($file)) continue 1;
 				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME));
 				if(!empty($extension_new)) $new_name .= ".$extension_new";
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);

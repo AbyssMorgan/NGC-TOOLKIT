@@ -8,7 +8,8 @@ use AVE;
 use Imagick;
 use Exception;
 
-use App\Dictionaries\MediaOrientation;
+use App\Services\Logs;
+use App\Services\IniFile;
 use App\Services\MediaFunctions;
 use App\Services\FaceDetector;
 
@@ -94,9 +95,8 @@ class MediaTools {
 			goto set_output;
 		}
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
 		$files_video = [];
 		$files_audio = [];
@@ -134,12 +134,11 @@ class MediaTools {
 						$errors++;
 					} else {
 						$this->ave->write_log("MERGE \"$file\" + \"$audio\" INTO \"$out\"");
-						$progress++;
 					}
 				}
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 
@@ -181,9 +180,8 @@ class MediaTools {
 			goto set_output;
 		}
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
 		$lang = $this->ave->config->get('AVE_SUBTITLES_LANGUAGE');
 		$files = $this->ave->get_files($input, $this->ave->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
@@ -207,11 +205,10 @@ class MediaTools {
 					$errors++;
 				} else {
 					$this->ave->write_log("MERGE \"$file\" + \"$srt\" INTO \"$out\"");
-					$progress++;
 				}
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 
@@ -243,13 +240,8 @@ class MediaTools {
 		if(!isset($folders[0])) goto set_output;
 		$output = $folders[0];
 
-		set_size:
-		$line = $this->ave->get_input(" Width (0 - no resize): ");
-		if($line == '#') return false;
-		$size = preg_replace('/\D/', '', $line);
-		if($size == '') goto set_size;
-		$size = intval($size);
-		if($size < 0) goto set_size;
+		$size = $this->ave->get_input_integer(" Width (0 - no resize): ", 0);
+		if(!$size) return false;
 
 		if($input == $output){
 			$this->ave->echo(" Output folder must be different than input folder");
@@ -267,7 +259,6 @@ class MediaTools {
 		$variants = explode(" ", $this->ave->config->get('AVE_AVATAR_GENERATOR_VARIANTS'));
 		$files = $this->ave->get_files($input, $image_extensions);
 
-		$progress = 0;
 		$errors = 0;
 
 		$detector = new FaceDetector($this->ave->get_file_path($this->ave->path."/includes/data/FaceDetector.dat"));
@@ -277,11 +268,9 @@ class MediaTools {
 			$items++;
 			if(!file_exists($file)) continue;
 			$folder = pathinfo($file, PATHINFO_DIRNAME);
-			$directory = str_replace($input, $output, $folder);
+			$directory = str_ireplace($input, $output, $folder);
 			if(!file_exists($directory)){
-				if($this->ave->mkdir($directory)){
-					$progress++;
-				} else {
+				if(!$this->ave->mkdir($directory)){
 					$errors++;
 				}
 			}
@@ -302,12 +291,11 @@ class MediaTools {
 								$this->ave->write_log("WRITE VARIANT $variant FOR \"$file\"");
 							}
 						}
-						$progress++;
 					}
 				}
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 
@@ -334,9 +322,9 @@ class MediaTools {
 
 		$media = new MediaFunctions($this->ave);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
+
 
 		$this->ave->write_data('"File path";"Dir name";"File name";"Extension";"Resolution";"Quality";"Duration";"Size";"Orientation"');
 
@@ -346,6 +334,7 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
+			$this->ave->set_errors($errors);
 			if(!file_exists($file)) continue;
 			$resolution = $media->getVideoResolution($file);
 			if($resolution == '0x0'){
@@ -382,11 +371,11 @@ class MediaTools {
 				'"'.$media->getMediaOrientationName($orientation).'"',
 			];
 			$this->ave->write_data(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
-			$progress++;
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
+		$this->ave->set_errors($errors);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
@@ -445,7 +434,6 @@ class MediaTools {
 			goto set_output;
 		}
 
-		$progress = 0;
 		$errors = 0;
 
 		$extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
@@ -454,7 +442,7 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 			if(!file_exists($file)) continue;
 			if(!in_array(pathinfo($file, PATHINFO_EXTENSION), $extensions)){
 				$this->ave->write_error("FILE FORMAT NOT SUPORTED \"$file\"");
@@ -462,11 +450,9 @@ class MediaTools {
 				continue;
 			}
 			$folder = pathinfo($file, PATHINFO_DIRNAME);
-			$directory = str_replace($input, $output, $folder);
+			$directory = str_ireplace($input, $output, $folder);
 			if(!file_exists($directory)){
-				if($this->ave->mkdir($directory)){
-					$progress++;
-				} else {
+				if(!$this->ave->mkdir($directory)){
 					$errors++;
 					continue;
 				}
@@ -478,11 +464,10 @@ class MediaTools {
 				$errors++;
 				continue;
 			}
-			$source_extension = pathinfo($file, PATHINFO_EXTENSION);
 			switch(intval($this->params['mode'])){
 				case 0: {
 					$image->setImageFormat('webp');
-					if($source_extension == 'png'){
+					if($image->getImageFormat() == 'PNG'){
 						$image->setOption('webp:lossless', 'true');
 						$image->setImageCompressionQuality(100);
 					}
@@ -527,11 +512,12 @@ class MediaTools {
 				continue;
 			} else {
 				$this->ave->write_log("CONVERT \"$file\" TO \"$new_name\"");
-				$progress++;
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
+		$this->ave->progress($items, $total);
+		$this->ave->set_errors($errors);
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");

@@ -75,17 +75,15 @@ class FileFunctions {
 
 		$this->ave->setup_folders($folders);
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
 		$keys = [];
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$extension = strtolower(pathinfo($folder, PATHINFO_EXTENSION));
 			if(is_file($folder)){
-				$progress += $this->ave->get_hash_from_idx($folder, $keys, true);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->get_hash_from_idx($folder, $keys, true);
 				$this->ave->set_folder_done($folder);
 				continue;
 			}
@@ -97,8 +95,7 @@ class FileFunctions {
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == 'idx' && $this->ave->config->get('AVE_LOAD_IDX_CHECKSUM')){
-					$progress += $this->ave->get_hash_from_idx($file, $keys, false);
-					$this->ave->set_progress($progress, $errors);
+					$this->ave->get_hash_from_idx($file, $keys, false);
 					continue 1;
 				}
 				if($this->params['mode'] == 'a'){
@@ -106,7 +103,6 @@ class FileFunctions {
 				} else {
 					$key = pathinfo($file, PATHINFO_FILENAME);
 				}
-				$progress++;
 				if(isset($keys[$key])){
 					$duplicate = $keys[$key];
 					$this->ave->write_error("DUPLICATE \"$file\" OF \"$duplicate\"");
@@ -120,7 +116,7 @@ class FileFunctions {
 					$keys[$key] = $file;
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -170,9 +166,8 @@ class FileFunctions {
 
 		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']));
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		$except_files = explode(";", $this->ave->config->get('AVE_IGNORE_VALIDATE_FILES'));
 		$except_extensions = explode(" ", $this->ave->config->get('AVE_IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
@@ -185,10 +180,9 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
 				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
+				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
 				$hash = hash_file($algo['name'], $file, false);
-				$progress++;
 				if($this->params['mode'] == '0'){
 					$checksum_file = "$file.".$algo['name'];
 					if(!file_exists($checksum_file)){
@@ -226,7 +220,7 @@ class FileFunctions {
 					}
 				}
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -241,13 +235,8 @@ class FileFunctions {
 	public function ToolRandomFileGenerator() : bool {
 		$this->ave->set_subtool("RandomFileGenerator");
 
-		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->ave->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
-		if($write_buffer <= 0){
-			$this->ave->clear();
-			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
-			return false;
-		}
+		$write_buffer = $this->ave->get_write_buffer();
+		if(!$write_buffer) return false;
 
 		set_mode:
 		$this->ave->clear();
@@ -271,13 +260,8 @@ class FileFunctions {
 		if(!$bytes) return false;
 
 		if(in_array($this->params['mode'], ['1', '2'])){
-			set_quantity:
-			$line = $this->ave->get_input(" Quantity: ");
-			if($line == '#') return false;
-			$quantity = preg_replace('/\D/', '', $line);
-			if(empty($quantity)) goto set_quantity;
-			$quantity = intval($quantity);
-			if($quantity < 1) goto set_quantity;
+			$quantity = $this->ave->get_input_integer(" Quantity: ");
+			if(!$quantity) return false;
 		} else {
 			$quantity = 1;
 		}
@@ -379,21 +363,15 @@ class FileFunctions {
 		$this->ave->clear();
 		$this->ave->set_subtool("OverwriteFoldersContent");
 
-		$size = explode(' ', $this->ave->config->get('AVE_WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->ave->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
-		if($write_buffer <= 0){
-			$this->ave->clear();
-			$this->ave->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->ave->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
-			return false;
-		}
+		$write_buffer = $this->ave->get_write_buffer();
+		if(!$write_buffer) return false;
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->ave->get_files($folder);
@@ -433,9 +411,8 @@ class FileFunctions {
 					fclose($fp);
 					$this->ave->write_log("FILE OVERWRITE END \"$file\"");
 				}
-				$progress++;
 				$this->ave->progress($items, $total);
-				$this->ave->set_progress($progress, $errors);
+				$this->ave->set_errors($errors);
 			}
 			$this->ave->progress($items, $total);
 			unset($files);
@@ -498,45 +475,26 @@ class FileFunctions {
 			$filters = explode(" ", $line);
 		}
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
-		$files = $this->ave->get_files($input, $extensions);
+		$files = $this->ave->get_files($input, $extensions, null, $filters);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
 			if(!file_exists($file)) continue;
-			if(!is_null($filters)){
-				$can_move = false;
-				$name = pathinfo($file, PATHINFO_BASENAME);
-				foreach($filters as $filter){
-					if(strpos($name, $filter) !== false){
-						$can_move = true;
-						continue 1;
-					}
-				}
-			} else {
-				$can_move = true;
-			}
-			if(!$can_move){
-				$this->ave->progress($items, $total);
-				continue;
-			}
-			$new_name = str_replace($input, $output, $file);
+			$new_name = str_ireplace($input, $output, $file);
 			if(file_exists($new_name)){
 				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
 			} else {
-				if($this->ave->rename($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 
@@ -596,45 +554,26 @@ class FileFunctions {
 			$filters = explode(" ", $line);
 		}
 
-		$progress = 0;
 		$errors = 0;
-		$this->ave->set_progress($progress, $errors);
+		$this->ave->set_errors($errors);
 
-		$files = $this->ave->get_files($input, $extensions);
+		$files = $this->ave->get_files($input, $extensions, null, $filters);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
 			if(!file_exists($file)) continue;
-			if(!is_null($filters)){
-				$can_move = false;
-				$name = pathinfo($file, PATHINFO_BASENAME);
-				foreach($filters as $filter){
-					if(strpos($name, $filter) !== false){
-						$can_move = true;
-						continue 1;
-					}
-				}
-			} else {
-				$can_move = true;
-			}
-			if(!$can_move){
-				$this->ave->progress($items, $total);
-				continue;
-			}
-			$new_name = str_replace($input, $output, $file);
+			$new_name = str_ireplace($input, $output, $file);
 			if(file_exists($new_name)){
 				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
 			} else {
-				if($this->ave->copy($file, $new_name)){
-					$progress++;
-				} else {
+				if(!$this->ave->copy($file, $new_name)){
 					$errors++;
 				}
 			}
 			$this->ave->progress($items, $total);
-			$this->ave->set_progress($progress, $errors);
+			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 

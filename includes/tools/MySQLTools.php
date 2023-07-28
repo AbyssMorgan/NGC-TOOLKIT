@@ -148,12 +148,15 @@ class MySQLTools {
 
 		set_db_connection:
 		$db['host'] = $this->ave->get_input(" DB Host: ");
-		set_port:
-		$db['port'] = preg_replace('/\D/', '', $this->ave->get_input(" DB Port (Defualt 3306): "));
-		if($db['port'] == '') goto set_port;
+		if($db['host'] == '#') return false;
+		$db['port'] = $this->ave->get_input_integer(" DB Port (Default 3306): ", 0, 65353);
+		if(!$db['port']) return false;
 		$db['name'] = $this->ave->get_input(" DB Name: ");
+		if($db['name'] == '#') return false;
 		$db['user'] = $this->ave->get_input(" DB User: ");
+		if($db['user'] == '#') return false;
 		$db['password'] = $this->ave->get_input_no_trim(" DB Pass: ");
+		if($db['password'] == '#') return false;
 
 		try_login_same:
 		$options = [
@@ -200,8 +203,6 @@ class MySQLTools {
 			'BACKUP_PATH' => $output,
 			'BACKUP_LOCK_TABLES' => $backup['lock_tables'],
 		], true);
-
-		$this->ave->write_log("Setup connection for \"$label\"");
 
 		$this->ave->clear();
 		$this->ave->pause(" Setup connection for \"$label\" done, press enter to back to menu");

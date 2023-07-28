@@ -24,9 +24,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.8.2";
-	public string $utilities_version = "1.0.0";
-	public string $ave_utilities_path;
+	public string $version = "1.9.0";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -35,61 +33,24 @@ class AVE extends AveCore {
 	];
 
 	public function __construct(array $arguments){
-		parent::__construct($arguments);
+		parent::__construct($arguments, true);
 		dl('php_imagick.dll');
 		$this->logo = "\r\n $this->app_name Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
 
-		$this->ave_utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
-
-		$ave_utilities = false;
-		if(file_exists($this->ave_utilities_path)){
-			$ave_utilities_main = new IniFile($this->get_file_path("$this->ave_utilities_path/main.ini"));
-			$ave_utilities_imagick = new IniFile($this->get_file_path("$this->ave_utilities_path/imagick.ini"));
-			if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
-				$ave_utilities = true;
-			}
-		}
-
-		if(!$ave_utilities){
-			$this->echo();
-			$this->echo(" Invalid AVE-UTILITIES version detected: v".$ave_utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
-			$this->echo();
-			$this->pause();
-			die("");
-		}
-
 		$this->app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE");
-		$old_config = $this->get_file_path("$this->path/config/user.ini");
-		$new_config = $this->get_file_path("$this->app_data/config.ini");
-		$old_mysql_config = $this->get_file_path("$this->path/config/mysql");
-		$new_mysql_config = $this->get_file_path("$this->app_data/MySQL");
+		$path_config_ave = $this->get_file_path("$this->app_data/config.ini");
+		$path_config_mysql = $this->get_file_path("$this->app_data/MySQL");
 
 		if(!file_exists($this->app_data)) mkdir($this->app_data);
-		if(!file_exists($new_mysql_config)) mkdir($new_mysql_config);
-
-		if(file_exists($old_config)){
-			$this->config = new IniFile($old_config, true);
-			$this->rename($old_config, $new_config, false);
-		}
-
-		if(file_exists($old_mysql_config)){
-			$files = $this->get_files($old_mysql_config, ['ini']);
-			foreach($files as $file){
-				$this->rename($file, $this->get_file_path("$new_mysql_config/".pathinfo($file, PATHINFO_BASENAME)), false);
-			}
-			@rmdir($old_mysql_config);
-		}
-
-		$old_config_folder = $this->get_file_path("$this->path/config");
-		if(file_exists($old_config_folder)) @rmdir($old_config_folder);
+		if(!file_exists($path_config_mysql)) mkdir($path_config_mysql);
 
 		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
-		$this->config = new IniFile($new_config, true);
+		$this->config = new IniFile($path_config_ave, true);
 		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/includes/config/mkvmerge.ini"), true);
 
-		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10500){
-			$this->config->unset(['AVE_LOG_FOLDER','AVE_DATA_FOLDER','AVE_EXTENSIONS_AUDIO']);
+		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10803){
+			$this->config->unset(['AVE_EXTENSIONS_VIDEO_FOLLOW']);
 		}
 
 		foreach($config_default->getAll() as $key => $value){
@@ -199,7 +160,6 @@ class AVE extends AveCore {
 	}
 
 	public function select_tool() : bool {
-		$this->write_log("Select Tool");
 		$this->clear();
 		$this->title("$this->app_name v$this->version");
 		$this->tool = null;
