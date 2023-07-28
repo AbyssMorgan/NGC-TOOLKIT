@@ -325,9 +325,16 @@ class MediaTools {
 		$errors = 0;
 		$this->ave->set_errors($errors);
 
+		$cache = new IniFile($this->ave->get_file_path("$input/AveMediaInfo.ini"), true);
+		$this->ave->echo(" Last update: ".$cache->get('.LAST_UPDATE', 'None'));
 
-		$this->ave->write_data('"File path";"Dir name";"File name";"Extension";"Resolution";"Quality";"Duration";"Size";"Orientation"');
+		$csv_file = $this->ave->get_file_path("$input/AveMediaInfo.csv");
+		$this->ave->unlink($csv_file);
+		$csv = new Logs($csv_file, false, true);
+		$s = $this->ave->config->get('AVE_CSV_SEPARATOR');
+		$csv->write('"File path"'.$s.'"Dir name"'.$s.'"File name"'.$s.'"Extension"'.$s.'"Resolution"'.$s.'"Quality"'.$s.'"Duration"'.$s.'"Size"'.$s.'"Orientation"'.$s.'"Checksum (MD5)"');
 
+		$keys = [];
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$files = $this->ave->get_files($input, $video_extensions);
 		$items = 0;
@@ -336,28 +343,52 @@ class MediaTools {
 			$items++;
 			$this->ave->set_errors($errors);
 			if(!file_exists($file)) continue;
-			$resolution = $media->getVideoResolution($file);
-			if($resolution == '0x0'){
-				$this->ave->write_error("FAILED GET_MEDIA_RESOLUTION \"$file\"");
-				$errors++;
-				continue;
-			}
-			$size = explode('x', $resolution);
-			$orientation = $media->getMediaOrientation(intval($size[0]), intval($size[1]));
-			$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]));
-			switch($orientation){
-				case MediaOrientation::MEDIA_ORIENTATION_HORIZONTAL: {
-					$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_HORIZONTAL');
-					break;
+			$key = hash('md5', str_ireplace($input, '', $file));
+			if($cache->isSet($key)){
+				$media_info = $cache->get($key);
+				$resolution = $media_info['resolution'];
+				$quality = $media_info['quality'];
+				$duration = $media_info['duration'];
+				$file_size = $media_info['file_size'];
+				$orientation_name = $media_info['orientation_name'];
+				$checksum = $media_info['checksum'];
+			} else {
+				$resolution = $media->getVideoResolution($file);
+				if($resolution == '0x0'){
+					$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
+					$errors++;
+					continue;
 				}
-				case MediaOrientation::MEDIA_ORIENTATION_VERTICAL: {
-					$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_VERTICAL');
-					break;
+				$size = explode('x', $resolution);
+				$orientation = $media->getMediaOrientation(intval($size[0]), intval($size[1]));
+				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]));
+				switch($orientation){
+					case $media::MEDIA_ORIENTATION_HORIZONTAL: {
+						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_HORIZONTAL');
+						break;
+					}
+					case $media::MEDIA_ORIENTATION_VERTICAL: {
+						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_VERTICAL');
+						break;
+					}
+					case $media::MEDIA_ORIENTATION_SQUARE: {
+						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_SQUARE');
+						break;
+					}
 				}
-				case MediaOrientation::MEDIA_ORIENTATION_SQUARE: {
-					$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_SQUARE');
-					break;
-				}
+				$duration = $media->getVideoDuration($file);
+				$file_size = $this->ave->format_bytes(filesize($file));
+				$orientation_name = $media->getMediaOrientationName($orientation);
+				$checksum = strtoupper(hash_file('md5', $file));
+				$cache->set($key, [
+					'resolution' => $resolution,
+					'quality' => $quality,
+					'duration' => $duration,
+					'file_size' => $file_size,
+					'orientation_name' => $orientation_name,
+					'checksum' => $checksum,
+				]);
+				$this->ave->write_log("FETCH MEDIA INFO \"$file\"");
 			}
 			$meta = [
 				'"'.str_replace("\\\\", "\\", addslashes($file)).'"',
@@ -366,16 +397,23 @@ class MediaTools {
 				'"'.str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_EXTENSION))).'"',
 				'"'.$resolution.'"',
 				'"'.$quality.'"',
-				'"'.$media->getVideoDuration($file).'"',
-				'"'.$this->ave->format_bytes(filesize($file)).'"',
-				'"'.$media->getMediaOrientationName($orientation).'"',
+				'"'.$duration.'"',
+				'"'.$file_size.'"',
+				'"'.$orientation_name.'"',
+				'"'.$checksum.'"',
 			];
-			$this->ave->write_data(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
+			array_push($keys, $key);
+			$csv->write(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
 			$this->ave->progress($items, $total);
 			$this->ave->set_errors($errors);
 		}
 		$this->ave->progress($items, $total);
 		$this->ave->set_errors($errors);
+		$this->ave->echo(" Saved results into ".$csv->getPath());
+		$csv->close();
+		$cache->setAll($cache->only($keys));
+		$cache->update(['.LAST_UPDATE' => date('Y-m-d H:i:s')], true);
+		$cache->close();
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press enter to back to menu");
