@@ -479,7 +479,6 @@ class MediaSorter {
 				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){
 					$renamed = true;
-					$progress++;
 				} else {
 					$renamed = false;
 					$errors++;
