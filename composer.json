@@ -1,0 +1,47 @@
+{
+    "require": {
+        "liborm85/composer-vendor-cleaner": "^1.7",
+        "nicolab/php-ftp-client": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "liborm85/composer-vendor-cleaner": true
+        },
+		"platform-check": false
+    },
+	"extra": {
+		"dev-files": {
+			"/": [
+				"tests/",
+				"docs/",
+				".travis.yml",
+				"CHANGELOG.md",
+				"LICENSE.md",
+				"README.md",
+				"UPGRADING.md",
+				"LICENSE",
+				".gitignore"
+			],
+			"*/*": [
+				"*.sh"
+			],
+			"bin": [
+				"*.bat"
+			],
+			"twig/twig": [
+				"doc/",
+				"/drupal_test.sh"   
+			],
+			"symfony/*": [
+				"Tests/"
+			],
+			"other/package": [
+				"/src/**/*.md"      
+			],
+			"example/package": [
+				"languages/*",
+				"!languages/cs.php" 
+			]
+		}
+	}
+}

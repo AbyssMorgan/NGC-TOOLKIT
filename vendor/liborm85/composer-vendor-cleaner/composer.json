@@ -1,0 +1,52 @@
+{
+    "name": "liborm85/composer-vendor-cleaner",
+    "description": "Composer Vendor Cleaner removes unnecessary development files and directories from vendor directory.",
+    "type": "composer-plugin",
+    "keywords": [
+        "php",
+        "composer",
+        "composer-plugin",
+        ".gitattributes",
+        "cleaner",
+        "cleanup",
+        "remove",
+        "delete",
+        "ignore"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Libor M.",
+            "email": "liborm85@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/liborm85/composer-vendor-cleaner/issues",
+        "source": "https://github.com/liborm85/composer-vendor-cleaner"
+    },
+    "require": {
+        "php": ">=5.6.0",
+        "composer-plugin-api": "^1.1 || ^2.0",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "composer/composer": "^1.10.23 || ^2.1.9",
+        "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5 || ^8.4 || ^9.1"
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "autoload": {
+        "psr-4": {
+            "Liborm85\\ComposerVendorCleaner\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Liborm85\\ComposerVendorCleaner\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "class": "Liborm85\\ComposerVendorCleaner\\Plugin"
+    }
+}

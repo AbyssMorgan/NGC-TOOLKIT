@@ -1,3 +1,4 @@
 Setup/*.exe
 AVE-PHP-CRASH-*.txt
 sync.ffs_db
+composer.lock
