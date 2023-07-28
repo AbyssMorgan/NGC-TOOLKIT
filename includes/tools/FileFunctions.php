@@ -79,6 +79,8 @@ class FileFunctions {
 		$this->ave->set_errors($errors);
 
 		$keys = [];
+		$except_files = explode(";", $this->ave->config->get('AVE_IGNORE_VALIDATE_FILES'));
+		$except_extensions = explode(" ", $this->ave->config->get('AVE_IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$extension = strtolower(pathinfo($folder, PATHINFO_EXTENSION));
@@ -87,12 +89,13 @@ class FileFunctions {
 				$this->ave->set_folder_done($folder);
 				continue;
 			}
-			$files = $this->ave->get_files($folder);
+			$files = $this->ave->get_files($folder, null, $except_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
+				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if($extension == 'idx' && $this->ave->config->get('AVE_LOAD_IDX_CHECKSUM')){
 					$this->ave->get_hash_from_idx($file, $keys, false);

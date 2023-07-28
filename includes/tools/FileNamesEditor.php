@@ -104,16 +104,19 @@ class FileNamesEditor {
 		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']))['name'];
 		$errors = 0;
 		$this->ave->set_errors($errors);
+		$except_files = explode(";", $this->ave->config->get('AVE_IGNORE_VALIDATE_FILES'));
+		$except_extensions = explode(" ", $this->ave->config->get('AVE_IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
-			$files = $this->ave->get_files($folder);
+			$files = $this->ave->get_files($folder, null, $except_extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
+				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
 				$hash = hash_file($algo, $file, false);
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
 				$new_name = $this->ToolCheckSumGetPattern($this->params['mode'], $file, $hash, $file_id++);
