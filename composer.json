@@ -1,7 +1,9 @@
 {
     "require": {
         "liborm85/composer-vendor-cleaner": "^1.7",
-        "nicolab/php-ftp-client": "^2.0"
+        "nicolab/php-ftp-client": "^2.0",
+        "symfony/dom-crawler": "^6.3",
+        "symfony/css-selector": "^6.3"
     },
     "config": {
         "allow-plugins": {
