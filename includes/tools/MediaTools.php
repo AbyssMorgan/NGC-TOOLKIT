@@ -320,6 +320,8 @@ class MediaTools {
 			goto set_input;
 		}
 
+		$generate_checksum = $this->ave->get_confirm(" Generate checksum if .md5 file not found (Y/N): ");
+
 		$media = new MediaFunctions($this->ave);
 
 		$errors = 0;
@@ -338,6 +340,7 @@ class MediaTools {
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$files = $this->ave->get_files($input, $video_extensions);
 		$items = 0;
+		$new = 0;
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
@@ -352,7 +355,12 @@ class MediaTools {
 				$file_size = $media_info['file_size'];
 				$orientation_name = $media_info['orientation_name'];
 				$checksum = $media_info['checksum'];
+				if(is_null($checksum) && $generate_checksum){
+					$checksum = strtoupper(hash_file('md5', $file));
+					$new++;
+				}
 			} else {
+				$new++;
 				$resolution = $media->getVideoResolution($file);
 				if($resolution == '0x0'){
 					$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -379,7 +387,13 @@ class MediaTools {
 				$duration = $media->getVideoDuration($file);
 				$file_size = $this->ave->format_bytes(filesize($file));
 				$orientation_name = $media->getMediaOrientationName($orientation);
-				$checksum = strtoupper(hash_file('md5', $file));
+				if(file_exists("$file.md5")){
+					$checksum = file_get_contents("$file.md5");
+				} else if($generate_checksum){
+					$checksum = strtoupper(hash_file('md5', $file));
+				} else {
+					$checksum = null;
+				}
 				$cache->set($key, [
 					'resolution' => $resolution,
 					'quality' => $quality,
@@ -388,6 +402,7 @@ class MediaTools {
 					'orientation_name' => $orientation_name,
 					'checksum' => $checksum,
 				]);
+				if($new % 25 == 0) $cache->save();
 				$this->ave->write_log("FETCH MEDIA INFO \"$file\"");
 			}
 			$meta = [
@@ -400,7 +415,7 @@ class MediaTools {
 				'"'.$duration.'"',
 				'"'.$file_size.'"',
 				'"'.$orientation_name.'"',
-				'"'.$checksum.'"',
+				'"'.($checksum ?? 'None').'"',
 			];
 			array_push($keys, $key);
 			$csv->write(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
