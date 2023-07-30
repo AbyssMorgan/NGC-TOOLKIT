@@ -1,5 +1,14 @@
 <?php
-	$this->ave->echo("Hello world");
+	$this->ave->title("My ave script");
+	
+	$this->ave->echo("Script file:  ".$this->script);
+	$this->ave->echo("Script path:  ".$this->path);
+	$this->ave->echo("AVE-PHP path: ".$this->ave->path);
+	$this->ave->echo();
+	
+	$this->ave->echo("Script arguments");
+	$this->ave->echo(print_r($this->ave->arguments, true));
+	$this->ave->echo();
 	
 	$this->ave->pause('Paused');
 ?>

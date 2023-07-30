@@ -58,17 +58,6 @@ class DataBaseBackup {
 		$this->lock_tables = $toggle;
 	}
 
-	public function set_max_allowed_packet(int $value) : bool {
-		try {
-			$this->destination->query("SET GLOBAL `max_allowed_packet` = $value;");
-			return true;
-		}
-		catch(PDOException $e){
-			echo " ".$e->getMessage()."\r\n";
-			return false;
-		}
-	}
-
 	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
 		$options = [
 			PDO::ATTR_EMULATE_PREPARES => true,

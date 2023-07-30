@@ -15,6 +15,7 @@ use App\Tools\MediaTools;
 use App\Tools\CheckFileIntegrity;
 use App\Tools\MySQLTools;
 use App\Tools\FileEditor;
+use App\Tools\FtpTools;
 
 class AVE extends AveCore {
 
@@ -41,15 +42,17 @@ class AVE extends AveCore {
 		$this->app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE");
 		$path_config_ave = $this->get_file_path("$this->app_data/config.ini");
 		$path_config_mysql = $this->get_file_path("$this->app_data/MySQL");
+		$path_config_ftp = $this->get_file_path("$this->app_data/FTP");
 
 		if(!file_exists($this->app_data)) mkdir($this->app_data);
 		if(!file_exists($path_config_mysql)) mkdir($path_config_mysql);
+		if(!file_exists($path_config_ftp)) mkdir($path_config_ftp);
 
 		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
 		$this->config = new IniFile($path_config_ave, true);
 		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/includes/config/mkvmerge.ini"), true);
 
-		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10803){
+		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10900){
 			$this->config->unset(['AVE_EXTENSIONS_VIDEO_FOLLOW']);
 		}
 
@@ -174,6 +177,7 @@ class AVE extends AveCore {
 			' 5 - Check File Integrity',
 			' 6 - MySQL Tools',
 			' 7 - File Editor',
+			' 8 - FTP Tools',
 			' H - Help',
 		]);
 
@@ -210,6 +214,10 @@ class AVE extends AveCore {
 			}
 			case '7': {
 				$this->tool = new FileEditor($this);
+				break;
+			}
+			case '8': {
+				$this->tool = new FtpTools($this);
 				break;
 			}
 			case 'H': {

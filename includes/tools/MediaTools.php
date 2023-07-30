@@ -369,21 +369,7 @@ class MediaTools {
 				}
 				$size = explode('x', $resolution);
 				$orientation = $media->getMediaOrientation(intval($size[0]), intval($size[1]));
-				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]));
-				switch($orientation){
-					case $media::MEDIA_ORIENTATION_HORIZONTAL: {
-						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_HORIZONTAL');
-						break;
-					}
-					case $media::MEDIA_ORIENTATION_VERTICAL: {
-						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_VERTICAL');
-						break;
-					}
-					case $media::MEDIA_ORIENTATION_SQUARE: {
-						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_SQUARE');
-						break;
-					}
-				}
+				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1])).$this->ave->config->get('AVE_QUALITY_SUFFIX');
 				$duration = $media->getVideoDuration($file);
 				$file_size = $this->ave->format_bytes(filesize($file));
 				$orientation_name = $media->getMediaOrientationName($orientation);

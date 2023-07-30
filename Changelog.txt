@@ -1,3 +1,28 @@
+v1.9.0:
+- Added capturing extra arguments for .ave-php scripts (this feature need reinstall .ave-php script support)
+- Added tool: FTP Tools > Configure connection
+- Added tool: FTP Tools > Remove connection
+- Added tool: FTP Tools > Open config folder
+- Added tool: FTP Tools > Show connections
+- Added tool: FTP Tools > Get file list
+- Added tool: FTP Tools > Download files
+- Added tool: FTP Tools > Upload files
+- Added tool: FTP Tools > Delete files
+- Added tool: FTP Tools > Delete empty folders
+- Added tool: FTP Tools > Delete structure (folders and files)
+- Added tool: FTP Tools > Copy files from FTP to FTP
+- Added tool: Media Sorter > Sort Files: Size
+- Added tool: Media Sorter > Sort Folders: Items quantity (First parent)
+- Improved tool: Media Sorter > Sort Images: Colors count (Added more groups)
+- Improved tool: Media Tools > Video: Fetch media info (Save .csv results and .ini cache in input directory)
+- Improved tool: File Functions > Anti Duplicates (Implement AVE_IGNORE_VALIDATE_EXTENSIONS and AVE_IGNORE_VALIDATE_FILES)
+- Improved tool: File Names Editor > CheckSum (Implement AVE_IGNORE_VALIDATE_EXTENSIONS and AVE_IGNORE_VALIDATE_FILES)
+- Improved tool: MySQL Tools > Fetch data base info (Analyze table before fetch informations)
+- Improved tool: MySQL Tools > Compare data base info (Analyze table before fetch informations)
+- Merged config AVE_QUALITY_SUFFIX_HORIZONTAL, AVE_QUALITY_SUFFIX_SQUARE, AVE_QUALITY_SUFFIX_VERTICAL into AVE_QUALITY_SUFFIX
+- Removed config param AVE_FILE_COUNT_FORMAT, AVE_BACKUP_MAX_ALLOWED_PACKET
+- Fixes and optimizations
+
 v1.8.0:
 - Added tool: Help > Install .ave-php script support (administrator required). After install this feature you can execute PHP scripts by change extension into .ave-php
 - Added tool: Media Sorter > Sort Media: Duration

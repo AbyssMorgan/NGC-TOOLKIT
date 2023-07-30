@@ -141,29 +141,12 @@ class MediaSorter {
 					continue 1;
 				}
 				$size = explode("x",$resolution);
-				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]));
-
-				switch($media->getMediaOrientation(intval($size[0]), intval($size[1]))){
-					case $media::MEDIA_ORIENTATION_HORIZONTAL: {
-						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_HORIZONTAL');
-						$orientation = "Horizontal";
-						break;
-					}
-					case $media::MEDIA_ORIENTATION_VERTICAL: {
-						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_VERTICAL');
-						$orientation = "Vertical";
-						break;
-					}
-					case $media::MEDIA_ORIENTATION_SQUARE: {
-						$quality .= $this->ave->config->get('AVE_QUALITY_SUFFIX_SQUARE');
-						$orientation = "Square";
-						break;
-					}
-				}
+				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1])).$this->ave->config->get('AVE_QUALITY_SUFFIX');
+				$orientation_name = $media->getMediaOrientationName($media->getMediaOrientation(intval($size[0]), intval($size[1])));
 				if($this->params['resolution'] && $this->params['quality']){
-					$directory = "$folder/$orientation/$quality";
+					$directory = "$folder/$orientation_name/$quality";
 				} else if($this->params['resolution']){
-					$directory = "$folder/$orientation";
+					$directory = "$folder/$orientation_name";
 				} else if($this->params['quality']){
 					$directory = "$folder/$quality";
 				}

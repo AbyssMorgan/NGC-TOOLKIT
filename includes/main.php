@@ -25,6 +25,7 @@
 	require_once("$includes_path/services/Request.php");
 	require_once("$includes_path/services/MediaFunctions.php");
 	require_once("$includes_path/services/StringConverter.php");
+	require_once("$includes_path/services/AveFtp.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/AveSettings.php");
 	require_once("$includes_path/tools/AveConsole.php");
@@ -36,6 +37,7 @@
 	require_once("$includes_path/tools/CheckFileIntegrity.php");
 	require_once("$includes_path/tools/MySQLTools.php");
 	require_once("$includes_path/tools/FileEditor.php");
+	require_once("$includes_path/tools/FtpTools.php");
 
 	$ave = new AVE($argv);
 	if(!$ave->abort) $ave->execute();

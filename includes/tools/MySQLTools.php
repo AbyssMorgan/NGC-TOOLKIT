@@ -589,13 +589,6 @@ class MySQLTools {
 			}
 		}
 
-		$v = $this->ave->config->get('AVE_BACKUP_MAX_ALLOWED_PACKET');
-		if($this->ave->get_confirm(" Try call SET GLOBAL `max_allowed_packet` = $v; (Y/N): ")){
-			if(!$backup->set_max_allowed_packet($v)){
-				$this->ave->echo("SET GLOBAL `max_allowed_packet` = $v; fail, continue");
-			}
-		}
-
 		$this->ave->echo(" Clone \"$source\" to \"$destination\"");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 

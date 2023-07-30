@@ -6,6 +6,9 @@
         "symfony/css-selector": "^6.3"
     },
     "config": {
+		"platform": {
+			"php": "8.1"
+		},
         "allow-plugins": {
             "liborm85/composer-vendor-cleaner": true
         },
@@ -17,12 +20,12 @@
 				"tests/",
 				"docs/",
 				".travis.yml",
-				"CHANGELOG.md",
-				"LICENSE.md",
-				"README.md",
-				"UPGRADING.md",
 				"LICENSE",
-				".gitignore"
+				"LICENSE.txt",
+				"CREDITS",
+				".gitignore",
+				".github/",
+				"*.md"
 			],
 			"*/*": [
 				"*.sh"
