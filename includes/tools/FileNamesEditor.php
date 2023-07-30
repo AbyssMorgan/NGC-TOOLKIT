@@ -401,14 +401,12 @@ class FileNamesEditor {
 				}
 				if($this->params['thumbnail']){
 					$thumbnail = $media->getVideoThumbnail($file, $directory, $this->ave->config->get('AVE_THUMBNAIL_WIDTH'), $this->ave->config->get('AVE_THUMBNAIL_ROWS'), $this->ave->config->get('AVE_THUMBNAIL_COLUMN'));
-				} else {
-					$thumbnail = false;
-				}
-				if($thumbnail){
-					$this->ave->write_log("GENERATE THUMBNAIL \"$file.webp\"");
-				} else {
-					$this->ave->write_error("FAILED GENERATE THUMBNAIL \"$file.webp\"");
-					$errors++;
+					if($thumbnail){
+						$this->ave->write_log("GENERATE THUMBNAIL \"$file.webp\"");
+					} else {
+						$this->ave->write_error("FAILED GENERATE THUMBNAIL \"$file.webp\"");
+						$errors++;
+					}
 				}
 				$new_name = $this->ave->get_file_path("$directory/$name.$extension");
 				$renamed = false;
