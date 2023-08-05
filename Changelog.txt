@@ -1,3 +1,7 @@
+v1.9.1:
+- Improved media quality detection
+- Added config AVE_COMPRESS_LEVEL_WEBP, AVE_COMPRESS_LEVEL_PNG, AVE_COMPRESS_LEVEL_JPEG, AVE_COMPRESS_LEVEL_GIF
+
 v1.9.0:
 - Added capturing extra arguments for .ave-php scripts (this feature need reinstall .ave-php script support)
 - Added tool: FTP Tools > Configure connection

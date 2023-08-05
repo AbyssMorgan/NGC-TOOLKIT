@@ -150,30 +150,31 @@ class MediaFunctions {
 	}
 
 	public function getMediaQuality(int $width, int $height) : string {
-		$v = max($width, $height);
-		if($v >= 61440){
+		$w = max($width, $height);
+		$h = min($width, $height);
+		if($w >= 61440 - 7680 || $h == 34560){
 			return '34560';
-		} else if($v >= 30720){
+		} else if($w >= 30720 - 3840 || $h == 17280){
 			return '17280';
-		} else if($v >= 15360){
+		} else if($w >= 15360 - 1920 || $h == 8640){
 			return '8640';
-		} else if($v >= 7680){
+		} else if($w >= 7680 - 960 || $h == 4320){
 			return '4320';
-		} else if($v >= 3840){
+		} else if($w >= 3840 - 320 || $h == 2160){
 			return '2160';
-		} else if($v >= 2560){
+		} else if($w >= 2560 - 160 || $h == 1440){
 			return '1440';
-		} else if($v >= 1920){
+		} else if($w >= 1920 - 160 || $h == 1080){
 			return '1080';
-		} else if($v >= 1280){
+		} else if($w >= 1280 - 80 || $h == 720){
 			return '720';
-		} else if($v >= 1024){
+		} else if($w >= 960 - 80 || $h == 540){
 			return '540';
-		} else if($v >= 850){
+		} else if($w >= 640 - 40 || $h == 480){
 			return '480';
-		} else if($v >= 640){
+		} else if($w >= 480 - 40 || $h == 360){
 			return '360';
-		} else if($v >= 320){
+		} else if($w >= 320 - 32 || $h == 240){
 			return '240';
 		} else {
 			return '144';

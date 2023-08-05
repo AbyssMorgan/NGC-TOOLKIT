@@ -508,26 +508,26 @@ class MediaTools {
 					$image->setImageFormat('webp');
 					if($image->getImageFormat() == 'PNG'){
 						$image->setOption('webp:lossless', 'true');
-						$image->setImageCompressionQuality(100);
 					}
+					$image->setImageCompressionQuality($this->ave->config->get('AVE_COMPRESS_LEVEL_WEBP'));
 					$new_name .= ".webp";
 					break;
 				}
 				case 1: {
 					$image->setImageFormat('jpeg');
-					$image->setImageCompressionQuality(100);
+					$image->setImageCompressionQuality($this->ave->config->get('AVE_COMPRESS_LEVEL_JPEG'));
 					$new_name .= ".jpg";
 					break;
 				}
 				case 2: {
 					$image->setImageFormat('png');
-					$image->setImageCompressionQuality(100);
+					$image->setImageCompressionQuality($this->ave->config->get('AVE_COMPRESS_LEVEL_PNG'));
 					$new_name .= ".png";
 					break;
 				}
 				case 3: {
 					$image->setImageFormat('gif');
-					$image->setImageCompressionQuality(100);
+					$image->setImageCompressionQuality($this->ave->config->get('AVE_COMPRESS_LEVEL_GIF'));
 					$new_name .= ".gif";
 					break;
 				}
