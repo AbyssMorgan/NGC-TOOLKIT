@@ -375,7 +375,7 @@ class MediaSorter {
 			$items++;
 			if(!file_exists($file)) continue;
 
-			$file_name = str_replace(['SEASON','EPISODE',' '], ['S','E',''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
+			$file_name = str_replace(['SEASON', 'EPISODE', ' '], ['S', 'E', ''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
 			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
 				$marker = $mathes[0];
