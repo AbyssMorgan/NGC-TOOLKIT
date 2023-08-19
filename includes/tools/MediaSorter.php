@@ -106,9 +106,9 @@ class MediaSorter {
 		if($line == '#') return false;
 
 		$this->params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($this->params['mode'],['0','1','2'])) goto set_mode;
-		$this->params['resolution'] = in_array($this->params['mode'],['0','1']);
-		$this->params['quality'] = in_array($this->params['mode'],['0','2']);
+		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;
+		$this->params['resolution'] = in_array($this->params['mode'], ['0', '1']);
+		$this->params['quality'] = in_array($this->params['mode'], ['0', '2']);
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
@@ -140,7 +140,7 @@ class MediaSorter {
 					$this->ave->set_errors($errors);
 					continue 1;
 				}
-				$size = explode("x",$resolution);
+				$size = explode("x", $resolution);
 				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1])).$this->ave->config->get('AVE_QUALITY_SUFFIX');
 				$orientation_name = $media->getMediaOrientationName($media->getMediaOrientation(intval($size[0]), intval($size[1])));
 				if($this->params['resolution'] && $this->params['quality']){
@@ -235,7 +235,7 @@ class MediaSorter {
 		if($line == '#') return false;
 
 		$this->params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
 
 		set_separator:
 		$this->ave->clear();
@@ -247,7 +247,7 @@ class MediaSorter {
 		$separator = $this->ave->get_input(" Separator: ");
 		if($separator == '#') return false;
 		$this->params['separator'] = strtolower($separator[0] ?? '?');
-		if(!in_array($this->params['separator'],['.','-','_','\\','@'])) goto set_separator;
+		if(!in_array($this->params['separator'], ['.', '-', '_', '\\', '@'])) goto set_separator;
 		if($this->params['separator'] == '\\') $this->params['separator'] = DIRECTORY_SEPARATOR;
 
 		$this->ave->clear();
@@ -477,7 +477,7 @@ class MediaSorter {
 					$follow_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
 						if(file_exists("$file.$a")){
-							if(!$this->ave->rename("$file.$a","$new_name.$a")) $errors++;
+							if(!$this->ave->rename("$file.$a", "$new_name.$a")) $errors++;
 						}
 					}
 

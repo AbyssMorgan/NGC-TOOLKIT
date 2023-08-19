@@ -35,6 +35,7 @@ class AveCore {
 	public string $utilities_path;
 	public string $utilities_version = "1.0.0";
 	public string $current_title;
+	public array $drives = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 
 	public function __construct(array $arguments, bool $require_utilities){
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
@@ -378,6 +379,7 @@ class AveCore {
 	}
 
 	public function rename(string $from, string $to, bool $log = true) : bool {
+		if(!file_exists($from)) return false;
 		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
@@ -395,6 +397,7 @@ class AveCore {
 	}
 
 	public function rename_case(string $from, string $to, bool $log = true) : bool {
+		if(!file_exists($from)) return false;
 		if(strcmp($from, $to) == 0) return true;
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
@@ -408,6 +411,7 @@ class AveCore {
 	}
 
 	public function copy(string $from, string $to, bool $log = true) : bool {
+		if(!file_exists($from)) return false;
 		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXIST");
@@ -679,6 +683,37 @@ class AveCore {
 			return false;
 		}
 		return $write_buffer;
+	}
+
+	public function trash(string $path) : bool {
+		if(substr($path, 1, 1) == ':'){
+			$new_name = $this->get_file_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
+			if(file_exists($new_name) && !$this->unlink($new_name)) return false;
+			return $this->rename($path, $new_name);
+		} else if(substr($path, 0, 2) == "\\\\"){
+			$device = substr($path, 2);
+			if(strpos($device, "\\") !== false){
+				$new_name = $this->get_file_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
+				if(file_exists($new_name) && !$this->unlink($new_name)) return false;
+				return $this->rename($path, $new_name);
+			}
+		}
+		$this->write_error("FAILED TRASH \"$path\"");
+		return false;
+	}
+
+	public function configure_path(string $title) : string {
+		set_path:
+		$line = $this->get_input(" $title path: ");
+		if($line == '#') return false;
+		$folders = $this->get_input_folders($line);
+		if(!isset($folders[0])) goto set_path;
+		$path = $folders[0];
+		if((file_exists($path) && !is_dir($path)) || !$this->mkdir($path)){
+			echo " Invalid ".strtolower($title)." path\r\n";
+			goto set_path;
+		}
+		return $path;
 	}
 
 }

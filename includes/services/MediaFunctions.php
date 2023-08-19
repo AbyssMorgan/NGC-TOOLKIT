@@ -99,6 +99,16 @@ class MediaFunctions {
 		return (intval($h) * 3600) + (intval($m) * 60) + intval($s);
 	}
 
+	public function getVideoLanguages(string $path) : array {
+		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> nul", $output);
+		$data = [];
+		foreach($output as $language){
+			$parts = explode("|", $language);
+			if(isset($parts[1])) array_push($data, $parts[1]);
+		}
+		return $data;
+	}
+
 	public function SecToTime(int $s) : string {
 		$d = intval(floor($s / 86400));
 		$s -= ($d * 86400);
