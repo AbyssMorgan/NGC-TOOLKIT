@@ -1,0 +1,7 @@
+{
+	"files.associations": {
+		"*.ave-php": "php",
+	},
+	"editor.insertSpaces": false,
+	"php.stubs": ["*", "imagick"]
+}

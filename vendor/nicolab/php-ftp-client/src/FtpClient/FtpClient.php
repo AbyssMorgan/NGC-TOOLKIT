@@ -23,15 +23,15 @@ use \Countable;
  * @method int chmod(int $mode, string $filename) Set permissions on a file via FTP
  * @method bool delete(string $path) Deletes a file on the FTP server
  * @method bool exec(string $command) Requests execution of a command on the FTP server
- * @method bool fget(resource $handle, string $remote_file, int $mode, int $resumepos = 0) Downloads a file from the FTP server and saves to an open file
- * @method bool fput(string $remote_file, resource $handle, int $mode, int $startpos = 0) Uploads from an open file to the FTP server
+ * @method bool fget($handle, string $remote_file, int $mode, int $resumepos = 0) Downloads a file from the FTP server and saves to an open file
+ * @method bool fput(string $remote_file, $handle, int $mode, int $startpos = 0) Uploads from an open file to the FTP server
  * @method mixed get_option(int $option) Retrieves various runtime behaviours of the current FTP stream
  * @method bool get(string $local_file, string $remote_file, int $mode, int $resumepos = 0) Downloads a file from the FTP server
  * @method int mdtm(string $remote_file) Returns the last modified time of the given file
  * @method array mlsd(string $remote_dir) Returns a list of files in the given directory
  * @method int nb_continue() Continues retrieving/sending a file (non-blocking)
- * @method int nb_fget(resource $handle, string $remote_file, int $mode, int $resumepos = 0) Retrieves a file from the FTP server and writes it to an open file (non-blocking)
- * @method int nb_fput(string $remote_file, resource $handle, int $mode, int $startpos = 0) Stores a file from an open file to the FTP server (non-blocking)
+ * @method int nb_fget($handle, string $remote_file, int $mode, int $resumepos = 0) Retrieves a file from the FTP server and writes it to an open file (non-blocking)
+ * @method int nb_fput(string $remote_file, resrce $handle, int $mode, int $startpos = 0) Stores a file from an open file to the FTP server (non-blocking)
  * @method int nb_get(string $local_file, string $remote_file, int $mode, int $resumepos = 0) Retrieves a file from the FTP server and writes it to a local file (non-blocking)
  * @method int nb_put(string $remote_file, string $local_file, int $mode, int $startpos = 0) Stores a file on the FTP server (non-blocking)
  * @method bool pasv(bool $pasv) Turns passive mode on or off

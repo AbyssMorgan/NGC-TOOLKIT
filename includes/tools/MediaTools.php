@@ -7,7 +7,6 @@ namespace App\Tools;
 use AVE;
 use Imagick;
 use Exception;
-
 use App\Services\Logs;
 use App\Services\IniFile;
 use App\Services\MediaFunctions;

@@ -20,6 +20,8 @@ class AveCore {
 	public Logs $log_error;
 	public Logs $log_data;
 
+	public string $app_name = "";
+	public string $version = "0.0.0";
 	public ?string $command;
 	public array $arguments;
 	public bool $windows;
@@ -558,10 +560,9 @@ class AveCore {
 			if(strpos($device, "\\") !== false){
 				$parts = explode("\\", $device);
 				return file_exists("\\\\".$parts[0]."\\".$parts[1]);
-			} else {
-				return false;
 			}
 		}
+		return false;
 	}
 
 	public function get_file_path(string $path) : string {
@@ -702,7 +703,7 @@ class AveCore {
 		return false;
 	}
 
-	public function configure_path(string $title) : string {
+	public function configure_path(string $title) : string|bool {
 		set_path:
 		$line = $this->get_input(" $title path: ");
 		if($line == '#') return false;

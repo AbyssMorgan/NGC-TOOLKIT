@@ -212,7 +212,7 @@ class FileFunctions {
 								$end = strpos($file_name, ']', $start);
 								$file_name = str_replace(' '.substr($file_name, $start, $end - $start + 1), '', $file_name);
 							}
-							$file_name = substr($file_name, strlen($file_name) - $algo['length'], $algo['length']);
+							$file_name = substr($file_name, intval(strlen($file_name) - $algo['length']), $algo['length']);
 						}
 						if($file_name != $hash){
 							$this->ave->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $file_name");
@@ -387,7 +387,7 @@ class FileFunctions {
 				$current_size = 0;
 				$fp = fopen($file, "r+w");
 				if(!$fp){
-					$this->ave->write_errow("FILE OVERWRITE FAILED \"$file\"");
+					$this->ave->write_error("FILE OVERWRITE FAILED \"$file\"");
 					$errors++;
 				} else {
 					$this->ave->write_log("FILE OVERWRITE START \"$file\"");

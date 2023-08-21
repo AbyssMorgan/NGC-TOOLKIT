@@ -11,6 +11,8 @@ use Exception;
 
 class MediaFunctions {
 
+	public AVE $ave;
+
 	const MEDIA_ORIENTATION_HORIZONTAL = 0;
 	const MEDIA_ORIENTATION_VERTICAL = 1;
 	const MEDIA_ORIENTATION_SQUARE = 2;
