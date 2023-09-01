@@ -799,7 +799,7 @@ class FtpTools {
 		} else {
 			$folders = $remote_source->get_folders($input);
 			foreach($folders as $folder){
-				array_push($directories, str_ireplace($input, $output, pathinfo($folder, PATHINFO_DIRNAME)));
+				array_push($directories, str_ireplace($input, $output, $folder));
 			}
 		}
 
@@ -883,6 +883,7 @@ class FtpTools {
 			goto set_label;
 		}
 		$ftp->set_option(FTP_TIMEOUT_SEC, 300);
+		$ftp->pasv(true);
 
 		return $ftp;
 	}
