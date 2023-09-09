@@ -14,6 +14,7 @@ class GuardPattern {
 	public function __construct(array $folders = [], array $files = []){
 		$this->folders = $folders;
 		$this->files = $files;
+		$this->input = '';
 	}
 
 	public function addFolders(array|string $folders) : void {

@@ -395,7 +395,7 @@ class FtpTools {
 		$this->ave->set_errors($errors);
 		foreach($files as $file){
 			$items++;
-			$local_file = $this->ave->get_file_path(str_replace($input, $output, $file));
+			$local_file = $this->ave->get_file_path(str_ireplace($input, $output, $file));
 			$directory = pathinfo($local_file, PATHINFO_DIRNAME);
 			if(file_exists($local_file)) $this->ave->unlink($local_file);
 			if(!file_exists($directory)) $this->ave->mkdir($directory);

@@ -142,7 +142,7 @@ class CheckFileIntegrity {
 		$pattern->load(file_get_contents($pattern_file));
 
 		$input = $pattern->getInput();
-		if(!file_exists($input) || !is_dir($input)){
+		if(!file_exists($input) || !is_dir($input) || empty($input)){
 			$this->ave->echo(" Invalid input folder: \"$input\"");
 			goto set_pattern;
 		}
