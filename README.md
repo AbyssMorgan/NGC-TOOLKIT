@@ -4,9 +4,11 @@ Windows console tool for media
 #### Functionality and how to use
 - [Wiki](https://github.com/AbyssMorgan/AVE-PHP/wiki)
 
-#### Requirements
+#### Requirements (Windows)
 - Operating system: Windows 7, 8, 8.1, 10, 11
 - Microsoft Visual C++ Redistributable for Visual Studio 2019
 
-#### Informations
-- By defaults logs save into %LOCALAPPDATA%\\AVE\\Logs you can change this by edit [AVE_LOG_FOLDER](https://github.com/AbyssMorgan/AVE-PHP/wiki/Config#user-content-ave_log_folder) and [AVE_DATA_FOLDER](https://github.com/AbyssMorgan/AVE-PHP/wiki/Config#user-content-ave_data_folder)
+#### Requirements (Linux)
+- PHP 8.1 with packages: php8.1 php8.1-curl php8.1-gd php8.1-intl php8.1-mysqli php8.1-openssl php8.1-pdo_mysql php8.1-imagick php8.1-ftp php8.1-fileinfo php8.1-mbstring
+- Required programs: ffmpeg, mkvtoolnix, imagemagick
+- Optional programs: [Movie Thumbnailer](https://www.videohelp.com/software/movie-thumbnailer)

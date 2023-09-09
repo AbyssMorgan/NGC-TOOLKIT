@@ -1,0 +1,28 @@
+<?php
+	$app_name = 'AVE-PHP';
+
+	$version = file_get_contents($this->ave->get_file_path("$this->path/version"));
+
+	$this->ave->title("$app_name Builder v$version");
+
+	$output = "$this->path/Setup";
+	$zip_name_a = $this->ave->get_file_path("$output/${app_name}_v$version"."_LINUX.tar");
+	$this->ave->unlink($zip_name_a);
+
+	$zip_name_b = $this->ave->get_file_path("$output/${app_name}_v$version"."_LINUX.tar.gz");
+	$this->ave->unlink($zip_name_b);
+
+	$this->ave->echo(" Compress \"$zip_name_a\"");
+	$this->ave->exec("7z", "a -mx0 -ttar -- \"$zip_name_a\" \"includes\" \"vendor\" \"AVE-PHP.sh\" \"composer.json\" \"Changelog.txt\" \"LICENSE\"");
+
+	$this->ave->echo(" Compress \"$zip_name_b\"");
+	$this->ave->exec("7z", "a -mx9 -tgzip -- \"$zip_name_b\" \"$zip_name_a\"");
+
+	$this->ave->unlink($zip_name_a);
+
+	if(file_exists($zip_name_b)){
+		$this->ave->pause(" Operation done, press any key to back to menu");
+	} else {
+		$this->ave->pause(" Failed compress files.");
+	}
+?>

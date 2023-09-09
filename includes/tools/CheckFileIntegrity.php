@@ -118,7 +118,7 @@ class CheckFileIntegrity {
 		file_put_contents($file_name, $pattern->get());
 
 		$this->ave->open_logs(false);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -161,7 +161,7 @@ class CheckFileIntegrity {
 		chdir($cwd);
 
 		$this->ave->open_logs(false);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -235,7 +235,7 @@ class CheckFileIntegrity {
 		$this->ave->write_data($errors['unknown'] ?? []);
 
 		$this->ave->open_logs(false);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -269,7 +269,7 @@ class CheckFileIntegrity {
 		$this->ave->open_file($tree_file);
 
 		$this->ave->open_logs(false);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -280,7 +280,7 @@ class CheckFileIntegrity {
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -291,7 +291,7 @@ class CheckFileIntegrity {
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -302,7 +302,7 @@ class CheckFileIntegrity {
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -313,7 +313,7 @@ class CheckFileIntegrity {
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 

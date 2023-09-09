@@ -61,6 +61,7 @@ class AveFtp {
 	public function get_folders(string $path) : array {
 		$data = [];
 		$files = $this->ftp->mlsd($path);
+		if($files === false) return [];
 		array_push($data, $path);
 		foreach($files as $file){
 			if($file['name'] == '.' || $file['name'] == '..') continue;

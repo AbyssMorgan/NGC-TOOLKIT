@@ -134,7 +134,7 @@ class FileEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -213,7 +213,7 @@ class FileEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -285,7 +285,7 @@ class FileEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -366,7 +366,7 @@ class FileEditor {
 		fclose($fp);
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -414,7 +414,7 @@ class FileEditor {
 		fclose($fp);
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -465,7 +465,7 @@ class FileEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 

@@ -205,7 +205,7 @@ class MySQLTools {
 		], true);
 
 		$this->ave->clear();
-		$this->ave->pause(" Setup connection for \"$label\" done, press enter to back to menu");
+		$this->ave->pause(" Setup connection for \"$label\" done, press any key to back to menu");
 
 		return false;
 	}
@@ -505,7 +505,7 @@ class MySQLTools {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Backup for \"$label\" done, press enter to back to menu");
+		$this->ave->pause(" Backup for \"$label\" done, press any key to back to menu");
 		return false;
 	}
 
@@ -584,7 +584,7 @@ class MySQLTools {
 
 		if(!$backup->isDestinationEmpty()){
 			if(!$this->ave->get_confirm(" Output database is not empty, continue (Y/N): ")){
-				$this->ave->pause(" Clone \"$source\" to \"$destination\" aborted, press enter to back to menu");
+				$this->ave->pause(" Clone \"$source\" to \"$destination\" aborted, press any key to back to menu");
 				return false;
 			}
 		}
@@ -789,7 +789,7 @@ class MySQLTools {
 		$backup->disconnect_destination();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Clone for \"$source\" to \"$destination\" done, press enter to back to menu");
+		$this->ave->pause(" Clone for \"$source\" to \"$destination\" done, press any key to back to menu");
 		return false;
 	}
 
@@ -1110,7 +1110,7 @@ class MySQLTools {
 		$db->disconnect();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Connection \"$label\" closed, press enter to back to menu");
+		$this->ave->pause(" Connection \"$label\" closed, press any key to back to menu");
 		return false;
 	}
 
@@ -1292,7 +1292,7 @@ class MySQLTools {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Backup for \"$label\" done, press enter to back to menu");
+		$this->ave->pause(" Backup for \"$label\" done, press any key to back to menu");
 		return false;
 	}
 
@@ -1342,7 +1342,7 @@ class MySQLTools {
 		$db->disconnect();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Connection \"$label\" closed, press enter to back to menu");
+		$this->ave->pause(" Connection \"$label\" closed, press any key to back to menu");
 		return false;
 	}
 
@@ -1479,7 +1479,7 @@ class MySQLTools {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Comparison \"$source\" to \"$destination\" done, press enter to back to menu");
+		$this->ave->pause(" Comparison \"$source\" to \"$destination\" done, press any key to back to menu");
 		return false;
 	}
 

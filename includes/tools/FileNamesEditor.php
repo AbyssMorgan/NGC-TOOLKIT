@@ -151,7 +151,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -295,7 +295,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -321,7 +321,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -371,8 +371,6 @@ class FileNamesEditor {
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$file_id = 1;
-			$list = [];
 			$files = $this->ave->get_files($folder, $video_extensions);
 			$items = 0;
 			$total = count($files);
@@ -454,7 +452,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -512,7 +510,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -568,7 +566,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -672,7 +670,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -740,7 +738,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -845,7 +843,7 @@ class FileNamesEditor {
 		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -962,7 +960,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1019,7 +1017,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1126,7 +1124,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1207,7 +1205,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1298,7 +1296,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1343,7 +1341,7 @@ class FileNamesEditor {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 

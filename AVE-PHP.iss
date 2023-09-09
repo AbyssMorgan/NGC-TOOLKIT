@@ -1,5 +1,5 @@
 #define MyAppName "AVE-PHP"
-#define MyAppVersion "1.9.1"
+#define MyAppVersion "1.9.2"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "AVE-PHP.cmd"

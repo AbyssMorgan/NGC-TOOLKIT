@@ -168,7 +168,7 @@ class FtpTools {
 		], true);
 
 		$this->ave->clear();
-		$this->ave->pause(" Setup connection for \"$label\" done, press enter to back to menu");
+		$this->ave->pause(" Setup connection for \"$label\" done, press any key to back to menu");
 
 		return false;
 	}
@@ -320,7 +320,7 @@ class FtpTools {
 		$ftp->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -395,7 +395,7 @@ class FtpTools {
 		$this->ave->set_errors($errors);
 		foreach($files as $file){
 			$items++;
-			$local_file = $this->ave->get_file_path(str_ireplace($input, $output, $file));
+			$local_file = $this->ave->get_file_path(str_replace($input, $output, $file));
 			$directory = pathinfo($local_file, PATHINFO_DIRNAME);
 			if(file_exists($local_file)) $this->ave->unlink($local_file);
 			if(!file_exists($directory)) $this->ave->mkdir($directory);
@@ -411,7 +411,7 @@ class FtpTools {
 		$ftp->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -473,11 +473,12 @@ class FtpTools {
 			$this->ave->echo(" Cannot access/create folder \"$output\"");
 			goto set_output;
 		}
-
+		
 		$errors = 0;
 		$this->ave->set_errors($errors);
 
 		$directories = [];
+		$this->ave->clear();
 		$this->ave->echo(" Prepare directories");
 		$files = $this->ave->get_files($input, $extensions, null, $filters);
 		foreach($files as $file){
@@ -521,7 +522,7 @@ class FtpTools {
 		$ftp->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -593,7 +594,7 @@ class FtpTools {
 		$ftp->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -643,7 +644,7 @@ class FtpTools {
 		$ftp->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -712,7 +713,7 @@ class FtpTools {
 		$ftp->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -790,6 +791,8 @@ class FtpTools {
 		$directories = [];
 		$this->ave->clear();
 		$this->ave->echo(" Get file list from \"$input\"");
+		$ftp_destination->set_option(FTP_TIMEOUT_SEC, 3600);
+
 		$files = $remote_source->get_files($input, $extensions, null, $filters);
 		if(!$create_empty_folders){
 			foreach($files as $file){
@@ -850,7 +853,7 @@ class FtpTools {
 		$ftp_destination->close();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 

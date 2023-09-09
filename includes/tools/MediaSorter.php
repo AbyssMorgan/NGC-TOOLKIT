@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tools;
 
 use AVE;
-use Exception;
 use App\Services\MediaFunctions;
 
 class MediaSorter {
@@ -86,7 +85,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -162,7 +161,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -205,7 +204,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -281,7 +280,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -343,7 +342,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -428,7 +427,7 @@ class MediaSorter {
 		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -498,7 +497,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -546,7 +545,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -582,7 +581,7 @@ class MediaSorter {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 

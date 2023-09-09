@@ -31,7 +31,7 @@ class AveSettings {
 			' 4 - Open program folder',
 			' 5 - Check for updates',
 			' 6 - Restore default settings',
-			' 7 - Install .ave-php script support',
+			' 7 - Install .ave-php script support (Windows)',
 		]);
 	}
 
@@ -101,12 +101,18 @@ class AveSettings {
 		$this->ave->clear();
 		if($this->ave->get_confirm(" Restore default settings (Y/N): ")){
 			$config_default = new IniFile($this->ave->get_file_path($this->ave->path."/includes/config/default.ini"), true);
+			if($this->ave->windows){
+				$config_default_system = new IniFile($this->ave->get_file_path($this->ave->path."/includes/config/windows.ini"), true);
+			} else {
+				$config_default_system = new IniFile($this->ave->get_file_path($this->ave->path."/includes/config/linux.ini"), true);
+			}
+			$config_default->update($config_default_system->getAll());
 			$this->ave->config->update($config_default->getAll(), true);
 			$this->ave->echo(" Settings have been reset");
 		} else {
 			$this->ave->echo(" Settings reset has been cancelled");
 		}
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -127,21 +133,25 @@ class AveSettings {
 
 	public function ToolInstallAvePHPScript() : bool {
 		$this->ave->clear();
-		if(!$this->ave->is_admin()){
+		$program_path = realpath($this->ave->get_file_path($this->ave->path));
+		if(!$this->ave->windows){
+			$this->ave->echo(" This feature is available only on windows operating system.");
+			$this->ave->echo(" Use command: /usr/bin/php8.1 \"$program_path\includes\main.php\" --script <path> [...]");
+			$this->ave->pause(" Press enter to back to menu");
+		} else if(!$this->ave->is_admin()){
 			$this->ave->echo(" You must run ".$this->ave->app_name." as administrator to use this feature");
 			$this->ave->pause(" Press enter to back to menu");
 		} else {
 			if($this->ave->get_confirm(" Install .ave-php scripts support (Y/N): ")){
-				$program_path = realpath($this->ave->get_file_path($this->ave->path));
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\.ave-php /ve /d "'.$this->ave->app_name.'" /f'));
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP /ve /d "'.$this->ave->app_name.' Executable" /f'));
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\DefaultIcon /ve /d "\"'.$program_path.'\ave-php.ico\"" /f'));
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell /f'));
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open /f'));
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\AVE-PHP\shell\open\command /ve /d "\"'.$program_path.'\commands\AVE-PHP-SCRIPT.cmd\" \"%1\" %*" /f'));
-				$this->ave->pause(" Operation done, press enter to back to menu");
+				$this->ave->pause(" Operation done, press any key to back to menu");
 			} else {
-				$this->ave->pause(" Operation aborted, press enter to back to menu");
+				$this->ave->pause(" Operation aborted, press any key to back to menu");
 			}
 		}
 		return false;

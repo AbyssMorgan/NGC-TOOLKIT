@@ -77,13 +77,14 @@ class DirectoryFunctions {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
 	public function ToolForceLoadIcon() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("ForceLoadIcon");
+		if(!$this->ave->windows) return $this->ave->windows_only();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -112,7 +113,7 @@ class DirectoryFunctions {
 		}
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -165,7 +166,7 @@ class DirectoryFunctions {
 		unset($data);
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -217,7 +218,7 @@ class DirectoryFunctions {
 		$this->ave->progress($items, $total);
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Operation done, press enter to back to menu");
+		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 

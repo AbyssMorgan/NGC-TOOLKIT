@@ -12,7 +12,7 @@ use DirectoryIterator;
 
 class AveCore {
 
-	public int $core_version = 6;
+	public int $core_version = 7;
 
 	public IniFile $config;
 
@@ -52,21 +52,43 @@ class AveCore {
 		$this->utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
 
 		if($require_utilities){
-			$ave_utilities = false;
-			if(file_exists($this->utilities_path)){
-				$ave_utilities_main = new IniFile($this->get_file_path("$this->utilities_path/main.ini"));
-				$ave_utilities_imagick = new IniFile($this->get_file_path("$this->utilities_path/imagick.ini"));
-				if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
-					$ave_utilities = true;
+			if($this->windows){
+				$ave_utilities = false;
+				if(file_exists($this->utilities_path)){
+					$ave_utilities_main = new IniFile($this->get_file_path("$this->utilities_path/main.ini"));
+					$ave_utilities_imagick = new IniFile($this->get_file_path("$this->utilities_path/imagick.ini"));
+					if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
+						$ave_utilities = true;
+					}
 				}
-			}
-
-			if(!$ave_utilities){
-				$this->echo();
-				$this->echo(" Invalid AVE-UTILITIES version detected: v".$ave_utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
-				$this->echo();
-				$this->pause();
-				die("");
+	
+				if(!$ave_utilities){
+					$this->echo();
+					$this->echo(" Invalid AVE-UTILITIES version detected: v".$ave_utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
+					$this->echo();
+					$this->pause();
+					die("");
+				}
+			} else {
+				$programs = [
+					'ffprobe' => 'ffmpeg',
+					'mkvmerge' => 'mkvtoolnix',
+				];
+				$errors = 0;
+				foreach($programs as $program_name => $install_name){
+					if(!file_exists("/usr/bin/$program_name")){
+						$this->echo("[ERROR] Required $program_name not found, please istall $install_name");
+						$errors++;
+					}
+				}
+				if(!extension_loaded('imagick')){
+					$this->echo("[ERROR] Imagick is not installed");
+					$errors++;
+				}
+				if($errors > 0){
+					$this->abort = true;
+					return;
+				}
 			}
 		}
 	}
@@ -136,7 +158,11 @@ class AveCore {
 	}
 
 	public function clear() : void {
-		if($this->windows) popen('cls', 'w');
+		if($this->windows){
+			popen('cls', 'w');
+		} else {
+			system('clear');
+		}
 		if($this->config->get('AVE_SHOW_LOGO', false) && !empty($this->logo)){
 			$this->echo("$this->logo");
 		} else {
@@ -458,20 +484,20 @@ class AveCore {
 		return ($answer == 'Y');
 	}
 
-	public function get_input(string $message = '') : string {
-		if(!empty($message)) echo $message;
-		return trim(readline());
+	public function get_input(?string $message = null) : string {
+		return trim(readline($message));
 	}
 
-	public function get_input_no_trim(string $message = '') : string {
-		if(!empty($message)) echo $message;
-		return readline();
+	public function get_input_no_trim(?string $message = null) : string {
+		return readline($message);
 	}
 
 	public function pause(?string $message = null) : void {
 		if(!is_null($message)) echo $message;
 		if($this->windows){
 			system("PAUSE > nul");
+		} else {
+			$this->get_input();
 		}
 	}
 
@@ -515,14 +541,26 @@ class AveCore {
 	}
 
 	public function open_file(string $path, string $params = '/MIN') : void {
-		if($this->windows && file_exists($path)){
-			exec("START $params \"\" \"$path\"");
+		if(file_exists($path)){
+			if($this->windows){
+				exec("START $params \"\" \"$path\"");
+			} else if(!is_null($this->config->get('AVE_OPEN_FILE_BINARY'))){
+				exec($this->config->get('AVE_OPEN_FILE_BINARY')." \"$path\"");
+			} else {
+				$this->write_error("Failed open file AVE_OPEN_FILE_BINARY is not configured");
+			}
 		}
 	}
 
 	public function open_url(string $url) : void {
 		if(strpos($url, "https://") !== false || strpos($url, "http://") !== false){
-			exec("START \"\" \"$url\"");
+			if($this->windows){
+				exec("START \"\" \"$url\"");
+			} else if(!is_null($this->config->get('AVE_OPEN_FILE_BINARY'))){
+				exec($this->config->get('AVE_OPEN_FILE_BINARY')." \"$url\"");
+			} else {
+				$this->write_error("Failed open url AVE_OPEN_FILE_BINARY is not configured");
+			}
 		}
 	}
 
@@ -607,7 +645,7 @@ class AveCore {
 	}
 
 	public function exec(string $program, string $command, array &$output = null, int &$result_code = null) : string|false {
-		$program = $this->get_file_path("$this->utilities_path/main/$program.exe");
+		if($this->windows) $program = $this->get_file_path("$this->utilities_path/main/$program.exe");
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 
@@ -680,7 +718,7 @@ class AveCore {
 		$write_buffer = $this->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->clear();
-			$this->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->config->get('AVE_WRITE_BUFFER_SIZE')."\", press enter to back to menu.");
+			$this->pause(" Operation aborted: invalid config value for AVE_WRITE_BUFFER_SIZE=\"".$this->config->get('AVE_WRITE_BUFFER_SIZE')."\", press any key to back to menu.");
 			return false;
 		}
 		return $write_buffer;
@@ -715,6 +753,12 @@ class AveCore {
 			goto set_path;
 		}
 		return $path;
+	}
+
+	public function windows_only() : bool {
+		$this->echo(" This tool is only available on windows operating system");
+		$this->pause(" Press enter to back to menu");
+		return false;
 	}
 
 }

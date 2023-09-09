@@ -128,6 +128,7 @@ class MediaFunctions {
 	}
 
 	public function getVideoThumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
+		if(!$this->ave->windows && !file_exists("/usr/bin/mtn")) return false;
 		$input_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
 		$output_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_BASENAME).".webp");
 		if(file_exists($output_file)) return true;

@@ -1,3 +1,8 @@
+v1.9.2:
+- Compatibility updates for Linux operating system
+- Added config AVE_OPEN_FILE_BINARY
+- Move config to %LOCALAPPDATA%\AVE-PHP
+
 v1.9.1:
 - Improved media quality detection
 - Added config AVE_COMPRESS_LEVEL_WEBP, AVE_COMPRESS_LEVEL_PNG, AVE_COMPRESS_LEVEL_JPEG, AVE_COMPRESS_LEVEL_GIF
@@ -84,7 +89,7 @@ v1.6.0:
 - Added tool: File Functions > Random file generator
 - Removed config param AVE_MAX_MEMORY_LIMIT now AVE-PHP will be work without memory limit
 - Added missing config in documentation AVE_COLOR
-- Added ability to set tool and sub tool at once by typing <tool id>.<sub tool id> example if you type 0 0 then press enter then you will be redirected to File Names Editor > Generate names: CheckSum
+- Added ability to set tool and sub tool at once by typing <tool id>.<sub tool id> example if you type 0 0 then press any key then you will be redirected to File Names Editor > Generate names: CheckSum
 - Added flags into tool: File Names Editor > Pretty file name (New flags: Replace language characters, Chinese to PinYin, Hiragama to Romaji, Katakana to Romaji)
 
 v1.5.3:

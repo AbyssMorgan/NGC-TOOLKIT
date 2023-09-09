@@ -25,7 +25,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.9.1";
+	public string $version = "1.9.2";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -35,11 +35,32 @@ class AVE extends AveCore {
 
 	public function __construct(array $arguments){
 		parent::__construct($arguments, true);
-		dl('php_imagick.dll');
+		if($this->abort) return;
+		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
+		if($this->windows){
+			dl('php_imagick.dll');
+			$config_default_system = new IniFile($this->get_file_path("$this->path/includes/config/windows.ini"), true);
+			$old_app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE");
+			$this->app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE-PHP");
+			if(file_exists($old_app_data) && !file_exists($this->app_data)) rename($old_app_data, $this->app_data);
+		} else {
+			$config_default_system = new IniFile($this->get_file_path("$this->path/includes/config/linux.ini"), true);
+			$this->app_data = $this->get_file_path("/etc/AVE-PHP");
+			$open_file_binary = null;
+			$variants = ['xdg-open', 'nautilus', 'dolphin'];
+			foreach($variants as $variant){
+				if(file_exists("/usr/bin/$variant")){
+					$open_file_binary = $variant;
+				}
+			}
+			$config_default_system->set('AVE_OPEN_FILE_BINARY', $open_file_binary);
+		}
+
+		$config_default->update($config_default_system->getAll());
+
 		$this->logo = "\r\n $this->app_name Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
-
-		$this->app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE");
+		
 		$path_config_ave = $this->get_file_path("$this->app_data/config.ini");
 		$path_config_mysql = $this->get_file_path("$this->app_data/MySQL");
 		$path_config_ftp = $this->get_file_path("$this->app_data/FTP");
@@ -48,12 +69,14 @@ class AVE extends AveCore {
 		if(!file_exists($path_config_mysql)) mkdir($path_config_mysql);
 		if(!file_exists($path_config_ftp)) mkdir($path_config_ftp);
 
-		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
 		$this->config = new IniFile($path_config_ave, true);
 		$this->mkvmerge = new IniFile($this->get_file_path("$this->path/includes/config/mkvmerge.ini"), true);
 
 		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10900){
 			$this->config->unset(['AVE_EXTENSIONS_VIDEO_FOLLOW']);
+		}
+		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 20000){
+			$this->config->unset(['AVE_DATA_FOLDER','AVE_LOG_FOLDER']);
 		}
 
 		foreach($config_default->getAll() as $key => $value){
@@ -70,15 +93,13 @@ class AVE extends AveCore {
 			}
 		}
 
-		popen('color '.$this->config->get('AVE_COLOR'), 'w');
+		if($this->windows) popen('color '.$this->config->get('AVE_COLOR'), 'w');
 
-		$version_changed = false;
 		$check_for_updates = false;
 		if($this->command == '--interactive'){
 			if($this->version != $this->config->get('APP_VERSION')){
 				$this->config->set('APP_VERSION', $this->version);
 				$changed = true;
-				$version_changed = true;
 			}
 			if($this->config->get('AVE_CHECK_FOR_UPDATES')){
 				$next_check_update = $this->config->get('APP_NEXT_CHECK_FOR_UPDATE', date("U") - 3600);
@@ -140,7 +161,7 @@ class AVE extends AveCore {
 				while(!$this->abort){
 					$this->abort = $this->select_tool();
 				}
-				$this->exit(10, false);
+				$this->exit(0, false);
 				break;
 			}
 			case '--script': {
@@ -167,7 +188,7 @@ class AVE extends AveCore {
 		$this->title("$this->app_name v$this->version");
 		$this->tool = null;
 		$this->tool_name = '';
-		$this->print_help([
+		$options = [
 			' Tools:',
 			' 0 - File Names Editor',
 			' 1 - File Functions',
@@ -179,7 +200,9 @@ class AVE extends AveCore {
 			' 7 - File Editor',
 			' 8 - FTP Tools',
 			' H - Help',
-		]);
+		];
+		if(!$this->windows) array_push($options, ' # - Close program');
+		$this->print_help($options);
 
 		$line = $this->get_input(' Tool: ');
 		$dynamic_action = explode(' ', $line);
@@ -223,6 +246,9 @@ class AVE extends AveCore {
 			case 'H': {
 				$this->tool = new AveSettings($this);
 				break;
+			}
+			case '#': {
+				return true;
 			}
 		}
 		if(!$this->abort && !is_null($this->tool)){
