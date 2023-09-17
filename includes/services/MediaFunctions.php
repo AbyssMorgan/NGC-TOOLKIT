@@ -106,7 +106,7 @@ class MediaFunctions {
 		$data = [];
 		foreach($output as $language){
 			$parts = explode("|", $language);
-			if(isset($parts[1])) array_push($data, $parts[1]);
+			array_push($data, $parts[1] ?? $parts[0]);
 		}
 		return $data;
 	}
