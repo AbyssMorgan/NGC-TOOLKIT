@@ -25,7 +25,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.9.2";
+	public string $version = "1.9.3";
 
 	private array $folders_to_scan = [
 		'bin',

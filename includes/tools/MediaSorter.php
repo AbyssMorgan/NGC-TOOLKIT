@@ -72,7 +72,7 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-				$new_name = $this->ave->get_file_path("$folder/$extension".pathinfo($file, PATHINFO_BASENAME));
+				$new_name = $this->ave->get_file_path("$folder/$extension/".pathinfo($file, PATHINFO_BASENAME));
 				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
