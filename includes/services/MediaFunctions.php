@@ -165,6 +165,7 @@ class MediaFunctions {
 	public function getMediaQuality(int $width, int $height) : string {
 		$w = max($width, $height);
 		$h = min($width, $height);
+		if($w / $h == 2) return strval($h);
 		if($w >= 61440 - 7680 || $h == 34560){
 			return '34560';
 		} else if($w >= 30720 - 3840 || $h == 17280){
