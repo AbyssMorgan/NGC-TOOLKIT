@@ -124,7 +124,7 @@ class AveSettings {
 			$ver_repo = explode(".", $response['data']);
 			$ver_current = intval($ver_current[0])*10000 + intval($ver_current[1])*100 + intval($ver_current[2]);
 			$ver_repo = intval($ver_repo[0])*10000 + intval($ver_repo[1])*100 + intval($ver_repo[2]);
-			$version = strval($ver_repo);
+			$version = strval($response['data']);
 			return ($ver_repo > $ver_current);
 		}
 		$this->ave->echo(" Failed check for updates: ".$response['code']);

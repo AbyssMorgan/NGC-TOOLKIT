@@ -43,6 +43,7 @@ class FtpTools {
 			' 8  - Delete empty folders',
 			' 9  - Delete structure (folders and files)',
 			' 10 - Copy files from FTP to FTP',
+			' 11 - Import FileZilla XML',
 		]);
 	}
 
@@ -61,6 +62,7 @@ class FtpTools {
 			case '8': return $this->ToolDeleteEmptyFolders();
 			case '9': return $this->ToolDeleteStructure();
 			case '10': return $this->ToolCopyFilesFromFTPToFTP();
+			case '11': return $this->ToolImportFileZillaXML();
 		}
 		return false;
 	}
@@ -99,7 +101,7 @@ class FtpTools {
 
 		$this->ave->print_help([
 			' Allowed characters: A-Z a-z 0-9 _ -',
-			' Label length 3 - 20',
+			' Label length 3 - 32',
 		]);
 
 		set_label:
@@ -216,7 +218,7 @@ class FtpTools {
 			$ini = new IniFile($file);
 			if($ini->isValid() && $ini->isSet('FTP_HOST')){
 				$label = pathinfo($file, PATHINFO_FILENAME);
-				$this->ave->echo(" $label".str_repeat(" ",20-strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
+				$this->ave->echo(" $label".str_repeat(" ",32-strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
 				$cnt++;
 			}
 		}
@@ -851,6 +853,85 @@ class FtpTools {
 		}
 		$ftp_source->close();
 		$ftp_destination->close();
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function ToolImportFileZillaXML() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("ImportFileZillaXML");
+
+		set_xml_file:
+		$line = $this->ave->get_input(" XML file: ");
+		if($line == '#') return false;
+		$line = $this->ave->get_input_folders($line);
+		if(!isset($line[0])) goto set_xml_file;
+		$input = $line[0];
+
+		if(!file_exists($input) || is_dir($input)){
+			$this->ave->echo(" Invalid file");
+			goto set_xml_file;
+		}
+
+		$xml = file_get_contents($this->ave->get_file_path($input));
+
+		$xml = str_replace(["\r","\n","\t"], '', $xml);
+		$xml = preg_replace('/<Folder [^>]+>[^>]+>/', '<Folder><Server>', $xml);
+		$xml = str_replace(['<Folder>', '</Folder>', '<Servers>', '</Servers>'], '', $xml);
+		$xml = @simplexml_load_string($xml);
+		if($xml === false){
+			$this->ave->echo(" Failed parse XML");
+			goto set_xml_file;
+		}
+
+		$data = json_decode(json_encode($xml), true);
+
+		if(isset($data['Server']) && gettype($data['Server']) == 'array'){
+			foreach($data['Server'] as $key => $server){         
+				if(!isset($server['Name'])){
+					$this->ave->echo(" Import servers[$key] failed, missing property: Name");
+					continue;
+				}
+				if(!isset($server['Host'])){
+					$this->ave->echo(" Import ".$server['Name']." failed, missing property: Host");
+					continue;
+				}
+				if(!isset($server['Port'])){
+					$this->ave->echo(" Import ".$server['Name']." failed, missing property: Port");
+					continue;
+				}
+				if(!isset($server['User'])){
+					$this->ave->echo(" Import ".$server['Name']." failed, missing property: User");
+					continue;
+				}
+				if(!isset($server['Pass'])){
+					$this->ave->echo(" Import ".$server['Name']." failed, missing property: Pass");
+					continue;
+				}
+				if(!isset($server['Protocol'])){
+					$this->ave->echo(" Import ".$server['Name']." failed, missing property: Protocol");
+					continue;
+				}
+				$label = substr(preg_replace("/[^A-Za-z0-9_\-]/", '', str_replace(" ", "_", trim($server['Name']))), 0, 32);
+				if(strlen($label) < 3) substr($label."___", 0, 3);
+				if($this->ave->is_valid_label($label)){
+					$ini = $this->getConfig($label);
+					$ini->update([
+						'FTP_HOST' => $server['Host'],
+						'FTP_USER' => $server['User'],
+						'FTP_PASSWORD' => base64_decode($server['Pass']),
+						'FTP_SSL' => ($server['Protocol'] == 1),
+						'FTP_PORT' => intval($server['Port']),
+					], true);
+					$ini->close();
+					$this->ave->echo(" Import ".$server['Name']." as $label success");
+				} else {
+					$this->ave->echo(" Import ".$server['Name']." failed, invalid label");
+				}
+			}
+		}
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press any key to back to menu");

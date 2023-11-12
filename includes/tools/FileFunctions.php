@@ -28,6 +28,7 @@ class FileFunctions {
 			' 3 - Overwrite folders content',
 			' 4 - Move files with structure',
 			' 5 - Copy files with structure',
+			' 6 - Clone files with structure (Mirror)',
 		]);
 	}
 
@@ -41,6 +42,7 @@ class FileFunctions {
 			case '3': return $this->ToolOverwriteFoldersContent();
 			case '4': return $this->ToolMoveFilesWithStructure();
 			case '5': return $this->ToolCopyFilesWithStructure();
+			case '6': return $this->ToolCloneFilesWithStructure();
 		}
 		return false;
 	}
@@ -175,8 +177,6 @@ class FileFunctions {
 		$except_extensions = explode(" ", $this->ave->config->get('AVE_IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$file_id = 1;
-			$list = [];
 			$files = $this->ave->get_files($folder, null, $except_extensions);
 			$items = 0;
 			$total = count($files);
@@ -570,6 +570,152 @@ class FileFunctions {
 			if(file_exists($new_name)){
 				$this->ave->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
+			} else {
+				if(!$this->ave->copy($file, $new_name)){
+					$errors++;
+				}
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_errors($errors);
+		}
+		$this->ave->progress($items, $total);
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function ToolCloneFilesWithStructure() : bool {
+		$this->ave->set_subtool("CloneFilesWithStructure");
+
+		set_mode:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Checksum algorithm:',
+			' 0  - md5 (default)',
+			' 1  - sha256',
+			' 2  - crc32',
+			' 3  - whirlpool',
+		]);
+
+		$line = $this->ave->get_input(" Algorithm: ");
+		if($line == '#') return false;
+
+		$this->params = [
+			'algo' => strtolower($line[0] ?? '0'),
+		];
+
+		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
+		
+		$this->ave->clear();
+		
+		set_input:
+		$line = $this->ave->get_input(" Input: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		if(!isset($folders[0])) goto set_input;
+		$input = $folders[0];
+
+		if(!file_exists($input) || !is_dir($input)){
+			$this->ave->echo(" Invalid input folder");
+			goto set_input;
+		}
+
+		set_output:
+		$line = $this->ave->get_input(" Output: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		if(!isset($folders[0])) goto set_output;
+		$output = $folders[0];
+
+		if($input == $output){
+			$this->ave->echo(" Output folder must be different than input folder");
+			goto set_output;
+		}
+
+		if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
+			$this->ave->echo(" Invalid output folder");
+			goto set_output;
+		}
+
+		$errors = 0;
+		$this->ave->set_errors($errors);
+
+		$algo = $this->ave->get_hash_alghoritm(intval($this->params['algo']))['name'];
+
+		$this->ave->echo(" Delete not existing files on output");
+		$files = $this->ave->get_files($output);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			$new_name = str_ireplace($output, $input, $file);
+			if(!file_exists($new_name)){
+				if(!$this->ave->unlink($file)){
+					$errors++;
+				}
+			}
+		}
+		$this->ave->progress($items, $total);
+
+		$this->ave->echo(" Delete not existing folders on output");
+		$files = $this->ave->get_folders($output);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			$new_name = str_ireplace($output, $input, $file);
+			if(!file_exists($new_name)){
+				if(!$this->ave->rmdir($file)){
+					$errors++;
+				}
+			}
+		}
+		$this->ave->progress($items, $total);
+
+		$this->ave->echo(" Clone folder structure");
+		$folders = $this->ave->get_folders($input);
+		$items = 0;
+		$total = count($folders);
+		foreach($folders as $folder){
+			$items++;
+			$directory = str_ireplace($input, $output, $folder);
+			if(!file_exists($directory)){
+				if(!$this->ave->mkdir($directory)){
+					$errors++;
+				}
+			}
+			$this->ave->progress($items, $total);
+			$this->ave->set_errors($errors);
+		}
+		$this->ave->progress($items, $total);
+
+		$this->ave->echo(" Clone new/changed files");
+		$files = $this->ave->get_files($input);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue;
+			$new_name = str_ireplace($input, $output, $file);
+			if(file_exists($new_name)){
+				if(file_exists("$file.$algo")){
+					$hash_input = file_get_contents("$file.$algo");
+				} else {
+					$hash_input = hash_file($algo, $file);
+				}
+				if(file_exists("$new_name.$algo")){
+					$hash_output = file_get_contents("$new_name.$algo");
+				} else {
+					$hash_output = hash_file($algo, $new_name);
+				}
+				if($hash_input != $hash_output){
+					if(!$this->ave->unlink($new_name)){
+						$errors++;
+					} else if(!$this->ave->copy($file, $new_name)){
+						$errors++;
+					}
+				}
 			} else {
 				if(!$this->ave->copy($file, $new_name)){
 					$errors++;

@@ -25,7 +25,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.9.3";
+	public string $version = "1.9.4";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -158,6 +158,7 @@ class AVE extends AveCore {
 				break;
 			}
 			case '--interactive': {
+				$this->can_exit = false;
 				while(!$this->abort){
 					$this->abort = $this->select_tool();
 				}
@@ -248,7 +249,7 @@ class AVE extends AveCore {
 				break;
 			}
 			case '#': {
-				return true;
+				if($this->can_exit) return true;
 			}
 		}
 		if(!$this->abort && !is_null($this->tool)){

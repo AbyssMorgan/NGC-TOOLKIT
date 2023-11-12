@@ -1,3 +1,11 @@
+v1.9.4:
+- Added tool: FTP Tools > Import FileZilla XML
+- Added tool: File Functions > Clone files with structure (Mirror)
+- Increased MySQL and FTP label max length from 20 to 32 characters
+
+v1.9.3:
+- Fix functional error in "Sort Files: Extension"
+
 v1.9.2:
 - Compatibility updates for Linux operating system
 - Added config AVE_OPEN_FILE_BINARY

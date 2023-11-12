@@ -474,14 +474,19 @@ class FileNamesEditor {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$file_name = str_replace(['SEASON','EPISODE',' '], ['S','E',''], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
-				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}(.*)E[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
-				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
-				} else if(preg_match("/\[S[0-9]{2}\.E[0-9]{1,3}\]/", $file_name, $mathes) == 1){
-					$escaped_name = preg_replace("/[^SE0-9]/i", "", $mathes[0], 1);
-				} else if(preg_match("/(\[S0\.)(E[0-9]{1,3})\]/", $file_name, $mathes) == 1){
+				$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
+				$file_name = str_replace([' ', '.', '[', ']'], '', $file_name);
+				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
+					$escaped_name = $mathes[0];
+				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){
+					$escaped_name = $mathes[0];
+				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
+					$escaped_name = $mathes[0];
+				} else if(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
+					if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1],1,1);
+					if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2],1,1);
+					$escaped_name = $mathes[1].$mathes[2];
+				} else if(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
 					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
 				} else {
 					$escaped_name = '';

@@ -113,7 +113,7 @@ class MySQLTools {
 
 		$this->ave->print_help([
 			' Allowed characters: A-Z a-z 0-9 _ -',
-			' Label length 3 - 20',
+			' Label length 3 - 32',
 		]);
 
 		set_label:
@@ -253,7 +253,7 @@ class MySQLTools {
 			$ini = new IniFile($file);
 			if($ini->isValid() && $ini->isSet('DB_HOST')){
 				$label = pathinfo($file, PATHINFO_FILENAME);
-				$this->ave->echo(" $label".str_repeat(" ",20-strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+				$this->ave->echo(" $label".str_repeat(" ",32-strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 				$cnt++;
 			}
 		}
@@ -1474,7 +1474,7 @@ class MySQLTools {
 			}
 		}
 
-		foreach($errors as $error_type => $error_data){
+		foreach($errors as $error_data){
 			if(!empty($error_data)) $this->ave->write_data($error_data);
 		}
 

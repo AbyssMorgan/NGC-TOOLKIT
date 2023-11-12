@@ -38,6 +38,7 @@ class AveCore {
 	public string $utilities_version = "1.0.0";
 	public string $current_title;
 	public array $drives = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+	public bool $can_exit = true;
 
 	public function __construct(array $arguments, bool $require_utilities){
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
@@ -187,7 +188,7 @@ class AveCore {
 	}
 
 	public function is_valid_label(string $label) : bool {
-		return preg_match('/(?=[a-zA-Z0-9_\-]{3,20}$)/i', $label) == 1;
+		return preg_match('/(?=[a-zA-Z0-9_\-]{3,32}$)/i', $label) == 1;
 	}
 
 	public function progress_ex(string $label, int|float $count, int|float $total) : void {
