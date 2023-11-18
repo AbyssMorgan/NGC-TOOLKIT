@@ -475,7 +475,7 @@ class FileNamesEditor {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
-				$file_name = str_replace([' ', '.', '[', ']'], '', $file_name);
+				$file_name = str_replace(['[', ']'], '', $file_name);
 				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 					$escaped_name = $mathes[0];
 				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){

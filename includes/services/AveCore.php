@@ -307,7 +307,7 @@ class AveCore {
 	}
 
 	public function init_logs(){
-		$timestamp = date("Y-m-d His");
+		$timestamp = date("Y-m-d/Y-m-d His");
 		$this->log_event = new Logs($this->get_file_path($this->config->get('AVE_LOG_FOLDER')."/$timestamp-Event.txt"), true, true);
 		$this->log_error = new Logs($this->get_file_path($this->config->get('AVE_LOG_FOLDER')."/$timestamp-Error.txt"), true, true);
 		$this->log_data = new Logs($this->get_file_path($this->config->get('AVE_DATA_FOLDER')."/$timestamp.txt"), false, true);

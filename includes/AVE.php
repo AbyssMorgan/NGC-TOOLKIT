@@ -75,7 +75,7 @@ class AVE extends AveCore {
 		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10900){
 			$this->config->unset(['AVE_EXTENSIONS_VIDEO_FOLLOW']);
 		}
-		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 20000){
+		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10904){
 			$this->config->unset(['AVE_DATA_FOLDER','AVE_LOG_FOLDER']);
 		}
 
