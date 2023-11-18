@@ -4,7 +4,7 @@
 
 	set_exception_handler(function(Throwable $e){
 		$error = $e->getMessage()."\r\n".$e->getFile().':'.$e->getLine()."\r\n".$e->getTraceAsString()."\r\n\r\n";
-		echo $error."ABORT, PRESS ENTER TO EXIT\r\n";
+		echo $error."ABORT, PRESS ANY KEY TO EXIT\r\n";
 		if(file_exists('.git')){
 			file_put_contents('AVE-PHP-CRASH-'.date('Y-m-d His').'.txt', $error);
 		}

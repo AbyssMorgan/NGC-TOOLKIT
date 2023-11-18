@@ -85,10 +85,10 @@ class DirectoryFunctions {
 		$this->ave->clear();
 		$this->ave->set_subtool("ForceLoadIcon");
 		if(!$this->ave->windows) return $this->ave->windows_only();
+
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
-
 		$this->ave->setup_folders($folders);
 
 		foreach($folders as $folder){
@@ -121,21 +121,19 @@ class DirectoryFunctions {
 		$this->ave->clear();
 		$this->ave->set_subtool("CountFiles");
 
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		$this->ave->setup_folders($folders);
+
 		$this->ave->echo(" Empty for all, separate with spaces for multiple");
 		$line = $this->ave->get_input(" Extensions: ");
 		if($line == '#') return false;
-
 		if($line == ''){
 			$extensions = null;
 		} else {
 			$extensions = explode(" ", $line);
 		}
-
-		$line = $this->ave->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->ave->get_input_folders($line);
-
-		$this->ave->setup_folders($folders);
 
 		$data = [];
 

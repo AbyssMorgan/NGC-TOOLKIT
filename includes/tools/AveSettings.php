@@ -137,10 +137,10 @@ class AveSettings {
 		if(!$this->ave->windows){
 			$this->ave->echo(" This feature is available only on windows operating system.");
 			$this->ave->echo(" Use command: /usr/bin/php8.1 \"$program_path\includes\main.php\" --script <path> [...]");
-			$this->ave->pause(" Press enter to back to menu");
+			$this->ave->pause(" Press any key to back to menu");
 		} else if(!$this->ave->is_admin()){
 			$this->ave->echo(" You must run ".$this->ave->app_name." as administrator to use this feature");
-			$this->ave->pause(" Press enter to back to menu");
+			$this->ave->pause(" Press any key to back to menu");
 		} else {
 			if($this->ave->get_confirm(" Install .ave-php scripts support (Y/N): ")){
 				$this->ave->echo(" ".exec('reg add HKEY_CLASSES_ROOT\.ave-php /ve /d "'.$this->ave->app_name.'" /f'));

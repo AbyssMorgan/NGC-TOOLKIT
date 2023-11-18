@@ -6,6 +6,7 @@ namespace App\Tools;
 
 use AVE;
 use Exception;
+use App\Services\StringConverter;
 
 class FileEditor {
 
@@ -29,6 +30,7 @@ class FileEditor {
 			' 3 - Split file by lines count',
 			' 4 - Split file by size (Binary)',
 			' 5 - Reverse text file lines',
+			' 6 - Pretty file content',
 		]);
 	}
 
@@ -42,6 +44,7 @@ class FileEditor {
 			case '3': return $this->ToolSplitFileByLinesCount();
 			case '4': return $this->ToolSplitFileBySize();
 			case '5': return $this->ToolReverseFileLines();
+			case '6': return $this->ToolPrettyFileContent();
 		}
 		return false;
 	}
@@ -462,6 +465,147 @@ class FileEditor {
 		}
 		catch(Exception $e){
 			$this->ave->echo(" Failed edit \"$file\" Error:".$e->getMessage());
+		}
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function ToolPrettyFileContent() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("PrettyFileContent");
+
+		set_mode:
+		$this->ave->clear();
+		$this->ave->print_help([
+			' Flags (type in one line, default BC):',
+			' B   - Basic replacement',
+			' C   - Basic remove',
+			' L   - Replace language characters',
+			' S   - Remove double spaces',
+			' W   - Remove whitespace characters on EOL',
+			' 0   - Chinese to PinYin',
+			' 1   - Hiragama to Romaji',
+			' 2   - Katakana to Romaji',
+			' +   - To upper case',
+			' -   - To lower case',
+		]);
+
+		$line = strtoupper($this->ave->get_input(" Flags: "));
+		if($line == '#') return false;
+		if(empty($line)) $line = 'BC';
+		if(str_replace(['B', 'C', 'L', 'S', 'W', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
+		$flags = (object)[
+			'basic_replace' => (strpos($line, 'B') !== false),
+			'basic_remove' => (strpos($line, 'C') !== false),
+			'language_replace' => (strpos($line, 'L') !== false),
+			'RemoveDoubleSpace' => (strpos($line, 'S') !== false),
+			'RemoveWhitespaceEOL' => (strpos($line, 'W') !== false),
+			'ChineseToPinYin' => (strpos($line, '0') !== false),
+			'HiragamaToRomaji' => (strpos($line, '1') !== false),
+			'KatakanaToRomaji' => (strpos($line, '2') !== false),
+			'UpperCase' => (strpos($line, '+') !== false),
+			'LowerCase' => (strpos($line, '-') !== false),
+		];
+		$converter = new StringConverter();
+		if($flags->language_replace){
+			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/LanguageReplacement.ini"));
+		}
+		if($flags->ChineseToPinYin){
+			$converter->importPinYin($this->ave->get_file_path($this->ave->path."/includes/data/PinYin.ini"));
+		}
+		if($flags->HiragamaToRomaji){
+			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Hiragama.ini"));
+		}
+		if($flags->KatakanaToRomaji){
+			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
+		}
+		$this->ave->clear();
+		
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		$this->ave->setup_folders($folders);
+
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		$this->ave->echo(" Empty for none, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Name filter: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$filters = null;
+		} else {
+			$filters = explode(" ", $line);
+		}
+
+		$errors = 0;
+		$this->ave->set_errors($errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->get_files($folder, $extensions, null, $filters);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$content = file_get_contents($file);
+				$original = $content;
+				if($flags->basic_replace || $flags->language_replace || $flags->HiragamaToRomaji || $flags->KatakanaToRomaji){
+					$content = $converter->convert($content);
+				}
+				if($flags->basic_remove){
+					$content = $converter->clean($content);
+				}
+				if($flags->ChineseToPinYin){
+					$content = $converter->stringToPinYin($content);
+				}
+				if($flags->UpperCase){
+					$content = mb_strtoupper($content);
+				} else if($flags->LowerCase){
+					$content = mb_strtolower($content);
+				}
+				if($flags->basic_replace){
+					$content = str_replace(',', ', ', $content);
+				}
+				if($flags->RemoveDoubleSpace){
+					$content = $converter->remove_double_spaces($content);
+				}
+				if($flags->RemoveWhitespaceEOL){
+					$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
+					if(!empty($bom)){
+						$content = str_replace($bom, "" ,$content);
+					}
+					if(strpos($content, "\r\n") !== false){
+						$eol = "\r\n";
+					} else if(strpos($content, "\n") !== false){
+						$eol = "\n";
+					} else {
+						$eol = "\r";
+					}
+					$lines = explode($eol, $content);
+					foreach($lines as &$line){
+						$line = rtrim($line);
+					}
+					$content = $bom.implode($eol, $lines);
+				}
+				if($content != $original){
+					file_put_contents($file, $content);
+					$this->ave->write_log("EDIT FILE \"$file\"");
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_errors($errors);
+			}
+			$this->ave->progress($items, $total);
+			unset($files);
+			$this->ave->set_folder_done($folder);
 		}
 
 		$this->ave->open_logs(true);

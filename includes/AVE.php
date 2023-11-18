@@ -25,7 +25,7 @@ class AVE extends AveCore {
 	public bool $abort = false;
 
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.9.4";
+	public string $version = "1.9.5";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -60,7 +60,7 @@ class AVE extends AveCore {
 
 		$this->logo = "\r\n $this->app_name Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
-		
+
 		$path_config_ave = $this->get_file_path("$this->app_data/config.ini");
 		$path_config_mysql = $this->get_file_path("$this->app_data/MySQL");
 		$path_config_ftp = $this->get_file_path("$this->app_data/FTP");

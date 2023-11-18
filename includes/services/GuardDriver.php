@@ -67,7 +67,7 @@ class GuardDriver {
 		$this->file_list = $guard->get('files');
 		$this->keys = $guard->get('keys');
 		$this->files_to_scan = $guard->get('files_to_scan');
-	 	$this->folders_to_scan = $guard->get('folders_to_scan');
+		$this->folders_to_scan = $guard->get('folders_to_scan');
 		$this->errors = [];
 	}
 

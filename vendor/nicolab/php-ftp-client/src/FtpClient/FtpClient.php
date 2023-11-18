@@ -708,7 +708,7 @@ class FtpClient implements Countable
 
             if (!(is_dir($target_directory))) {
                 mkdir($target_directory);
-	    }
+            }
 
             chdir($target_directory);
         }
@@ -718,7 +718,7 @@ class FtpClient implements Countable
         foreach ($contents as $file) {
             if ($file == '.' || $file == '..') {
                 continue;
-	    }
+            }
 
             $this->ftp->get($target_directory."/".$file, $file, $mode);
         }

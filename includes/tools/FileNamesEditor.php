@@ -621,15 +621,35 @@ class FileNamesEditor {
 			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
 		}
 		$this->ave->clear();
+		
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 		$this->ave->setup_folders($folders);
+
+		$this->ave->echo(" Empty for all, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Extensions: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$extensions = null;
+		} else {
+			$extensions = explode(" ", $line);
+		}
+
+		$this->ave->echo(" Empty for none, separate with spaces for multiple");
+		$line = $this->ave->get_input(" Name filter: ");
+		if($line == '#') return false;
+		if(empty($line)){
+			$filters = null;
+		} else {
+			$filters = explode(" ", $line);
+		}
+		
 		$errors = 0;
 		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->get_files($folder);
+			$files = $this->ave->get_files($folder, $extensions, null, $filters);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -1192,7 +1212,7 @@ class FileNamesEditor {
 					} else {
 						$name = $insert_string.$name;
 					}
-	 				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".pathinfo($file, PATHINFO_EXTENSION));
+					$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".pathinfo($file, PATHINFO_EXTENSION));
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;

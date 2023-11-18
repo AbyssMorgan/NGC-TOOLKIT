@@ -310,7 +310,7 @@ class DataBaseBackup {
 			$this->destination->query($creation['query']);
 			$this->alters .= $creation['alters']."\n";
 			$this->destination->query($this->getFooter());
-			echo " Table structure: $table Progress: 100.00 %        \r";
+			echo " Table structure: $table Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			echo " Failed clone table $table skipping\r\n";
@@ -351,7 +351,13 @@ class DataBaseBackup {
 						}
 						$values = [];
 						foreach($columns as $column => $type){
-							if(is_null($row->$column)){
+							if($row->$column === '0'){
+								if(in_array($type, $this->types_no_quotes)){
+									$values[] = "0";
+								} else {
+									$values[] = "'0'";
+								}
+							} else if(is_null($row->$column)){
 								$values[] = "NULL";
 							} else if($type == 'bit'){
 								if(empty($row->$column)){
@@ -434,7 +440,13 @@ class DataBaseBackup {
 						}
 						$values = [];
 						foreach($columns as $column => $type){
-							if(is_null($row->$column)){
+							if($row->$column === '0'){
+								if(in_array($type, $this->types_no_quotes)){
+									$values[] = "0";
+								} else {
+									$values[] = "'0'";
+								}
+							} else if(is_null($row->$column)){
 								$values[] = "NULL";
 							} else if($type == 'bit'){
 								if(empty($row->$column)){
@@ -476,7 +488,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			$this->destination->query("SET foreign_key_checks = 1;");
 			$this->destination->query($this->getFooter());
-			echo " Table: $table Progress: 100.00 %        \r";
+			echo " Table: $table Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			try {

@@ -62,7 +62,7 @@ class AveCore {
 						$ave_utilities = true;
 					}
 				}
-	
+
 				if(!$ave_utilities){
 					$this->echo();
 					$this->echo(" Invalid AVE-UTILITIES version detected: v".$ave_utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
@@ -758,7 +758,7 @@ class AveCore {
 
 	public function windows_only() : bool {
 		$this->echo(" This tool is only available on windows operating system");
-		$this->pause(" Press enter to back to menu");
+		$this->pause(" Press any key to back to menu");
 		return false;
 	}
 

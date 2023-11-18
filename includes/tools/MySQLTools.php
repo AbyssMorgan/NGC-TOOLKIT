@@ -131,7 +131,7 @@ class MySQLTools {
 
 		$this->ave->clear();
 		$this->ave->print_help([
-		 	" Setup label: \"$label\"",
+			" Setup label: \"$label\"",
 		]);
 
 		set_output:
@@ -262,7 +262,7 @@ class MySQLTools {
 			$this->ave->echo(" No connections found");
 		}
 
-		$this->ave->pause("\r\n Press enter to back to menu");
+		$this->ave->pause("\r\n Press any key to back to menu");
 		return false;
 	}
 

@@ -1,3 +1,7 @@
+v1.9.5:
+- Fixed MySQL Tools save empty value for integer zero value from text column
+- Added tool: File Editor > Pretty file content
+
 v1.9.4:
 - Added tool: FTP Tools > Import FileZilla XML
 - Added tool: File Functions > Clone files with structure (Mirror)

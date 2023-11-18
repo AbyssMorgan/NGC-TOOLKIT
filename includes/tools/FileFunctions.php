@@ -606,9 +606,9 @@ class FileFunctions {
 		];
 
 		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
-		
+
 		$this->ave->clear();
-		
+
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
 		if($line == '#') return false;

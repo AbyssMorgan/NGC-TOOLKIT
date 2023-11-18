@@ -119,7 +119,7 @@ class FtpTools {
 
 		$this->ave->clear();
 		$this->ave->print_help([
-		 	" Setup label: \"$label\"",
+			" Setup label: \"$label\"",
 		]);
 
 		$ftp = new FtpClient();
@@ -146,7 +146,7 @@ class FtpTools {
 		set_ftp_user:
 		$auth['user'] = $this->ave->get_input(" FTP User: ");
 		if($auth['user'] == '#') return false;
-	 	$auth['password'] = $this->ave->get_input_no_trim(" FTP Pass: ");
+		$auth['password'] = $this->ave->get_input_no_trim(" FTP Pass: ");
 		if($auth['password'] == '#') return false;
 		try {
 			try_login_same_user:
@@ -227,7 +227,7 @@ class FtpTools {
 			$this->ave->echo(" No connections found");
 		}
 
-		$this->ave->pause("\r\n Press enter to back to menu");
+		$this->ave->pause("\r\n Press any key to back to menu");
 		return false;
 	}
 
@@ -475,7 +475,7 @@ class FtpTools {
 			$this->ave->echo(" Cannot access/create folder \"$output\"");
 			goto set_output;
 		}
-		
+
 		$errors = 0;
 		$this->ave->set_errors($errors);
 
@@ -841,11 +841,11 @@ class FtpTools {
 					$this->ave->write_log("COPY \"$file\" \"$remote_file\"");
 				} else {
 					$this->ave->write_error("FAILED UPLOAD \"$file\"");
-				 	$errors++;
+					$errors++;
 				}
 			} else {
-			 	$this->ave->write_error("FAILED DOWNLOAD \"$file\"");
-			 	$errors++;
+				$this->ave->write_error("FAILED DOWNLOAD \"$file\"");
+				$errors++;
 			}
 			fclose($fp);
 			$this->ave->progress($items, $total);
@@ -889,7 +889,7 @@ class FtpTools {
 		$data = json_decode(json_encode($xml), true);
 
 		if(isset($data['Server']) && gettype($data['Server']) == 'array'){
-			foreach($data['Server'] as $key => $server){         
+			foreach($data['Server'] as $key => $server){
 				if(!isset($server['Name'])){
 					$this->ave->echo(" Import servers[$key] failed, missing property: Name");
 					continue;

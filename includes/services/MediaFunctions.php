@@ -204,15 +204,15 @@ class MediaFunctions {
 	public function getImageColorGroup(int $colors) : string {
 		if($colors > 500000){
 			return '500001 - 999999';
-	 	} else if($colors > 400000 && $colors <= 500000){
+		} else if($colors > 400000 && $colors <= 500000){
 			return '400001 - 500000';
-	 	} else if($colors > 300000 && $colors <= 400000){
+		} else if($colors > 300000 && $colors <= 400000){
 			return '300001 - 400000';
-	 	} else if($colors > 200000 && $colors <= 300000){
+		} else if($colors > 200000 && $colors <= 300000){
 			return '200001 - 300000';
-	 	} else if($colors > 100000 && $colors <= 200000){
+		} else if($colors > 100000 && $colors <= 200000){
 			return '100001 - 200000';
-	 	} else if($colors > 50000 && $colors <= 100000){
+		} else if($colors > 50000 && $colors <= 100000){
 			return '050001 - 100000';
 		} else if($colors > 40000 && $colors <= 50000){
 			return '040001 - 050000';
