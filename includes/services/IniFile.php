@@ -13,14 +13,15 @@ class IniFile {
 	protected bool $valid;
 	protected bool $sort;
 	protected array $original;
+	protected bool $compressed;
+	public int $version = 20500;
 
-	public int $version = 20400;
-
-	function __construct(?string $path = null, bool $sort = false){
+	function __construct(?string $path = null, bool $sort = false, bool $compressed = false){
 		$this->path = $path;
 		$this->data = [];
 		$this->original = [];
 		$this->sort = $sort;
+		$this->compressed = $compressed;
 		if(is_null($this->path)){
 			$this->valid = false;
 		} else {
@@ -38,9 +39,10 @@ class IniFile {
 		return file_exists($this->path);
 	}
 
-	public function open(string $path, bool $sort = false) : bool {
+	public function open(string $path, bool $sort = false, bool $compressed = false) : bool {
 		$this->path = $path;
 		$this->sort = $sort;
+		$this->compressed = $compressed;
 		$this->valid = $this->read();
 		return $this->valid;
 	}
@@ -50,6 +52,7 @@ class IniFile {
 		$this->path = null;
 		$this->data = [];
 		$this->original = [];
+		$this->compressed = false;
 	}
 
 	public function read() : bool {
@@ -59,9 +62,20 @@ class IniFile {
 		$file = fopen($this->path, "r");
 		if(!$file) return false;
 		$this->data = [];
-		while(($line = fgets($file)) !== false){
-			if($this->parse_line($line, $key, $data)){
-				$this->data[$key] = $data;
+		$content = file_get_contents($this->path);
+		if(substr($content, 0, 11) == 'ADM_GZ_INI:'){
+			$content = str_replace(["\r\n", "\r"], "\n", gzuncompress(substr($content, 11)));
+			$lines = explode("\n", $content);
+			foreach($lines as $line){
+				if($this->parse_line($line, $key, $data)){
+					$this->data[$key] = $data;
+				}
+			}
+		} else {
+			while(($line = fgets($file)) !== false){
+				if($this->parse_line($line, $key, $data)){
+					$this->data[$key] = $data;
+				}
 			}
 		}
 		$this->original = $this->data;
@@ -202,36 +216,32 @@ class IniFile {
 
 	public function save() : bool {
 		if(!$this->isValid()) return false;
-		if(file_exists($this->path)){
-			try {
-				chmod($this->path, 0755);
-				unlink($this->path);
-			}
-			catch(Exception $e){
-
-			}
-		}
-		$file = fopen($this->path, "w");
-		if(!$file) return false;
 		if($this->sort) ksort($this->data);
+		$content = "\xEF\xBB\xBF";
 		foreach($this->data as $key => $value){
 			if(is_numeric($value)){
-				fwrite($file, "$key=$value\r\n");
+				$content .= "$key=$value\r\n";
 			} else if(is_null($value)){
-				fwrite($file, "$key=null\r\n");
+				$content .= "$key=null\r\n";
 			} else if(is_bool($value)){
 				$value = $value ? 'true' : 'false';
-				fwrite($file, "$key=$value\r\n");
+				$content .= "$key=$value\r\n";
 			} else if(empty($value) && !is_array($value)){
-				fwrite($file, "$key=\"\"\r\n");
+				$content .= "$key=\"\"\r\n";
 			} else if(is_array($value)){
 				$value = "JSON:".base64_encode(json_encode($value));
-				fwrite($file, "$key=\"$value\"\r\n");
+				$content .= "$key=\"$value\"\r\n";
 			} else {
-				fwrite($file, "$key=\"$value\"\r\n");
+				$content .= "$key=\"$value\"\r\n";
 			}
 		}
-		fclose($file);
+		try {
+			if($this->compressed) $content = "ADM_GZ_INI:".gzcompress($content, 9);
+			file_put_contents($this->path, $content);
+		}
+		catch(Exception $e){
+			return false;
+		}
 		return true;
 	}
 
