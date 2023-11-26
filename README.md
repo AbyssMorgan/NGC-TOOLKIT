@@ -9,6 +9,6 @@ Windows console tool for media
 - Microsoft Visual C++ Redistributable for Visual Studio 2019
 
 #### Requirements (Linux)
-- PHP 8.1 with packages: php8.1 php8.1-curl php8.1-gd php8.1-intl php8.1-mysqli php8.1-openssl php8.1-pdo_mysql php8.1-imagick php8.1-ftp php8.1-fileinfo php8.1-mbstring
+- PHP 8.1 with packages: php8.1 php8.1-curl php8.1-gd php8.1-intl php8.1-mysql php8.1-common php8.1-imagick php8.1-mbstring
 - Required programs: ffmpeg, mkvtoolnix, imagemagick
 - Optional programs: [Movie Thumbnailer](https://www.videohelp.com/software/movie-thumbnailer)
