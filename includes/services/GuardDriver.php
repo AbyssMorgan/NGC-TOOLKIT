@@ -182,7 +182,7 @@ class GuardDriver {
 	}
 
 	public function generate() : void {
-		$guard = new IniFile($this->file, true);
+		$guard = new IniFile($this->file, true, true);
 		$this->scan();
 		$guard->setAll($this->get(), true);
 	}

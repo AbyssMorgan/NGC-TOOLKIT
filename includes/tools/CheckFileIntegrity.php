@@ -330,7 +330,7 @@ class CheckFileIntegrity {
 			goto set_guard;
 		}
 
-		$ini = new IniFile($guard_file, true);
+		$ini = new IniFile($guard_file, true, true);
 		if(is_null($ini->get('keys'))){
 			$this->ave->echo(" File don't contain one of required information (Not a valid guard file ?)");
 			goto set_guard;
@@ -340,7 +340,7 @@ class CheckFileIntegrity {
 	}
 
 	public function ToolGuardUpdate(string $guard_file, array $params) : void {
-		$ini = new IniFile($guard_file, true);
+		$ini = new IniFile($guard_file, true, true);
 		$input = pathinfo($guard_file, PATHINFO_DIRNAME);
 		$cwd = getcwd();
 		chdir($input);
