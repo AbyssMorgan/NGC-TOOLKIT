@@ -8,7 +8,7 @@
 		if(file_exists('.git')){
 			file_put_contents('AVE-PHP-CRASH-'.date('Y-m-d His').'.txt', $error);
 		}
-		system("PAUSE > nul");
+		if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') system("PAUSE > nul");
 	});
 
 	require __DIR__.'/../vendor/autoload.php';

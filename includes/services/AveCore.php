@@ -726,17 +726,21 @@ class AveCore {
 	}
 
 	public function trash(string $path) : bool {
-		if(substr($path, 1, 1) == ':'){
-			$new_name = $this->get_file_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
-			if(file_exists($new_name) && !$this->unlink($new_name)) return false;
-			return $this->rename($path, $new_name);
-		} else if(substr($path, 0, 2) == "\\\\"){
-			$device = substr($path, 2);
-			if(strpos($device, "\\") !== false){
-				$new_name = $this->get_file_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
+		if($this->windows){
+			if(substr($path, 1, 1) == ':'){
+				$new_name = $this->get_file_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
 				if(file_exists($new_name) && !$this->unlink($new_name)) return false;
 				return $this->rename($path, $new_name);
+			} else if(substr($path, 0, 2) == "\\\\"){
+				$device = substr($path, 2);
+				if(strpos($device, "\\") !== false){
+					$new_name = $this->get_file_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
+					if(file_exists($new_name) && !$this->unlink($new_name)) return false;
+					return $this->rename($path, $new_name);
+				}
 			}
+		} else {
+			return $this->unlink($path);
 		}
 		$this->write_error("FAILED TRASH \"$path\"");
 		return false;
