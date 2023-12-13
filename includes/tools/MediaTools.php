@@ -326,7 +326,12 @@ class MediaTools {
 		$errors = 0;
 		$this->ave->set_errors($errors);
 
-		$cache = new IniFile($this->ave->get_file_path("$input/AveMediaInfo.ini"), true);
+		$ini_old = $this->ave->get_file_path("$input/AveMediaInfo.ini");
+		$ini_new = $this->ave->get_file_path("$input/AveMediaInfo.gz-ini");
+		if(file_exists($ini_old) && !file_exists($ini_new)){
+			$this->ave->rename($ini_old, $ini_new);
+		}
+		$cache = new IniFile($ini_new, true, true);
 		$this->ave->echo(" Last update: ".$cache->get('.LAST_UPDATE', 'None'));
 
 		$csv_file = $this->ave->get_file_path("$input/AveMediaInfo.csv");

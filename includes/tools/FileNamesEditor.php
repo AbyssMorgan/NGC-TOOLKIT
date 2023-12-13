@@ -368,10 +368,12 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->ave->set_errors($errors);
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
+		$audio_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_AUDIO'));
+		$extensions = array_merge($video_extensions, $audio_extensions);
 		$media = new MediaFunctions($this->ave);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->ave->get_files($folder, $video_extensions);
+			$files = $this->ave->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -386,7 +388,7 @@ class FileNamesEditor {
 				} else {
 					$hash = null;
 				}
-				if($this->params['resolution']){
+				if($this->params['resolution'] && in_array($extension, $video_extensions)){
 					$resolution = $media->getVideoResolution($file);
 					if($resolution == '0x0'){
 						$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -397,7 +399,7 @@ class FileNamesEditor {
 						}
 					}
 				}
-				if($this->params['thumbnail']){
+				if($this->params['thumbnail'] && in_array($extension, $video_extensions)){
 					$thumbnail = $media->getVideoThumbnail($file, $directory, $this->ave->config->get('AVE_THUMBNAIL_WIDTH'), $this->ave->config->get('AVE_THUMBNAIL_ROWS'), $this->ave->config->get('AVE_THUMBNAIL_COLUMN'));
 					if($thumbnail){
 						$this->ave->write_log("GENERATE THUMBNAIL \"$file.webp\"");

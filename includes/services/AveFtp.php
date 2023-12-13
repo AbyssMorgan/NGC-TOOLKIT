@@ -14,20 +14,31 @@ class AveFtp {
 		$this->ftp = $ftp;
 	}
 
+	public function unix_permission(string $permission) : string {
+		$map = ['-' => 0, 'r' => 4, 'w' => 2, 'x' => 1];
+		$num = '';
+		for($p = 0; $p < 3; $p++){
+			$n = $map[$permission[$p]] + $map[$permission[$p+1]] + $map[$permission[$p+2]];
+			$num .= strval($n);
+		}
+		return "0$num";
+	}
+
 	public function get_files(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
 		$data = [];
-		$files = $this->ftp->mlsd($path);
+		$files = $this->ftp->rawlist($path);
 		if($files === false) return [];
 		foreach($files as $file){
-			if($file['name'] == '.' || $file['name'] == '..') continue;
-			if($file['type'] == 'dir'){
-				$data = array_merge($data, $this->get_files($path.'/'.$file['name'], $extensions, $except));
-			} else if($file['type'] == 'file'){
-				$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+			$chunks = preg_split("/\s+/", $file);
+			if($chunks[8] == '.' || $chunks[8] == '..') continue;
+			if(substr($chunks[0], 0, 1) == 'd'){
+				$data = array_merge($data, $this->get_files($path.'/'.$chunks[8], $extensions, $except));
+			} else {
+				$ext = strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 				if(!is_null($except) && in_array($ext, $except)) continue;
-				if(!is_null($filters) && !$this->filter(pathinfo($file['name'], PATHINFO_BASENAME), $filters)) continue;
-				array_push($data, $path.'/'.$file['name']);
+				if(!is_null($filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $filters)) continue;
+				array_push($data, $path.'/'.$chunks[8]);
 			}
 		}
 		return $data;
@@ -35,23 +46,24 @@ class AveFtp {
 
 	public function get_files_meta(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
 		$data = [];
-		$files = $this->ftp->mlsd($path);
+		$files = $this->ftp->rawlist($path);
 		foreach($files as $file){
-			if($file['name'] == '.' || $file['name'] == '..') continue;
-			if($file['type'] == 'dir'){
-				$data = array_merge($data, $this->get_files_meta($path.'/'.$file['name'], $extensions, $except));
-			} else if($file['type'] == 'file'){
-				$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+			$chunks = preg_split("/\s+/", $file);
+			if($chunks[8] == '.' || $chunks[8] == '..') continue;
+			if(substr($chunks[0], 0, 1) == 'd'){
+				$data = array_merge($data, $this->get_files_meta($path.'/'.$chunks[8], $extensions, $except));
+			} else {
+				$ext = strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 				if(!is_null($except) && in_array($ext, $except)) continue;
-				if(!is_null($filters) && !$this->filter(pathinfo($file['name'], PATHINFO_BASENAME), $filters)) continue;
+				if(!is_null($filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $filters)) continue;
 				array_push($data, [
-					'path' => $path.'/'.$file['name'],
+					'path' => $path.'/'.$chunks[8],
 					'directory' => $path,
-					'name' => $file['name'],
-					'date' => substr($file['modify'], 0, 4).'-'.substr($file['modify'], 4, 2).'-'.substr($file['modify'], 6, 2).' '.substr($file['modify'], 8, 2).':'.substr($file['modify'], 10, 2).':'.substr($file['modify'], 12, 2),
-					'permission' => $file['UNIX.mode'] ?? '',
-					'size' => $this->ftp->size($path.'/'.$file['name']),
+					'name' => $chunks[8],
+					'date' => date("Y-m-d H:i:s", $this->ftp->mdtm($path.'/'.$chunks[8])),
+					'permission' => $this->unix_permission(substr($chunks[0], 1)),
+					'size' => $this->ftp->size($path.'/'.$chunks[8]),
 				]);
 			}
 		}
@@ -60,22 +72,24 @@ class AveFtp {
 
 	public function get_folders(string $path) : array {
 		$data = [];
-		$files = $this->ftp->mlsd($path);
+		$files = $this->ftp->rawlist($path);
 		if($files === false) return [];
 		array_push($data, $path);
 		foreach($files as $file){
-			if($file['name'] == '.' || $file['name'] == '..') continue;
-			if($file['type'] == 'dir'){
-				$data = array_merge($data, $this->get_folders($path.'/'.$file['name']));
+			$chunks = preg_split("/\s+/", $file);
+			if($chunks[8] == '.' || $chunks[8] == '..') continue;
+			if(substr($chunks[0], 0, 1) == 'd'){
+				$data = array_merge($data, $this->get_folders($path.'/'.$chunks[8]));
 			}
 		}
 		return $data;
 	}
 
 	public function hasFiles(string $path) : bool {
-		$files = $this->ftp->mlsd($path);
+		$files = $this->ftp->rawlist($path);
 		foreach($files as $file){
-			if($file['name'] == '.' || $file['name'] == '..') continue;
+			$chunks = preg_split("/\s+/", $file);
+			if($chunks[8] == '.' || $chunks[8] == '..') continue;
 			return true;
 		}
 		return false;

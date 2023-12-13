@@ -1,3 +1,8 @@
+v1.9.6:
+- Tool: Generate video: CheckSum/Resolution/Thumbnail now can generate checksum for audio defined by AVE_EXTENSIONS_AUDIO
+- Added compression .ave-guard in tool Check File Integrity
+- Replace FTP command mlsd to rawlist due to lack support of some FTP servers
+
 v1.9.5:
 - Fixed MySQL Tools save empty value for integer zero value from text column
 - Added tool: File Editor > Pretty file content
