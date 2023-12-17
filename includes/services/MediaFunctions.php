@@ -80,6 +80,11 @@ class MediaFunctions {
 		return $fps;
 	}
 
+	public function getVideoCodec(string $path) : string {
+		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1  \"$path\" 2>nul", $output);
+		return trim($output[0]);
+	}
+
 	public function getVideoResolution(string $path) : string {
 		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
 		return rtrim($output[0] ?? '0x0', 'x');
