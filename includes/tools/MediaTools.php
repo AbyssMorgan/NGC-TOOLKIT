@@ -335,7 +335,7 @@ class MediaTools {
 		$this->ave->echo(" Last update: ".$cache->get('.LAST_UPDATE', 'None'));
 
 		$csv_file = $this->ave->get_file_path("$input/AveMediaInfo.csv");
-		$this->ave->unlink($csv_file);
+		$this->ave->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
 		$s = $this->ave->config->get('AVE_CSV_SEPARATOR');
 		$csv->write('"File path"'.$s.'"Dir name"'.$s.'"File name"'.$s.'"Extension"'.$s.'"Resolution"'.$s.'"Quality"'.$s.'"Duration"'.$s.'"Size"'.$s.'"Orientation"'.$s.'"Checksum (MD5)"');

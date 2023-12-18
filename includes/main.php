@@ -26,6 +26,10 @@
 	require_once("$includes_path/services/MediaFunctions.php");
 	require_once("$includes_path/services/StringConverter.php");
 	require_once("$includes_path/services/AveFtp.php");
+	require_once("$includes_path/services/BitFunctions.php");
+	require_once("$includes_path/services/BitArray.php");
+	require_once("$includes_path/services/JournalService.php");
+	require_once("$includes_path/services/AppBuffer.php");
 	require_once("$includes_path/AVE.php");
 	require_once("$includes_path/tools/AveSettings.php");
 	require_once("$includes_path/tools/AveConsole.php");

@@ -20,6 +20,7 @@ class DataBaseBackup {
 	private int $insert_limit;
 	private string $header;
 	private string $footer;
+	private string $date;
 	private array $types_no_quotes = [
 		'bigint',
 		'double',
@@ -33,10 +34,10 @@ class DataBaseBackup {
 	];
 
 	public function __construct(?string $path = null, int $query_limit = 50000, int $insert_limit = 100, string $date_format = "Y-m-d_His"){
-		$date = date($date_format);
+		$this->date = date($date_format);
 		$this->query_limit = $query_limit;
 		$this->insert_limit = $insert_limit;
-		if(!is_null($path)) $this->path = $path.DIRECTORY_SEPARATOR.$date;
+		if(!is_null($path)) $this->path = $path;
 		$this->header = base64_decode("U0VUIFNRTF9NT0RFID0gIk5PX0FVVE9fVkFMVUVfT05fWkVSTyI7ClNUQVJUIFRSQU5TQUNUSU9OOwpTRVQgdGltZV96b25lID0gIiswMDowMCI7CgovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX0NMSUVOVD1AQENIQVJBQ1RFUl9TRVRfQ0xJRU5UICovOwovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFM9QEBDSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBAT0xEX0NPTExBVElPTl9DT05ORUNUSU9OPUBAQ09MTEFUSU9OX0NPTk5FQ1RJT04gKi87Ci8qITQwMTAxIFNFVCBOQU1FUyB1dGY4bWI0ICovOw==");
 		$this->footer = base64_decode("Q09NTUlUOwoKLyohNDAxMDEgU0VUIENIQVJBQ1RFUl9TRVRfQ0xJRU5UPUBPTERfQ0hBUkFDVEVSX1NFVF9DTElFTlQgKi87Ci8qITQwMTAxIFNFVCBDSEFSQUNURVJfU0VUX1JFU1VMVFM9QE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBDT0xMQVRJT05fQ09OTkVDVElPTj1AT0xEX0NPTExBVElPTl9DT05ORUNUSU9OICovOw==");
 		$this->alters = '';
@@ -50,8 +51,10 @@ class DataBaseBackup {
 		$this->alters = '';
 	}
 
-	public function getOutput() : string {
-		return $this->path;
+	public function getOutput(?string $folder = null) : string {
+		$path = $this->path.DIRECTORY_SEPARATOR."{$this->database}_{$this->date}";
+		if(!is_null($folder)) $path .= DIRECTORY_SEPARATOR.$folder;
+		return $path;
 	}
 
 	public function toggleLockTables(bool $toggle) : void {
@@ -65,7 +68,7 @@ class DataBaseBackup {
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->source = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=UTF8", $user, $password, $options);
+			$this->source = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=UTF8", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -83,7 +86,7 @@ class DataBaseBackup {
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->destination = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=UTF8", $user, $password, $options);
+			$this->destination = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=UTF8", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -93,12 +96,24 @@ class DataBaseBackup {
 		return true;
 	}
 
+	public function getSource() : ?PDO {
+		return $this->source;
+	}
+
+	public function getDestination() : ?PDO {
+		return $this->destination;
+	}
+
 	public function disconnect() : void {
 		$this->source = null;
 	}
 
 	public function disconnect_destination() : void {
 		$this->destination = null;
+	}
+
+	public function setDataBase(string $dbname) : void {
+		$this->database = $dbname;
 	}
 
 	public function escape(mixed $string) : string {
@@ -270,9 +285,9 @@ class DataBaseBackup {
 	}
 
 	public function backupTableStructure(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."structure")) mkdir($this->path.DIRECTORY_SEPARATOR."structure", 0755, true);
+		if(!file_exists($this->getOutput("structure"))) mkdir($this->getOutput("structure"), 0755, true);
 		$errors = [];
-		$file_path = $this->path.DIRECTORY_SEPARATOR."structure".DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->getOutput("structure").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
@@ -282,7 +297,7 @@ class DataBaseBackup {
 			fwrite($file, $this->getTableDrop($table)."\n\n");
 			fwrite($file, $creation['query']."\n\n");
 			fwrite($file, "\n".$this->getFooter()."\n");
-			echo " Table structure: $table Progress: 100.00 %        \r\n";
+			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			echo "\n Failed make backup for table structure $table, skipping\r\n";
@@ -291,8 +306,8 @@ class DataBaseBackup {
 		}
 		fclose($file);
 		if(!empty($creation['alters'])){
-			if(!file_exists($this->path.DIRECTORY_SEPARATOR."alters")) mkdir($this->path.DIRECTORY_SEPARATOR."alters", 0755, true);
-			$file_path = $this->path.DIRECTORY_SEPARATOR."alters".DIRECTORY_SEPARATOR."$table.sql";
+			if(!file_exists($this->getOutput("alters"))) mkdir($this->getOutput("alters"), 0755, true);
+			$file_path = $this->getOutput("alters").DIRECTORY_SEPARATOR."$table.sql";
 			if(file_exists($file_path)) unlink($file_path);
 			$file = fopen($file_path, "a");
 			fwrite($file, $creation['alters']."\n\n");
@@ -310,7 +325,7 @@ class DataBaseBackup {
 			$this->destination->query($creation['query']);
 			$this->alters .= $creation['alters']."\n";
 			$this->destination->query($this->getFooter());
-			echo " Table structure: $table Progress: 100.00 %        \r\n";
+			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			echo " Failed clone table $table skipping\r\n";
@@ -321,9 +336,9 @@ class DataBaseBackup {
 	}
 
 	public function backupTableData(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."data")) mkdir($this->path.DIRECTORY_SEPARATOR."data", 0755, true);
+		if(!file_exists($this->getOutput("data"))) mkdir($this->getOutput("data"), 0755, true);
 		$errors = [];
-		$file_path = $this->path.DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->getOutput("data").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
@@ -332,7 +347,7 @@ class DataBaseBackup {
 			fwrite($file, "-- やあ --\n\n");
 			fwrite($file, $this->getHeader()."\n\n");
 			fwrite($file, "SET foreign_key_checks = 0;\n\n");
-			echo " Table data: $table Progress: 0.00 %        \r";
+			echo " Table data: `$this->database`.`$table` Progress: 0.00 %        \r";
 			$insert = $this->getInsert($table, array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
@@ -341,7 +356,7 @@ class DataBaseBackup {
 			if($count > 0){
 				do {
 					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table data: $table Progress: $percent %        \r";
+					echo " Table data: `$this->database`.`$table` Progress: $percent %        \r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					$query = '';
@@ -398,7 +413,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			fwrite($file, "SET foreign_key_checks = 1;\n\n");
 			fwrite($file, "\n".$this->getFooter()."\n");
-			echo " Table data: $table Progress: 100.00 %        \r\n";
+			echo " Table data: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			try {
@@ -422,7 +437,7 @@ class DataBaseBackup {
 			$columns = $this->getColumns($table);
 			$this->destination->query($this->getHeader());
 			$this->destination->query("SET foreign_key_checks = 0;");
-			echo " Table: $table Progress: 0.00 %        \r";
+			echo " Table: `$this->database`.`$table` Progress: 0.00 %        \r";
 			$insert = $this->getInsert($table, array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
@@ -431,7 +446,7 @@ class DataBaseBackup {
 			if($count > 0){
 				do {
 					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table: $table Progress: $percent %        \r";
+					echo " Table: `$this->database`.`$table` Progress: $percent %        \r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					foreach($rows as $row){
@@ -488,7 +503,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			$this->destination->query("SET foreign_key_checks = 1;");
 			$this->destination->query($this->getFooter());
-			echo " Table: $table Progress: 100.00 %        \r\n";
+			echo " Table: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			try {
@@ -505,9 +520,9 @@ class DataBaseBackup {
 	}
 
 	public function backupView(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."views")) mkdir($this->path.DIRECTORY_SEPARATOR."views", 0755, true);
+		if(!file_exists($this->getOutput("views"))) mkdir($this->getOutput("views"), 0755, true);
 		$errors = [];
-		$file_path = $this->path.DIRECTORY_SEPARATOR."views".DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->getOutput("views").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
@@ -516,7 +531,7 @@ class DataBaseBackup {
 			fwrite($file, $this->getViewDrop($table)."\n\n");
 			fwrite($file, $this->getViewCreation($table)."\n\n");
 			fwrite($file, "\n".$this->getFooter()."\n");
-			echo " View: $table Progress: 100.00 %        \r\n";
+			echo " View: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
 			echo "\n Failed make backup for view $table, skipping\r\n";
@@ -540,14 +555,14 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone view $table reason: ".$e->getMessage();
 		}
-		echo " View: $table Progress: 100.00 %        \r\n";
+		echo " View: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		return $errors;
 	}
 
 	public function backupFunction(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."functions")) mkdir($this->path.DIRECTORY_SEPARATOR."functions", 0755, true);
+		if(!file_exists($this->getOutput("functions"))) mkdir($this->getOutput("functions"), 0755, true);
 		$errors = [];
-		$file_path = $this->path.DIRECTORY_SEPARATOR."functions".DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->getOutput("functions").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
@@ -562,7 +577,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone function $table reason: ".$e->getMessage();
 		}
-		echo " Function: $table Progress: 100.00 %        \r\n";
+		echo " Function: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		fclose($file);
 		return $errors;
 	}
@@ -580,14 +595,14 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone function $table reason: ".$e->getMessage();
 		}
-		echo " Function: $table Progress: 100.00 %        \r\n";
+		echo " Function: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		return $errors;
 	}
 
 	public function backupProcedure(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."procedures")) mkdir($this->path.DIRECTORY_SEPARATOR."procedures", 0755, true);
+		if(!file_exists($this->getOutput("procedures"))) mkdir($this->getOutput("procedures"), 0755, true);
 		$errors = [];
-		$file_path = $this->path.DIRECTORY_SEPARATOR."procedures".DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->getOutput("procedures").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
@@ -602,7 +617,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone procedure $table reason: ".$e->getMessage();
 		}
-		echo " Procedure: $table Progress: 100.00 %        \r\n";
+		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		fclose($file);
 		return $errors;
 	}
@@ -620,14 +635,14 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone procedure $table reason: ".$e->getMessage();
 		}
-		echo " Procedure: $table Progress: 100.00 %        \r\n";
+		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		return $errors;
 	}
 
 	public function backupEvent(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."events")) mkdir($this->path.DIRECTORY_SEPARATOR."events", 0755, true);
+		if(!file_exists($this->getOutput("events"))) mkdir($this->getOutput("events"), 0755, true);
 		$errors = [];
-		$file_path = $this->path.DIRECTORY_SEPARATOR."events".DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->getOutput("events").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
@@ -642,7 +657,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone event $table reason: ".$e->getMessage();
 		}
-		echo " Event: $table Progress: 100.00 %        \r\n";
+		echo " Event: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		fclose($file);
 		return $errors;
 	}
@@ -660,7 +675,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone event $table reason: ".$e->getMessage();
 		}
-		echo " Event: $table Progress: 100.00 %        \r\n";
+		echo " Event: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		return $errors;
 	}
 
@@ -682,7 +697,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone trigger $table reason: ".$e->getMessage();
 		}
-		echo " Trigger: $table Progress: 100.00 %        \r\n";
+		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		fclose($file);
 		return $errors;
 	}
@@ -700,7 +715,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone trigger $table reason: ".$e->getMessage();
 		}
-		echo " Trigger: $table Progress: 100.00 %        \r\n";
+		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		return $errors;
 	}
 

@@ -113,7 +113,7 @@ class FileFunctions {
 					$this->ave->write_error("DUPLICATE \"$file\" OF \"$duplicate\"");
 					$errors++;
 					if($this->params['action'] == '2'){
-						if(!$this->ave->unlink($file)) $errors++;
+						if(!$this->ave->delete($file)) $errors++;
 					} else {
 						if(!$this->ave->rename($file, "$file.tmp")) $errors++;
 					}
@@ -304,7 +304,7 @@ class FileFunctions {
 		$size_text = $this->ave->format_bytes($per_file_size);
 		for($i = 1; $i <= $quantity; $i++){
 			$file_path = $this->ave->get_file_path($output."/AVE-RANDOM-".hash('md5', uniqid().$i).".tmp");
-			if(file_exists($file_path)) $this->ave->unlink($file_path);
+			if(file_exists($file_path)) $this->ave->delete($file_path);
 			$fp = fopen($file_path, "w");
 			if($small_mode){
 				echo " Files: $i / $quantity                                       \r";
@@ -651,7 +651,7 @@ class FileFunctions {
 			$items++;
 			$new_name = str_ireplace($output, $input, $file);
 			if(!file_exists($new_name)){
-				if(!$this->ave->unlink($file)){
+				if(!$this->ave->delete($file)){
 					$errors++;
 				}
 			}
@@ -710,7 +710,7 @@ class FileFunctions {
 					$hash_output = hash_file($algo, $new_name);
 				}
 				if($hash_input != $hash_output){
-					if(!$this->ave->unlink($new_name)){
+					if(!$this->ave->delete($new_name)){
 						$errors++;
 					} else if(!$this->ave->copy($file, $new_name)){
 						$errors++;

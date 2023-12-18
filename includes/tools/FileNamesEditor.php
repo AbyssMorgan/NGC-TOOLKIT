@@ -127,7 +127,7 @@ class FileNamesEditor {
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 						if($this->ave->config->get('AVE_ACTION_AFTER_DUPLICATE') == 'DELETE'){
-							if(!$this->ave->unlink($file)) $errors++;
+							if(!$this->ave->delete($file)) $errors++;
 						} else {
 							if(!$this->ave->rename($file, "$file.tmp")) $errors++;
 						}

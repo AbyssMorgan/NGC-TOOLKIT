@@ -195,7 +195,7 @@ class FtpTools {
 			goto set_label;
 		}
 
-		$this->ave->unlink($path);
+		$this->ave->delete($path);
 
 		return false;
 	}
@@ -291,7 +291,7 @@ class FtpTools {
 		}
 
 		$csv_file = $this->ave->get_file_path("$output/FtpList ".date("Y-m-d His").".csv");
-		$this->ave->unlink($csv_file);
+		$this->ave->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
 		if($this->ave->get_confirm(" Simplified list (Y/N): ")){
 			$this->ave->clear();
@@ -399,7 +399,7 @@ class FtpTools {
 			$items++;
 			$local_file = $this->ave->get_file_path(str_replace($input, $output, $file));
 			$directory = pathinfo($local_file, PATHINFO_DIRNAME);
-			if(file_exists($local_file)) $this->ave->unlink($local_file);
+			if(file_exists($local_file)) $this->ave->delete($local_file);
 			if(!file_exists($directory)) $this->ave->mkdir($directory);
 			if($ftp->get($local_file, $file, FTP_BINARY, 0)){
 				$this->ave->write_log("DOWNLOAD \"$file\" AS \"$local_file\"");
@@ -889,6 +889,7 @@ class FtpTools {
 		$data = json_decode(json_encode($xml), true);
 
 		if(isset($data['Server']) && gettype($data['Server']) == 'array'){
+			if(isset($data['Server']['Name'])) $data['Server'] = [$data['Server']];
 			foreach($data['Server'] as $key => $server){
 				if(!isset($server['Name'])){
 					$this->ave->echo(" Import servers[$key] failed, missing property: Name");
@@ -922,7 +923,7 @@ class FtpTools {
 						'FTP_HOST' => $server['Host'],
 						'FTP_USER' => $server['User'],
 						'FTP_PASSWORD' => base64_decode($server['Pass']),
-						'FTP_SSL' => ($server['Protocol'] == 1),
+						'FTP_SSL' => false,
 						'FTP_PORT' => intval($server['Port']),
 					], true);
 					$ini->close();

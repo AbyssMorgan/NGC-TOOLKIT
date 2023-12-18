@@ -1,3 +1,7 @@
+v2.0.0:
+- MySQL tool now support multiple data base into one connection label, you need set data base value to * for use that feature
+- Fixed FTP Tools > Import FileZilla XML (Now you can import xml with single server)
+
 v1.9.6:
 - Tool: Generate video: CheckSum/Resolution/Thumbnail now can generate checksum for audio defined by AVE_EXTENSIONS_AUDIO
 - Added compression .ave-guard in tool Check File Integrity

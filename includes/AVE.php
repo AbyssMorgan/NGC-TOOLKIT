@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Services\IniFile;
 use App\Services\AveCore;
+use App\Services\AppBuffer;
 
 use App\Tools\AveSettings;
 use App\Tools\AveConsole;
@@ -20,12 +21,11 @@ use App\Tools\FtpTools;
 class AVE extends AveCore {
 
 	public IniFile $mkvmerge;
-
+	public AppBuffer $app_buffer;
 	public string $app_data;
 	public bool $abort = false;
-
 	public string $app_name = "AVE-PHP";
-	public string $version = "1.9.6";
+	public string $version = "2.0.0";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -116,6 +116,7 @@ class AVE extends AveCore {
 		$keys = [
 			'AVE_LOG_FOLDER',
 			'AVE_DATA_FOLDER',
+			'AVE_BUFFER_FOLDER',
 		];
 		foreach($keys as $key){
 			$this->config->set($key, $this->get_variable($this->config->get($key)));
@@ -127,6 +128,8 @@ class AVE extends AveCore {
 		$config_default->close();
 
 		$this->init_logs();
+		
+		$this->app_buffer = new AppBuffer($this->get_file_path($this->config->get('AVE_BUFFER_FOLDER')));
 		ini_set('memory_limit', -1);
 
 		$dev = file_exists($this->get_file_path("$this->path/.git"));
@@ -145,10 +148,10 @@ class AVE extends AveCore {
 		switch(strtolower($this->command ?? '')){
 			case '--make-backup': {
 				if(empty($this->arguments[0] ?? '')){
-					$this->print_help([" Usage: --make-backup <label>"]);
+					$this->print_help([" Usage: --make-backup <label> [dbname]"]);
 				} else {
 					$this->tool = new MySQLTools($this);
-					$this->tool->ToolMakeBackupCMD($this->arguments[0] ?? '');
+					$this->tool->ToolMakeBackupCMD($this->arguments[0] ?? '', $this->arguments[1] ?? null);
 				}
 				break;
 			}

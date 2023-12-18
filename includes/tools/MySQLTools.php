@@ -107,6 +107,33 @@ class MySQLTools {
 		return $config;
 	}
 
+	private function SelectDataBase(PDO $connection, ?DataBaseBackup $backup = null) : bool {
+		$options = [];
+		$i = 0;
+		$this->ave->echo();
+		$this->ave->echo(" Data bases: ");
+		$items = $connection->query("SHOW DATABASES;", PDO::FETCH_OBJ);
+		foreach($items as $item){
+			$options[$i] = $item->Database;
+			$this->ave->echo(" $i - $item->Database");
+			$i++;
+		}
+		$this->ave->echo();
+		select_database:
+		$database = $this->ave->get_input(" DataBase: ");
+		if($database == '#') return false;
+		if(!isset($options[$database])) goto select_database;
+		$connection->query("USE ".$options[$database]);
+		if(!is_null($backup)) $backup->setDataBase($options[$database]);
+		return true;
+	}
+
+	public function getDataBase(PDO $connection) : ?string {
+		$sth = $connection->query("SELECT DATABASE() as `name`;");
+		$result = $sth->fetch(PDO::FETCH_OBJ);
+		return $result->name ?? null;
+	}
+
 	public function ToolConfigureConnection() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("ConfigureConnection");
@@ -151,7 +178,7 @@ class MySQLTools {
 		if($db['host'] == '#') return false;
 		$db['port'] = $this->ave->get_input_integer(" DB Port (Default 3306): ", 0, 65353);
 		if(!$db['port']) return false;
-		$db['name'] = $this->ave->get_input(" DB Name: ");
+		$db['name'] = $this->ave->get_input(" DB Name (Type * for none): ");
 		if($db['name'] == '#') return false;
 		$db['user'] = $this->ave->get_input(" DB User: ");
 		if($db['user'] == '#') return false;
@@ -166,7 +193,7 @@ class MySQLTools {
 		];
 		try {
 			$this->ave->echo(" Connecting to: ".$db['host'].":".$db['port']."@".$db['user']);
-			$conn = new PDO("mysql:dbname=".$db['name'].";host=".$db['host'].";port=".$db['port'], $db['user'], $db['password'], $options);
+			$conn = new PDO("mysql:".($db['name'] == "*" ? "" : "dbname=".$db['name'].";")."host=".$db['host'].";port=".$db['port'], $db['user'], $db['password'], $options);
 		}
 		catch(PDOException $e){
 			$this->ave->echo(" Failed to connect:");
@@ -230,7 +257,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		$this->ave->unlink($path);
+		$this->ave->delete($path);
 
 		return false;
 	}
@@ -315,7 +342,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getSource(), $backup)) return false;
 		$this->ave->echo(" Create backup");
 
 		$items = $backup->getTables();
@@ -510,9 +537,10 @@ class MySQLTools {
 	}
 
 	public function ToolMakeClone() : bool {
-		$this->ave->clear();
 		$this->ave->set_subtool("MakeClone");
 
+		reset_connection:
+		$this->ave->clear();
 		$this->getSelectLabel();
 		set_label_source:
 		$source = $this->ave->get_input(" Source label / ID: ");
@@ -552,7 +580,10 @@ class MySQLTools {
 
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
+		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getSource(), $backup)) return false;
 
+		$this->ave->clear();
+		$this->getSelectLabel();
 		set_label_destination:
 		$destination = $this->ave->get_input(" Destination label: ");
 		if($destination == '#') return false;
@@ -567,29 +598,36 @@ class MySQLTools {
 			goto set_label_destination;
 		}
 
-		if($source == $destination){
-			$this->ave->echo(" Destination label must be different than source label");
-			goto set_label_destination;
-		}
-
 		$ini_dest = $this->getConfig($destination);
-
-		if($ini_source->get('DB_HOST') == $ini_dest->get('DB_HOST') && $ini_source->get('DB_USER') == $ini_dest->get('DB_USER') && $ini_source->get('DB_NAME') == $ini_dest->get('DB_NAME') && $ini_source->get('DB_PORT') == $ini_dest->get('DB_PORT')){
-			$this->ave->echo(" Destination database is same as source database");
-			goto set_label_destination;
-		}
 
 		$this->ave->echo(" Connecting to: ".$ini_dest->get('DB_HOST').":".$ini_dest->get('DB_PORT')."@".$ini_dest->get('DB_USER'));
 		if(!$backup->connect_destination($ini_dest->get('DB_HOST'), $ini_dest->get('DB_USER'), $ini_dest->get('DB_PASSWORD'), $ini_dest->get('DB_NAME'), $ini_dest->get('DB_PORT'))) goto set_label_destination;
+		if($ini_dest->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getDestination())) return false;
+
+		$dbname_source = $this->getDataBase($backup->getSource());
+		$dbname_destination = $this->getDataBase($backup->getDestination());
+
+		if($ini_source->get('DB_HOST') == $ini_dest->get('DB_HOST') && $ini_source->get('DB_USER') == $ini_dest->get('DB_USER') && $dbname_source == $dbname_destination && $ini_source->get('DB_PORT') == $ini_dest->get('DB_PORT')){
+			$backup->disconnect();
+			$backup->disconnect_destination();
+			$this->ave->pause(" Destination database `$dbname_destination` is same as source database `$dbname_source`, press any key to reset connection");
+			goto reset_connection;
+		}
+
+		$this->ave->clear();
+		if(!$this->ave->get_confirm(" Clone database `$dbname_source` to `$dbname_destination` (Y/N): ")){
+			$this->ave->pause(" Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
+			return false;
+		}
 
 		if(!$backup->isDestinationEmpty()){
 			if(!$this->ave->get_confirm(" Output database is not empty, continue (Y/N): ")){
-				$this->ave->pause(" Clone \"$source\" to \"$destination\" aborted, press any key to back to menu");
+				$this->ave->pause(" Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
 				return false;
 			}
 		}
 
-		$this->ave->echo(" Clone \"$source\" to \"$destination\"");
+		$this->ave->echo(" Clone `$dbname_source` to `$dbname_destination`");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 
 		$items = $backup->getTables();
@@ -783,17 +821,17 @@ class MySQLTools {
 		}
 
 		$this->ave->echo();
-		$this->ave->write_log("Finish clone \"$source\" to \"$destination\"");
+		$this->ave->write_log("Finish clone `$dbname_source` to `$dbname_destination`");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 		$backup->disconnect_destination();
 
 		$this->ave->open_logs(true);
-		$this->ave->pause(" Clone for \"$source\" to \"$destination\" done, press any key to back to menu");
+		$this->ave->pause(" Clone for `$dbname_source` to `$dbname_destination` done, press any key to back to menu");
 		return false;
 	}
 
-	public function ToolMakeBackupCMD(string $label) : bool {
+	public function ToolMakeBackupCMD(string $label, ?string $dbname = null) : bool {
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label \"$label\"");
 			return false;
@@ -818,6 +856,11 @@ class MySQLTools {
 			return false;
 		}
 
+		if($ini->get('DB_NAME') == "*" && is_null($dbname)){
+			$this->ave->echo(" No data base selected");
+			return false;
+		}
+
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
@@ -829,11 +872,11 @@ class MySQLTools {
 			$this->ave->echo(" Failed connect to database");
 			return false;
 		}
-
+		if($ini->get('DB_NAME') == "*") $backup->getSource()->query("USE $dbname");
+		
 		$this->ave->echo(" Create backup");
 
 		$items = $backup->getTables();
-		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for table $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
@@ -864,7 +907,6 @@ class MySQLTools {
 			$items = [];
 			$this->ave->write_error("Access denied for get views");
 		}
-		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for view $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
@@ -889,7 +931,6 @@ class MySQLTools {
 			$items = [];
 			$this->ave->write_error("Access denied for get functions");
 		}
-		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for function $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
@@ -914,7 +955,6 @@ class MySQLTools {
 			$items = [];
 			$this->ave->write_error("Access denied for get procedures");
 		}
-		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for procedure $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
@@ -939,7 +979,6 @@ class MySQLTools {
 			$items = [];
 			$this->ave->write_error("Access denied for get events");
 		}
-		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for event $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
@@ -964,7 +1003,6 @@ class MySQLTools {
 			$items = [];
 			$this->ave->write_error("Access denied for get triggers");
 		}
-		$total = count($items);
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for trigger $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
@@ -1049,6 +1087,7 @@ class MySQLTools {
 		$db = new DataBase();
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->getConnection())) return false;
 
 		$save_output = $this->ave->get_confirm(" Save query results in data file (Y/N): ");
 		if($save_output){
@@ -1184,7 +1223,6 @@ class MySQLTools {
 		$ftype = explode(" ", $type);
 		$ftype = $ftype[0];
 		$stype = strtolower($type);
-		$sftype = strtolower($ftype);
 		$type = str_replace(" ", "", $type);
 		$this->ave->clear();
 		$this->ave->set_subtool("BackupSelected".$type);
@@ -1248,6 +1286,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getSource(), $backup)) return false;
 
 		$this->ave->echo(" Create backup");
 		$func = "get".$ftype."s";
@@ -1320,11 +1359,12 @@ class MySQLTools {
 		$db = new DataBase();
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->getConnection())) return false;
 
 		$separator = $ini->get('SAVE_RESULTS_SEPARATOR');
 		$this->ave->write_data(str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
 
-		$db_name = $ini->get('DB_NAME');
+		$db_name = $db->getDataBase();
 
 		$items = $db->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -1369,6 +1409,7 @@ class MySQLTools {
 		$ini_source = $this->getConfig($source);
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
+		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($db_source->getConnection())) return false;
 
 		set_label_destination:
 		$destination = $this->ave->get_input(" Destination label: ");
@@ -1393,11 +1434,12 @@ class MySQLTools {
 		$ini_destination = $this->getConfig($destination);
 		$this->ave->echo(" Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
 		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'))) goto set_label_destination;
+		if($ini_destination->get('DB_NAME') == "*" && !$this->SelectDataBase($db_destination->getConnection())) return false;
 
 		$info_source = [];
 		$info_dest = [];
 
-		$db_name = $ini_source->get('DB_NAME');
+		$db_name = $db_source->getDataBase();
 		$this->ave->echo(" Fetch data base info for \"$source\"");
 		$items = $db_source->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -1415,7 +1457,7 @@ class MySQLTools {
 		}
 		$db_source->disconnect();
 
-		$db_name = $ini_destination->get('DB_NAME');
+		$db_name = $db_destination->getDataBase();
 		$items = $db_destination->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$table = $item->{"Tables_in_$db_name"};

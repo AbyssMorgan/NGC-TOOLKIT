@@ -348,7 +348,7 @@ class FileEditor {
 					$out = false;
 				}
 				$output_file = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".pathinfo($file, PATHINFO_EXTENSION));
-				if(file_exists($output_file)) $this->ave->unlink($output_file);
+				if(file_exists($output_file)) $this->ave->delete($output_file);
 				$out = fopen($output_file, 'w');
 				if(!$out){
 					$this->ave->write_error("FAILED OPEN FILE \"$output_file\"");
@@ -402,7 +402,7 @@ class FileEditor {
 		while(!feof($fp)){
 			$buffer = fread($fp, $bytes);
 			$output_file = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".pathinfo($file, PATHINFO_EXTENSION));
-			if(file_exists($output_file)) $this->ave->unlink($output_file);
+			if(file_exists($output_file)) $this->ave->delete($output_file);
 			$out = fopen($output_file, 'w');
 			if(!$out){
 				$this->ave->write_error("FAILED OPEN FILE \"$output_file\"");

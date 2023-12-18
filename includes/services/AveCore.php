@@ -12,7 +12,7 @@ use DirectoryIterator;
 
 class AveCore {
 
-	public int $core_version = 7;
+	public int $core_version = 8;
 
 	public IniFile $config;
 
@@ -37,7 +37,7 @@ class AveCore {
 	public string $utilities_path;
 	public string $utilities_version = "1.0.0";
 	public string $current_title;
-	public array $drives = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+	public array $drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 	public bool $can_exit = true;
 
 	public function __construct(array $arguments, bool $require_utilities){
@@ -51,7 +51,7 @@ class AveCore {
 		$this->logo = '';
 		$this->current_title = '';
 		$this->utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
-
+		
 		if($require_utilities){
 			if($this->windows){
 				$ave_utilities = false;
@@ -366,7 +366,7 @@ class AveCore {
 				if(is_dir($subdir) && !is_link($subdir)){
 					$this->rrmdir($subdir);
 				} else {
-					$this->unlink($subdir);
+					$this->delete($subdir);
 				}
 			}
 			$this->rmdir($dir);
@@ -385,7 +385,7 @@ class AveCore {
 		}
 	}
 
-	public function unlink(string $path, bool $log = true) : bool {
+	public function delete(string $path, bool $log = true) : bool {
 		if(!file_exists($path) || is_dir($path)) return false;
 		if(@unlink($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
@@ -460,7 +460,7 @@ class AveCore {
 	public function delete_files(string $path, array|null $extensions = null, array|null $except = null) : void {
 		$files = $this->get_files($path, $extensions, $except);
 		foreach($files as $file){
-			$this->unlink($file);
+			$this->delete($file);
 		}
 	}
 
@@ -534,6 +534,10 @@ class AveCore {
 
 	public function echo(string $string = '') : void {
 		echo "$string\r\n";
+	}
+
+	public function print(mixed $value) : void {
+		echo print_r($value, true);
 	}
 
 	public function get_variable(string $string) : string {
@@ -729,18 +733,18 @@ class AveCore {
 		if($this->windows){
 			if(substr($path, 1, 1) == ':'){
 				$new_name = $this->get_file_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
-				if(file_exists($new_name) && !$this->unlink($new_name)) return false;
+				if(file_exists($new_name) && !$this->delete($new_name)) return false;
 				return $this->rename($path, $new_name);
 			} else if(substr($path, 0, 2) == "\\\\"){
 				$device = substr($path, 2);
 				if(strpos($device, "\\") !== false){
 					$new_name = $this->get_file_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
-					if(file_exists($new_name) && !$this->unlink($new_name)) return false;
+					if(file_exists($new_name) && !$this->delete($new_name)) return false;
 					return $this->rename($path, $new_name);
 				}
 			}
 		} else {
-			return $this->unlink($path);
+			return $this->delete($path);
 		}
 		$this->write_error("FAILED TRASH \"$path\"");
 		return false;
@@ -764,6 +768,15 @@ class AveCore {
 		$this->echo(" This tool is only available on windows operating system");
 		$this->pause(" Press any key to back to menu");
 		return false;
+	}
+
+	/**
+	 * @deprecated "Use delete instead"
+	 *
+	 * @return $this
+	 */
+	public function unlink(...$args) : bool {
+		return $this->delete(...$args);
 	}
 
 }

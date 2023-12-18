@@ -23,7 +23,7 @@ class DataBase {
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		try {
-			$this->db = new PDO("mysql:dbname=$dbname;host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
+			$this->db = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -39,6 +39,12 @@ class DataBase {
 
 	public function getConnection() : ?PDO {
 		return $this->db;
+	}
+
+	public function getDataBase() : ?string {
+		$sth = $this->query("SELECT DATABASE() as `name`;");
+		$result = $sth->fetch(PDO::FETCH_OBJ);
+		return $result->name ?? null;
 	}
 
 	public function escape(mixed $string) : string {
