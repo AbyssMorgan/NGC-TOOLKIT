@@ -10,7 +10,7 @@ use App\Services\StringConverter;
 
 class FileEditor {
 
-	private string $name = "FileEditor";
+	private string $name = "File Editor";
 
 	private array $params = [];
 	private string $action;
@@ -51,7 +51,7 @@ class FileEditor {
 
 	public function ToolReplaceKeywordsInFiles() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ReplaceKeywordsInFiles");
+		$this->ave->set_subtool("Replace keywords in files");
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -143,7 +143,7 @@ class FileEditor {
 
 	public function ToolRemoveKeywordsInFiles() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("RemoveKeywordsInFiles");
+		$this->ave->set_subtool("Remove keywords in files");
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -222,7 +222,7 @@ class FileEditor {
 
 	public function ToolRemoveDuplicateLinesInFile() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("RemoveDuplicateLinesInFile");
+		$this->ave->set_subtool("Remove duplicate lines in file");
 
 		set_input:
 		$line = $this->ave->get_input(" File: ");
@@ -294,7 +294,7 @@ class FileEditor {
 
 	public function ToolSplitFileByLinesCount() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SplitFileByLinesCount");
+		$this->ave->set_subtool("Split file by lines count");
 
 		$lines_limit = $this->ave->get_input_integer(" Lines limit: ");
 		if(!$lines_limit) return false;
@@ -375,7 +375,7 @@ class FileEditor {
 
 	public function ToolSplitFileBySize() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SplitFileBySize");
+		$this->ave->set_subtool("Split file by size");
 
 		$bytes = $this->ave->get_input_bytes_size(" Size: ");
 		if(!$bytes) return false;
@@ -423,7 +423,7 @@ class FileEditor {
 
 	public function ToolReverseFileLines() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ReverseFileLines");
+		$this->ave->set_subtool("Reverse file lines");
 
 		set_input:
 		$line = $this->ave->get_input(" File: ");
@@ -474,7 +474,7 @@ class FileEditor {
 
 	public function ToolPrettyFileContent() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("PrettyFileContent");
+		$this->ave->set_subtool("Pretty file content");
 
 		set_mode:
 		$this->ave->clear();

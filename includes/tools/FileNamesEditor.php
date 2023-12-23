@@ -10,7 +10,7 @@ use App\Services\StringConverter;
 
 class FileNamesEditor {
 
-	private string $name = "FileNamesEditor";
+	private string $name = "File Names Editor";
 
 	private array $params = [];
 	private string $action;
@@ -121,7 +121,7 @@ class FileNamesEditor {
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
 				$new_name = $this->ToolCheckSumGetPattern($this->params['mode'], $file, $hash, $file_id++);
 				if($this->params['list_only']){
-					array_push($list,$new_name);
+					array_push($list, $new_name);
 				} else {
 					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
 						$this->ave->write_error("DUPLICATE \"$file\" AS \"$new_name\"");

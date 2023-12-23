@@ -13,7 +13,7 @@ use FtpClient\FtpException;
 
 class FtpTools {
 
-	private string $name = "FtpTools";
+	private string $name = "Ftp Tools";
 
 	private array $params = [];
 	private string $action;

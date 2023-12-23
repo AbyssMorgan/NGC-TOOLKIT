@@ -9,7 +9,7 @@ use App\Services\MediaFunctions;
 
 class MediaSorter {
 
-	private string $name = "MediaSorter";
+	private string $name = "Media Sorter";
 
 	private array $params = [];
 	private string $action;

@@ -17,6 +17,7 @@ use App\Tools\CheckFileIntegrity;
 use App\Tools\MySQLTools;
 use App\Tools\FileEditor;
 use App\Tools\FtpTools;
+use App\Tools\AdmFileConverter;
 
 class AVE extends AveCore {
 
@@ -25,7 +26,7 @@ class AVE extends AveCore {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "AVE-PHP";
-	public string $version = "2.0.0";
+	public string $version = "2.0.1";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -203,6 +204,7 @@ class AVE extends AveCore {
 			' 6 - MySQL Tools',
 			' 7 - File Editor',
 			' 8 - FTP Tools',
+			' 9 - ADM File Converter',
 			' H - Help',
 		];
 		if(!$this->windows) array_push($options, ' # - Close program');
@@ -245,6 +247,10 @@ class AVE extends AveCore {
 			}
 			case '8': {
 				$this->tool = new FtpTools($this);
+				break;
+			}
+			case '9': {
+				$this->tool = new AdmFileConverter($this);
 				break;
 			}
 			case 'H': {

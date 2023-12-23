@@ -42,6 +42,7 @@
 	require_once("$includes_path/tools/MySQLTools.php");
 	require_once("$includes_path/tools/FileEditor.php");
 	require_once("$includes_path/tools/FtpTools.php");
+	require_once("$includes_path/tools/AdmFileConverter.php");
 
 	$ave = new AVE($argv);
 	if(!$ave->abort) $ave->execute();

@@ -10,7 +10,7 @@ use App\Services\IniFile;
 
 class AveSettings {
 
-	private string $name = "AveSettings";
+	private string $name = "Ave Settings";
 
 	private array $params = [];
 	private string $action;

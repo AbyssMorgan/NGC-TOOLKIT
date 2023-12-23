@@ -14,7 +14,7 @@ use App\Services\Request;
 
 class MySQLTools {
 
-	private string $name = "MySQLTools";
+	private string $name = "MySQL Tools";
 
 	private array $params = [];
 	private string $action;

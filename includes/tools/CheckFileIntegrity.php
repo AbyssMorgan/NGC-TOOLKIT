@@ -11,7 +11,7 @@ use App\Services\IniFile;
 
 class CheckFileIntegrity {
 
-	private string $name = "CheckFileIntegrity";
+	private string $name = "Check File Integrity";
 
 	private array $params = [];
 	private string $action;
@@ -54,7 +54,7 @@ class CheckFileIntegrity {
 
 	public function ToolCreatePattern() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CreatePattern");
+		$this->ave->set_subtool("Create pattern");
 
 		set_input:
 		$line = $this->ave->get_input(" Input (Folder): ");
@@ -124,7 +124,7 @@ class CheckFileIntegrity {
 
 	public function ToolGuardGenerate() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("GuardGenerate");
+		$this->ave->set_subtool("Guard generate");
 
 		set_pattern:
 		$line = $this->ave->get_input(" Pattern (.ave-pat): ");
@@ -167,7 +167,7 @@ class CheckFileIntegrity {
 
 	public function ToolCheckIntegrity() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CheckIntegrity");
+		$this->ave->set_subtool("Check integrity");
 
 		set_guard:
 		$line = $this->ave->get_input(" Guard (.ave-guard): ");
@@ -241,7 +241,7 @@ class CheckFileIntegrity {
 
 	public function ToolGetFilesTree() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("GetFilesTree");
+		$this->ave->set_subtool("Get files tree");
 
 		set_guard:
 		$line = $this->ave->get_input(" Guard (.ave-guard): ");
@@ -275,7 +275,7 @@ class CheckFileIntegrity {
 
 	public function ToolUpdateRemoveMissing() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("UpdateRemoveMissing");
+		$this->ave->set_subtool("Update remove missing");
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
@@ -286,7 +286,7 @@ class CheckFileIntegrity {
 
 	public function ToolUpdateAddUnknown() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("UpdateAddUnknown");
+		$this->ave->set_subtool("Update add unknown");
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
@@ -297,7 +297,7 @@ class CheckFileIntegrity {
 
 	public function ToolUpdateChanged() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("UpdateChanged");
+		$this->ave->set_subtool("Update changed");
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
@@ -308,7 +308,7 @@ class CheckFileIntegrity {
 
 	public function ToolUpdateMissingAndUnknown() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("UpdateMissingAndUnknown");
+		$this->ave->set_subtool("Update missing and unknown");
 		$guard_file = $this->ToolGuardSetFile();
 		if(is_null($guard_file)) return false;
 		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);

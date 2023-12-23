@@ -77,7 +77,7 @@ class JournalService {
 		$fp = fopen($this->path, "rb");
 		if(!$fp) return null;
 		$header = fread($fp, 11);
-		if($header != self::FILE_HEADER_DATA) return null;
+		if(!in_array($header, [self::FILE_HEADER_DATA, 'EMU-JOURNAL'])) return null;
 		fseek($fp, 12);
 		while(!feof($fp)){
 			$l = fread($fp, 4);

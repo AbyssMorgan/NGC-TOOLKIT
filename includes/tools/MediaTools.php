@@ -14,7 +14,7 @@ use App\Services\FaceDetector;
 
 class MediaTools {
 
-	private string $name = "MediaTools";
+	private string $name = "Media Tools";
 
 	private array $params = [];
 	private string $action;
@@ -338,7 +338,7 @@ class MediaTools {
 		$this->ave->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
 		$s = $this->ave->config->get('AVE_CSV_SEPARATOR');
-		$csv->write('"File path"'.$s.'"Dir name"'.$s.'"File name"'.$s.'"Extension"'.$s.'"Resolution"'.$s.'"Quality"'.$s.'"Duration"'.$s.'"Size"'.$s.'"Orientation"'.$s.'"Checksum (MD5)"');
+		$csv->write('"File path"'.$s.'"Dir name"'.$s.'"File name"'.$s.'"Extension"'.$s.'"Resolution"'.$s.'"Quality"'.$s.'"Duration"'.$s.'"Size"'.$s.'"Orientation"'.$s.'"Checksum (MD5)"'.$s.'"FPS"'.$s.'"Codec"');
 
 		$keys = [];
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
@@ -359,6 +359,8 @@ class MediaTools {
 				$file_size = $media_info['file_size'];
 				$orientation_name = $media_info['orientation_name'];
 				$checksum = $media_info['checksum'];
+				$fps = $media_info['fps'];
+				$codec = $media_info['codec'];
 				if(is_null($checksum) && $generate_checksum){
 					$checksum = strtoupper(hash_file('md5', $file));
 					$new++;
@@ -377,6 +379,8 @@ class MediaTools {
 				$duration = $media->getVideoDuration($file);
 				$file_size = $this->ave->format_bytes(filesize($file));
 				$orientation_name = $media->getMediaOrientationName($orientation);
+				$fps = $media->getVideoFPS($file);
+				$codec = $media->getVideoCodec($file);
 				if(file_exists("$file.md5")){
 					$checksum = file_get_contents("$file.md5");
 				} else if($generate_checksum){
@@ -391,6 +395,8 @@ class MediaTools {
 					'file_size' => $file_size,
 					'orientation_name' => $orientation_name,
 					'checksum' => $checksum,
+					'fps' => $fps,
+					'codec' => $codec,
 				]);
 				if($new % 25 == 0) $cache->save();
 				$this->ave->write_log("FETCH MEDIA INFO \"$file\"");
@@ -406,6 +412,8 @@ class MediaTools {
 				'"'.$file_size.'"',
 				'"'.$orientation_name.'"',
 				'"'.($checksum ?? 'None').'"',
+				'"'.$fps.'"',
+				'"'.$codec.'"',
 			];
 			array_push($keys, $key);
 			$csv->write(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));

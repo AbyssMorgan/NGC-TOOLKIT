@@ -8,7 +8,7 @@ use AVE;
 
 class AveConsole {
 
-	private string $name = "AveConsole";
+	private string $name = "Ave Console";
 
 	private AVE $ave;
 

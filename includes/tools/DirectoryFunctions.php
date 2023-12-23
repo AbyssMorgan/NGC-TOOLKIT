@@ -9,7 +9,7 @@ use FilesystemIterator;
 
 class DirectoryFunctions {
 
-	private string $name = "DirectoryFunctions";
+	private string $name = "Directory Functions";
 
 	private array $params = [];
 	private string $action;
@@ -44,7 +44,7 @@ class DirectoryFunctions {
 
 	public function ToolDeleteEmptyFolders() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("DeleteEmptyFolders");
+		$this->ave->set_subtool("Delete empty folders");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -83,7 +83,7 @@ class DirectoryFunctions {
 
 	public function ToolForceLoadIcon() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ForceLoadIcon");
+		$this->ave->set_subtool("Force load icon");
 		if(!$this->ave->windows) return $this->ave->windows_only();
 
 		$line = $this->ave->get_input(" Folders: ");
@@ -119,7 +119,7 @@ class DirectoryFunctions {
 
 	public function ToolCountFiles() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CountFiles");
+		$this->ave->set_subtool("Count files");
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -170,7 +170,7 @@ class DirectoryFunctions {
 
 	public function ToolCloneFolderStructure() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CloneFolderStructure");
+		$this->ave->set_subtool("Clone folder structure");
 
 		set_input:
 		$line = $this->ave->get_input(" Input (Folder): ");

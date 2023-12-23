@@ -8,7 +8,7 @@ use AVE;
 
 class FileFunctions {
 
-	private string $name = "FileFunctions";
+	private string $name = "File Functions";
 
 	private array $params = [];
 	private string $action;
@@ -57,6 +57,7 @@ class FileFunctions {
 			' CheckSum Name   Action',
 			' a1       b1     Rename',
 			' a2       b2     Delete',
+			' a3       b3     List',
 		]);
 
 		$line = $this->ave->get_input(" Mode: ");
@@ -68,7 +69,7 @@ class FileFunctions {
 		];
 
 		if(!in_array($this->params['mode'], ['a', 'b'])) goto set_mode;
-		if(!in_array($this->params['action'], ['1', '2'])) goto set_mode;
+		if(!in_array($this->params['action'], ['1', '2', '3'])) goto set_mode;
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
@@ -112,10 +113,10 @@ class FileFunctions {
 					$duplicate = $keys[$key];
 					$this->ave->write_error("DUPLICATE \"$file\" OF \"$duplicate\"");
 					$errors++;
-					if($this->params['action'] == '2'){
-						if(!$this->ave->delete($file)) $errors++;
-					} else {
+					if($this->params['action'] == '1'){
 						if(!$this->ave->rename($file, "$file.tmp")) $errors++;
+					} else if($this->params['action'] == '2'){
+						if(!$this->ave->delete($file)) $errors++;
 					}
 				} else {
 					$keys[$key] = $file;
@@ -130,7 +131,7 @@ class FileFunctions {
 
 		unset($keys);
 
-		$this->ave->open_logs(true);
+		$this->ave->open_logs($this->params['action'] != '3');
 		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}

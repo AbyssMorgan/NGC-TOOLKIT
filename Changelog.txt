@@ -1,3 +1,9 @@
+v2.0.1:
+- Improved tool: File Functions > Anti Duplicates (added mode a3 and b3 - detect duplicates and write logs only)
+- Improved tool: Media Tools > Video: Fetch media info (added FPS and codec)
+- Added tool: ADM File Converter > Ini converter (INI <=> GZ-INI)
+- Added tool: ADM File Converter > ADM Journal converter (ADM-JOURNAL => Text)
+
 v2.0.0:
 - MySQL tool now support multiple data base into one connection label, you need set data base value to * for use that feature
 - Fixed FTP Tools > Import FileZilla XML (Now you can import xml with single server)
