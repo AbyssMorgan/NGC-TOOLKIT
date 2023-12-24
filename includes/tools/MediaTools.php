@@ -375,7 +375,7 @@ class MediaTools {
 				}
 				$size = explode('x', $resolution);
 				$orientation = $media->getMediaOrientation(intval($size[0]), intval($size[1]));
-				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1])).$this->ave->config->get('AVE_QUALITY_SUFFIX');
+				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]), true).$this->ave->config->get('AVE_QUALITY_SUFFIX');
 				$duration = $media->getVideoDuration($file);
 				$file_size = $this->ave->format_bytes(filesize($file));
 				$orientation_name = $media->getMediaOrientationName($orientation);

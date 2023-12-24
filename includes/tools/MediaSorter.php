@@ -140,7 +140,7 @@ class MediaSorter {
 					continue 1;
 				}
 				$size = explode("x", $resolution);
-				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1])).$this->ave->config->get('AVE_QUALITY_SUFFIX');
+				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]), in_array($extension, $video_extensions)).$this->ave->config->get('AVE_QUALITY_SUFFIX');
 				$orientation_name = $media->getMediaOrientationName($media->getMediaOrientation(intval($size[0]), intval($size[1])));
 				if($this->params['resolution'] && $this->params['quality']){
 					$directory = "$folder/$orientation_name/$quality";
