@@ -2,6 +2,7 @@
 Windows console tool for media
 
 #### Functionality and how to use
+- [How to install](https://github.com/AbyssMorgan/AVE-PHP/wiki/HowToInstall)
 - [Wiki](https://github.com/AbyssMorgan/AVE-PHP/wiki)
 
 #### Requirements (Windows)
