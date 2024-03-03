@@ -1,3 +1,13 @@
+v2.1.0:
+- Added tool: Media Tools > Ident mime type: Images
+- Added tool: Directory Names Editor > Escape directory name (WWW)
+- Added tool: Directory Names Editor > Pretty directory name
+- Added tool: Directory Names Editor > Add directory name prefix/suffix
+- Added tool: Directory Names Editor > Remove keywords from directory name
+- Added tool: Directory Names Editor > Insert string into directory name
+- Added tool: Directory Names Editor > Replace keywords in directory name
+- Rebuild AveCore and separated libraries that can be used without AVE-PHP
+
 v2.0.1:
 - Improved tool: File Functions > Anti Duplicates (added mode a3 and b3 - detect duplicates and write logs only)
 - Improved tool: Media Tools > Video: Fetch media info (added FPS and codec)

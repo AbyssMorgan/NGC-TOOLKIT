@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use AveCore\IniFile;
+
 class StringConverter {
 
 	public array $replace = [];
@@ -21,16 +23,16 @@ class StringConverter {
 		];
 	}
 
-	public function importPinYin(string $path) : void {
+	public function import_pin_yin(string $path) : void {
 		if(empty($this->pinyin)){
 			$ini = new IniFile($path);
-			$this->pinyin = $ini->getAll();
+			$this->pinyin = $ini->get_all();
 		}
 	}
 
-	public function importReplacement(string $path) : void {
+	public function import_replacement(string $path) : void {
 		$ini = new IniFile($path);
-		foreach($ini->getAll() as $key => $value){
+		foreach($ini->get_all() as $key => $value){
 			$this->replace[$key] = $value;
 		}
 	}
@@ -50,13 +52,13 @@ class StringConverter {
 		return trim($string, ' ');
 	}
 
-	public function stringToPinYin(string $string) : string {
+	public function string_to_pin_yin(string $string) : string {
 		$string = preg_replace("/\s/is", "_", $string);
 		$pinyin = "";
 		$string = iconv('UTF-8', 'GBK//TRANSLIT', $string);
 		for($i = 0; $i < strlen($string); $i++){
 			if(ord($string[$i]) > 128){
-				$char = $this->asc2ToPinYin(ord($string[$i]) + ord($string[$i+1]) * 256);
+				$char = $this->asc2_to_pin_yin(ord($string[$i]) + ord($string[$i+1]) * 256);
 				if(!is_null($char)){
 					$pinyin .= $char;
 				} else {
@@ -70,7 +72,7 @@ class StringConverter {
 		return str_replace('_', ' ', $pinyin);
 	}
 
-	private function asc2ToPinYin(int $asc2) : ?string {
+	private function asc2_to_pin_yin(int $asc2) : ?string {
 		foreach($this->pinyin as $key => $value){
 			if(array_search($asc2, $value) !== false){
 				return $key;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace AveCore;
 
 use Exception;
 
@@ -10,24 +10,22 @@ class AppBuffer {
 
 	protected string $path;
 
-	public int $version = 10000;
-
 	function __construct(string $path){
 		$this->path = $path;
 		if(!file_exists($this->path)) mkdir($this->path, 0755, true);
 	}
 
-	public function getPath() : string {
+	public function get_path() : string {
 		return $this->path;
 	}
 
-	public function getFile(string $key) : string {
+	public function get_file(string $key) : string {
 		$key = hash('sha256', $key);
 		return $this->path.DIRECTORY_SEPARATOR."$key.json";
 	}
 
 	public function get(string $key, int|bool|string|array|float|null $default = null) : mixed {
-		$file = $this->getFile($key);
+		$file = $this->get_file($key);
 		if(!file_exists($file)) return $default;
 		$buffer = json_decode(file_get_contents($file), true);
 		if(!isset($buffer['expire']) || !isset($buffer['type'])) return $default;
@@ -44,7 +42,7 @@ class AppBuffer {
 	}
 
 	public function set(string $key, int|bool|string|array|float|null $value, int $expire = -1) : void {
-		$file = $this->getFile($key);
+		$file = $this->get_file($key);
 		if($expire > 0) $expire = time() + $expire;
 		$type = strtolower(gettype($value));
 		switch($type){
@@ -75,10 +73,10 @@ class AppBuffer {
 	}
 
 	public function forget(string $key) : void {
-		$this->delete($this->getFile($key));
+		$this->delete($this->get_file($key));
 	}
 
-	public function clearExpired() : void {
+	public function clear_expired() : void {
 		$files = scandir($this->path);
 		foreach($files as $file){
 			$buffer = json_decode(file_get_contents($this->path.DIRECTORY_SEPARATOR.$file), true);

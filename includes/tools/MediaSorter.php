@@ -10,7 +10,6 @@ use App\Services\MediaFunctions;
 class MediaSorter {
 
 	private string $name = "Media Sorter";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -129,9 +128,9 @@ class MediaSorter {
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				if(in_array($extension, $image_extensions)){
-					$resolution = $media->getImageResolution($file);
+					$resolution = $media->get_image_resolution($file);
 				} else {
-					$resolution = $media->getVideoResolution($file);
+					$resolution = $media->get_video_resolution($file);
 				}
 				if($resolution == '0x0'){
 					$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -140,8 +139,8 @@ class MediaSorter {
 					continue 1;
 				}
 				$size = explode("x", $resolution);
-				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]), in_array($extension, $video_extensions)).$this->ave->config->get('AVE_QUALITY_SUFFIX');
-				$orientation_name = $media->getMediaOrientationName($media->getMediaOrientation(intval($size[0]), intval($size[1])));
+				$quality = $media->get_media_quality(intval($size[0]), intval($size[1]), in_array($extension, $video_extensions)).$this->ave->config->get('AVE_QUALITY_SUFFIX');
+				$orientation_name = $media->get_media_orientation_name($media->get_media_orientation(intval($size[0]), intval($size[1])));
 				if($this->params['resolution'] && $this->params['quality']){
 					$directory = "$folder/$orientation_name/$quality";
 				} else if($this->params['resolution']){
@@ -186,7 +185,7 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				if($media->isGifAnimated($file)){
+				if($media->is_gif_animated($file)){
 					$directory = "$folder/Animated";
 				} else {
 					$directory = "$folder/NotAnimated";
@@ -323,11 +322,11 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$colors = $media->getImageColorCount($file);
+				$colors = $media->get_image_color_count($file);
 				if(is_null($colors)){
 					$group = 'Unknown';
 				} else {
-					$group = $media->getImageColorGroup($colors);
+					$group = $media->get_image_color_group($colors);
 				}
 				$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/$group/".pathinfo($file, PATHINFO_BASENAME));
 				if(!$this->ave->rename($file, $new_name)){
@@ -448,14 +447,14 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$duration = $media->getVideoDurationSeconds($file);
+				$duration = $media->get_video_duration_seconds($file);
 				$multiplier = floor($duration / $interval);
 				if($multiplier == 0){
 					$start = '00_00';
 				} else {
-					$start = str_replace(":", "_", $media->SecToTime(intval($interval * $multiplier) + 1));
+					$start = str_replace(":", "_", $media->sec_to_time(intval($interval * $multiplier) + 1));
 				}
-				$end = str_replace(":", "_", $media->SecToTime(intval($interval * ($multiplier + 1))));
+				$end = str_replace(":", "_", $media->sec_to_time(intval($interval * ($multiplier + 1))));
 				$directory = "$folder/$start - $end";
 				$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->ave->rename($file, $new_name)){

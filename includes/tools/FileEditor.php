@@ -11,7 +11,6 @@ use App\Services\StringConverter;
 class FileEditor {
 
 	private string $name = "File Editor";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -510,16 +509,16 @@ class FileEditor {
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
-			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/LanguageReplacement.ini"));
+			$converter->import_replacement($this->ave->get_file_path($this->ave->path."/includes/data/LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->importPinYin($this->ave->get_file_path($this->ave->path."/includes/data/PinYin.ini"));
+			$converter->import_pin_yin($this->ave->get_file_path($this->ave->path."/includes/data/PinYin.ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Hiragama.ini"));
+			$converter->import_replacement($this->ave->get_file_path($this->ave->path."/includes/data/Hiragama.ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
+			$converter->import_replacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
 		}
 		$this->ave->clear();
 		
@@ -565,7 +564,7 @@ class FileEditor {
 					$content = $converter->clean($content);
 				}
 				if($flags->ChineseToPinYin){
-					$content = $converter->stringToPinYin($content);
+					$content = $converter->string_to_pin_yin($content);
 				}
 				if($flags->UpperCase){
 					$content = mb_strtoupper($content);

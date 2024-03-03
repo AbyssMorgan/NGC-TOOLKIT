@@ -17,48 +17,48 @@ class GuardPattern {
 		$this->input = '';
 	}
 
-	public function addFolders(array|string $folders) : void {
+	public function add_folders(array|string $folders) : void {
 		if(gettype($folders) == 'string') $folders = [$folders];
 		$this->folders = array_unique(array_merge($this->folders, $folders));
 	}
 
-	public function setFolders(array|string $folders) : void {
+	public function set_folders(array|string $folders) : void {
 		if(gettype($folders) == 'string') $folders = [$folders];
 		$this->folders = $folders;
 	}
 
-	public function getFolders() : array {
+	public function get_folders() : array {
 		return $this->folders;
 	}
 
-	public function addFiles(array|string $files) : void {
+	public function add_files(array|string $files) : void {
 		if(gettype($files) == 'string') $files = [$files];
 		$this->files = array_unique(array_merge($this->files, $files));
 	}
 
-	public function setFiles(array|string $files) : void {
+	public function set_files(array|string $files) : void {
 		if(gettype($files) == 'string') $files = [$files];
 		$this->files = $files;
 	}
 
-	public function getFiles() : array {
+	public function get_files() : array {
 		return $this->files;
 	}
 
-	public function getInput() : string {
+	public function get_input() : string {
 		return rtrim($this->input, "\\/");
 	}
 
-	public function setInput(string $input) : void {
+	public function set_input(string $input) : void {
 		$this->input = $input;
 	}
 
 	public function get() : string {
-		$data = ['input:'.$this->getInput()];
-		foreach($this->getFolders() as $folder){
+		$data = ['input:'.$this->get_input()];
+		foreach($this->get_folders() as $folder){
 			array_push($data, "folder:$folder");
 		}
-		foreach($this->getFiles() as $file){
+		foreach($this->get_files() as $file){
 			array_push($data, "file:$file");
 		}
 		return implode("\r\n", $data);
@@ -74,11 +74,11 @@ class GuardPattern {
 			} else if(substr($pat, 0, 5) == 'file:'){
 				array_push($files, substr($pat, 5));
 			} else if(substr($pat, 0, 6) == 'input:'){
-				$this->setInput(substr($pat, 6));
+				$this->set_input(substr($pat, 6));
 			}
 		}
-		$this->setFolders($folders);
-		$this->setFiles($files);
+		$this->set_folders($folders);
+		$this->set_files($files);
 	}
 
 }

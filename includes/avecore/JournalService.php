@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace AveCore;
 
 class JournalService {
 
@@ -30,7 +30,7 @@ class JournalService {
 		return strlen(bin2hex($data)) / 2;
 	}
 
-	protected function writeString(string $line) : bool {
+	protected function write_string(string $line) : bool {
 		$fp = fopen($this->path, "a");
 		if(!$fp) return false;
 		$int1 = 0;
@@ -39,13 +39,13 @@ class JournalService {
 		$int4 = 0;
 		$raw = gzcompress($line, 9);
 		$length = $this->length($raw);
-		$this->bits->extractValue($length, $int1, $int2, $int3, $int4);
+		$this->bits->extract_value($length, $int1, $int2, $int3, $int4);
 		fwrite($fp, chr($int1).chr($int2).chr($int3).chr($int4).$raw);
 		fclose($fp);
 		return true;
 	}
 
-	protected function writeArray(array $lines) : bool {
+	protected function write_array(array $lines) : bool {
 		$fp = fopen($this->path, "a");
 		if(!$fp) return false;
 		$int1 = 0;
@@ -55,7 +55,7 @@ class JournalService {
 		foreach($lines as $line){
 			$raw = gzcompress($line, 9);
 			$length = $this->length($raw);
-			$this->bits->extractValue($length, $int1, $int2, $int3, $int4);
+			$this->bits->extract_value($length, $int1, $int2, $int3, $int4);
 			fwrite($fp, chr($int1).chr($int2).chr($int3).chr($int4).$raw);
 		}
 		fclose($fp);
@@ -67,8 +67,8 @@ class JournalService {
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		if(gettype($content) == "array") return $this->writeArray($content);
-		return $this->writeString($content);
+		if(gettype($content) == "array") return $this->write_array($content);
+		return $this->write_string($content);
 	}
 
 	public function read(bool $json = false) : ?array {
@@ -82,7 +82,7 @@ class JournalService {
 		while(!feof($fp)){
 			$l = fread($fp, 4);
 			if(!isset($l[0])) break;
-			$length = $this->bits->mergeValue(ord($l[0]), ord($l[1]), ord($l[2]), ord($l[3]));
+			$length = $this->bits->merge_value(ord($l[0]), ord($l[1]), ord($l[2]), ord($l[3]));
 			$string = gzuncompress(fread($fp, $length));
 			if($json) $string = json_decode($string, true);
 			array_push($data, $string);

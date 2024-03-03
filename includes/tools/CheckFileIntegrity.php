@@ -7,12 +7,11 @@ namespace App\Tools;
 use AVE;
 use App\Services\GuardPattern;
 use App\Services\GuardDriver;
-use App\Services\IniFile;
+use AveCore\IniFile;
 
 class CheckFileIntegrity {
 
 	private string $name = "Check File Integrity";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -89,13 +88,13 @@ class CheckFileIntegrity {
 		$pattern_file = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pattern_file[0]).".ave-pat";
 
 		$pattern = new GuardPattern();
-		$pattern->setInput($input);
+		$pattern->set_input($input);
 
 		set_folders:
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		foreach($this->ave->get_input_folders($line) as $folder){
-			$pattern->addFolders(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
+			$pattern->add_folders(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
 		}
 
 		if(!empty($line)){
@@ -106,7 +105,7 @@ class CheckFileIntegrity {
 		$line = $this->ave->get_input(" Files: ");
 		if($line == '#') return false;
 		foreach($this->ave->get_input_folders($line) as $file){
-			$pattern->addFiles(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
+			$pattern->add_files(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
 		}
 
 		if(!empty($line)){
@@ -141,14 +140,14 @@ class CheckFileIntegrity {
 		$pattern = new GuardPattern();
 		$pattern->load(file_get_contents($pattern_file));
 
-		$input = $pattern->getInput();
+		$input = $pattern->get_input();
 		if(!file_exists($input) || !is_dir($input) || empty($input)){
 			$this->ave->echo(" Invalid input folder: \"$input\"");
 			goto set_pattern;
 		}
 
-		$files = count($pattern->getFiles());
-		$folders = count($pattern->getFolders());
+		$files = count($pattern->get_files());
+		$folders = count($pattern->get_folders());
 		$this->ave->echo(" Loaded $folders folders and $files files");
 
 		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), $this->ave->get_file_path("$input/".pathinfo($pattern_file, PATHINFO_FILENAME).".ave-guard"));
@@ -156,7 +155,7 @@ class CheckFileIntegrity {
 		$cwd = getcwd();
 		chdir($input);
 		$this->ave->echo(" Generate $guard_file");
-		$guard = new GuardDriver($guard_file, $pattern->getFolders(), $pattern->getFiles());
+		$guard = new GuardDriver($guard_file, $pattern->get_folders(), $pattern->get_files());
 		$guard->generate();
 		chdir($cwd);
 
@@ -264,7 +263,7 @@ class CheckFileIntegrity {
 		$guard = new GuardDriver($guard_file);
 		$tree_file = "$guard_file.txt";
 
-		file_put_contents($tree_file, print_r($guard->getTree(), true));
+		file_put_contents($tree_file, print_r($guard->get_tree(), true));
 
 		$this->ave->open_file($tree_file);
 
@@ -355,12 +354,12 @@ class CheckFileIntegrity {
 			switch($error['type']){
 				case 'unknown': {
 					$this->ave->write_log("ADD FILE \"$file\"");
-					$guard->scanFile($file);
+					$guard->scan_file($file);
 					break;
 				}
 				case 'damaged': {
 					$this->ave->write_log("UPDATE FILE \"$file\"");
-					$guard->scanFile($file, true);
+					$guard->scan_file($file, true);
 					break;
 				}
 				case 'missing': {
@@ -380,7 +379,7 @@ class CheckFileIntegrity {
 			}
 		}
 
-		$ini->setAll($guard->get(), true);
+		$ini->set_all($guard->get(), true);
 
 		chdir($cwd);
 	}

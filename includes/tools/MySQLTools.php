@@ -7,20 +7,18 @@ namespace App\Tools;
 use AVE;
 use PDO;
 use PDOException;
-use App\Services\IniFile;
+use AveCore\IniFile;
+use AveCore\Request;
+use AveCore\MySQL;
 use App\Services\DataBaseBackup;
-use App\Services\DataBase;
-use App\Services\Request;
 
 class MySQLTools {
 
 	private string $name = "MySQL Tools";
-
 	private array $params = [];
 	private string $action;
 	private string $path;
 	private AVE $ave;
-
 	private $select_label = [];
 
 	public function __construct(AVE $ave){
@@ -78,7 +76,7 @@ class MySQLTools {
 		return false;
 	}
 
-	public function getSelectLabel() : void {
+	public function get_select_label() : void {
 		$this->select_label = [];
 		$i = 0;
 		$files = scandir($this->path);
@@ -97,12 +95,12 @@ class MySQLTools {
 		}
 	}
 
-	public function getConfigPath(string $label) : string {
+	public function get_config_path(string $label) : string {
 		return $this->ave->get_file_path("$this->path/$label.ini");
 	}
 
-	public function getConfig(string $label) : IniFile {
-		$config = new IniFile($this->getConfigPath($label), true);
+	public function get_config(string $label) : IniFile {
+		$config = new IniFile($this->get_config_path($label), true);
 		$this->checkConfig($config);
 		return $config;
 	}
@@ -124,7 +122,7 @@ class MySQLTools {
 		if($database == '#') return false;
 		if(!isset($options[$database])) goto select_database;
 		$connection->query("USE ".$options[$database]);
-		if(!is_null($backup)) $backup->setDataBase($options[$database]);
+		if(!is_null($backup)) $backup->set_data_base($options[$database]);
 		return true;
 	}
 
@@ -151,7 +149,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(file_exists($this->getConfigPath($label))){
+		if(file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" already in use");
 			if(!$this->ave->get_confirm(" Overwrite (Y/N): ")) goto set_label;
 		}
@@ -214,7 +212,7 @@ class MySQLTools {
 		$backup['compress'] = $this->ave->get_confirm(" Compress after backup (Y/N): ");
 		$backup['lock_tables'] = $this->ave->get_confirm(" Lock tables during background backup (Y/N): ");
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 		$ini->update([
 			'DB_HOST' => $db['host'],
 			'DB_USER' => $db['user'],
@@ -241,7 +239,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveConnection");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -251,7 +249,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		$path = $this->getConfigPath($label);
+		$path = $this->get_config_path($label);
 		if(!file_exists($path)){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
@@ -278,7 +276,7 @@ class MySQLTools {
 		$files = $this->ave->get_files($this->path, ['ini']);
 		foreach($files as $file){
 			$ini = new IniFile($file);
-			if($ini->isValid() && $ini->isSet('DB_HOST')){
+			if($ini->is_valid() && $ini->is_set('DB_HOST')){
 				$label = pathinfo($file, PATHINFO_FILENAME);
 				$this->ave->echo(" $label".str_repeat(" ",32-strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 				$cnt++;
@@ -297,7 +295,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("MakeBackup");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -307,12 +305,12 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->getConfigPath($label))){
+		if(!file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 		if($ini->get('BACKUP_ADD_LABEL_TO_PATH')){
 			$path = $this->ave->get_file_path($ini->get('BACKUP_PATH')."/$label");
 		} else {
@@ -337,15 +335,15 @@ class MySQLTools {
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
-		$backup->toggleLockTables($lock_tables);
+		$backup->toggle_lock_tables($lock_tables);
 
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getSource(), $backup)) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_source(), $backup)) return false;
 		$this->ave->echo(" Create backup");
 
-		$items = $backup->getTables();
+		$items = $backup->get_tables();
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Table', $progress, $total);
@@ -354,10 +352,10 @@ class MySQLTools {
 			$this->ave->write_log("Create backup for table $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			if($ini->get('BACKUP_TYPE_STRUCTURE')){
-				$errors_structure = $backup->backupTableStructure($item);
+				$errors_structure = $backup->backup_table_structure($item);
 			}
 			if($ini->get('BACKUP_TYPE_DATA')){
-				$errors_data = $backup->backupTableData($item);
+				$errors_data = $backup->backup_table_data($item);
 			}
 			$errors = array_merge($errors_structure ?? [], $errors_data ?? []);
 			if(!empty($errors)){
@@ -375,7 +373,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getViews();
+			$items = $backup->get_views();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -388,7 +386,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Create backup for view $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
-			$errors = $backup->backupView($item);
+			$errors = $backup->backup_view($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -404,7 +402,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getFunctions();
+			$items = $backup->get_functions();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -417,7 +415,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Create backup for function $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
-			$errors = $backup->backupFunction($item);
+			$errors = $backup->backup_function($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -433,7 +431,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getProcedures();
+			$items = $backup->get_procedures();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -446,7 +444,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Create backup for procedure $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
-			$errors = $backup->backupProcedure($item);
+			$errors = $backup->backup_procedure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -462,7 +460,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getEvents();
+			$items = $backup->get_events();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -475,7 +473,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Create backup for event $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
-			$errors = $backup->backupEvent($item);
+			$errors = $backup->backup_event($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -491,7 +489,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getTriggers();
+			$items = $backup->get_triggers();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -504,7 +502,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Create backup for trigger $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
-			$errors = $backup->backupTrigger($item);
+			$errors = $backup->backup_trigger($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -524,7 +522,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 
-		$output = $backup->getOutput();
+		$output = $backup->get_output();
 		if($ini->get('BACKUP_COMPRESS', false)){
 			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
 		} else {
@@ -541,7 +539,7 @@ class MySQLTools {
 
 		reset_connection:
 		$this->ave->clear();
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label_source:
 		$source = $this->ave->get_input(" Source label / ID: ");
 		if($source == '#') return false;
@@ -551,12 +549,12 @@ class MySQLTools {
 			goto set_label_source;
 		}
 
-		if(!file_exists($this->getConfigPath($source))){
+		if(!file_exists($this->get_config_path($source))){
 			$this->ave->echo(" Source label \"$source\" not exists");
 			goto set_label_source;
 		}
 
-		$ini_source = $this->getConfig($source);
+		$ini_source = $this->get_config($source);
 		if($ini_source->get('BACKUP_ADD_LABEL_TO_PATH')){
 			$path = $this->ave->get_file_path($ini_source->get('BACKUP_PATH')."/$source");
 		} else {
@@ -576,14 +574,14 @@ class MySQLTools {
 		$this->ave->write_log("Initialize backup for \"$source\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini_source->get('BACKUP_QUERY_LIMIT'), $ini_source->get('BACKUP_INSERT_LIMIT'), $ini_source->get('FOLDER_DATE_FORMAT'));
-		$backup->toggleLockTables($lock_tables);
+		$backup->toggle_lock_tables($lock_tables);
 
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
-		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getSource(), $backup)) return false;
+		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_source(), $backup)) return false;
 
 		$this->ave->clear();
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label_destination:
 		$destination = $this->ave->get_input(" Destination label: ");
 		if($destination == '#') return false;
@@ -593,19 +591,19 @@ class MySQLTools {
 			goto set_label_destination;
 		}
 
-		if(!file_exists($this->getConfigPath($destination))){
+		if(!file_exists($this->get_config_path($destination))){
 			$this->ave->echo(" Destination label \"$destination\" not exists");
 			goto set_label_destination;
 		}
 
-		$ini_dest = $this->getConfig($destination);
+		$ini_dest = $this->get_config($destination);
 
 		$this->ave->echo(" Connecting to: ".$ini_dest->get('DB_HOST').":".$ini_dest->get('DB_PORT')."@".$ini_dest->get('DB_USER'));
 		if(!$backup->connect_destination($ini_dest->get('DB_HOST'), $ini_dest->get('DB_USER'), $ini_dest->get('DB_PASSWORD'), $ini_dest->get('DB_NAME'), $ini_dest->get('DB_PORT'))) goto set_label_destination;
-		if($ini_dest->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getDestination())) return false;
+		if($ini_dest->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_destination())) return false;
 
-		$dbname_source = $this->getDataBase($backup->getSource());
-		$dbname_destination = $this->getDataBase($backup->getDestination());
+		$dbname_source = $this->getDataBase($backup->get_source());
+		$dbname_destination = $this->getDataBase($backup->get_destination());
 
 		if($ini_source->get('DB_HOST') == $ini_dest->get('DB_HOST') && $ini_source->get('DB_USER') == $ini_dest->get('DB_USER') && $dbname_source == $dbname_destination && $ini_source->get('DB_PORT') == $ini_dest->get('DB_PORT')){
 			$backup->disconnect();
@@ -620,7 +618,7 @@ class MySQLTools {
 			return false;
 		}
 
-		if(!$backup->isDestinationEmpty()){
+		if(!$backup->is_destination_empty()){
 			if(!$this->ave->get_confirm(" Output database is not empty, continue (Y/N): ")){
 				$this->ave->pause(" Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
 				return false;
@@ -630,7 +628,7 @@ class MySQLTools {
 		$this->ave->echo(" Clone `$dbname_source` to `$dbname_destination`");
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 
-		$items = $backup->getTables();
+		$items = $backup->get_tables();
 		$progress = 0;
 		$total = count($items);
 		$this->ave->set_progress_ex('Table Structure', $progress, $total);
@@ -638,7 +636,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone table Structure $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
-			$errors = $backup->cloneTableStructure($item);
+			$errors = $backup->clone_table_structure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -660,7 +658,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone table data $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
-			$errors = $backup->cloneTableData($item);
+			$errors = $backup->clone_table_data($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -676,7 +674,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getViews();
+			$items = $backup->get_views();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -689,7 +687,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone view $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
-			$errors = $backup->cloneView($item);
+			$errors = $backup->clone_view($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -705,7 +703,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getFunctions();
+			$items = $backup->get_functions();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -718,7 +716,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone function $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
-			$errors = $backup->cloneFunction($item);
+			$errors = $backup->clone_function($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -734,7 +732,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getProcedures();
+			$items = $backup->get_procedures();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -747,7 +745,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone procedure $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
-			$errors = $backup->cloneProcedure($item);
+			$errors = $backup->clone_procedure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -763,7 +761,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getEvents();
+			$items = $backup->get_events();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -776,7 +774,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone event $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
-			$errors = $backup->cloneEvent($item);
+			$errors = $backup->clone_event($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -792,7 +790,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getTriggers();
+			$items = $backup->get_triggers();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -805,7 +803,7 @@ class MySQLTools {
 			$progress++;
 			$this->ave->write_log("Clone trigger $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
-			$errors = $backup->cloneTrigger($item);
+			$errors = $backup->clone_trigger($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini_source->get('BACKUP_CURL_SEND_ERRORS')){
@@ -837,12 +835,12 @@ class MySQLTools {
 			return false;
 		}
 
-		if(!file_exists($this->getConfigPath($label))){
+		if(!file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" not exists");
 			return false;
 		}
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 		if($ini->get('BACKUP_ADD_LABEL_TO_PATH')){
 			$path = $this->ave->get_file_path($ini->get('BACKUP_PATH')."/$label");
 		} else {
@@ -864,7 +862,7 @@ class MySQLTools {
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
-		$backup->toggleLockTables($ini->get('BACKUP_LOCK_TABLES'));
+		$backup->toggle_lock_tables($ini->get('BACKUP_LOCK_TABLES'));
 
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
@@ -872,19 +870,19 @@ class MySQLTools {
 			$this->ave->echo(" Failed connect to database");
 			return false;
 		}
-		if($ini->get('DB_NAME') == "*") $backup->getSource()->query("USE $dbname");
+		if($ini->get('DB_NAME') == "*") $backup->get_source()->query("USE $dbname");
 		
 		$this->ave->echo(" Create backup");
 
-		$items = $backup->getTables();
+		$items = $backup->get_tables();
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for table $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			if($ini->get('BACKUP_TYPE_STRUCTURE')){
-				$errors_structure = $backup->backupTableStructure($item);
+				$errors_structure = $backup->backup_table_structure($item);
 			}
 			if($ini->get('BACKUP_TYPE_DATA')){
-				$errors_data = $backup->backupTableData($item);
+				$errors_data = $backup->backup_table_data($item);
 			}
 			$errors = array_merge($errors_structure ?? [], $errors_data ?? []);
 			if(!empty($errors)){
@@ -901,7 +899,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getViews();
+			$items = $backup->get_views();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -910,7 +908,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for view $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
-			$errors = $backup->backupView($item);
+			$errors = $backup->backup_view($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -925,7 +923,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getFunctions();
+			$items = $backup->get_functions();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -934,7 +932,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for function $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
-			$errors = $backup->backupFunction($item);
+			$errors = $backup->backup_function($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -949,7 +947,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getProcedures();
+			$items = $backup->get_procedures();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -958,7 +956,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for procedure $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
-			$errors = $backup->backupProcedure($item);
+			$errors = $backup->backup_procedure($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -973,7 +971,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getEvents();
+			$items = $backup->get_events();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -982,7 +980,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for event $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
-			$errors = $backup->backupEvent($item);
+			$errors = $backup->backup_event($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -997,7 +995,7 @@ class MySQLTools {
 		}
 
 		try {
-			$items = $backup->getTriggers();
+			$items = $backup->get_triggers();
 		}
 		catch(PDOException $e){
 			$items = [];
@@ -1006,7 +1004,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$this->ave->write_log("Create backup for trigger $item");
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
-			$errors = $backup->backupTrigger($item);
+			$errors = $backup->backup_trigger($item);
 			if(!empty($errors)){
 				$this->ave->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -1025,7 +1023,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 
-		$output = $backup->getOutput();
+		$output = $backup->get_output();
 		if($ini->get('BACKUP_COMPRESS', false)){
 			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
 		} else {
@@ -1041,7 +1039,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("OpenBackupFolder");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -1051,13 +1049,13 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		$path = $this->getConfigPath($label);
+		$path = $this->get_config_path($label);
 		if(!file_exists($path)){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
 
-		$config = $this->getConfig($label);
+		$config = $this->get_config($label);
 		$this->ave->open_file($this->ave->get_file_path($config->get('BACKUP_PATH')."/$label"), '');
 
 		return false;
@@ -1067,7 +1065,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("MySQLConsole");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -1077,17 +1075,17 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->getConfigPath($label))){
+		if(!file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 
-		$db = new DataBase();
+		$db = new MySQL();
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->getConnection())) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->get_connection())) return false;
 
 		$save_output = $this->ave->get_confirm(" Save query results in data file (Y/N): ");
 		if($save_output){
@@ -1121,7 +1119,7 @@ class MySQLTools {
 			if($save_output) $this->ave->write_data([" ".$query, ""]);
 			$sth = $db->query($query);
 			$results = $sth->fetchAll(PDO::FETCH_ASSOC);
-			$last_insert_id = $db->getConnection()->lastInsertId();
+			$last_insert_id = $db->get_connection()->lastInsertId();
 			if($last_insert_id){
 				$this->ave->echo(" Last insert id: $last_insert_id");
 				if($save_output) $this->ave->write_data(" Last insert id: $last_insert_id");
@@ -1134,7 +1132,7 @@ class MySQLTools {
 					if($save_output) $this->ave->write_data(" Done");
 				}
 			} else {
-				$results = $db->resultsToString($results, $ini->get('SAVE_RESULTS_SEPARATOR'));
+				$results = $db->results_to_string($results, $ini->get('SAVE_RESULTS_SEPARATOR'));
 				$this->ave->echo($results);
 				if($save_output) $this->ave->write_data($results);
 			}
@@ -1182,18 +1180,18 @@ class MySQLTools {
 	}
 
 	public function checkConfig(IniFile $config) : void {
-		if(!$config->isSet('BACKUP_ADD_LABEL_TO_PATH')) $config->set('BACKUP_ADD_LABEL_TO_PATH', true);
-		if(!$config->isSet('BACKUP_CURL_SEND_ERRORS')) $config->set('BACKUP_CURL_SEND_ERRORS', false);
-		if(!$config->isSet('BACKUP_CURL_CALLBACK')) $config->set('BACKUP_CURL_CALLBACK', null);
-		if(!$config->isSet('BACKUP_QUERY_LIMIT')) $config->set('BACKUP_QUERY_LIMIT', 50000);
-		if(!$config->isSet('BACKUP_INSERT_LIMIT')) $config->set('BACKUP_INSERT_LIMIT', 100);
-		if(!$config->isSet('BACKUP_TYPE_STRUCTURE')) $config->set('BACKUP_TYPE_STRUCTURE', true);
-		if(!$config->isSet('BACKUP_TYPE_DATA')) $config->set('BACKUP_TYPE_DATA', true);
-		if(!$config->isSet('BACKUP_COMPRESS')) $config->set('BACKUP_COMPRESS', true);
-		if(!$config->isSet('FOLDER_DATE_FORMAT')) $config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
-		if(!$config->isSet('SAVE_RESULTS_SEPARATOR')) $config->set('SAVE_RESULTS_SEPARATOR', '|');
-		if(!$config->isSet('BACKUP_LOCK_TABLES')) $config->set('BACKUP_LOCK_TABLES', false);
-		if($config->isChanged()) $config->save();
+		if(!$config->is_set('BACKUP_ADD_LABEL_TO_PATH')) $config->set('BACKUP_ADD_LABEL_TO_PATH', true);
+		if(!$config->is_set('BACKUP_CURL_SEND_ERRORS')) $config->set('BACKUP_CURL_SEND_ERRORS', false);
+		if(!$config->is_set('BACKUP_CURL_CALLBACK')) $config->set('BACKUP_CURL_CALLBACK', null);
+		if(!$config->is_set('BACKUP_QUERY_LIMIT')) $config->set('BACKUP_QUERY_LIMIT', 50000);
+		if(!$config->is_set('BACKUP_INSERT_LIMIT')) $config->set('BACKUP_INSERT_LIMIT', 100);
+		if(!$config->is_set('BACKUP_TYPE_STRUCTURE')) $config->set('BACKUP_TYPE_STRUCTURE', true);
+		if(!$config->is_set('BACKUP_TYPE_DATA')) $config->set('BACKUP_TYPE_DATA', true);
+		if(!$config->is_set('BACKUP_COMPRESS')) $config->set('BACKUP_COMPRESS', true);
+		if(!$config->is_set('FOLDER_DATE_FORMAT')) $config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
+		if(!$config->is_set('SAVE_RESULTS_SEPARATOR')) $config->set('SAVE_RESULTS_SEPARATOR', '|');
+		if(!$config->is_set('BACKUP_LOCK_TABLES')) $config->set('BACKUP_LOCK_TABLES', false);
+		if($config->is_changed()) $config->save();
 	}
 
 	public function compress(?string $callback, string $output, string $backup_path, Request $request) : void {
@@ -1227,7 +1225,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("BackupSelected".$type);
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -1237,12 +1235,12 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->getConfigPath($label))){
+		if(!file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 		if($ini->get('BACKUP_ADD_LABEL_TO_PATH')){
 			$path = $this->ave->get_file_path($ini->get('BACKUP_PATH')."/$label");
 		} else {
@@ -1281,12 +1279,12 @@ class MySQLTools {
 		$this->ave->write_log("Initialize backup for \"$label\"");
 		$this->ave->echo(" Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
-		$backup->toggleLockTables($lock_tables);
+		$backup->toggle_lock_tables($lock_tables);
 
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->getSource(), $backup)) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_source(), $backup)) return false;
 
 		$this->ave->echo(" Create backup");
 		$func = "get".$ftype."s";
@@ -1323,7 +1321,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 
-		$output = $backup->getOutput();
+		$output = $backup->get_output();
 		if($compress){
 			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
 		} else {
@@ -1339,7 +1337,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("FetchDataBaseInfo");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -1349,22 +1347,22 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->getConfigPath($label))){
+		if(!file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 
-		$db = new DataBase();
+		$db = new MySQL();
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->getConnection())) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->get_connection())) return false;
 
 		$separator = $ini->get('SAVE_RESULTS_SEPARATOR');
 		$this->ave->write_data(str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
 
-		$db_name = $db->getDataBase();
+		$db_name = $db->get_data_base();
 
 		$items = $db->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -1390,7 +1388,7 @@ class MySQLTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("CompareDataBaseInfo");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label_source:
 		$source = $this->ave->get_input(" Source label / ID: ");
 		if($source == '#') return false;
@@ -1400,16 +1398,16 @@ class MySQLTools {
 			goto set_label_source;
 		}
 
-		if(!file_exists($this->getConfigPath($source))){
+		if(!file_exists($this->get_config_path($source))){
 			$this->ave->echo(" Source label \"$source\" not exists");
 			goto set_label_source;
 		}
 
-		$db_source = new DataBase();
-		$ini_source = $this->getConfig($source);
+		$db_source = new MySQL();
+		$ini_source = $this->get_config($source);
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
-		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($db_source->getConnection())) return false;
+		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($db_source->get_connection())) return false;
 
 		set_label_destination:
 		$destination = $this->ave->get_input(" Destination label: ");
@@ -1420,7 +1418,7 @@ class MySQLTools {
 			goto set_label_destination;
 		}
 
-		if(!file_exists($this->getConfigPath($destination))){
+		if(!file_exists($this->get_config_path($destination))){
 			$this->ave->echo(" Destination label \"$destination\" not exists");
 			goto set_label_destination;
 		}
@@ -1430,16 +1428,16 @@ class MySQLTools {
 			goto set_label_destination;
 		}
 
-		$db_destination = new DataBase();
-		$ini_destination = $this->getConfig($destination);
+		$db_destination = new MySQL();
+		$ini_destination = $this->get_config($destination);
 		$this->ave->echo(" Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
 		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'))) goto set_label_destination;
-		if($ini_destination->get('DB_NAME') == "*" && !$this->SelectDataBase($db_destination->getConnection())) return false;
+		if($ini_destination->get('DB_NAME') == "*" && !$this->SelectDataBase($db_destination->get_connection())) return false;
 
 		$info_source = [];
 		$info_dest = [];
 
-		$db_name = $db_source->getDataBase();
+		$db_name = $db_source->get_data_base();
 		$this->ave->echo(" Fetch data base info for \"$source\"");
 		$items = $db_source->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -1457,7 +1455,7 @@ class MySQLTools {
 		}
 		$db_source->disconnect();
 
-		$db_name = $db_destination->getDataBase();
+		$db_name = $db_destination->get_data_base();
 		$items = $db_destination->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$table = $item->{"Tables_in_$db_name"};

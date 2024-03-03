@@ -12,7 +12,6 @@ class DataBaseBackup {
 	protected ?PDO $source;
 	protected ?PDO $destination;
 	protected string $database;
-
 	private ?string $path;
 	private string $alters;
 	private bool $lock_tables = false;
@@ -43,21 +42,21 @@ class DataBaseBackup {
 		$this->alters = '';
 	}
 
-	public function getAlters() : string {
+	public function get_alters() : string {
 		return $this->alters;
 	}
 
-	public function resetAlters() : void {
+	public function reset_alters() : void {
 		$this->alters = '';
 	}
 
-	public function getOutput(?string $folder = null) : string {
+	public function get_output(?string $folder = null) : string {
 		$path = $this->path.DIRECTORY_SEPARATOR."{$this->database}_{$this->date}";
 		if(!is_null($folder)) $path .= DIRECTORY_SEPARATOR.$folder;
 		return $path;
 	}
 
-	public function toggleLockTables(bool $toggle) : void {
+	public function toggle_lock_tables(bool $toggle) : void {
 		$this->lock_tables = $toggle;
 	}
 
@@ -96,11 +95,11 @@ class DataBaseBackup {
 		return true;
 	}
 
-	public function getSource() : ?PDO {
+	public function get_source() : ?PDO {
 		return $this->source;
 	}
 
-	public function getDestination() : ?PDO {
+	public function get_destination() : ?PDO {
 		return $this->destination;
 	}
 
@@ -112,7 +111,7 @@ class DataBaseBackup {
 		$this->destination = null;
 	}
 
-	public function setDataBase(string $dbname) : void {
+	public function set_data_base(string $dbname) : void {
 		$this->database = $dbname;
 	}
 
@@ -122,12 +121,12 @@ class DataBaseBackup {
 		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}
 
-	public function isDestinationEmpty() : bool {
+	public function is_destination_empty() : bool {
 		$items = $this->destination->query('SHOW TABLES', PDO::FETCH_OBJ);
 		return $items->rowCount() == 0;
 	}
 
-	public function getTables() : array {
+	public function get_tables() : array {
 		$data = [];
 		$items = $this->source->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -136,7 +135,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getViews() : array {
+	public function get_views() : array {
 		$data = [];
 		$items = $this->source->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'VIEW'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -145,7 +144,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getFunctions() : array {
+	public function get_functions() : array {
 		$data = [];
 		$items = $this->source->query("SHOW FUNCTION STATUS WHERE `Db` = '$this->database' AND `Type` = 'FUNCTION'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -154,7 +153,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getProcedures() : array {
+	public function get_procedures() : array {
 		$data = [];
 		$items = $this->source->query("SHOW PROCEDURE STATUS WHERE `Db` = '$this->database' AND `Type` = 'PROCEDURE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -163,7 +162,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getEvents() : array {
+	public function get_events() : array {
 		$data = [];
 		$items = $this->source->query("SHOW EVENTS", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -172,7 +171,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getTriggers() : array {
+	public function get_triggers() : array {
 		$data = [];
 		$items = $this->source->query("SHOW TRIGGERS", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -181,7 +180,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getColumns(string $name) : array {
+	public function get_columns(string $name) : array {
 		$data = [];
 		$columns = $this->source->query("SELECT `COLUMN_NAME`, `DATA_TYPE` FROM INFORMATION_SCHEMA.COLUMNS WHERE `TABLE_SCHEMA` = '$this->database' AND `TABLE_NAME` = '$name'", PDO::FETCH_OBJ);
 		foreach($columns as $column){
@@ -190,7 +189,7 @@ class DataBaseBackup {
 		return $data;
 	}
 
-	public function getTableCreation(string $name) : array {
+	public function get_table_creation(string $name) : array {
 		$creation = $this->source->query("SHOW CREATE TABLE `$name`", PDO::FETCH_OBJ);
 		$data = $creation->fetch(PDO::FETCH_OBJ);
 		$query = str_replace(["\r\n", "\r"], "\n", $data->{'Create Table'}.';');
@@ -213,69 +212,69 @@ class DataBaseBackup {
 		];
 	}
 
-	public function getViewCreation(string $name) : string {
+	public function get_view_creation(string $name) : string {
 		$creation = $this->source->query("SHOW CREATE VIEW `$name`", PDO::FETCH_OBJ);
 		$data = $creation->fetch(PDO::FETCH_OBJ);
 		return $data->{'Create View'}.';';
 	}
 
-	public function getFunctionCreation(string $name) : string {
+	public function get_function_creation(string $name) : string {
 		$creation = $this->source->query("SHOW CREATE FUNCTION `$name`", PDO::FETCH_OBJ);
 		$data = $creation->fetch(PDO::FETCH_OBJ);
 		return "DELIMITER $$\n".$data->{'Create Function'}."$$\nDELIMITER ;\n";
 	}
 
-	public function getProcedureCreation(string $name) : string {
+	public function get_procedure_creation(string $name) : string {
 		$creation = $this->source->query("SHOW CREATE PROCEDURE `$name`", PDO::FETCH_OBJ);
 		$data = $creation->fetch(PDO::FETCH_OBJ);
 		return "DELIMITER $$\n".$data->{'Create Procedure'}."$$\nDELIMITER ;\n";
 	}
 
-	public function getEventCreation(string $name) : string {
+	public function get_event_creation(string $name) : string {
 		$creation = $this->source->query("SHOW CREATE EVENT `$name`", PDO::FETCH_OBJ);
 		$data = $creation->fetch(PDO::FETCH_OBJ);
 		return "DELIMITER $$\n".$data->{'Create Event'}."$$\nDELIMITER ;\n";
 	}
 
-	public function getTriggerCreation(string $name) : string {
+	public function get_triger_creation(string $name) : string {
 		$creation = $this->source->query("SHOW CREATE TRIGGER `$name`", PDO::FETCH_OBJ);
 		$data = $creation->fetch(PDO::FETCH_OBJ);
 		return "DELIMITER $$\n".$data->{'SQL Original Statement'}."$$\nDELIMITER ;\n";
 	}
 
-	public function getTableDrop(string $name) : string {
+	public function get_table_drop(string $name) : string {
 		return "DROP TABLE IF EXISTS `$name`;";
 	}
 
-	public function getViewDrop(string $name) : string {
+	public function get_view_drop(string $name) : string {
 		return "DROP VIEW IF EXISTS `$name`;";
 	}
 
-	public function getFunctionDrop(string $name) : string {
+	public function get_function_drop(string $name) : string {
 		return "DROP FUNCTION IF EXISTS `$name`;";
 	}
 
-	public function getProcedureDrop(string $name) : string {
+	public function get_procedure_drop(string $name) : string {
 		return "DROP PROCEDURE IF EXISTS `$name`;";
 	}
 
-	public function getEventDrop(string $name) : string {
+	public function get_event_drop(string $name) : string {
 		return "DROP EVENT IF EXISTS `$name`;";
 	}
 
-	public function getTriggerDrop(string $name) : string {
+	public function get_trigger_drop(string $name) : string {
 		return "DROP TRIGGER IF EXISTS `$name`;";
 	}
 
-	public function getHeader() : string {
+	public function get_header() : string {
 		return $this->header;
 	}
 
-	public function getFooter() : string {
+	public function get_footer() : string {
 		return $this->footer;
 	}
 
-	public function getInsert(string $table, array $columns) : string {
+	public function get_insert(string $table, array $columns) : string {
 		$columns_string = '';
 		foreach($columns as $column){
 			$columns_string .= "`$column`,";
@@ -284,19 +283,19 @@ class DataBaseBackup {
 		return "INSERT INTO `$table` ($columns_string)";
 	}
 
-	public function backupTableStructure(string $table) : array {
-		if(!file_exists($this->getOutput("structure"))) mkdir($this->getOutput("structure"), 0755, true);
+	public function backup_table_structure(string $table) : array {
+		if(!file_exists($this->get_output("structure"))) mkdir($this->get_output("structure"), 0755, true);
 		$errors = [];
-		$file_path = $this->getOutput("structure").DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->get_output("structure").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
-			$creation = $this->getTableCreation($table);
+			$creation = $this->get_table_creation($table);
 			fwrite($file, "-- やあ --\n\n");
-			fwrite($file, $this->getHeader()."\n\n");
-			fwrite($file, $this->getTableDrop($table)."\n\n");
+			fwrite($file, $this->get_header()."\n\n");
+			fwrite($file, $this->get_table_drop($table)."\n\n");
 			fwrite($file, $creation['query']."\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
@@ -306,8 +305,8 @@ class DataBaseBackup {
 		}
 		fclose($file);
 		if(!empty($creation['alters'])){
-			if(!file_exists($this->getOutput("alters"))) mkdir($this->getOutput("alters"), 0755, true);
-			$file_path = $this->getOutput("alters").DIRECTORY_SEPARATOR."$table.sql";
+			if(!file_exists($this->get_output("alters"))) mkdir($this->get_output("alters"), 0755, true);
+			$file_path = $this->get_output("alters").DIRECTORY_SEPARATOR."$table.sql";
 			if(file_exists($file_path)) unlink($file_path);
 			$file = fopen($file_path, "a");
 			fwrite($file, $creation['alters']."\n\n");
@@ -316,15 +315,15 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneTableStructure(string $table) : array {
+	public function clone_table_structure(string $table) : array {
 		$errors = [];
 		try {
-			$creation = $this->getTableCreation($table);
-			$this->destination->query($this->getHeader());
-			$this->destination->query($this->getTableDrop($table));
+			$creation = $this->get_table_creation($table);
+			$this->destination->query($this->get_header());
+			$this->destination->query($this->get_table_drop($table));
 			$this->destination->query($creation['query']);
 			$this->alters .= $creation['alters']."\n";
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_footer());
 			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
@@ -335,20 +334,20 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupTableData(string $table) : array {
-		if(!file_exists($this->getOutput("data"))) mkdir($this->getOutput("data"), 0755, true);
+	public function backup_table_data(string $table) : array {
+		if(!file_exists($this->get_output("data"))) mkdir($this->get_output("data"), 0755, true);
 		$errors = [];
-		$file_path = $this->getOutput("data").DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->get_output("data").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
 			$offset = 0;
-			$columns = $this->getColumns($table);
+			$columns = $this->get_columns($table);
 			fwrite($file, "-- やあ --\n\n");
-			fwrite($file, $this->getHeader()."\n\n");
+			fwrite($file, $this->get_header()."\n\n");
 			fwrite($file, "SET foreign_key_checks = 0;\n\n");
 			echo " Table data: `$this->database`.`$table` Progress: 0.00 %        \r";
-			$insert = $this->getInsert($table, array_keys($columns))." VALUES\n";
+			$insert = $this->get_insert($table, array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
 			$row = $results->fetch(PDO::FETCH_OBJ);
@@ -412,7 +411,7 @@ class DataBaseBackup {
 			}
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			fwrite($file, "SET foreign_key_checks = 1;\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 			echo " Table data: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
@@ -430,15 +429,15 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneTableData(string $table) : array {
+	public function clone_table_data(string $table) : array {
 		$errors = [];
 		$offset = 0;
 		try {
-			$columns = $this->getColumns($table);
-			$this->destination->query($this->getHeader());
+			$columns = $this->get_columns($table);
+			$this->destination->query($this->get_header());
 			$this->destination->query("SET foreign_key_checks = 0;");
 			echo " Table: `$this->database`.`$table` Progress: 0.00 %        \r";
-			$insert = $this->getInsert($table, array_keys($columns))." VALUES\n";
+			$insert = $this->get_insert($table, array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
 			$row = $results->fetch(PDO::FETCH_OBJ);
@@ -502,7 +501,7 @@ class DataBaseBackup {
 			}
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			$this->destination->query("SET foreign_key_checks = 1;");
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_footer());
 			echo " Table: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
@@ -519,18 +518,18 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupView(string $table) : array {
-		if(!file_exists($this->getOutput("views"))) mkdir($this->getOutput("views"), 0755, true);
+	public function backup_view(string $table) : array {
+		if(!file_exists($this->get_output("views"))) mkdir($this->get_output("views"), 0755, true);
 		$errors = [];
-		$file_path = $this->getOutput("views").DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->get_output("views").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
 			fwrite($file, "-- やあ --\n\n");
-			fwrite($file, $this->getHeader()."\n\n");
-			fwrite($file, $this->getViewDrop($table)."\n\n");
-			fwrite($file, $this->getViewCreation($table)."\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, $this->get_header()."\n\n");
+			fwrite($file, $this->get_view_drop($table)."\n\n");
+			fwrite($file, $this->get_view_creation($table)."\n\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 			echo " View: `$this->database`.`$table` Progress: 100.00 %        \r\n";
 		}
 		catch(PDOException $e){
@@ -542,13 +541,13 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneView(string $table) : array {
+	public function clone_view(string $table) : array {
 		$errors = [];
 		try {
-			$this->destination->query($this->getHeader());
-			$this->destination->query($this->getViewDrop($table));
-			$this->destination->query($this->getViewCreation($table));
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_header());
+			$this->destination->query($this->get_view_drop($table));
+			$this->destination->query($this->get_view_creation($table));
+			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
 			echo " Failed clone view $table skipping\r\n";
@@ -559,18 +558,18 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupFunction(string $table) : array {
-		if(!file_exists($this->getOutput("functions"))) mkdir($this->getOutput("functions"), 0755, true);
+	public function backup_function(string $table) : array {
+		if(!file_exists($this->get_output("functions"))) mkdir($this->get_output("functions"), 0755, true);
 		$errors = [];
-		$file_path = $this->getOutput("functions").DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->get_output("functions").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
-			fwrite($file, $this->getHeader()."\n\n");
-			fwrite($file, $this->getFunctionDrop($table)."\n\n");
-			fwrite($file, $this->getFunctionCreation($table)."\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, $this->get_header()."\n\n");
+			fwrite($file, $this->get_function_drop($table)."\n\n");
+			fwrite($file, $this->get_function_creation($table)."\n\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
 			echo " Failed clone function $table skipping\r\n";
@@ -582,13 +581,13 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneFunction(string $table) : array {
+	public function clone_function(string $table) : array {
 		$errors = [];
 		try {
-			$this->destination->query($this->getHeader());
-			$this->destination->query($this->getFunctionDrop($table));
-			$this->destination->query($this->getFunctionCreation($table));
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_header());
+			$this->destination->query($this->get_function_drop($table));
+			$this->destination->query($this->get_function_creation($table));
+			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
 			echo " Failed clone function $table skipping\r\n";
@@ -599,18 +598,18 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupProcedure(string $table) : array {
-		if(!file_exists($this->getOutput("procedures"))) mkdir($this->getOutput("procedures"), 0755, true);
+	public function backup_procedure(string $table) : array {
+		if(!file_exists($this->get_output("procedures"))) mkdir($this->get_output("procedures"), 0755, true);
 		$errors = [];
-		$file_path = $this->getOutput("procedures").DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->get_output("procedures").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
-			fwrite($file, $this->getHeader()."\n\n");
-			fwrite($file, $this->getProcedureDrop($table)."\n\n");
-			fwrite($file, $this->getProcedureCreation($table)."\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, $this->get_header()."\n\n");
+			fwrite($file, $this->get_procedure_drop($table)."\n\n");
+			fwrite($file, $this->get_procedure_creation($table)."\n\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
 			echo " Failed clone procedure $table skipping\r\n";
@@ -622,13 +621,13 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneProcedure(string $table) : array {
+	public function clone_procedure(string $table) : array {
 		$errors = [];
 		try {
-			$this->destination->query($this->getHeader());
-			$this->destination->query($this->getProcedureDrop($table));
-			$this->destination->query($this->getProcedureCreation($table));
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_header());
+			$this->destination->query($this->get_procedure_drop($table));
+			$this->destination->query($this->get_procedure_creation($table));
+			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
 			echo " Failed clone procedure $table skipping\r\n";
@@ -639,18 +638,18 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupEvent(string $table) : array {
-		if(!file_exists($this->getOutput("events"))) mkdir($this->getOutput("events"), 0755, true);
+	public function backup_event(string $table) : array {
+		if(!file_exists($this->get_output("events"))) mkdir($this->get_output("events"), 0755, true);
 		$errors = [];
-		$file_path = $this->getOutput("events").DIRECTORY_SEPARATOR."$table.sql";
+		$file_path = $this->get_output("events").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
-			fwrite($file, $this->getHeader()."\n\n");
-			fwrite($file, $this->getEventDrop($table)."\n\n");
-			fwrite($file, $this->getEventCreation($table)."\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, $this->get_header()."\n\n");
+			fwrite($file, $this->get_event_drop($table)."\n\n");
+			fwrite($file, $this->get_event_creation($table)."\n\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
 			echo " Failed clone event $table skipping\r\n";
@@ -662,13 +661,13 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneEvent(string $table) : array {
+	public function clone_event(string $table) : array {
 		$errors = [];
 		try {
-			$this->destination->query($this->getHeader());
-			$this->destination->query($this->getEventDrop($table));
-			$this->destination->query($this->getEventCreation($table));
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_header());
+			$this->destination->query($this->get_event_drop($table));
+			$this->destination->query($this->get_event_creation($table));
+			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
 			echo " Failed clone event $table skipping\r\n";
@@ -679,7 +678,7 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupTrigger(string $table) : array {
+	public function backup_trigger(string $table) : array {
 		if(!file_exists($this->path.DIRECTORY_SEPARATOR."triggers")) mkdir($this->path.DIRECTORY_SEPARATOR."triggers", 0755, true);
 		$errors = [];
 		$file_path = $this->path.DIRECTORY_SEPARATOR."triggers".DIRECTORY_SEPARATOR."$table.sql";
@@ -687,10 +686,10 @@ class DataBaseBackup {
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
-			fwrite($file, $this->getHeader()."\n\n");
-			fwrite($file, $this->getTriggerDrop($table)."\n\n");
-			fwrite($file, $this->getTriggerCreation($table)."\n\n");
-			fwrite($file, "\n".$this->getFooter()."\n");
+			fwrite($file, $this->get_header()."\n\n");
+			fwrite($file, $this->get_trigger_drop($table)."\n\n");
+			fwrite($file, $this->get_triger_creation($table)."\n\n");
+			fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
 			echo " Failed clone trigger $table skipping\r\n";
@@ -702,13 +701,13 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function cloneTrigger(string $table) : array {
+	public function clone_trigger(string $table) : array {
 		$errors = [];
 		try {
-			$this->destination->query($this->getHeader());
-			$this->destination->query($this->getTriggerDrop($table));
-			$this->destination->query($this->getTriggerCreation($table));
-			$this->destination->query($this->getFooter());
+			$this->destination->query($this->get_header());
+			$this->destination->query($this->get_trigger_drop($table));
+			$this->destination->query($this->get_triger_creation($table));
+			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
 			echo " Failed clone trigger $table skipping\r\n";
@@ -719,66 +718,66 @@ class DataBaseBackup {
 		return $errors;
 	}
 
-	public function backupAll(bool $backup_structure = true, bool $backup_data = true) : array {
+	public function backup_all(bool $backup_structure = true, bool $backup_data = true) : array {
 		$errors = [];
-		$items = $this->getTables();
+		$items = $this->get_tables();
 		foreach($items as $item){
-			array_merge($errors, $this->backupTableStructure($item));
-			array_merge($errors, $this->backupTableData($item));
+			array_merge($errors, $this->backup_table_structure($item));
+			array_merge($errors, $this->backup_table_data($item));
 		}
-		$items = $this->getViews();
+		$items = $this->get_views();
 		foreach($items as $item){
-			array_merge($errors, $this->backupView($item));
+			array_merge($errors, $this->backup_view($item));
 		}
-		$items = $this->getFunctions();
+		$items = $this->get_functions();
 		foreach($items as $item){
-			array_merge($errors, $this->backupFunction($item));
+			array_merge($errors, $this->backup_function($item));
 		}
-		$items = $this->getProcedures();
+		$items = $this->get_procedures();
 		foreach($items as $item){
-			array_merge($errors, $this->backupProcedure($item));
+			array_merge($errors, $this->backup_procedure($item));
 		}
-		$items = $this->getEvents();
+		$items = $this->get_events();
 		foreach($items as $item){
-			array_merge($errors, $this->backupEvent($item));
+			array_merge($errors, $this->backup_event($item));
 		}
-		$items = $this->getTriggers();
+		$items = $this->get_triggers();
 		foreach($items as $item){
-			array_merge($errors, $this->backupTrigger($item));
+			array_merge($errors, $this->backup_trigger($item));
 		}
 		return $errors;
 	}
 
-	public function cloneAll() : array {
-		$this->resetAlters();
+	public function clone_all() : array {
+		$this->reset_alters();
 		$errors = [];
-		$items = $this->getTables();
+		$items = $this->get_tables();
 		foreach($items as $item){
-			array_merge($errors, $this->cloneTableStructure($item));
+			array_merge($errors, $this->clone_table_structure($item));
 		}
-		$this->destination->query($this->getAlters());
+		$this->destination->query($this->get_alters());
 		foreach($items as $item){
-			array_merge($errors, $this->cloneTableData($item));
+			array_merge($errors, $this->clone_table_data($item));
 		}
-		$items = $this->getViews();
+		$items = $this->get_views();
 		foreach($items as $item){
-			array_merge($errors, $this->cloneView($item));
+			array_merge($errors, $this->clone_view($item));
 		}
-		$items = $this->getFunctions();
+		$items = $this->get_functions();
 		foreach($items as $item){
-			array_merge($errors, $this->cloneFunction($item));
+			array_merge($errors, $this->clone_function($item));
 		}
-		$items = $this->getProcedures();
+		$items = $this->get_procedures();
 		foreach($items as $item){
-			array_merge($errors, $this->cloneProcedure($item));
+			array_merge($errors, $this->clone_procedure($item));
 		}
-		$items = $this->getEvents();
+		$items = $this->get_events();
 		foreach($items as $item){
-			array_merge($errors, $this->cloneEvent($item));
+			array_merge($errors, $this->clone_event($item));
 		}
-		$items = $this->getTriggers();
+		$items = $this->get_triggers();
 		foreach($items as $item){
-			array_merge($errors, $this->cloneTrigger($item));
+			array_merge($errors, $this->clone_trigger($item));
 		}
 		return $errors;
 	}

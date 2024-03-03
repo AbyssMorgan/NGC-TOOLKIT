@@ -13,6 +13,8 @@ class MediaFunctions {
 
 	public AVE $ave;
 
+	public array $vr_tags = ['_180', '_360', '_FISHEYE', '_FISHEYE190', '_RF52', '_MKX200', '_VRCA220'];
+
 	const MEDIA_ORIENTATION_HORIZONTAL = 0;
 	const MEDIA_ORIENTATION_VERTICAL = 1;
 	const MEDIA_ORIENTATION_SQUARE = 2;
@@ -21,7 +23,7 @@ class MediaFunctions {
 		$this->ave = $ave;
 	}
 
-	public function getImageFromPath(string $path) : GdImage|bool|null {
+	public function get_image_from_path(string $path) : GdImage|bool|null {
 		if(!file_exists($path)) return null;
 		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
 			case 'bmp': return @imagecreatefrombmp($path);
@@ -43,8 +45,8 @@ class MediaFunctions {
 		return null;
 	}
 
-	public function getImageResolution(string $path) : string {
-		$image = $this->getImageFromPath($path);
+	public function get_image_resolution(string $path) : string {
+		$image = $this->get_image_from_path($path);
 		if(!$image){
 			try {
 				$image = new Imagick($path);
@@ -54,7 +56,7 @@ class MediaFunctions {
 				return $w."x".$h;
 			}
 			catch(Exception $e){
-				return $this->getVideoResolution($path);
+				return $this->get_video_resolution($path);
 			}
 		}
 		$w = imagesx($image);
@@ -63,7 +65,7 @@ class MediaFunctions {
 		return $w."x".$h;
 	}
 
-	public function isGifAnimated(string $path) : bool {
+	public function is_gif_animated(string $path) : bool {
 		if(!($fh = @fopen($path, 'rb'))) return false;
 		$count = 0;
 		while(!feof($fh) && $count < 2){
@@ -74,23 +76,28 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
-	public function getVideoFPS(string $path) : float {
+	public function get_video_fps(string $path) : float {
 		$this->ave->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>nul", $output);
 		eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $output[0])).';');
 		return $fps;
 	}
 
-	public function getVideoCodec(string $path) : string {
-		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1  \"$path\" 2>nul", $output);
+	public function get_video_codec(string $path) : string {
+		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
 		return trim($output[0]);
 	}
 
-	public function getVideoResolution(string $path) : string {
+	public function get_video_resolution(string $path) : string {
 		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
-	public function getVideoDuration(string $path) : string {
+	public function get_video_color_primaries(string $path): string {
+		$this->ave->exec("ffprobe","-v error -select_streams v:0 -show_entries stream^=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
+		return trim($output[0] ?? '');
+	}
+
+	public function get_video_duration(string $path) : string {
 		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
 		$file_duration = trim($output[0]);
 		$h = $m = $s = 0;
@@ -98,7 +105,7 @@ class MediaFunctions {
 		return sprintf("%02d:%02d:%02d", $h, $m, $s);
 	}
 
-	public function getVideoDurationSeconds(string $path) : int {
+	public function get_video_duration_seconds(string $path) : int {
 		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
 		$file_duration = trim($output[0]);
 		$h = $m = $s = 0;
@@ -106,7 +113,7 @@ class MediaFunctions {
 		return (intval($h) * 3600) + (intval($m) * 60) + intval($s);
 	}
 
-	public function getVideoLanguages(string $path) : array {
+	public function get_video_languages(string $path) : array {
 		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> nul", $output);
 		$data = [];
 		foreach($output as $language){
@@ -116,7 +123,33 @@ class MediaFunctions {
 		return $data;
 	}
 
-	public function SecToTime(int $s) : string {
+	public function get_extension_by_mime_type(string $path) : string|false {
+		if(!file_exists($path)) return false;			
+		switch(exif_imagetype($path)){
+			case IMAGETYPE_GIF: return 'gif';
+			case IMAGETYPE_JPEG: return 'jpg';
+			case IMAGETYPE_PNG: return 'png';
+			case IMAGETYPE_SWF: return 'swf';
+			case IMAGETYPE_PSD: return 'psd';
+			case IMAGETYPE_BMP: return 'bmp';
+			case IMAGETYPE_TIFF_II: return 'tiff';
+			case IMAGETYPE_TIFF_MM: return 'tiff';
+			case IMAGETYPE_JPC: return 'jpc';
+			case IMAGETYPE_JP2: return 'jp2';
+			case IMAGETYPE_JPX: return 'jpx';
+			case IMAGETYPE_JB2: return 'jb2';
+			case IMAGETYPE_SWC: return 'swc';
+			case IMAGETYPE_IFF: return 'iff';
+			case IMAGETYPE_WBMP: return 'wbmp';
+			case IMAGETYPE_XBM: return 'xbm';
+			case IMAGETYPE_ICO: return 'ico';
+			case IMAGETYPE_WEBP: return 'webp';
+			case IMAGETYPE_AVIF: return 'avif';
+			default: return false;
+		}
+	}
+
+	public function sec_to_time(int $s) : string {
 		$d = intval(floor($s / 86400));
 		$s -= ($d * 86400);
 		$h = intval(floor($s / 3600));
@@ -132,7 +165,7 @@ class MediaFunctions {
 		}
 	}
 
-	public function getVideoThumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
+	public function get_video_thumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
 		if(!$this->ave->windows && !file_exists("/usr/bin/mtn")) return false;
 		$input_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
 		$output_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_BASENAME).".webp");
@@ -148,7 +181,7 @@ class MediaFunctions {
 		return file_exists($output_file);
 	}
 
-	public function getMediaOrientation(int $width, int $height) : int {
+	public function get_media_orientation(int $width, int $height) : int {
 		if($width > $height){
 			return self::MEDIA_ORIENTATION_HORIZONTAL;
 		} else if($height > $width){
@@ -158,7 +191,7 @@ class MediaFunctions {
 		}
 	}
 
-	public function getMediaOrientationName(int $orientation) : string {
+	public function get_media_orientation_name(int $orientation) : string {
 		switch($orientation){
 			case self::MEDIA_ORIENTATION_HORIZONTAL: return 'Horizontal';
 			case self::MEDIA_ORIENTATION_VERTICAL: return 'Vertical';
@@ -167,7 +200,7 @@ class MediaFunctions {
 		return 'Unknown';
 	}
 
-	public function getMediaQuality(int $width, int $height, bool $is_video = false) : string {
+	public function get_media_quality(int $width, int $height, bool $is_video = false) : string {
 		$w = max($width, $height);
 		$h = min($width, $height);
 		if($is_video && $w / $h == 2) return strval($h);
@@ -200,13 +233,13 @@ class MediaFunctions {
 		}
 	}
 
-	public function getImageColorCount(string $path) : int|null {
+	public function get_image_color_count(string $path) : int|null {
 		$image = new Imagick($path);
 		if(!$image->valid()) return null;
 		return $image->getImageColors();
 	}
 
-	public function getImageColorGroup(int $colors) : string {
+	public function get_image_color_group(int $colors) : string {
 		if($colors > 500000){
 			return '500001 - 999999';
 		} else if($colors > 400000 && $colors <= 500000){
@@ -241,6 +274,22 @@ class MediaFunctions {
 		if($episode < 0) $episode += $max;
 		$ep = strval($episode);
 		return str_repeat("0", $digits - strlen($ep)).$ep;
+	}
+
+	public function is_vr_video(string $path) : bool {
+		$name = strtoupper(pathinfo($path, PATHINFO_FILENAME));
+		foreach($this->vr_tags as $tag){
+			if(strpos("$name#", "$tag#") !== false) return true;
+		}
+		return false;
+	}
+
+	public function is_ar_video(string $path) : bool {
+		$name = strtoupper(pathinfo($path, PATHINFO_FILENAME));
+		foreach($this->vr_tags as $tag){
+			if(strpos("$name#", "{$tag}_ALPHA#") !== false) return true;
+		}
+		return false;
 	}
 
 }

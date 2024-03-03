@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace AveCore;
 
 use PDO;
 use PDOException;
 use PDOStatement;
 
-class DataBase {
+class MySQL {
 
 	public ?PDO $db;
 
 	function __construct(){
 
 	}
-
+	
 	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
 		$options = [
 			PDO::ATTR_EMULATE_PREPARES => true,
@@ -37,11 +37,11 @@ class DataBase {
 		$this->db = null;
 	}
 
-	public function getConnection() : ?PDO {
+	public function get_connection() : ?PDO {
 		return $this->db;
 	}
 
-	public function getDataBase() : ?string {
+	public function get_data_base() : ?string {
 		$sth = $this->query("SELECT DATABASE() as `name`;");
 		$result = $sth->fetch(PDO::FETCH_OBJ);
 		return $result->name ?? null;
@@ -57,7 +57,7 @@ class DataBase {
 		return $this->db->query($query, $fetchMode);
 	}
 
-	public function resultsToString(array $results, string $separator = '|') : string {
+	public function results_to_string(array $results, string $separator = '|') : string {
 		$data = " ".implode($separator, array_keys($results[0]))."\r\n";
 		foreach($results as $result){
 			$data .= " ".implode($separator, $result)."\r\n";

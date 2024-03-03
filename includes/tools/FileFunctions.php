@@ -9,7 +9,6 @@ use AVE;
 class FileFunctions {
 
 	private string $name = "File Functions";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -48,7 +47,7 @@ class FileFunctions {
 	}
 
 	public function ToolAntiDuplicates() : bool {
-		$this->ave->set_subtool("AntiDuplicates");
+		$this->ave->set_subtool("Anti duplicates");
 
 		set_mode:
 		$this->ave->clear();
@@ -137,7 +136,7 @@ class FileFunctions {
 	}
 
 	public function ToolValidateCheckSum() : bool {
-		$this->ave->set_subtool("ValidateCheckSum");
+		$this->ave->set_subtool("Validate checksum");
 
 		set_mode:
 		$this->ave->clear();
@@ -237,7 +236,7 @@ class FileFunctions {
 	}
 
 	public function ToolRandomFileGenerator() : bool {
-		$this->ave->set_subtool("RandomFileGenerator");
+		$this->ave->set_subtool("Random file generator");
 
 		$write_buffer = $this->ave->get_write_buffer();
 		if(!$write_buffer) return false;
@@ -365,7 +364,7 @@ class FileFunctions {
 
 	public function ToolOverwriteFoldersContent() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("OverwriteFoldersContent");
+		$this->ave->set_subtool("Overwrite folders content");
 
 		$write_buffer = $this->ave->get_write_buffer();
 		if(!$write_buffer) return false;
@@ -430,7 +429,7 @@ class FileFunctions {
 
 	public function ToolMoveFilesWithStructure() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("MoveFilesWithStructure");
+		$this->ave->set_subtool("Move files with structure");
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -509,7 +508,7 @@ class FileFunctions {
 
 	public function ToolCopyFilesWithStructure() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CopyFilesWithStructure");
+		$this->ave->set_subtool("Copy files with structure");
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -587,7 +586,7 @@ class FileFunctions {
 	}
 
 	public function ToolCloneFilesWithStructure() : bool {
-		$this->ave->set_subtool("CloneFilesWithStructure");
+		$this->ave->set_subtool("Clone files with structure");
 
 		set_mode:
 		$this->ave->clear();

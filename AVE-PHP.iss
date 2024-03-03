@@ -1,5 +1,5 @@
 #define MyAppName "AVE-PHP"
-#define MyAppVersion "2.0.1"
+#define MyAppVersion "2.1.0"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "AVE-PHP.cmd"
@@ -41,9 +41,7 @@ Source: "{#SourcePath}\commands\*"; DestDir: "{app}\commands"; Flags: ignorevers
 Source: "{#SourcePath}\AVE-PHP.cmd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\ave-php.ico"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourcePath}\ave-php.png"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\Changelog.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourcePath}\example.ave-php"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\composer.json"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]

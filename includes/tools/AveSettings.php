@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Tools;
 
 use AVE;
-use App\Services\Request;
-use App\Services\IniFile;
+use AveCore\Request;
+use AveCore\IniFile;
 
 class AveSettings {
 
 	private string $name = "Ave Settings";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -106,8 +105,8 @@ class AveSettings {
 			} else {
 				$config_default_system = new IniFile($this->ave->get_file_path($this->ave->path."/includes/config/linux.ini"), true);
 			}
-			$config_default->update($config_default_system->getAll());
-			$this->ave->config->update($config_default->getAll(), true);
+			$config_default->update($config_default_system->get_all());
+			$this->ave->config->update($config_default->get_all(), true);
 			$this->ave->echo(" Settings have been reset");
 		} else {
 			$this->ave->echo(" Settings reset has been cancelled");

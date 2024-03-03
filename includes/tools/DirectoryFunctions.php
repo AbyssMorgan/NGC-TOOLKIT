@@ -10,7 +10,6 @@ use FilesystemIterator;
 class DirectoryFunctions {
 
 	private string $name = "Directory Functions";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -219,7 +218,7 @@ class DirectoryFunctions {
 		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
-
+	
 }
 
 ?>

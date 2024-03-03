@@ -7,15 +7,14 @@ namespace App\Tools;
 use AVE;
 use Imagick;
 use Exception;
-use App\Services\Logs;
-use App\Services\IniFile;
+use AveCore\Logs;
+use AveCore\IniFile;
 use App\Services\MediaFunctions;
 use App\Services\FaceDetector;
 
 class MediaTools {
 
 	private string $name = "Media Tools";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -32,7 +31,8 @@ class MediaTools {
 			' 1 - Merge: Video + SRT',
 			' 2 - Avatar generator',
 			' 3 - Video: Fetch media info',
-			' 4 - Image converter'
+			' 4 - Image converter',
+			' 5 - Ident mime type: Images',
 		]);
 	}
 
@@ -45,6 +45,7 @@ class MediaTools {
 			case '2': return $this->ToolAvatarGenerator();
 			case '3': return $this->ToolVideoFetchMediaInfo();
 			case '4': return $this->ToolImageConverter();
+			case '5': return $this->ToolIdentMimeType();
 		}
 		return false;
 	}
@@ -274,19 +275,19 @@ class MediaTools {
 				}
 			}
 			if(file_exists($directory)){
-				$image = $media->getImageFromPath($file);
+				$image = $media->get_image_from_path($file);
 				if(is_null($image)){
 					$this->ave->write_error("FAILED LOAD IMAGE \"$file\"");
 					$errors++;
 				} else {
-					$face = $detector->faceDetect($image);
+					$face = $detector->face_detect($image);
 					if(!$face){
 						$this->ave->write_error("FAILED GET FACE \"$file\"");
 						$errors++;
 					} else {
 						foreach($variants as $variant){
 							$new_name = $this->ave->get_file_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."@$variant.".pathinfo($file, PATHINFO_EXTENSION));
-							if($detector->saveVariantImage(floatval($variant), $file, $new_name, $size)){
+							if($detector->save_variant_image(floatval($variant), $file, $new_name, $size)){
 								$this->ave->write_log("WRITE VARIANT $variant FOR \"$file\"");
 							}
 						}
@@ -351,7 +352,7 @@ class MediaTools {
 			$this->ave->set_errors($errors);
 			if(!file_exists($file)) continue;
 			$key = hash('md5', str_ireplace($input, '', $file));
-			if($cache->isSet($key)){
+			if($cache->is_set($key)){
 				$media_info = $cache->get($key);
 				$resolution = $media_info['resolution'];
 				$quality = $media_info['quality'];
@@ -367,20 +368,20 @@ class MediaTools {
 				}
 			} else {
 				$new++;
-				$resolution = $media->getVideoResolution($file);
+				$resolution = $media->get_video_resolution($file);
 				if($resolution == '0x0'){
 					$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
 					$errors++;
 					continue;
 				}
 				$size = explode('x', $resolution);
-				$orientation = $media->getMediaOrientation(intval($size[0]), intval($size[1]));
-				$quality = $media->getMediaQuality(intval($size[0]), intval($size[1]), true).$this->ave->config->get('AVE_QUALITY_SUFFIX');
-				$duration = $media->getVideoDuration($file);
+				$orientation = $media->get_media_orientation(intval($size[0]), intval($size[1]));
+				$quality = $media->get_media_quality(intval($size[0]), intval($size[1]), true).$this->ave->config->get('AVE_QUALITY_SUFFIX');
+				$duration = $media->get_video_duration($file);
 				$file_size = $this->ave->format_bytes(filesize($file));
-				$orientation_name = $media->getMediaOrientationName($orientation);
-				$fps = $media->getVideoFPS($file);
-				$codec = $media->getVideoCodec($file);
+				$orientation_name = $media->get_media_orientation_name($orientation);
+				$fps = $media->get_video_fps($file);
+				$codec = $media->get_video_codec($file);
 				if(file_exists("$file.md5")){
 					$checksum = file_get_contents("$file.md5");
 				} else if($generate_checksum){
@@ -422,9 +423,9 @@ class MediaTools {
 		}
 		$this->ave->progress($items, $total);
 		$this->ave->set_errors($errors);
-		$this->ave->echo(" Saved results into ".$csv->getPath());
+		$this->ave->echo(" Saved results into ".$csv->get_path());
 		$csv->close();
-		$cache->setAll($cache->only($keys));
+		$cache->set_all($cache->only($keys));
 		$cache->update(['.LAST_UPDATE' => date('Y-m-d H:i:s')], true);
 		$cache->close();
 
@@ -569,6 +570,56 @@ class MediaTools {
 		}
 		$this->ave->progress($items, $total);
 		$this->ave->set_errors($errors);
+
+		$this->ave->open_logs(true);
+		$this->ave->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function ToolIdentMimeType() : bool {
+		$this->ave->clear();
+		$this->ave->set_subtool("Ident mime type");
+		if(!$this->ave->windows) return $this->ave->windows_only();
+
+		$line = $this->ave->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		$this->ave->setup_folders($folders);
+
+		$errors = 0;
+		$this->ave->set_errors($errors);
+		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
+		array_push($image_extensions, '');
+		$media = new MediaFunctions($this->ave);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->ave->get_files($folder, $image_extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$extension_current = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+				$extension_detected = $media->get_extension_by_mime_type($file);
+				if(!$extension_detected){
+					$this->ave->write_error("FAILED DETECT IMAGE TYPE \"$new_name\"");
+					$errors++;
+					continue 1;
+				}
+				if($extension_current != $extension_detected){
+					$new_name = $this->ave->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".".$extension_detected);
+					if(!$this->ave->rename($file, $new_name)){
+						$errors++;
+					}
+				}
+				$this->ave->progress($items, $total);
+				$this->ave->set_errors($errors);
+			}
+			$this->ave->progress($items, $total);
+			unset($files);
+			$this->ave->set_folder_done($folder);
+		}
+
 
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press any key to back to menu");

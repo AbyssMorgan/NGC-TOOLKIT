@@ -2,31 +2,32 @@
 
 declare(strict_types=1);
 
-use App\Services\IniFile;
-use App\Services\AveCore;
-use App\Services\AppBuffer;
+use AveCore\Core;
+use AveCore\IniFile;
+use AveCore\AppBuffer;
 
-use App\Tools\AveSettings;
-use App\Tools\AveConsole;
-use App\Tools\FileNamesEditor;
-use App\Tools\FileFunctions;
-use App\Tools\MediaSorter;
-use App\Tools\DirectoryFunctions;
-use App\Tools\MediaTools;
-use App\Tools\CheckFileIntegrity;
-use App\Tools\MySQLTools;
-use App\Tools\FileEditor;
-use App\Tools\FtpTools;
 use App\Tools\AdmFileConverter;
+use App\Tools\AveConsole;
+use App\Tools\AveSettings;
+use App\Tools\CheckFileIntegrity;
+use App\Tools\DirectoryFunctions;
+use App\Tools\DirectoryNamesEditor;
+use App\Tools\FileEditor;
+use App\Tools\FileFunctions;
+use App\Tools\FileNamesEditor;
+use App\Tools\FtpTools;
+use App\Tools\MediaSorter;
+use App\Tools\MediaTools;
+use App\Tools\MySQLTools;
 
-class AVE extends AveCore {
+class AVE extends Core {
 
 	public IniFile $mkvmerge;
 	public AppBuffer $app_buffer;
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "AVE-PHP";
-	public string $version = "2.0.1";
+	public string $version = "2.1.0";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -40,6 +41,7 @@ class AVE extends AveCore {
 		$config_default = new IniFile($this->get_file_path("$this->path/includes/config/default.ini"), true);
 		if($this->windows){
 			dl('php_imagick.dll');
+			dl('php_exif.dll');
 			$config_default_system = new IniFile($this->get_file_path("$this->path/includes/config/windows.ini"), true);
 			$old_app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE");
 			$this->app_data = $this->get_file_path($this->get_variable("%LOCALAPPDATA%")."/AVE-PHP");
@@ -57,7 +59,7 @@ class AVE extends AveCore {
 			$config_default_system->set('AVE_OPEN_FILE_BINARY', $open_file_binary);
 		}
 
-		$config_default->update($config_default_system->getAll());
+		$config_default->update($config_default_system->get_all());
 
 		$this->logo = "\r\n $this->app_name Toolkit v$this->version by Abyss Morgan\r\n";
 		$changed = false;
@@ -80,15 +82,15 @@ class AVE extends AveCore {
 			$this->config->unset(['AVE_DATA_FOLDER','AVE_LOG_FOLDER']);
 		}
 
-		foreach($config_default->getAll() as $key => $value){
-			if(!$this->config->isSet($key)){
+		foreach($config_default->get_all() as $key => $value){
+			if(!$this->config->is_set($key)){
 				$this->config->set($key, $value);
 				$changed = true;
 			}
 		}
 
-		foreach($this->config->allExcept(['APP_NEXT_CHECK_FOR_UPDATE', 'APP_VERSION']) as $key => $value){
-			if(!$config_default->isSet($key)){
+		foreach($this->config->all_except(['APP_NEXT_CHECK_FOR_UPDATE', 'APP_VERSION']) as $key => $value){
+			if(!$config_default->is_set($key)){
 				$this->config->unset($key);
 				$changed = true;
 			}
@@ -195,17 +197,18 @@ class AVE extends AveCore {
 		$this->tool_name = '';
 		$options = [
 			' Tools:',
-			' 0 - File Names Editor',
-			' 1 - File Functions',
-			' 2 - Media Sorter',
-			' 3 - Directory Functions',
-			' 4 - Media Tools',
-			' 5 - Check File Integrity',
-			' 6 - MySQL Tools',
-			' 7 - File Editor',
-			' 8 - FTP Tools',
-			' 9 - ADM File Converter',
-			' H - Help',
+			' 0  - File Names Editor',
+			' 1  - File Functions',
+			' 2  - Media Sorter',
+			' 3  - Directory Functions',
+			' 4  - Media Tools',
+			' 5  - Check File Integrity',
+			' 6  - MySQL Tools',
+			' 7  - File Editor',
+			' 8  - FTP Tools',
+			' 9  - ADM File Converter',
+			' 10 - Directory Names Editor',
+			' H  - Help',
 		];
 		if(!$this->windows) array_push($options, ' # - Close program');
 		$this->print_help($options);
@@ -253,12 +256,16 @@ class AVE extends AveCore {
 				$this->tool = new AdmFileConverter($this);
 				break;
 			}
+			case '10': {
+				$this->tool = new DirectoryNamesEditor($this);
+				break;
+			}
 			case 'H': {
 				$this->tool = new AveSettings($this);
 				break;
 			}
 			case '#': {
-				if($this->can_exit) return true;
+				if($this->can_exit || !$this->windows) return true;
 			}
 		}
 		if(!$this->abort && !is_null($this->tool)){

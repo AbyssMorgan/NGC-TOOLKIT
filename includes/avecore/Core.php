@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace AveCore;
 
 use IntlTimeZone;
 use RecursiveIteratorIterator;
@@ -10,9 +10,9 @@ use RecursiveDirectoryIterator;
 use FilesystemIterator;
 use DirectoryIterator;
 
-class AveCore {
+class Core {
 
-	public int $core_version = 8;
+	public int $core_version = 9;
 
 	public IniFile $config;
 
@@ -122,7 +122,7 @@ class AveCore {
 	}
 
 	public function set_folder_done(string $folder) : void {
-		$this->folders_state[$folder] = '[DONE]';
+		$this->folders_state[$folder] = file_exists($folder) ? '[DONE]' : '[NOT EXISTS]';
 		$this->print_folders_state();
 	}
 
@@ -263,14 +263,14 @@ class AveCore {
 		return false;
 	}
 
-	public function get_folders(string $path) : array {
+	public function get_folders(string $path, bool $with_parrent = false) : array {
 		if(!file_exists($path)) return [];
 		$data = [];
 		$files = new DirectoryIterator($path);
-		array_push($data, $path);
+		if($with_parrent) array_push($data, $path);
 		foreach($files as $file){
 			if($file->isDir() && !$file->isDot()){
-				$data = array_merge($data, $this->get_folders($file->getRealPath()));
+				$data = array_merge($data, $this->get_folders($file->getRealPath(), true));
 			}
 		}
 		return $data;
@@ -317,14 +317,14 @@ class AveCore {
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();
-		if($this->config->get('AVE_OPEN_LOG_EVENT', true) && $open_event && file_exists($this->log_event->getPath())){
-			$this->open_file($this->log_event->getPath());
+		if($this->config->get('AVE_OPEN_LOG_EVENT', true) && $open_event && file_exists($this->log_event->get_path())){
+			$this->open_file($this->log_event->get_path());
 		}
-		if(file_exists($this->log_data->getPath())){
-			$this->open_file($this->log_data->getPath());
+		if(file_exists($this->log_data->get_path())){
+			$this->open_file($this->log_data->get_path());
 		}
-		if(file_exists($this->log_error->getPath())){
-			$this->open_file($this->log_error->getPath());
+		if(file_exists($this->log_error->get_path())){
+			$this->open_file($this->log_error->get_path());
 		}
 		if($init) $this->init_logs();
 	}
@@ -391,7 +391,7 @@ class AveCore {
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
-			if($log) $this->write_error("FAILED UNLINK \"$path\"");
+			if($log) $this->write_error("FAILED DELETE \"$path\"");
 			return false;
 		}
 	}
@@ -768,15 +768,6 @@ class AveCore {
 		$this->echo(" This tool is only available on windows operating system");
 		$this->pause(" Press any key to back to menu");
 		return false;
-	}
-
-	/**
-	 * @deprecated "Use delete instead"
-	 *
-	 * @return $this
-	 */
-	public function unlink(...$args) : bool {
-		return $this->delete(...$args);
 	}
 
 }

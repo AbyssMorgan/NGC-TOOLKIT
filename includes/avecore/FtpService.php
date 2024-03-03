@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace AveCore;
 
 use FtpClient\FtpClient;
 
-class AveFtp {
+class FtpService {
 
 	private FtpClient $ftp;
 
@@ -85,7 +85,7 @@ class AveFtp {
 		return $data;
 	}
 
-	public function hasFiles(string $path) : bool {
+	public function has_files(string $path) : bool {
 		$files = $this->ftp->rawlist($path);
 		foreach($files as $file){
 			$chunks = preg_split("/\s+/", $file);

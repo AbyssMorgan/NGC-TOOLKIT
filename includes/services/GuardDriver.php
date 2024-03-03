@@ -8,6 +8,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use FilesystemIterator;
 use Exception;
+use AveCore\IniFile;
 
 class GuardDriver {
 
@@ -27,35 +28,35 @@ class GuardDriver {
 		$this->files_to_scan = $files_to_scan;
 	}
 
-	public function addFolders(array|string $folders) : void {
+	public function add_folders(array|string $folders) : void {
 		if(gettype($folders) == 'string') $folders = [$folders];
 		$this->folders_to_scan = array_unique(array_merge($this->folders_to_scan, $folders));
 	}
 
-	public function setFolders(array|string $folders) : void {
+	public function set_folders(array|string $folders) : void {
 		if(gettype($folders) == 'string') $folders = [$folders];
 		$this->folders_to_scan = $folders;
 	}
 
-	public function getFolders() : array {
+	public function get_folders() : array {
 		return $this->folders_to_scan;
 	}
 
-	public function addFiles(array|string $files) : void {
+	public function add_files(array|string $files) : void {
 		if(gettype($files) == 'string') $files = [$files];
 		$this->files_to_scan = array_unique(array_merge($this->files_to_scan, $files));
 	}
 
-	public function setFiles(array|string $files) : void {
+	public function set_files(array|string $files) : void {
 		if(gettype($files) == 'string') $files = [$files];
 		$this->files_to_scan = $files;
 	}
 
-	public function getFiles() : array {
+	public function get_files() : array {
 		return $this->files_to_scan;
 	}
 
-	public function resetCache() : void {
+	public function reset_cache() : void {
 		$this->file_list = [];
 		$this->data = [];
 		$this->keys = [];
@@ -63,7 +64,7 @@ class GuardDriver {
 	}
 
 	public function load(IniFile $guard) : void {
-		$this->data = $guard->allExcept(['files', 'keys', 'files_to_scan', 'folders_to_scan']);
+		$this->data = $guard->all_except(['files', 'keys', 'files_to_scan', 'folders_to_scan']);
 		$this->file_list = $guard->get('files');
 		$this->keys = $guard->get('keys');
 		$this->files_to_scan = $guard->get('files_to_scan');
@@ -71,7 +72,7 @@ class GuardDriver {
 		$this->errors = [];
 	}
 
-	public function scanFolder(string $folder) : void {
+	public function scan_folder(string $folder) : void {
 		$files = new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
 		foreach(new RecursiveIteratorIterator($files) as $file){
 			if($file->isDir() || $file->isLink()) continue;
@@ -84,7 +85,7 @@ class GuardDriver {
 		}
 	}
 
-	public function scanFile(string $file, bool $update = false) : void {
+	public function scan_file(string $file, bool $update = false) : void {
 		$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
 		if(!isset($data[$key])) $data[$key] = [];
 		$this->data[$key][pathinfo($file, PATHINFO_BASENAME)] = strtoupper(hash_file('md5', $file));
@@ -92,7 +93,7 @@ class GuardDriver {
 		$this->keys[$key] = str_replace("\\", "/", pathinfo($file, PATHINFO_DIRNAME));
 	}
 
-	public function validateFolder(string $folder) : bool {
+	public function validate_folder(string $folder) : bool {
 		if(!file_exists($folder)) return false;
 		$files = new RecursiveDirectoryIterator($folder, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS);
 		foreach(new RecursiveIteratorIterator($files) as $file){
@@ -123,9 +124,9 @@ class GuardDriver {
 	}
 
 	public function scan() : void {
-		$this->resetCache();
-		foreach($this->folders_to_scan as $folder) $this->scanFolder($folder);
-		foreach($this->files_to_scan as $file) $this->scanFile($file);
+		$this->reset_cache();
+		foreach($this->folders_to_scan as $folder) $this->scan_folder($folder);
+		foreach($this->files_to_scan as $file) $this->scan_file($file);
 	}
 
 	public function get() : array {
@@ -136,7 +137,7 @@ class GuardDriver {
 		return $this->data;
 	}
 
-	public function validateFile(string $file) : bool {
+	public function validate_file(string $file) : bool {
 		if(!file_exists($file)) return false;
 		$key = strtoupper(hash('md5', str_replace(["\\", "/"], ":", pathinfo($file, PATHINFO_DIRNAME))));
 		$file_name = pathinfo($file, PATHINFO_BASENAME);
@@ -160,7 +161,7 @@ class GuardDriver {
 		return true;
 	}
 
-	public function validateExist() : void {
+	public function validate_exists() : void {
 		if(isset($this->data['files'])){
 			foreach($this->data['files'] as $file){
 				if(!file_exists($file)){
@@ -172,34 +173,34 @@ class GuardDriver {
 
 	public function validate(array $flags = ['damaged' => true, 'unknown' => true, 'missing' => true]) : array {
 		$guard = new IniFile($this->file, true);
-		$this->resetCache();
-		$this->data = $guard->getAll();
+		$this->reset_cache();
+		$this->data = $guard->get_all();
 		$this->flags = $flags;
-		foreach($this->folders_to_scan as $folder) $this->validateFolder($folder);
-		foreach($this->files_to_scan as $file) $this->validateFile($file);
-		$this->validateExist();
+		foreach($this->folders_to_scan as $folder) $this->validate_folder($folder);
+		foreach($this->files_to_scan as $file) $this->validate_file($file);
+		$this->validate_exists();
 		return $this->errors;
 	}
 
 	public function generate() : void {
 		$guard = new IniFile($this->file, true, true);
 		$this->scan();
-		$guard->setAll($this->get(), true);
+		$guard->set_all($this->get(), true);
 	}
 
-	public function getTree() : array {
+	public function get_tree() : array {
 		$guard = new IniFile($this->file, true);
 		$data = [];
 		foreach($guard->get('keys', []) as $key => $value){
 			$guard->rename($key, $value);
 			$guard->extract_path($data, $value);
 		}
-		$guard->setAll($data);
+		$guard->set_all($data);
 		foreach($guard->get('.', []) as $key => $value){
 			$guard->set($key, $value);
 		}
 		$guard->unset('.');
-		return $guard->getAll();
+		return $guard->get_all();
 	}
 
 }

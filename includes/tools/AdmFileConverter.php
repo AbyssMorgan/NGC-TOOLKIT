@@ -6,13 +6,12 @@ namespace App\Tools;
 
 use AVE;
 use Exception;
-use App\Services\IniFile;
-use App\Services\JournalService;
+use AveCore\IniFile;
+use AveCore\JournalService;
 
 class AdmFileConverter {
 
 	private string $name = "ADM File Converter";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -84,7 +83,7 @@ class AdmFileConverter {
 		}
 
 		if($this->params['mode'] == '2'){
-			$this->ave->write_data(print_r($ini->getAll(), true));
+			$this->ave->write_data(print_r($ini->get_all(), true));
 			$this->ave->open_logs();
 		} else {
 			set_output:
@@ -107,7 +106,7 @@ class AdmFileConverter {
 				$ini->save();
 			} else {
 				$new = new IniFile($output, true, $this->params['mode'] == '0');
-				$new->setAll($ini->getAll());
+				$new->set_all($ini->get_all());
 				$new->save();
 			}
 		}

@@ -11,7 +11,6 @@ use App\Services\StringConverter;
 class FileNamesEditor {
 
 	private string $name = "File Names Editor";
-
 	private array $params = [];
 	private string $action;
 	private AVE $ave;
@@ -62,7 +61,7 @@ class FileNamesEditor {
 	}
 
 	public function ToolCheckSum() : bool {
-		$this->ave->set_subtool("CheckSum");
+		$this->ave->set_subtool("Checksum");
 
 		set_mode:
 		$this->ave->clear();
@@ -326,7 +325,7 @@ class FileNamesEditor {
 	}
 
 	public function ToolVideoGenerator() : bool {
-		$this->ave->set_subtool("VideoGenerator");
+		$this->ave->set_subtool("Video generator");
 
 		set_mode:
 		$this->ave->clear();
@@ -389,7 +388,7 @@ class FileNamesEditor {
 					$hash = null;
 				}
 				if($this->params['resolution'] && in_array($extension, $video_extensions)){
-					$resolution = $media->getVideoResolution($file);
+					$resolution = $media->get_video_resolution($file);
 					if($resolution == '0x0'){
 						$this->ave->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
 						$errors++;
@@ -400,7 +399,7 @@ class FileNamesEditor {
 					}
 				}
 				if($this->params['thumbnail'] && in_array($extension, $video_extensions)){
-					$thumbnail = $media->getVideoThumbnail($file, $directory, $this->ave->config->get('AVE_THUMBNAIL_WIDTH'), $this->ave->config->get('AVE_THUMBNAIL_ROWS'), $this->ave->config->get('AVE_THUMBNAIL_COLUMN'));
+					$thumbnail = $media->get_video_thumbnail($file, $directory, $this->ave->config->get('AVE_THUMBNAIL_WIDTH'), $this->ave->config->get('AVE_THUMBNAIL_ROWS'), $this->ave->config->get('AVE_THUMBNAIL_COLUMN'));
 					if($thumbnail){
 						$this->ave->write_log("GENERATE THUMBNAIL \"$file.webp\"");
 					} else {
@@ -460,7 +459,7 @@ class FileNamesEditor {
 
 	public function ToolGenerateSeriesName() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("GenerateSeriesName");
+		$this->ave->set_subtool("Generate series name");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -523,7 +522,7 @@ class FileNamesEditor {
 
 	public function ToolEscapeFileNameWWW() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("EscapeFileNameWWW");
+		$this->ave->set_subtool("Escape file name WWW");
 		$this->ave->print_help([
 			" Double spaces reduce",
 			" Characters after escape: A-Z a-z 0-9 _ - .",
@@ -548,7 +547,6 @@ class FileNamesEditor {
 					$escaped_name = str_replace('  ', ' ', $escaped_name);
 				}
 				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-.]/', '', str_replace(' ', '_', $escaped_name)), ' ');
-
 				if(empty($escaped_name)){
 					$this->ave->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
@@ -579,7 +577,7 @@ class FileNamesEditor {
 
 	public function ToolPrettyFileName() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("PrettyFileName");
+		$this->ave->set_subtool("Pretty file name");
 
 		set_mode:
 		$this->ave->clear();
@@ -611,16 +609,16 @@ class FileNamesEditor {
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
-			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/LanguageReplacement.ini"));
+			$converter->import_replacement($this->ave->get_file_path($this->ave->path."/includes/data/LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->importPinYin($this->ave->get_file_path($this->ave->path."/includes/data/PinYin.ini"));
+			$converter->import_pin_yin($this->ave->get_file_path($this->ave->path."/includes/data/PinYin.ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Hiragama.ini"));
+			$converter->import_replacement($this->ave->get_file_path($this->ave->path."/includes/data/Hiragama.ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->importReplacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
+			$converter->import_replacement($this->ave->get_file_path($this->ave->path."/includes/data/Katakana.ini"));
 		}
 		$this->ave->clear();
 		
@@ -665,7 +663,7 @@ class FileNamesEditor {
 					$escaped_name = $converter->clean($escaped_name);
 				}
 				if($flags->ChineseToPinYin){
-					$escaped_name = $converter->stringToPinYin($escaped_name);
+					$escaped_name = $converter->string_to_pin_yin($escaped_name);
 				}
 				if($flags->UpperCase){
 					$escaped_name = mb_strtoupper($escaped_name);
@@ -703,7 +701,7 @@ class FileNamesEditor {
 
 	public function ToolRemoveYouTubeQualityTag() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("RemoveYouTubeQualityTag");
+		$this->ave->set_subtool("Remove YouTube quality tag");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -770,7 +768,7 @@ class FileNamesEditor {
 	}
 
 	public function ToolSeriesEpisodeEditor() : bool {
-		$this->ave->set_subtool("SeriesEpisodeEditor");
+		$this->ave->set_subtool("Series episode editor");
 
 		set_mode:
 		$this->ave->clear();
@@ -797,11 +795,11 @@ class FileNamesEditor {
 
 	public function ToolSeriesEpisodeEditorActionSeason() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeSeason");
+		$this->ave->set_subtool("Series episode editor > Change season");
 
 		set_input:
 		$this->ave->print_help([
-			" Attention filename must begin with the season and episode number in the format:",
+			" Attention file name must begin with the season and episode number in the format:",
 			" \"S00E00{whatever}.{extension}\"",
 			" \"S00E000{whatever}.{extension}\"",
 		]);
@@ -876,11 +874,11 @@ class FileNamesEditor {
 
 	public function ToolSeriesEpisodeEditorActionEpisode() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SeriesEpisodeEditor > ChangeEpisodeNumbers");
+		$this->ave->set_subtool("Series episode editor > Change episode");
 
 		set_input:
 		$this->ave->print_help([
-			" Attention filename must begin with the season and episode number in the format:",
+			" Attention file name must begin with the season and episode number in the format:",
 			" \"S00E00{whatever}.{extension}\"",
 			" \"S00E000{whatever}.{extension}\"",
 		]);
@@ -993,7 +991,7 @@ class FileNamesEditor {
 
 	public function ToolAddFileNamePrefixSuffix() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("AddFileNamePrefixSuffix");
+		$this->ave->set_subtool("Add file name prefix/suffix");
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -1050,7 +1048,7 @@ class FileNamesEditor {
 
 	public function ToolRemoveKeywordsFromFileName() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("RemoveKeywordsFromFileName");
+		$this->ave->set_subtool("Remove keywords from file name");
 
 		set_mode:
 		$this->ave->clear();
@@ -1067,7 +1065,7 @@ class FileNamesEditor {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['0','1'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1'])) goto set_mode;
 
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
@@ -1156,12 +1154,12 @@ class FileNamesEditor {
 	}
 
 	public function ToolInsertStringIntoFileName() : bool {
-		$this->ave->set_subtool("InsertStringIntoFileName");
+		$this->ave->set_subtool("Insert string into file name");
 
 		set_offset:
 		$this->ave->clear();
 		$this->ave->print_help([
-			' Specify the string offset where you want insert into filename',
+			' Specify the string offset where you want insert into file name',
 			' Offset = 0 - means the beginning, i.e. the string will be inserted before the file name (prefix)',
 			' Offset > 0 - means that the string will be inserted after skipping N characters',
 			' Offset < 0 - means that the string will be inserted after skipping N characters from the end',
@@ -1173,7 +1171,7 @@ class FileNamesEditor {
 		$offset = intval($offset);
 
 		$this->ave->print_help([
-			' Specify the string you want to inject the filename, may contain spaces',
+			' Specify the string you want to inject the file name, may contain spaces',
 		]);
 		$insert_string = $this->ave->get_input_no_trim(" String: ");
 
@@ -1238,7 +1236,7 @@ class FileNamesEditor {
 
 	public function ToolReplaceKeywordsInFileName() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ReplaceKeywordsInFileName");
+		$this->ave->set_subtool("Replace keywords in file name");
 
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -1329,12 +1327,11 @@ class FileNamesEditor {
 
 	public function ToolExtensionChange() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ExtensionChange");
+		$this->ave->set_subtool("Extension change");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
 
-		set_extension_old:
 		$extension_old = strtolower($this->ave->get_input(" Extension old: "));
 		if($extension_old == '#') return false;
 

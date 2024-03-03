@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace AveCore;
 
 class Logs {
 
@@ -10,8 +10,6 @@ class Logs {
 	private bool $timestamp;
 	private bool $hold_open;
 	private $file;
-
-	public int $version = 10100;
 
 	function __construct(string $path, bool $timestamp = true, bool $hold_open = false){
 		$this->path = $path;
@@ -30,7 +28,7 @@ class Logs {
 		return file_exists($this->path);
 	}
 
-	protected function writeString(string $line) : bool {
+	protected function write_string(string $line) : bool {
 		if(!$this->file) $this->file = fopen($this->path, "a");
 		if(!$this->file) return false;
 		if($this->timestamp) fwrite($this->file, "[".date("Y-m-d H:i:s")."] ");
@@ -39,7 +37,7 @@ class Logs {
 		return true;
 	}
 
-	protected function writeArray(array $lines) : bool {
+	protected function write_array(array $lines) : bool {
 		if(!$this->file) $this->file = fopen($this->path, "a");
 		if(!$this->file) return false;
 		foreach($lines as $line){
@@ -55,11 +53,11 @@ class Logs {
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		if(gettype($content) == "array") return $this->writeArray($content);
-		return $this->writeString($content);
+		if(gettype($content) == "array") return $this->write_array($content);
+		return $this->write_string($content);
 	}
 
-	public function getPath() : string {
+	public function get_path() : string {
 		return $this->path;
 	}
 

@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Tools;
 
 use AVE;
-use App\Services\Logs;
-use App\Services\IniFile;
-use App\Services\AveFtp;
+use AveCore\Logs;
+use AveCore\IniFile;
+use AveCore\FtpService;
 use FtpClient\FtpClient;
 use FtpClient\FtpException;
 
 class FtpTools {
 
 	private string $name = "Ftp Tools";
-
 	private array $params = [];
 	private string $action;
 	private string $path;
@@ -67,7 +66,7 @@ class FtpTools {
 		return false;
 	}
 
-	public function getSelectLabel() : void {
+	public function get_select_label() : void {
 		$this->select_label = [];
 		$i = 0;
 		$files = scandir($this->path);
@@ -86,12 +85,12 @@ class FtpTools {
 		}
 	}
 
-	public function getConfigPath(string $label) : string {
+	public function get_config_path(string $label) : string {
 		return $this->ave->get_file_path("$this->path/$label.ini");
 	}
 
-	public function getConfig(string $label) : IniFile {
-		$config = new IniFile($this->getConfigPath($label), true);
+	public function get_config(string $label) : IniFile {
+		$config = new IniFile($this->get_config_path($label), true);
 		return $config;
 	}
 
@@ -112,7 +111,7 @@ class FtpTools {
 			goto set_label;
 		}
 
-		if(file_exists($this->getConfigPath($label))){
+		if(file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" already in use");
 			if(!$this->ave->get_confirm(" Overwrite (Y/N): ")) goto set_label;
 		}
@@ -160,7 +159,7 @@ class FtpTools {
 		}
 		$ftp->close();
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 		$ini->update([
 			'FTP_HOST' => $auth['host'],
 			'FTP_USER' => $auth['user'],
@@ -179,7 +178,7 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("RemoveConnection");
 
-		$this->getSelectLabel();
+		$this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input(" Label / ID: ");
 		if($label == '#') return false;
@@ -189,7 +188,7 @@ class FtpTools {
 			goto set_label;
 		}
 
-		$path = $this->getConfigPath($label);
+		$path = $this->get_config_path($label);
 		if(!file_exists($path)){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
@@ -216,7 +215,7 @@ class FtpTools {
 		$files = $this->ave->get_files($this->path, ['ini']);
 		foreach($files as $file){
 			$ini = new IniFile($file);
-			if($ini->isValid() && $ini->isSet('FTP_HOST')){
+			if($ini->is_valid() && $ini->is_set('FTP_HOST')){
 				$label = pathinfo($file, PATHINFO_FILENAME);
 				$this->ave->echo(" $label".str_repeat(" ",32-strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
 				$cnt++;
@@ -235,10 +234,10 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("GetFileList");
 
-		$ftp = $this->SetupFTP(" Label / ID: ");
+		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
 
-		$remote = new AveFtp($ftp);
+		$remote = new FtpService($ftp);
 
 		set_output:
 		$line = $this->ave->get_input(" Output: ");
@@ -317,7 +316,7 @@ class FtpTools {
 				$csv->write(implode($this->ave->config->get('AVE_CSV_SEPARATOR'), $meta));
 			}
 		}
-		$this->ave->echo(" Saved results into ".$csv->getPath());
+		$this->ave->echo(" Saved results into ".$csv->get_path());
 		$csv->close();
 		$ftp->close();
 
@@ -330,10 +329,10 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("DownloadFiles");
 
-		$ftp = $this->SetupFTP(" Label / ID: ");
+		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
 
-		$remote = new AveFtp($ftp);
+		$remote = new FtpService($ftp);
 
 		set_input:
 		$input = $this->ave->get_input(" FTP folder: ");
@@ -421,10 +420,10 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("UploadFiles");
 
-		$ftp = $this->SetupFTP(" Label / ID: ");
+		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
 
-		$remote = new AveFtp($ftp);
+		$remote = new FtpService($ftp);
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -532,10 +531,10 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("DeleteFiles");
 
-		$ftp = $this->SetupFTP(" Label / ID: ");
+		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
 
-		$remote = new AveFtp($ftp);
+		$remote = new FtpService($ftp);
 
 		set_input:
 		$input = $this->ave->get_input(" FTP folder: ");
@@ -604,10 +603,10 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("DeleteEmptyFolders");
 
-		$ftp = $this->SetupFTP(" Label / ID: ");
+		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
 
-		$remote = new AveFtp($ftp);
+		$remote = new FtpService($ftp);
 
 		set_input:
 		$input = $this->ave->get_input(" FTP folder: ");
@@ -632,7 +631,7 @@ class FtpTools {
 		$this->ave->set_errors($errors);
 		foreach($files as $file){
 			$items++;
-			if(!$remote->hasFiles($file)){
+			if(!$remote->has_files($file)){
 				if($ftp->rmdir($file, false)){
 					$this->ave->write_log("DELETE \"$file\"");
 				} else {
@@ -654,10 +653,10 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("DeleteStructure");
 
-		$ftp = $this->SetupFTP(" Label / ID: ");
+		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
 
-		$remote = new AveFtp($ftp);
+		$remote = new FtpService($ftp);
 
 		set_input:
 		$input = $this->ave->get_input(" FTP folder: ");
@@ -701,7 +700,7 @@ class FtpTools {
 		$this->ave->set_errors($errors);
 		foreach($files as $file){
 			$items++;
-			if(!$remote->hasFiles($file)){
+			if(!$remote->has_files($file)){
 				if($ftp->rmdir($file, false)){
 					$this->ave->write_log("DELETE \"$file\"");
 				} else {
@@ -723,17 +722,17 @@ class FtpTools {
 		$this->ave->clear();
 		$this->ave->set_subtool("CopyFilesFromFTPToFTP");
 
-		$ftp_source = $this->SetupFTP(" Source label / ID: ");
+		$ftp_source = $this->setup_ftp(" Source label / ID: ");
 		if(!$ftp_source) return false;
 
-		$ftp_destination = $this->SetupFTP(" Destination label / ID: ", false);
+		$ftp_destination = $this->setup_ftp(" Destination label / ID: ", false);
 		if(!$ftp_destination){
 			$ftp_source->close();
 			return false;
 		}
 
-		$remote_source = new AveFtp($ftp_source);
-		$remote_destination = new AveFtp($ftp_destination);
+		$remote_source = new FtpService($ftp_source);
+		$remote_destination = new FtpService($ftp_destination);
 
 		set_input:
 		$input = $this->ave->get_input(" FTP input: ");
@@ -918,7 +917,7 @@ class FtpTools {
 				$label = substr(preg_replace("/[^A-Za-z0-9_\-]/", '', str_replace(" ", "_", trim($server['Name']))), 0, 32);
 				if(strlen($label) < 3) substr($label."___", 0, 3);
 				if($this->ave->is_valid_label($label)){
-					$ini = $this->getConfig($label);
+					$ini = $this->get_config($label);
 					$ini->update([
 						'FTP_HOST' => $server['Host'],
 						'FTP_USER' => $server['User'],
@@ -939,8 +938,8 @@ class FtpTools {
 		return false;
 	}
 
-	public function SetupFTP(string $name, bool $print = true) : FtpClient|bool {
-		if($print) $this->getSelectLabel();
+	public function setup_ftp(string $name, bool $print = true) : FtpClient|bool {
+		if($print) $this->get_select_label();
 		set_label:
 		$label = $this->ave->get_input($name);
 		if($label == '#') return false;
@@ -950,12 +949,12 @@ class FtpTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->getConfigPath($label))){
+		if(!file_exists($this->get_config_path($label))){
 			$this->ave->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
 
-		$ini = $this->getConfig($label);
+		$ini = $this->get_config($label);
 
 		$ftp = new FtpClient();
 		try {

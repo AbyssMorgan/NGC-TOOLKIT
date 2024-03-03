@@ -34,7 +34,7 @@ class FaceDetector {
 		$this->detection_data = unserialize(file_get_contents($detection_data));
 	}
 
-	private function getVariantRectangle(float $multiplier = 1.0) : array {
+	private function get_variant_rectangle(float $multiplier = 1.0) : array {
 		$sw = $this->face['w'];
 		$nw = $this->face['w'] * $multiplier;
 		return [
@@ -45,8 +45,8 @@ class FaceDetector {
 		];
 	}
 
-	public function saveVariantImage(float $multiplier, string $input, string $output, int $size) : bool {
-		$rect = $this->getVariantRectangle($multiplier);
+	public function save_variant_image(float $multiplier, string $input, string $output, int $size) : bool {
+		$rect = $this->get_variant_rectangle($multiplier);
 		$image = new Imagick();
 		$image->readImage($input);
 		$image->cropImage((int)$rect['width'], (int)$rect['height'], (int)$rect['x'], (int)$rect['y']);
@@ -57,7 +57,7 @@ class FaceDetector {
 		return true;
 	}
 
-	public function faceDetect(GdImage $image) : bool {
+	public function face_detect(GdImage $image) : bool {
 		$this->canvas = $image;
 		$im_width = imagesx($this->canvas);
 		$im_height = imagesy($this->canvas);
@@ -71,8 +71,8 @@ class FaceDetector {
 		if($ratio != 0){
 			$this->reduced_canvas = imagecreatetruecolor((int)($im_width / $ratio), (int)($im_height / $ratio));
 			imagecopyresampled($this->reduced_canvas, $this->canvas, 0, 0, 0, 0, (int)($im_width / $ratio), (int)($im_height / $ratio), $im_width, $im_height);
-			$stats = $this->getImgStats($this->reduced_canvas);
-			$this->face = $this->doDetectGreedyBigToSmall($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
+			$stats = $this->get_img_stats($this->reduced_canvas);
+			$this->face = $this->do_detect_greedy_big_to_small($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
 			if(!is_null($this->face)){
 				if($this->face['w'] > 0){
 					$this->face['x'] *= $ratio;
@@ -81,17 +81,17 @@ class FaceDetector {
 				}
 			}
 		} else {
-			$stats = $this->getImgStats($this->canvas);
-			$this->face = $this->doDetectGreedyBigToSmall($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
+			$stats = $this->get_img_stats($this->canvas);
+			$this->face = $this->do_detect_greedy_big_to_small($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
 		}
 		if(is_null($this->face)) return false;
 		return ($this->face['w'] > 0);
 	}
 
-	private function getImgStats(GdImage $canvas) : array {
+	private function get_img_stats(GdImage $canvas) : array {
 		$image_width = imagesx($canvas);
 		$image_height = imagesy($canvas);
-		$iis = $this->computeII($canvas, $image_width, $image_height);
+		$iis = $this->compute_ii($canvas, $image_width, $image_height);
 		return [
 			'width' => $image_width,
 			'height' => $image_height,
@@ -100,7 +100,7 @@ class FaceDetector {
 		];
 	}
 
-	private function computeII(GdImage $canvas, int $image_width, int $image_height) : array {
+	private function compute_ii(GdImage $canvas, int $image_width, int $image_height) : array {
 		$ii_w = $image_width+1;
 		$ii_h = $image_height+1;
 		$ii = [];
@@ -131,7 +131,7 @@ class FaceDetector {
 		return ['ii' => $ii, 'ii2' => $ii2];
 	}
 
-	private function doDetectGreedyBigToSmall(array $ii, array $ii2, int $width, int $height) : array|null {
+	private function do_detect_greedy_big_to_small(array $ii, array $ii2, int $width, int $height) : array|null {
 		$s_w = $width/20.0;
 		$s_h = $height/20.0;
 		$start_scale = $s_h < $s_w ? $s_h : $s_w;
@@ -144,7 +144,7 @@ class FaceDetector {
 			$inv_area = 1 / ($w*$w);
 			for($y = 0; $y < $endy; $y += $step){
 				for($x = 0; $x < $endx; $x += $step){
-					$passed = $this->detectOnSubImage($x, $y, $scale, $ii, $ii2, $w, $width+1, $inv_area);
+					$passed = $this->detect_on_sub_image($x, $y, $scale, $ii, $ii2, $w, $width+1, $inv_area);
 					if($passed){
 						return ['x' => $x, 'y' => $y, 'w' => $w];
 					}
@@ -154,7 +154,7 @@ class FaceDetector {
 		return null;
 	}
 
-	private function detectOnSubImage(int $x, int $y, float $scale, array $ii, array $ii2, int $w, int $iiw, float $inv_area) : bool {
+	private function detect_on_sub_image(int $x, int $y, float $scale, array $ii, array $ii2, int $w, int $iiw, float $inv_area) : bool {
 		$mean = ($ii[($y+$w)*$iiw + $x + $w] + $ii[$y*$iiw+$x] - $ii[($y+$w)*$iiw+$x] - $ii[$y*$iiw+$x+$w])*$inv_area;
 		$vnorm = ($ii2[($y+$w)*$iiw + $x + $w] + $ii2[$y*$iiw+$x] - $ii2[($y+$w)*$iiw+$x] - $ii2[$y*$iiw+$x+$w])*$inv_area - ($mean*$mean);
 		$vnorm = $vnorm > 1 ? sqrt($vnorm) : 1;
