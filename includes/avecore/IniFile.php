@@ -64,10 +64,9 @@ class IniFile {
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		$file = fopen($this->path, "r");
-		if(!$file) return false;
-		$this->data = [];
 		$content = file_get_contents($this->path);
+		if($content === false) return false;
+		$this->data = [];
 		if(strlen($content) > 0){
 			if(!is_null($this->encoder)){
 				$header_length = strlen($this->encoder->get_header());
@@ -85,15 +84,18 @@ class IniFile {
 					}
 				}
 			} else {
+				unset($content);
+				$file = fopen($this->path, "r");
+				if(!$file) return false;
 				while(($line = fgets($file)) !== false){
 					if($this->parse_line($line, $key, $data)){
 						$this->data[$key] = $data;
 					}
 				}
+				fclose($file);
 			}
 		}
 		$this->original = $this->data;
-		fclose($file);
 		return true;
 	}
 

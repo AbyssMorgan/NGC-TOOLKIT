@@ -281,7 +281,7 @@ class Core {
 		$data = [];
 		$files = scandir($path);
 		foreach($files as $file){
-			if($file != '..' && $file != '.' && !is_dir($file) && !is_link($file)){
+			if($file != '..' && $file != '.' && !is_dir("$path/$file") && !is_link("$path/$file")){
 				array_push($data, $this->get_file_path("$path/$file"));
 			}
 		}

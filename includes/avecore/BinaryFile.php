@@ -66,6 +66,11 @@ class BinaryFile {
 		return filesize($this->path);
 	}
 
+	public function truncate(int $size) : bool {
+		if(is_null($this->file)) return false;
+		return ftruncate($this->file, $size);
+	}
+
 }
 
 ?>

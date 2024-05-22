@@ -76,6 +76,12 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
+	public function get_video_info(string $path): array {
+		$this->ave->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>nul", $output);
+		$info = json_decode(implode('', $output), true);
+		return $info;
+	}
+
 	public function get_video_fps(string $path) : float {
 		$this->ave->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>nul", $output);
 		eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $output[0])).';');

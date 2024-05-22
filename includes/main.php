@@ -26,6 +26,7 @@
 	require_once("$includes_path/avecore/JournalService.php");
 	require_once("$includes_path/avecore/AppBuffer.php");
 	require_once("$includes_path/avecore/BinaryFile.php");
+	require_once("$includes_path/avecore/ADM.php");
 	
 	require_once("$includes_path/services/GuardPattern.php");
 	require_once("$includes_path/services/GuardDriver.php");

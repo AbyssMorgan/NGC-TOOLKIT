@@ -46,6 +46,10 @@ class Request {
 		$this->header = $header;
 	}
 
+	public function get_header() : array {
+		return $this->header;
+	}
+
 	public function set_options(array $options) : void {
 		$this->options = $options;
 	}
