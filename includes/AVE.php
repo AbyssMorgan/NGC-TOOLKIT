@@ -27,7 +27,7 @@ class AVE extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "AVE-PHP";
-	public string $version = "2.1.0";
+	public string $version = "2.2.0";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -111,6 +111,29 @@ class AVE extends Core {
 					$changed = true;
 					$check_for_updates = true;
 				}
+			}
+
+			$files = [
+				$this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES/main"),
+				$this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES/php/8.1"),
+			];
+
+			$items = $this->get_folders_ex($this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES/core"));
+			foreach($items as $item){
+				if(pathinfo($item, PATHINFO_BASENAME) != $this->utilities_version) array_push($files, $item);
+			}
+
+			foreach($files as $file){
+				if(!file_exists($file)) continue;
+				if(!$this->is_admin()){
+					$this->echo();
+					$this->echo(" Please run once AVE-PHP as administrator for remove old AVE-UTILITIES files");
+					$this->echo();
+					$this->pause();
+					$this->exit(0, false);
+					return;
+				}
+				$this->rrmdir($file, false);
 			}
 		}
 		if($changed){

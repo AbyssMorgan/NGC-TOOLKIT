@@ -3,5 +3,9 @@
 		"*.ave-php": "php",
 	},
 	"editor.insertSpaces": false,
-	"php.stubs": ["*", "imagick"]
+	"php.stubs": [
+		"*",
+		"imagick"
+	],
+	"php.version": "8.3"
 }
