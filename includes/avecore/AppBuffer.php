@@ -65,10 +65,10 @@ class AppBuffer {
 			}
 		}
 		file_put_contents($file, json_encode([
-			'key' => $key, 
-			'type' => $type, 
-			'value' => $value, 
-			'expire' => $expire, 
+			'key' => $key,
+			'type' => $type,
+			'value' => $value,
+			'expire' => $expire,
 		]));
 	}
 

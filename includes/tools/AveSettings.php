@@ -135,7 +135,7 @@ class AveSettings {
 		$program_path = realpath($this->ave->get_file_path($this->ave->path));
 		if(!$this->ave->windows){
 			$this->ave->echo(" This feature is available only on windows operating system.");
-			$this->ave->echo(" Use command: /usr/bin/php8.1 \"$program_path\includes\main.php\" --script <path> [...]");
+			$this->ave->echo(" Use command: /usr/bin/php8.3 \"$program_path\includes\main.php\" --script <path> [...]");
 			$this->ave->pause(" Press any key to back to menu");
 		} else if(!$this->ave->is_admin()){
 			$this->ave->echo(" You must run ".$this->ave->app_name." as administrator to use this feature");

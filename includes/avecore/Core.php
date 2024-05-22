@@ -35,7 +35,7 @@ class Core {
 	public bool $toggle_log_event = true;
 	public bool $toggle_log_error = true;
 	public string $utilities_path;
-	public string $utilities_version = "1.0.0";
+	public string $utilities_version = "1.1.0";
 	public string $current_title;
 	public array $drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 	public bool $can_exit = true;
@@ -356,7 +356,7 @@ class Core {
 		$this->log_data->write($data);
 	}
 
-	public function rrmdir(string $dir) : bool {
+	public function rrmdir(string $dir, bool $log = true) : bool {
 		if(!file_exists($dir)) return false;
 		if(is_dir($dir)){
 			$objects = scandir($dir);
@@ -364,12 +364,12 @@ class Core {
 				if($object == "." || $object == "..") continue;
 				$subdir = $this->get_file_path("$dir/$object");
 				if(is_dir($subdir) && !is_link($subdir)){
-					$this->rrmdir($subdir);
+					$this->rrmdir($subdir, $log);
 				} else {
-					$this->delete($subdir);
+					$this->delete($subdir, $log);
 				}
 			}
-			$this->rmdir($dir);
+			$this->rmdir($dir, false);
 		}
 		return true;
 	}
