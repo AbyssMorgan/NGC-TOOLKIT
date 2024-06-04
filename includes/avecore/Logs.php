@@ -1,5 +1,7 @@
 <?php
 
+/* AVE-PHP v2.2.0 */
+
 declare(strict_types=1);
 
 namespace AveCore;

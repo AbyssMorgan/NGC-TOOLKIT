@@ -78,8 +78,8 @@ class AVE extends Core {
 		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10900){
 			$this->config->unset(['AVE_EXTENSIONS_VIDEO_FOLLOW']);
 		}
-		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 10904){
-			$this->config->unset(['AVE_DATA_FOLDER','AVE_LOG_FOLDER']);
+		if($this->get_version_number($this->config->get('APP_VERSION','0.0.0')) < 20200){
+			$this->config->unset(['AVE_DATA_FOLDER','AVE_LOG_FOLDER','AVE_BUFFER_FOLDER']);
 		}
 
 		foreach($config_default->get_all() as $key => $value){
@@ -134,6 +134,9 @@ class AVE extends Core {
 					return;
 				}
 				$this->rrmdir($file, false);
+				if(strpos($file, "php") !== false){
+					$this->delete($this->get_file_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_BASENAME).".ini"), false);
+				}
 			}
 		}
 		if($changed){

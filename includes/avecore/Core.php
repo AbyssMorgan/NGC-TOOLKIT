@@ -1,5 +1,7 @@
 <?php
 
+/* AVE-PHP v2.2.0 */
+
 declare(strict_types=1);
 
 namespace AveCore;
@@ -12,7 +14,7 @@ use DirectoryIterator;
 
 class Core {
 
-	public int $core_version = 9;
+	public int $core_version = 10;
 
 	public IniFile $config;
 
@@ -35,6 +37,7 @@ class Core {
 	public bool $toggle_log_event = true;
 	public bool $toggle_log_error = true;
 	public string $utilities_path;
+	public ?string $core_path;
 	public string $utilities_version = "1.1.0";
 	public string $current_title;
 	public array $drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
@@ -51,7 +54,8 @@ class Core {
 		$this->logo = '';
 		$this->current_title = '';
 		$this->utilities_path = $this->get_file_path($this->get_variable("%PROGRAMFILES%")."/AVE-UTILITIES");
-		
+		$this->core_path = null;
+
 		if($require_utilities){
 			if($this->windows){
 				$ave_utilities = false;
@@ -60,6 +64,7 @@ class Core {
 					$ave_utilities_imagick = new IniFile($this->get_file_path("$this->utilities_path/imagick.ini"));
 					if($ave_utilities_main->get('APP_VERSION') == $this->utilities_version && $ave_utilities_imagick->get('APP_VERSION') == $this->utilities_version){
 						$ave_utilities = true;
+						$this->core_path = $this->get_file_path("$this->utilities_path/core/".$ave_utilities_main->get('APP_VERSION'));
 					}
 				}
 
@@ -235,6 +240,16 @@ class Core {
 			case 'day': return $value * 86400;
 		}
 		return 0;
+	}
+
+	public function is_folder_empty(string $path) : bool {
+		if(!file_exists($path)) return true;
+		$files = scandir($path);
+		foreach($files as $file){
+			if($file == "." || $file == "..") continue;
+			return false;
+		}
+		return true;
 	}
 
 	public function get_files(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
@@ -650,7 +665,8 @@ class Core {
 	}
 
 	public function exec(string $program, string $command, array &$output = null, int &$result_code = null) : string|false {
-		if($this->windows) $program = $this->get_file_path("$this->utilities_path/main/$program.exe");
+		if(is_null($this->core_path)) return false;
+		if($this->windows) $program = $this->get_file_path("$this->core_path/$program.exe");
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 

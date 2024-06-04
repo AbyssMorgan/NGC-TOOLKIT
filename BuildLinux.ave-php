@@ -6,10 +6,10 @@
 	$this->ave->title("$app_name Builder v$version");
 
 	$output = "$this->path/Setup";
-	$zip_name_a = $this->ave->get_file_path("$output/${app_name}_v$version"."_LINUX.tar");
+	$zip_name_a = $this->ave->get_file_path("$output/{$app_name}_v$version"."_LINUX.tar");
 	$this->ave->delete($zip_name_a);
 
-	$zip_name_b = $this->ave->get_file_path("$output/${app_name}_v$version"."_LINUX.tar.gz");
+	$zip_name_b = $this->ave->get_file_path("$output/{$app_name}_v$version"."_LINUX.tar.gz");
 	$this->ave->delete($zip_name_b);
 
 	$this->ave->echo(" Compress \"$zip_name_a\"");
