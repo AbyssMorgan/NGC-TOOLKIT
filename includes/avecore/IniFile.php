@@ -123,7 +123,7 @@ class IniFile {
 				$data = null;
 			} else {
 				if(substr($option[1], 0, 1) == '"' && substr($option[1], -1, 1) == '"'){
-					$data = substr($option[1], 1, -1);
+					$data = stripslashes(substr($option[1], 1, -1));
 				} else {
 					$data = $option[1];
 				}
@@ -248,6 +248,7 @@ class IniFile {
 				$value = "JSON:".base64_encode(json_encode($value));
 				$content .= "$key=\"$value\"\r\n";
 			} else {
+				$value = addslashes($value);
 				$content .= "$key=\"$value\"\r\n";
 			}
 		}
