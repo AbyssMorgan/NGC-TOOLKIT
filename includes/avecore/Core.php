@@ -14,7 +14,7 @@ use DirectoryIterator;
 
 class Core {
 
-	public int $core_version = 11;
+	public int $core_version = 12;
 
 	public IniFile $config;
 
@@ -665,12 +665,13 @@ class Core {
 	}
 
 	public function exec(string $program, string $command, array &$output = null, int &$result_code = null) : string|false {
-		if(is_null($this->core_path)) return false;
+		if($this->windows && is_null($this->core_path)) return false;
 		if($this->windows) $program = $this->get_file_path("$this->core_path/$program.exe");
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 
 	public function is_admin() : bool {
+		if(!$this->windows) return false;
 		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
 	}
 
@@ -760,7 +761,10 @@ class Core {
 				}
 			}
 		} else {
-			return $this->delete($path);
+			$output = [];
+			$returnVar = 0;
+			exec("gio trash ".escapeshellarg($path), $output, $returnVar);
+			return ($returnVar === 0);
 		}
 		$this->write_error("FAILED TRASH \"$path\"");
 		return false;
@@ -800,6 +804,14 @@ class Core {
 
 	public function clean_file_extension(string $extension) : string {
 		return strtolower(preg_replace("/\s/is", "", $extension));
+	}
+
+	public function get_output_null(){
+		if($this->windows){
+			return 'nul';
+		} else {
+			return '/dev/null';
+		}
 	}
 
 }

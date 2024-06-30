@@ -77,34 +77,34 @@ class MediaFunctions {
 	}
 
 	public function get_video_info(string $path): array {
-		$this->ave->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>".$this->ave->get_output_null(), $output);
 		$info = json_decode(implode('', $output), true);
 		return $info;
 	}
 
 	public function get_video_fps(string $path) : float {
-		$this->ave->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>".$this->ave->get_output_null(), $output);
 		eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $output[0])).';');
 		return $fps;
 	}
 
 	public function get_video_codec(string $path) : string {
-		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->ave->get_output_null(), $output);
 		return trim($output[0]);
 	}
 
 	public function get_video_resolution(string $path) : string {
-		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>".$this->ave->get_output_null(), $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
 	public function get_video_color_primaries(string $path): string {
-		$this->ave->exec("ffprobe","-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe","-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->ave->get_output_null(), $output);
 		return trim($output[0] ?? '');
 	}
 
 	public function get_video_duration(string $path) : string {
-		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
+		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>".$this->ave->get_output_null(), $output);
 		$file_duration = trim($output[0]);
 		$h = $m = $s = 0;
 		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
@@ -112,7 +112,7 @@ class MediaFunctions {
 	}
 
 	public function get_video_duration_seconds(string $path) : int {
-		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>nul", $output);
+		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>".$this->ave->get_output_null(), $output);
 		$file_duration = trim($output[0]);
 		$h = $m = $s = 0;
 		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
@@ -120,7 +120,7 @@ class MediaFunctions {
 	}
 
 	public function get_video_languages(string $path) : array {
-		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> nul", $output);
+		$this->ave->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> ".$this->ave->get_output_null(), $output);
 		$data = [];
 		foreach($output as $language){
 			$parts = explode("|", $language);
@@ -130,7 +130,7 @@ class MediaFunctions {
 	}
 
 	public function get_audio_channels(string $path) : int {
-		$this->ave->exec("ffprobe", "-v error -select_streams a:0 -show_entries stream=channels -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v error -select_streams a:0 -show_entries stream=channels -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->ave->get_output_null(), $output);
 		return (int)trim($output[0] ?? '0');
 	}
 
@@ -182,7 +182,7 @@ class MediaFunctions {
 		$output_file = $this->ave->get_file_path("$output/".pathinfo($path, PATHINFO_BASENAME).".webp");
 		if(file_exists($output_file)) return true;
 		if(!file_exists($input_file)){
-			$this->ave->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >nul 2>nul", $out);
+			$this->ave->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >".$this->ave->get_output_null()." 2>".$this->ave->get_output_null(), $out);
 			if(!file_exists($input_file)) return false;
 		}
 		$image = new Imagick();
