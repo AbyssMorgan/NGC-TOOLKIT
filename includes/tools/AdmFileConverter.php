@@ -33,13 +33,13 @@ class AdmFileConverter {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolIniConverter();
-			case '1': return $this->ToolAdmJournalConverter();
+			case '0': return $this->tool_ini_converter();
+			case '1': return $this->tool_adm_journal_converter();
 		}
 		return false;
 	}
 
-	public function ToolIniConverter() : bool {
+	public function tool_ini_converter() : bool {
 		$this->ave->set_subtool("Ini converter");
 
 		set_mode:
@@ -115,7 +115,7 @@ class AdmFileConverter {
 		return false;
 	}
 
-	public function ToolAdmJournalConverter() : bool {
+	public function tool_adm_journal_converter() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("ADM Journal converter");
 

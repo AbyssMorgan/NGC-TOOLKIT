@@ -38,49 +38,49 @@ class AveSettings {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolShowDocumentation();
-			case '1': return $this->ToolOpenConfigFolder();
-			case '2': return $this->ToolOpenLogsFolder();
-			case '3': return $this->ToolOpenDataFolder();
-			case '4': return $this->ToolOpenProgramFolder();
-			case '5': return $this->ToolCheckForUpdates();
-			case '6': return $this->ToolRestoreDefaultSettings();
-			case '7': return $this->ToolInstallAvePHPScript();
+			case '0': return $this->tool_show_documentation();
+			case '1': return $this->tool_open_config_folder();
+			case '2': return $this->tool_open_logs_folder();
+			case '3': return $this->tool_open_data_folder();
+			case '4': return $this->tool_open_program_folder();
+			case '5': return $this->tool_check_for_updates();
+			case '6': return $this->tool_restore_default_settings();
+			case '7': return $this->tool_install_ave_php_script();
 		}
 		return false;
 	}
 
-	public function ToolShowDocumentation() : bool {
+	public function tool_show_documentation() : bool {
 		$this->ave->clear();
 		$this->ave->open_url("https://github.com/AbyssMorgan/AVE-PHP/wiki");
 		return false;
 	}
 
-	public function ToolOpenConfigFolder() : bool {
+	public function tool_open_config_folder() : bool {
 		$this->ave->clear();
 		$this->ave->open_file($this->ave->app_data, "");
 		return false;
 	}
 
-	public function ToolOpenLogsFolder() : bool {
+	public function tool_open_logs_folder() : bool {
 		$this->ave->clear();
 		$this->ave->open_file($this->ave->get_file_path($this->ave->config->get('AVE_LOG_FOLDER')), "");
 		return false;
 	}
 
-	public function ToolOpenDataFolder() : bool {
+	public function tool_open_data_folder() : bool {
 		$this->ave->clear();
 		$this->ave->open_file($this->ave->get_file_path($this->ave->config->get('AVE_DATA_FOLDER')), "");
 		return false;
 	}
 
-	public function ToolOpenProgramFolder() : bool {
+	public function tool_open_program_folder() : bool {
 		$this->ave->clear();
 		$this->ave->open_file($this->ave->get_file_path($this->ave->path."/.."), "");
 		return false;
 	}
 
-	public function ToolCheckForUpdates(bool $response = true) : bool {
+	public function tool_check_for_updates(bool $response = true) : bool {
 		$this->ave->clear();
 		$this->ave->echo(" Check for updates ...");
 		$version = '';
@@ -96,7 +96,7 @@ class AveSettings {
 		return false;
 	}
 
-	public function ToolRestoreDefaultSettings() : bool {
+	public function tool_restore_default_settings() : bool {
 		$this->ave->clear();
 		if($this->ave->get_confirm(" Restore default settings (Y/N): ")){
 			$config_default = new IniFile($this->ave->get_file_path($this->ave->path."/includes/config/default.ini"), true);
@@ -130,7 +130,7 @@ class AveSettings {
 		return false;
 	}
 
-	public function ToolInstallAvePHPScript() : bool {
+	public function tool_install_ave_php_script() : bool {
 		$this->ave->clear();
 		$program_path = realpath($this->ave->get_file_path($this->ave->path));
 		if(!$this->ave->windows){

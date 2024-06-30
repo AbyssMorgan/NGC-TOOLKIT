@@ -33,15 +33,15 @@ class DirectoryFunctions {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolDeleteEmptyFolders();
-			case '1': return $this->ToolForceLoadIcon();
-			case '2': return $this->ToolCountFiles();
-			case '3': return $this->ToolCloneFolderStructure();
+			case '0': return $this->tool_delete_empty_folders();
+			case '1': return $this->tool_force_load_icon();
+			case '2': return $this->tool_count_files();
+			case '3': return $this->tool_clone_folder_structure();
 		}
 		return false;
 	}
 
-	public function ToolDeleteEmptyFolders() : bool {
+	public function tool_delete_empty_folders() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Delete empty folders");
 		$line = $this->ave->get_input(" Folders: ");
@@ -80,7 +80,7 @@ class DirectoryFunctions {
 		return false;
 	}
 
-	public function ToolForceLoadIcon() : bool {
+	public function tool_force_load_icon() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Force load icon");
 		if(!$this->ave->windows) return $this->ave->windows_only();
@@ -116,7 +116,7 @@ class DirectoryFunctions {
 		return false;
 	}
 
-	public function ToolCountFiles() : bool {
+	public function tool_count_files() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Count files");
 
@@ -167,7 +167,7 @@ class DirectoryFunctions {
 		return false;
 	}
 
-	public function ToolCloneFolderStructure() : bool {
+	public function tool_clone_folder_structure() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Clone folder structure");
 

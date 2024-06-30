@@ -37,18 +37,18 @@ class FileEditor {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolReplaceKeywordsInFiles();
-			case '1': return $this->ToolRemoveKeywordsInFiles();
-			case '2': return $this->ToolRemoveDuplicateLinesInFile();
-			case '3': return $this->ToolSplitFileByLinesCount();
-			case '4': return $this->ToolSplitFileBySize();
-			case '5': return $this->ToolReverseFileLines();
-			case '6': return $this->ToolPrettyFileContent();
+			case '0': return $this->tool_replace_keywords_in_files();
+			case '1': return $this->tool_remove_keywords_in_files();
+			case '2': return $this->tool_remove_duplicate_lines_in_file();
+			case '3': return $this->tool_split_file_by_lines_count();
+			case '4': return $this->tool_split_file_by_size();
+			case '5': return $this->tool_reverse_file_lines();
+			case '6': return $this->tool_pretty_file_content();
 		}
 		return false;
 	}
 
-	public function ToolReplaceKeywordsInFiles() : bool {
+	public function tool_replace_keywords_in_files() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Replace keywords in files");
 
@@ -140,7 +140,7 @@ class FileEditor {
 		return false;
 	}
 
-	public function ToolRemoveKeywordsInFiles() : bool {
+	public function tool_remove_keywords_in_files() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Remove keywords in files");
 
@@ -219,7 +219,7 @@ class FileEditor {
 		return false;
 	}
 
-	public function ToolRemoveDuplicateLinesInFile() : bool {
+	public function tool_remove_duplicate_lines_in_file() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Remove duplicate lines in file");
 
@@ -291,7 +291,7 @@ class FileEditor {
 		return false;
 	}
 
-	public function ToolSplitFileByLinesCount() : bool {
+	public function tool_split_file_by_lines_count() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Split file by lines count");
 
@@ -372,7 +372,7 @@ class FileEditor {
 		return false;
 	}
 
-	public function ToolSplitFileBySize() : bool {
+	public function tool_split_file_by_size() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Split file by size");
 
@@ -420,7 +420,7 @@ class FileEditor {
 		return false;
 	}
 
-	public function ToolReverseFileLines() : bool {
+	public function tool_reverse_file_lines() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Reverse file lines");
 
@@ -471,7 +471,7 @@ class FileEditor {
 		return false;
 	}
 
-	public function ToolPrettyFileContent() : bool {
+	public function tool_pretty_file_content() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Pretty file content");
 

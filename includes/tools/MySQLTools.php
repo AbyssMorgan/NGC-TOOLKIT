@@ -19,7 +19,7 @@ class MySQLTools {
 	private string $action;
 	private string $path;
 	private AVE $ave;
-	private $select_label = [];
+	private array $select_label = [];
 
 	public function __construct(AVE $ave){
 		$this->ave = $ave;
@@ -55,23 +55,23 @@ class MySQLTools {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolConfigureConnection();
-			case '1': return $this->ToolRemoveConnection();
-			case '2': return $this->ToolOpenConfigFolder();
-			case '3': return $this->ToolShowConnections();
-			case '4': return $this->ToolMakeBackup();
-			case '5': return $this->ToolMakeClone();
-			case '6': return $this->ToolOpenBackupFolder();
-			case '7': return $this->ToolMySQLConsole();
-			case '8': return $this->ToolBackupSelectedTablesStructure();
-			case '9': return $this->ToolBackupSelectedTablesData();
-			case '10': return $this->ToolBackupSelectedViews();
-			case '11': return $this->ToolBackupSelectedFunctions();
-			case '12': return $this->ToolBackupSelectedProcedures();
-			case '13': return $this->ToolBackupSelectedEvents();
-			case '14': return $this->ToolBackupSelectedTriggers();
-			case '15': return $this->ToolFetchDataBaseInfo();
-			case '16': return $this->ToolCompareDataBaseInfo();
+			case '0': return $this->tool_configure_connection();
+			case '1': return $this->tool_remove_connection();
+			case '2': return $this->tool_open_config_folder();
+			case '3': return $this->tool_show_connections();
+			case '4': return $this->tool_make_backup();
+			case '5': return $this->tool_make_clone();
+			case '6': return $this->tool_open_backup_folder();
+			case '7': return $this->tool_mysql_console();
+			case '8': return $this->tool_backup_selected_tables_structure();
+			case '9': return $this->tool_backup_selected_tables_data();
+			case '10': return $this->tool_backup_selected_views();
+			case '11': return $this->tool_backup_selected_functions();
+			case '12': return $this->tool_backup_selected_procedures();
+			case '13': return $this->tool_backup_selected_events();
+			case '14': return $this->tool_backup_selected_triggers();
+			case '15': return $this->tool_fetch_data_base_info();
+			case '16': return $this->tool_compare_data_base_info();
 		}
 		return false;
 	}
@@ -101,11 +101,11 @@ class MySQLTools {
 
 	public function get_config(string $label) : IniFile {
 		$config = new IniFile($this->get_config_path($label), true);
-		$this->checkConfig($config);
+		$this->check_config($config);
 		return $config;
 	}
 
-	private function SelectDataBase(PDO $connection, ?DataBaseBackup $backup = null) : bool {
+	public function select_data_base(PDO $connection, ?DataBaseBackup $backup = null) : bool {
 		$options = [];
 		$i = 0;
 		$this->ave->echo();
@@ -126,15 +126,15 @@ class MySQLTools {
 		return true;
 	}
 
-	public function getDataBase(PDO $connection) : ?string {
+	public function get_data_base(PDO $connection) : ?string {
 		$sth = $connection->query("SELECT DATABASE() as `name`;");
 		$result = $sth->fetch(PDO::FETCH_OBJ);
 		return $result->name ?? null;
 	}
 
-	public function ToolConfigureConnection() : bool {
+	public function tool_configure_connection() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ConfigureConnection");
+		$this->ave->set_subtool("Configure connection");
 
 		$this->ave->print_help([
 			' Allowed characters: A-Z a-z 0-9 _ -',
@@ -235,9 +235,9 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolRemoveConnection() : bool {
+	public function tool_remove_connection() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("RemoveConnection");
+		$this->ave->set_subtool("Remove connection");
 
 		$this->get_select_label();
 		set_label:
@@ -260,16 +260,16 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolOpenConfigFolder() : bool {
+	public function tool_open_config_folder() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("OpenConfigFolder");
+		$this->ave->set_subtool("Open config folder");
 		$this->ave->open_file($this->path, '');
 		return false;
 	}
 
-	public function ToolShowConnections() : bool {
+	public function tool_show_connections() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ShowConnections");
+		$this->ave->set_subtool("Show connections");
 
 		$this->ave->echo(" Connections:");
 		$cnt = 0;
@@ -291,9 +291,9 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolMakeBackup() : bool {
+	public function tool_make_backup() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("MakeBackup");
+		$this->ave->set_subtool("Make backup");
 
 		$this->get_select_label();
 		set_label:
@@ -340,7 +340,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_source(), $backup)) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 		$this->ave->echo(" Create backup");
 
 		$items = $backup->get_tables();
@@ -534,8 +534,8 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolMakeClone() : bool {
-		$this->ave->set_subtool("MakeClone");
+	public function tool_make_clone() : bool {
+		$this->ave->set_subtool("Make clone");
 
 		reset_connection:
 		$this->ave->clear();
@@ -578,7 +578,7 @@ class MySQLTools {
 
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
-		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_source(), $backup)) return false;
+		if($ini_source->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 
 		$this->ave->clear();
 		$this->get_select_label();
@@ -600,10 +600,10 @@ class MySQLTools {
 
 		$this->ave->echo(" Connecting to: ".$ini_dest->get('DB_HOST').":".$ini_dest->get('DB_PORT')."@".$ini_dest->get('DB_USER'));
 		if(!$backup->connect_destination($ini_dest->get('DB_HOST'), $ini_dest->get('DB_USER'), $ini_dest->get('DB_PASSWORD'), $ini_dest->get('DB_NAME'), $ini_dest->get('DB_PORT'))) goto set_label_destination;
-		if($ini_dest->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_destination())) return false;
+		if($ini_dest->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_destination())) return false;
 
-		$dbname_source = $this->getDataBase($backup->get_source());
-		$dbname_destination = $this->getDataBase($backup->get_destination());
+		$dbname_source = $this->get_data_base($backup->get_source());
+		$dbname_destination = $this->get_data_base($backup->get_destination());
 
 		if($ini_source->get('DB_HOST') == $ini_dest->get('DB_HOST') && $ini_source->get('DB_USER') == $ini_dest->get('DB_USER') && $dbname_source == $dbname_destination && $ini_source->get('DB_PORT') == $ini_dest->get('DB_PORT')){
 			$backup->disconnect();
@@ -829,7 +829,7 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolMakeBackupCMD(string $label, ?string $dbname = null) : bool {
+	public function tool_make_backup_cmd(string $label, ?string $dbname = null) : bool {
 		if(!$this->ave->is_valid_label($label)){
 			$this->ave->echo(" Invalid label \"$label\"");
 			return false;
@@ -1035,9 +1035,9 @@ class MySQLTools {
 		return true;
 	}
 
-	public function ToolOpenBackupFolder() : bool {
+	public function tool_open_backup_folder() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("OpenBackupFolder");
+		$this->ave->set_subtool("Open backup folder");
 
 		$this->get_select_label();
 		set_label:
@@ -1061,9 +1061,9 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolMySQLConsole() : bool {
+	public function tool_mysql_console() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("MySQLConsole");
+		$this->ave->set_subtool("MySQL console");
 
 		$this->get_select_label();
 		set_label:
@@ -1085,7 +1085,7 @@ class MySQLTools {
 		$db = new MySQL();
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->get_connection())) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
 		$save_output = $this->ave->get_confirm(" Save query results in data file (Y/N): ");
 		if($save_output){
@@ -1151,35 +1151,35 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolBackupSelectedTablesStructure() : bool {
-		return $this->BackupSelected('Table Structure', false);
+	public function tool_backup_selected_tables_structure() : bool {
+		return $this->backup_selected('Table Structure', false);
 	}
 
-	public function ToolBackupSelectedTablesData() : bool {
-		return $this->BackupSelected('Table Data', true);
+	public function tool_backup_selected_tables_data() : bool {
+		return $this->backup_selected('Table Data', true);
 	}
 
-	public function ToolBackupSelectedViews() : bool {
-		return $this->BackupSelected('View', false);
+	public function tool_backup_selected_views() : bool {
+		return $this->backup_selected('View', false);
 	}
 
-	public function ToolBackupSelectedFunctions() : bool {
-		return $this->BackupSelected('Function', false);
+	public function tool_backup_selected_functions() : bool {
+		return $this->backup_selected('Function', false);
 	}
 
-	public function ToolBackupSelectedProcedures() : bool {
-		return $this->BackupSelected('Procedure', false);
+	public function tool_backup_selected_procedures() : bool {
+		return $this->backup_selected('Procedure', false);
 	}
 
-	public function ToolBackupSelectedEvents() : bool {
-		return $this->BackupSelected('Event', false);
+	public function tool_backup_selected_events() : bool {
+		return $this->backup_selected('Event', false);
 	}
 
-	public function ToolBackupSelectedTriggers() : bool {
-		return $this->BackupSelected('Trigger', false);
+	public function tool_backup_selected_triggers() : bool {
+		return $this->backup_selected('Trigger', false);
 	}
 
-	public function checkConfig(IniFile $config) : void {
+	public function check_config(IniFile $config) : void {
 		if(!$config->is_set('BACKUP_ADD_LABEL_TO_PATH')) $config->set('BACKUP_ADD_LABEL_TO_PATH', true);
 		if(!$config->is_set('BACKUP_CURL_SEND_ERRORS')) $config->set('BACKUP_CURL_SEND_ERRORS', false);
 		if(!$config->is_set('BACKUP_CURL_CALLBACK')) $config->set('BACKUP_CURL_CALLBACK', null);
@@ -1217,13 +1217,13 @@ class MySQLTools {
 		}
 	}
 
-	public function BackupSelected(string $type, bool $need_lock) : bool {
+	public function backup_selected(string $type, bool $need_lock) : bool {
 		$ftype = explode(" ", $type);
 		$ftype = $ftype[0];
 		$stype = strtolower($type);
 		$type = str_replace(" ", "", $type);
 		$this->ave->clear();
-		$this->ave->set_subtool("BackupSelected".$type);
+		$this->ave->set_subtool("Backup selected ".$stype);
 
 		$this->get_select_label();
 		set_label:
@@ -1284,7 +1284,7 @@ class MySQLTools {
 		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($backup->get_source(), $backup)) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 
 		$this->ave->echo(" Create backup");
 		$func = "get".$ftype."s";
@@ -1333,9 +1333,9 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolFetchDataBaseInfo() : bool {
+	public function tool_fetch_data_base_info() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("FetchDataBaseInfo");
+		$this->ave->set_subtool("Fetch data base info");
 
 		$this->get_select_label();
 		set_label:
@@ -1357,7 +1357,7 @@ class MySQLTools {
 		$db = new MySQL();
 		$this->ave->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
-		if($ini->get('DB_NAME') == "*" && !$this->SelectDataBase($db->get_connection())) return false;
+		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
 		$separator = $ini->get('SAVE_RESULTS_SEPARATOR');
 		$this->ave->write_data(str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
@@ -1384,9 +1384,9 @@ class MySQLTools {
 		return false;
 	}
 
-	public function ToolCompareDataBaseInfo() : bool {
+	public function tool_compare_data_base_info() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CompareDataBaseInfo");
+		$this->ave->set_subtool("Compare data base info");
 
 		$this->get_select_label();
 		set_label_source:
@@ -1407,7 +1407,7 @@ class MySQLTools {
 		$ini_source = $this->get_config($source);
 		$this->ave->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
-		if($ini_source->get('DB_NAME') == "*" && !$this->SelectDataBase($db_source->get_connection())) return false;
+		if($ini_source->get('DB_NAME') == "*" && !$this->select_data_base($db_source->get_connection())) return false;
 
 		set_label_destination:
 		$destination = $this->ave->get_input(" Destination label: ");
@@ -1432,7 +1432,7 @@ class MySQLTools {
 		$ini_destination = $this->get_config($destination);
 		$this->ave->echo(" Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
 		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'))) goto set_label_destination;
-		if($ini_destination->get('DB_NAME') == "*" && !$this->SelectDataBase($db_destination->get_connection())) return false;
+		if($ini_destination->get('DB_NAME') == "*" && !$this->select_data_base($db_destination->get_connection())) return false;
 
 		$info_source = [];
 		$info_dest = [];

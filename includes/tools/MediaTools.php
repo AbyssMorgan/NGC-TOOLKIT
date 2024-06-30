@@ -40,19 +40,19 @@ class MediaTools {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolMergeVideoAudio();
-			case '1': return $this->ToolMergeVideoSubtitles();
-			case '2': return $this->ToolAvatarGenerator();
-			case '3': return $this->ToolVideoFetchMediaInfo();
-			case '4': return $this->ToolImageConverter();
-			case '5': return $this->ToolIdentMimeType();
+			case '0': return $this->tool_merge_video_audio();
+			case '1': return $this->tool_merge_video_subtitles();
+			case '2': return $this->tool_avatar_generator();
+			case '3': return $this->tool_video_fetch_media_info();
+			case '4': return $this->tool_image_converter();
+			case '5': return $this->tool_ident_mime_type();
 		}
 		return false;
 	}
 
-	public function ToolMergeVideoAudio() : bool {
+	public function tool_merge_video_audio() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("MergeVideoAudio");
+		$this->ave->set_subtool("Merge video audio");
 
 		set_video:
 		$line = $this->ave->get_input(" Video: ");
@@ -147,9 +147,9 @@ class MediaTools {
 		return false;
 	}
 
-	public function ToolMergeVideoSubtitles() : bool {
+	public function tool_merge_video_subtitles() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("MergeVideoSubtitles");
+		$this->ave->set_subtool("Merge video subtitles");
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -217,9 +217,9 @@ class MediaTools {
 		return false;
 	}
 
-	public function ToolAvatarGenerator() : bool {
+	public function tool_avatar_generator() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("AvatarGenerator");
+		$this->ave->set_subtool("Avatar generator");
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -304,9 +304,9 @@ class MediaTools {
 		return false;
 	}
 
-	public function ToolVideoFetchMediaInfo() : bool {
+	public function tool_video_fetch_media_info() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("VideoFetchMediaInfo");
+		$this->ave->set_subtool("Video fetch media info");
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -319,6 +319,25 @@ class MediaTools {
 			$this->ave->echo(" Invalid input folder");
 			goto set_input;
 		}
+		$output = $input;
+
+		set_output:
+		$line = $this->ave->get_input(" Output (Empty, same as input): ");
+		if($line == '#') return false;
+		$folders = $this->ave->get_input_folders($line);
+		if(isset($folders[0])){
+			$output = $folders[0];
+			if((file_exists($output) && !is_dir($output)) || !$this->ave->mkdir($output)){
+				$this->ave->echo(" Invalid output folder");
+				goto set_output;
+			}
+			$file_name = 'AveMediaInfo';
+
+			$line = $this->ave->get_input(" File name (Empty, default): ");
+			if($line == '#') return false;
+			$fname = $this->ave->clean_file_name($line);
+			if(!empty($fname)) $file_name = $fname;
+		}
 
 		$generate_checksum = $this->ave->get_confirm(" Generate checksum if .md5 file not found (Y/N): ");
 
@@ -327,15 +346,16 @@ class MediaTools {
 		$errors = 0;
 		$this->ave->set_errors($errors);
 
-		$ini_old = $this->ave->get_file_path("$input/AveMediaInfo.ini");
-		$ini_new = $this->ave->get_file_path("$input/AveMediaInfo.gz-ini");
+		$ini_old = $this->ave->get_file_path("$input/$file_name.ini");
+		$ini_new = $this->ave->get_file_path("$output/$file_name.gz-ini");
 		if(file_exists($ini_old) && !file_exists($ini_new)){
 			$this->ave->rename($ini_old, $ini_new);
 		}
 		$cache = new IniFile($ini_new, true, true);
+		$this->ave->echo(" Read file: $ini_new");
 		$this->ave->echo(" Last update: ".$cache->get('.LAST_UPDATE', 'None'));
 
-		$csv_file = $this->ave->get_file_path("$input/AveMediaInfo.csv");
+		$csv_file = $this->ave->get_file_path("$output/$file_name.csv");
 		$this->ave->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
 		$s = $this->ave->config->get('AVE_CSV_SEPARATOR');
@@ -434,8 +454,8 @@ class MediaTools {
 		return false;
 	}
 
-	public function ToolImageConverter() : bool {
-		$this->ave->set_subtool("ImageConverter");
+	public function tool_image_converter() : bool {
+		$this->ave->set_subtool("Image converter");
 
 		set_mode:
 		$this->ave->clear();
@@ -576,7 +596,7 @@ class MediaTools {
 		return false;
 	}
 
-	public function ToolIdentMimeType() : bool {
+	public function tool_ident_mime_type() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Ident mime type");
 		if(!$this->ave->windows) return $this->ave->windows_only();

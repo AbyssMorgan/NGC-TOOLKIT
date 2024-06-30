@@ -35,17 +35,17 @@ class DirectoryNamesEditor {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolEscapeDirectoryNameWWW();
-			case '1': return $this->ToolPrettyDirectoryName();
-			case '2': return $this->ToolAddDirectoryNamePrefixSuffix();
-			case '3': return $this->ToolRemoveKeywordsFromDirectoryName();
-			case '4': return $this->ToolInsertStringIntoDirectoryName();
-			case '5': return $this->ToolReplaceKeywordsInDirectoryName();
+			case '0': return $this->tool_escape_directory_name_www();
+			case '1': return $this->tool_pretty_directory_name();
+			case '2': return $this->tool_add_directory_name_prefix_suffix();
+			case '3': return $this->tool_remove_keywords_from_directory_name();
+			case '4': return $this->tool_insert_string_into_directory_name();
+			case '5': return $this->tool_replace_keywords_in_directory_name();
 		}
 		return false;
 	}
 
-	public function ToolEscapeDirectoryNameWWW() : bool {
+	public function tool_escape_directory_name_www() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Escape directory name WWW");
 		$this->ave->print_help([
@@ -100,7 +100,7 @@ class DirectoryNamesEditor {
 		return false;
 	}
 
-	public function ToolPrettyDirectoryName() : bool {
+	public function tool_pretty_directory_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Pretty directory name");
 
@@ -206,7 +206,7 @@ class DirectoryNamesEditor {
 		return false;
 	}
 
-	public function ToolAddDirectoryNamePrefixSuffix() : bool {
+	public function tool_add_directory_name_prefix_suffix() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Add directory name prefix/suffix");
 
@@ -254,7 +254,7 @@ class DirectoryNamesEditor {
 		return false;
 	}
 
-	public function ToolRemoveKeywordsFromDirectoryName() : bool {
+	public function tool_remove_keywords_from_directory_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Remove keywords from directory name");
 
@@ -352,7 +352,7 @@ class DirectoryNamesEditor {
 		return false;
 	}
 	
-	public function ToolInsertStringIntoDirectoryName() : bool {
+	public function tool_insert_string_into_directory_name() : bool {
 		$this->ave->set_subtool("Insert string into directory name");
 
 		set_offset:
@@ -424,7 +424,7 @@ class DirectoryNamesEditor {
 		return false;
 	}
 
-	public function ToolReplaceKeywordsInDirectoryName() : bool {
+	public function tool_replace_keywords_in_directory_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Replace keywords in directory name");
 

@@ -38,22 +38,22 @@ class MediaSorter {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolSortDate();
-			case '1': return $this->ToolSortExtension();
-			case '2': return $this->ToolSortGifAnimated();
-			case '3': return $this->ToolSortMediaQuality();
-			case '4': return $this->ToolSortImagesColor();
-			case '5': return $this->ToolSortVideosAutoDetectSeriesName();
-			case '6': return $this->ToolSortMediaDuration();
-			case '7': return $this->ToolSortFilesSize();
-			case '8': return $this->ToolSortFoldersQuantity();
+			case '0': return $this->tool_sort_date();
+			case '1': return $this->tool_sort_extension();
+			case '2': return $this->tool_sort_gif_animated();
+			case '3': return $this->tool_sort_media_quality();
+			case '4': return $this->tool_sort_images_color();
+			case '5': return $this->tool_sort_videos_auto_detect_series_name();
+			case '6': return $this->tool_sort_media_duration();
+			case '7': return $this->tool_sort_files_size();
+			case '8': return $this->tool_sort_folders_quantity();
 		}
 		return false;
 	}
 
-	public function ToolSortExtension() : bool {
+	public function tool_sort_extension() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortExtension");
+		$this->ave->set_subtool("Sort extension");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -88,8 +88,8 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortMediaQuality() : bool {
-		$this->ave->set_subtool("SortMediaQuality");
+	public function tool_sort_media_quality() : bool {
+		$this->ave->set_subtool("Sort media quality");
 
 		set_mode:
 		$this->ave->clear();
@@ -164,9 +164,9 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortGifAnimated() : bool {
+	public function tool_sort_gif_animated() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortGifAnimated");
+		$this->ave->set_subtool("Sort gif animated");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -218,8 +218,8 @@ class MediaSorter {
 		'7' => 'YYYYxMMxDDxhhxmm',
 	];
 
-	public function ToolSortDate() : bool {
-		$this->ave->set_subtool("SortDate");
+	public function tool_sort_date() : bool {
+		$this->ave->set_subtool("Sort date");
 
 		set_mode:
 		$this->ave->clear();
@@ -266,7 +266,7 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$new_name = $this->ToolSortDateGetPattern($folder, $this->params['mode'], $file, $this->params['separator']);
+				$new_name = $this->tool_sort_date_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
 				if(!$this->ave->rename($file, $new_name)){
 					$errors++;
 				}
@@ -283,11 +283,11 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortDateGetPattern(string $folder, string $mode, string $file, string $separator) : string {
-		return $this->ave->get_file_path("$folder/".str_replace("-", $separator, $this->ToolSortDateFormatDate($mode, filemtime($file)))."/".pathinfo($file, PATHINFO_BASENAME));
+	public function tool_sort_date_get_pattern(string $folder, string $mode, string $file, string $separator) : string {
+		return $this->ave->get_file_path("$folder/".str_replace("-", $separator, $this->tool_sort_date_format_date($mode, filemtime($file)))."/".pathinfo($file, PATHINFO_BASENAME));
 	}
 
-	public function ToolSortDateFormatDate(string $mode, int $date) : string {
+	public function tool_sort_date_format_date(string $mode, int $date) : string {
 		switch($mode){
 			case '0': return date('Y-m-d', $date);
 			case '1': return date('Y-m', $date);
@@ -301,9 +301,9 @@ class MediaSorter {
 		return '';
 	}
 
-	public function ToolSortImagesColor() : bool {
+	public function tool_sort_images_color() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortImagesColor");
+		$this->ave->set_subtool("Sort images color");
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->ave->get_input_folders($line);
@@ -345,9 +345,9 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortVideosAutoDetectSeriesName() : bool {
+	public function tool_sort_videos_auto_detect_series_name() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortVideosAutoDetectSeriesName");
+		$this->ave->set_subtool("Sort videos auto detect series name");
 
 		set_input:
 		$line = $this->ave->get_input(" Input: ");
@@ -425,9 +425,9 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortMediaDuration() : bool {
+	public function tool_sort_media_duration() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortMediaDuration");
+		$this->ave->set_subtool("Sort media duration");
 
 		$interval = $this->ave->get_input_time_interval(" Interval: ");
 		if(!$interval) return false;
@@ -492,9 +492,9 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortFilesSize() : bool {
+	public function tool_sort_files_size() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortFilesSize");
+		$this->ave->set_subtool("Sort files size");
 
 		$interval = $this->ave->get_input_bytes_size(" Size: ");
 		if(!$interval) return false;
@@ -540,9 +540,9 @@ class MediaSorter {
 		return false;
 	}
 
-	public function ToolSortFoldersQuantity() : bool {
+	public function tool_sort_folders_quantity() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("SortFoldersQuantity");
+		$this->ave->set_subtool("Sort folders quantity");
 
 		$interval = $this->ave->get_input_integer(" Quantity interval: ");
 		if(!$interval) return false;

@@ -1,6 +1,6 @@
 <?php
 
-/* AVE-PHP v2.2.0 */
+/* AVE-PHP v2.2.2 */
 
 declare(strict_types=1);
 
@@ -14,7 +14,7 @@ use DirectoryIterator;
 
 class Core {
 
-	public int $core_version = 10;
+	public int $core_version = 11;
 
 	public IniFile $config;
 
@@ -784,6 +784,22 @@ class Core {
 		$this->echo(" This tool is only available on windows operating system");
 		$this->pause(" Press any key to back to menu");
 		return false;
+	}
+
+	public function base64_length(string $string) : int {
+		$string = trim(str_replace(["\r", "\n"], "", $string));
+		$base64_length = strlen($string);
+		$padding_length = substr_count($string, '=');
+		$original_length = ($base64_length / 4) * 3 - $padding_length;
+		return $original_length;
+	}
+
+	public function clean_file_name(string $name) : string {
+		return str_replace(["\\", '/', ':', '*', '?', '"', '<', '>', '|'], '_', $name);
+	}
+
+	public function clean_file_extension(string $extension) : string {
+		return strtolower(preg_replace("/\s/is", "", $extension));
 	}
 
 }

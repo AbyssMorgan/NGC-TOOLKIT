@@ -18,8 +18,7 @@ class FtpTools {
 	private string $action;
 	private string $path;
 	private AVE $ave;
-
-	private $select_label = [];
+	private array $select_label = [];
 
 	public function __construct(AVE $ave){
 		$this->ave = $ave;
@@ -50,18 +49,18 @@ class FtpTools {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolConfigureConnection();
-			case '1': return $this->ToolRemoveConnection();
-			case '2': return $this->ToolOpenConfigFolder();
-			case '3': return $this->ToolShowConnections();
-			case '4': return $this->ToolGetFileList();
-			case '5': return $this->ToolDownloadFiles();
-			case '6': return $this->ToolUploadFiles();
-			case '7': return $this->ToolDeleteFiles();
-			case '8': return $this->ToolDeleteEmptyFolders();
-			case '9': return $this->ToolDeleteStructure();
-			case '10': return $this->ToolCopyFilesFromFTPToFTP();
-			case '11': return $this->ToolImportFileZillaXML();
+			case '0': return $this->tool_configure_connection();
+			case '1': return $this->tool_remove_connection();
+			case '2': return $this->tool_open_config_folder();
+			case '3': return $this->tool_show_connections();
+			case '4': return $this->tool_get_file_list();
+			case '5': return $this->tool_download_files();
+			case '6': return $this->tool_upload_files();
+			case '7': return $this->tool_delete_files();
+			case '8': return $this->tool_delete_empty_folders();
+			case '9': return $this->tool_delete_structure();
+			case '10': return $this->tool_copy_files_from_ftp_to_ftp();
+			case '11': return $this->tool_import_file_zilla_xml();
 		}
 		return false;
 	}
@@ -94,9 +93,9 @@ class FtpTools {
 		return $config;
 	}
 
-	public function ToolConfigureConnection() : bool {
+	public function tool_configure_connection() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ConfigureConnection");
+		$this->ave->set_subtool("Configure connection");
 
 		$this->ave->print_help([
 			' Allowed characters: A-Z a-z 0-9 _ -',
@@ -174,9 +173,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolRemoveConnection() : bool {
+	public function tool_remove_connection() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("RemoveConnection");
+		$this->ave->set_subtool("Remove connection");
 
 		$this->get_select_label();
 		set_label:
@@ -199,16 +198,16 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolOpenConfigFolder() : bool {
+	public function tool_open_config_folder() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("OpenConfigFolder");
+		$this->ave->set_subtool("Open config folder");
 		$this->ave->open_file($this->path, '');
 		return false;
 	}
 
-	public function ToolShowConnections() : bool {
+	public function tool_show_connections() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ShowConnections");
+		$this->ave->set_subtool("Show connections");
 
 		$this->ave->echo(" Connections:");
 		$cnt = 0;
@@ -230,9 +229,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolGetFileList() : bool {
+	public function tool_get_file_list() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("GetFileList");
+		$this->ave->set_subtool("Get file list");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
@@ -325,9 +324,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolDownloadFiles() : bool {
+	public function tool_download_files() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("DownloadFiles");
+		$this->ave->set_subtool("Download files");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
@@ -416,9 +415,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolUploadFiles() : bool {
+	public function tool_upload_files() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("UploadFiles");
+		$this->ave->set_subtool("Upload files");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
@@ -527,9 +526,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolDeleteFiles() : bool {
+	public function tool_delete_files() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("DeleteFiles");
+		$this->ave->set_subtool("Delete files");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
@@ -599,9 +598,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolDeleteEmptyFolders() : bool {
+	public function tool_delete_empty_folders() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("DeleteEmptyFolders");
+		$this->ave->set_subtool("Delete empty folders");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
@@ -649,9 +648,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolDeleteStructure() : bool {
+	public function tool_delete_structure() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("DeleteStructure");
+		$this->ave->set_subtool("Delete structure");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
 		if(!$ftp) return false;
@@ -718,9 +717,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolCopyFilesFromFTPToFTP() : bool {
+	public function tool_copy_files_from_ftp_to_ftp() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("CopyFilesFromFTPToFTP");
+		$this->ave->set_subtool("Copy files from FTP to FTP");
 
 		$ftp_source = $this->setup_ftp(" Source label / ID: ");
 		if(!$ftp_source) return false;
@@ -858,9 +857,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function ToolImportFileZillaXML() : bool {
+	public function tool_import_file_zilla_xml() : bool {
 		$this->ave->clear();
-		$this->ave->set_subtool("ImportFileZillaXML");
+		$this->ave->set_subtool("Import file zilla XML");
 
 		set_xml_file:
 		$line = $this->ave->get_input(" XML file: ");

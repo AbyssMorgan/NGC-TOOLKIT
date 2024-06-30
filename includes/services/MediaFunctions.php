@@ -94,12 +94,12 @@ class MediaFunctions {
 	}
 
 	public function get_video_resolution(string $path) : string {
-		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream^=width^,height -of csv^=s^=x:p^=0 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>nul", $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
 	public function get_video_color_primaries(string $path): string {
-		$this->ave->exec("ffprobe","-v error -select_streams v:0 -show_entries stream^=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
+		$this->ave->exec("ffprobe","-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
 		return trim($output[0] ?? '');
 	}
 
@@ -127,6 +127,11 @@ class MediaFunctions {
 			array_push($data, $parts[1] ?? $parts[0]);
 		}
 		return $data;
+	}
+
+	public function get_audio_channels(string $path) : int {
+		$this->ave->exec("ffprobe", "-v error -select_streams a:0 -show_entries stream=channels -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>nul", $output);
+		return (int)trim($output[0] ?? '0');
 	}
 
 	public function get_extension_by_mime_type(string $path) : string|false {

@@ -27,7 +27,7 @@ class AVE extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "AVE-PHP";
-	public string $version = "2.2.0";
+	public string $version = "2.2.1";
 
 	private array $folders_to_scan = [
 		'bin',
@@ -169,7 +169,7 @@ class AVE extends Core {
 		}
 		if($check_for_updates && !$dev){
 			$this->tool = new AveSettings($this);
-			$this->tool->ToolCheckForUpdates(false);
+			$this->tool->tool_check_for_updates(false);
 		}
 	}
 
@@ -180,7 +180,7 @@ class AVE extends Core {
 					$this->print_help([" Usage: --make-backup <label> [dbname]"]);
 				} else {
 					$this->tool = new MySQLTools($this);
-					$this->tool->ToolMakeBackupCMD($this->arguments[0] ?? '', $this->arguments[1] ?? null);
+					$this->tool->tool_make_backup_cmd($this->arguments[0] ?? '', $this->arguments[1] ?? null);
 				}
 				break;
 			}

@@ -39,19 +39,19 @@ class CheckFileIntegrity {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolCreatePattern();
-			case '1': return $this->ToolGuardGenerate();
-			case '2': return $this->ToolCheckIntegrity();
-			case '3': return $this->ToolGetFilesTree();
-			case '4': return $this->ToolUpdateRemoveMissing();
-			case '5': return $this->ToolUpdateAddUnknown();
-			case '6': return $this->ToolUpdateChanged();
-			case '7': return $this->ToolUpdateMissingAndUnknown();
+			case '0': return $this->tool_create_pattern();
+			case '1': return $this->tool_guard_generate();
+			case '2': return $this->tool_check_integrity();
+			case '3': return $this->tool_get_files_tree();
+			case '4': return $this->tool_update_remove_missing();
+			case '5': return $this->tool_update_add_unknown();
+			case '6': return $this->tool_update_changed();
+			case '7': return $this->tool_update_missing_and_unknown();
 		}
 		return false;
 	}
 
-	public function ToolCreatePattern() : bool {
+	public function tool_create_pattern() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Create pattern");
 
@@ -121,7 +121,7 @@ class CheckFileIntegrity {
 		return false;
 	}
 
-	public function ToolGuardGenerate() : bool {
+	public function tool_guard_generate() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Guard generate");
 
@@ -164,7 +164,7 @@ class CheckFileIntegrity {
 		return false;
 	}
 
-	public function ToolCheckIntegrity() : bool {
+	public function tool_check_integrity() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Check integrity");
 
@@ -238,7 +238,7 @@ class CheckFileIntegrity {
 		return false;
 	}
 
-	public function ToolGetFilesTree() : bool {
+	public function tool_get_files_tree() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Get files tree");
 
@@ -272,51 +272,51 @@ class CheckFileIntegrity {
 		return false;
 	}
 
-	public function ToolUpdateRemoveMissing() : bool {
+	public function tool_update_remove_missing() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Update remove missing");
-		$guard_file = $this->ToolGuardSetFile();
+		$guard_file = $this->tool_guard_set_file();
 		if(is_null($guard_file)) return false;
-		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
+		$this->tool_guard_update($guard_file, ['damaged' => false, 'unknown' => false, 'missing' => true]);
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
-	public function ToolUpdateAddUnknown() : bool {
+	public function tool_update_add_unknown() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Update add unknown");
-		$guard_file = $this->ToolGuardSetFile();
+		$guard_file = $this->tool_guard_set_file();
 		if(is_null($guard_file)) return false;
-		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
+		$this->tool_guard_update($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => false]);
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
-	public function ToolUpdateChanged() : bool {
+	public function tool_update_changed() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Update changed");
-		$guard_file = $this->ToolGuardSetFile();
+		$guard_file = $this->tool_guard_set_file();
 		if(is_null($guard_file)) return false;
-		$this->ToolGuardUpdate($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
+		$this->tool_guard_update($guard_file, ['damaged' => true, 'unknown' => false, 'missing' => false]);
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
-	public function ToolUpdateMissingAndUnknown() : bool {
+	public function tool_update_missing_and_unknown() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Update missing and unknown");
-		$guard_file = $this->ToolGuardSetFile();
+		$guard_file = $this->tool_guard_set_file();
 		if(is_null($guard_file)) return false;
-		$this->ToolGuardUpdate($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);
+		$this->tool_guard_update($guard_file, ['damaged' => false, 'unknown' => true, 'missing' => true]);
 		$this->ave->open_logs(true);
 		$this->ave->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
 
-	public function ToolGuardSetFile() : ?string {
+	public function tool_guard_set_file() : ?string {
 		set_guard:
 		$line = $this->ave->get_input(" Guard (.ave-guard): ");
 		if($line == '#') return null;
@@ -338,7 +338,7 @@ class CheckFileIntegrity {
 		return $guard_file;
 	}
 
-	public function ToolGuardUpdate(string $guard_file, array $params) : void {
+	public function tool_guard_update(string $guard_file, array $params) : void {
 		$ini = new IniFile($guard_file, true, true);
 		$input = pathinfo($guard_file, PATHINFO_DIRNAME);
 		$cwd = getcwd();

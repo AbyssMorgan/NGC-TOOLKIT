@@ -43,24 +43,24 @@ class FileNamesEditor {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolCheckSum();
-			case '1': return $this->ToolNumber();
-			case '2': return $this->ToolVideoGenerator();
-			case '3': return $this->ToolGenerateSeriesName();
-			case '4': return $this->ToolEscapeFileNameWWW();
-			case '5': return $this->ToolPrettyFileName();
-			case '6': return $this->ToolRemoveYouTubeQualityTag();
-			case '7': return $this->ToolSeriesEpisodeEditor();
-			case '8': return $this->ToolAddFileNamePrefixSuffix();
-			case '9': return $this->ToolRemoveKeywordsFromFileName();
-			case '10': return $this->ToolInsertStringIntoFileName();
-			case '11': return $this->ToolReplaceKeywordsInFileName();
-			case '12': return $this->ToolExtensionChange();
+			case '0': return $this->tool_check_sum();
+			case '1': return $this->tool_number();
+			case '2': return $this->tool_video_generator();
+			case '3': return $this->tool_generate_series_name();
+			case '4': return $this->tool_escape_file_name_www();
+			case '5': return $this->tool_pretty_file_name();
+			case '6': return $this->tool_remove_youtube_quality_tag();
+			case '7': return $this->tool_series_episode_editor();
+			case '8': return $this->tool_add_file_name_prefix_suffix();
+			case '9': return $this->tool_remove_keywords_from_file_name();
+			case '10': return $this->tool_insert_string_into_file_name();
+			case '11': return $this->tool_replace_keywords_in_file_name();
+			case '12': return $this->tool_extension_change();
 		}
 		return false;
 	}
 
-	public function ToolCheckSum() : bool {
+	public function tool_check_sum() : bool {
 		$this->ave->set_subtool("Checksum");
 
 		set_mode:
@@ -118,7 +118,7 @@ class FileNamesEditor {
 				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
 				$hash = hash_file($algo, $file, false);
 				if($this->ave->config->get('AVE_HASH_TO_UPPER')) $hash = strtoupper($hash);
-				$new_name = $this->ToolCheckSumGetPattern($this->params['mode'], $file, $hash, $file_id++);
+				$new_name = $this->tool_check_sum_get_pattern($this->params['mode'], $file, $hash, $file_id++);
 				if($this->params['list_only']){
 					array_push($list, $new_name);
 				} else {
@@ -154,7 +154,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolCheckSumGetPattern(string $mode, string $file, string $hash, int $file_id) : string {
+	public function tool_check_sum_get_pattern(string $mode, string $file, string $hash, int $file_id) : string {
 		$folder = pathinfo($file, PATHINFO_DIRNAME);
 		$foldername = pathinfo($folder, PATHINFO_FILENAME);
 		$name = pathinfo($file, PATHINFO_FILENAME);
@@ -173,7 +173,7 @@ class FileNamesEditor {
 		return '';
 	}
 
-	public function ToolNumber() : bool {
+	public function tool_number() : bool {
 		$this->ave->set_subtool("Number");
 
 		set_mode:
@@ -200,20 +200,19 @@ class FileNamesEditor {
 		if(!in_array($this->params['type'],['s','g'])) goto set_mode;
 		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) goto set_mode;
 		switch($this->params['type']){
-			case 's': return $this->ToolNumberActionSingle();
-			case 'g': return $this->ToolNumberActionGroup();
+			case 's': return $this->tool_number_action_single();
+			case 'g': return $this->tool_number_action_group();
 		}
 		return false;
 	}
 
-	public function ToolNumberGetPrefixID() : string {
+	public function tool_number_get_prefix_id() : string {
 		return sprintf("%03d", random_int(0, 999));
 	}
 
-	public function ToolNumberGetPattern(string $mode, string $file, string $prefix, int $file_id, string $input, int $part_id) : ?string {
+	public function tool_number_get_pattern(string $mode, string $file, string $prefix, int $file_id, string $input, int $part_id) : ?string {
 		$folder = pathinfo($file, PATHINFO_DIRNAME);
 		$foldername = pathinfo($folder, PATHINFO_FILENAME);
-		$name = pathinfo($file, PATHINFO_FILENAME);
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->ave->config->get('AVE_EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
@@ -228,10 +227,10 @@ class FileNamesEditor {
 		return null;
 	}
 
-	public function ToolNumberAction(string $folder, int &$errors) : bool {
+	public function tool_number_action(string $folder, int &$errors) : bool {
 		if(!file_exists($folder)) return false;
 		$file_id = ($this->params['mode'] == 5) ? 999999 : 1;
-		$prefix_id = $this->ToolNumberGetPrefixID();
+		$prefix_id = $this->tool_number_get_prefix_id();
 		$video_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->ave->config->get('AVE_EXTENSIONS_PHOTO'));
 		$files = $this->ave->get_files($folder, array_merge($image_extensions, $video_extensions));
@@ -250,7 +249,7 @@ class FileNamesEditor {
 			} else {
 				$prefix = $this->ave->config->get('AVE_PREFIX_VIDEO')."_$prefix_id"."_";
 			}
-			$new_name = $this->ToolNumberGetPattern($this->params['mode'], $file, $prefix, $file_id, $folder, $part_id);
+			$new_name = $this->tool_number_get_pattern($this->params['mode'], $file, $prefix, $file_id, $folder, $part_id);
 			$directory = pathinfo($new_name, PATHINFO_DIRNAME);
 			if(!file_exists($directory)){
 				if(!$this->ave->mkdir($directory)){
@@ -280,7 +279,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolNumberActionSingle() : bool {
+	public function tool_number_action_single() : bool {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -289,7 +288,7 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->ave->set_errors($errors);
 		foreach($folders as $folder){
-			$this->ToolNumberAction($folder, $errors);
+			$this->tool_number_action($folder, $errors);
 			$this->ave->set_folder_done($folder);
 		}
 
@@ -298,7 +297,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolNumberActionGroup() : bool {
+	public function tool_number_action_group() : bool {
 		$this->ave->clear();
 		$line = $this->ave->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -313,7 +312,7 @@ class FileNamesEditor {
 				if($subfoolder == '.' || $subfoolder == '..') continue;
 				$dir = $this->ave->get_file_path("$folder/$subfoolder");
 				if(is_dir($dir)){
-					$this->ToolNumberAction($dir, $errors);
+					$this->tool_number_action($dir, $errors);
 				}
 			}
 			$this->ave->set_folder_done($folder);
@@ -324,7 +323,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolVideoGenerator() : bool {
+	public function tool_video_generator() : bool {
 		$this->ave->set_subtool("Video generator");
 
 		set_mode:
@@ -457,7 +456,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolGenerateSeriesName() : bool {
+	public function tool_generate_series_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Generate series name");
 		$line = $this->ave->get_input(" Folders: ");
@@ -520,7 +519,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolEscapeFileNameWWW() : bool {
+	public function tool_escape_file_name_www() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Escape file name WWW");
 		$this->ave->print_help([
@@ -575,7 +574,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolPrettyFileName() : bool {
+	public function tool_pretty_file_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Pretty file name");
 
@@ -699,7 +698,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolRemoveYouTubeQualityTag() : bool {
+	public function tool_remove_youtube_quality_tag() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Remove YouTube quality tag");
 		$line = $this->ave->get_input(" Folders: ");
@@ -767,7 +766,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolSeriesEpisodeEditor() : bool {
+	public function tool_series_episode_editor() : bool {
 		$this->ave->set_subtool("Series episode editor");
 
 		set_mode:
@@ -787,13 +786,13 @@ class FileNamesEditor {
 
 		if(!in_array($this->params['mode'],['0','1'])) goto set_mode;
 		switch($this->params['mode']){
-			case '0': return $this->ToolSeriesEpisodeEditorActionSeason();
-			case '1': return $this->ToolSeriesEpisodeEditorActionEpisode();
+			case '0': return $this->tool_series_episode_editor_action_season();
+			case '1': return $this->tool_series_episode_editor_action_episode();
 		}
 		return false;
 	}
 
-	public function ToolSeriesEpisodeEditorActionSeason() : bool {
+	public function tool_series_episode_editor_action_season() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Series episode editor > Change season");
 
@@ -872,7 +871,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolSeriesEpisodeEditorActionEpisode() : bool {
+	public function tool_series_episode_editor_action_episode() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Series episode editor > Change episode");
 
@@ -989,7 +988,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolAddFileNamePrefixSuffix() : bool {
+	public function tool_add_file_name_prefix_suffix() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Add file name prefix/suffix");
 
@@ -1046,7 +1045,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolRemoveKeywordsFromFileName() : bool {
+	public function tool_remove_keywords_from_file_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Remove keywords from file name");
 
@@ -1153,7 +1152,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolInsertStringIntoFileName() : bool {
+	public function tool_insert_string_into_file_name() : bool {
 		$this->ave->set_subtool("Insert string into file name");
 
 		set_offset:
@@ -1234,7 +1233,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolReplaceKeywordsInFileName() : bool {
+	public function tool_replace_keywords_in_file_name() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Replace keywords in file name");
 
@@ -1325,7 +1324,7 @@ class FileNamesEditor {
 		return false;
 	}
 
-	public function ToolExtensionChange() : bool {
+	public function tool_extension_change() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Extension change");
 		$line = $this->ave->get_input(" Folders: ");

@@ -35,18 +35,18 @@ class FileFunctions {
 		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
-			case '0': return $this->ToolAntiDuplicates();
-			case '1': return $this->ToolValidateCheckSum();
-			case '2': return $this->ToolRandomFileGenerator();
-			case '3': return $this->ToolOverwriteFoldersContent();
-			case '4': return $this->ToolMoveFilesWithStructure();
-			case '5': return $this->ToolCopyFilesWithStructure();
-			case '6': return $this->ToolCloneFilesWithStructure();
+			case '0': return $this->tool_anti_duplicates();
+			case '1': return $this->tool_validate_check_sum();
+			case '2': return $this->tool_random_file_generator();
+			case '3': return $this->tool_overwrite_folders_content();
+			case '4': return $this->tool_move_files_with_structure();
+			case '5': return $this->tool_copy_files_with_structure();
+			case '6': return $this->tool_clone_files_with_structure();
 		}
 		return false;
 	}
 
-	public function ToolAntiDuplicates() : bool {
+	public function tool_anti_duplicates() : bool {
 		$this->ave->set_subtool("Anti duplicates");
 
 		set_mode:
@@ -135,7 +135,7 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolValidateCheckSum() : bool {
+	public function tool_validate_check_sum() : bool {
 		$this->ave->set_subtool("Validate checksum");
 
 		set_mode:
@@ -235,7 +235,7 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolRandomFileGenerator() : bool {
+	public function tool_random_file_generator() : bool {
 		$this->ave->set_subtool("Random file generator");
 
 		$write_buffer = $this->ave->get_write_buffer();
@@ -362,7 +362,7 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolOverwriteFoldersContent() : bool {
+	public function tool_overwrite_folders_content() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Overwrite folders content");
 
@@ -427,7 +427,7 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolMoveFilesWithStructure() : bool {
+	public function tool_move_files_with_structure() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Move files with structure");
 
@@ -506,7 +506,7 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolCopyFilesWithStructure() : bool {
+	public function tool_copy_files_with_structure() : bool {
 		$this->ave->clear();
 		$this->ave->set_subtool("Copy files with structure");
 
@@ -585,7 +585,7 @@ class FileFunctions {
 		return false;
 	}
 
-	public function ToolCloneFilesWithStructure() : bool {
+	public function tool_clone_files_with_structure() : bool {
 		$this->ave->set_subtool("Clone files with structure");
 
 		set_mode:
