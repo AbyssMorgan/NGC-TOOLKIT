@@ -1,3 +1,7 @@
+v2.2.2:
+- Linux support improvements and fixes
+- Updated tool: Media Tools > Video: Fetch media info: Added output folder setup
+
 v2.2.0:
 - Update AVE-UTILITIES v1.1.0:
 1) Update PHP to v8.3.7
