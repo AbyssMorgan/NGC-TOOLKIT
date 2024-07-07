@@ -19,6 +19,7 @@
 	require_once("$includes_path/avecore/IniFile.php");
 	require_once("$includes_path/avecore/Core.php");
 	require_once("$includes_path/avecore/MySQL.php");
+	require_once("$includes_path/avecore/Migration.php");
 	require_once("$includes_path/avecore/Request.php");
 	require_once("$includes_path/avecore/FtpService.php");
 	require_once("$includes_path/avecore/BitFunctions.php");

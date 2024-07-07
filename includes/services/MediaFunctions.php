@@ -49,10 +49,10 @@ class MediaFunctions {
 		$image = $this->get_image_from_path($path);
 		if(!$image){
 			try {
-				$image = new Imagick($path);
-				$w = $image->getImageWidth();
-				$h = $image->getImageHeight();
-				$image->clear();
+				@$image = new Imagick($path);
+				$w = @$image->getImageWidth();
+				$h = @$image->getImageHeight();
+				@$image->clear();
 				return $w."x".$h;
 			}
 			catch(Exception $e){
