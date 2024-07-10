@@ -27,7 +27,7 @@ class AVE extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "AVE-PHP";
-	public string $version = "2.2.3";
+	public string $version = "2.2.4";
 
 	private array $folders_to_scan = [
 		'bin',

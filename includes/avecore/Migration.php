@@ -1,5 +1,7 @@
 <?php
 
+/* AVE-PHP v2.2.4 */
+
 declare(strict_types=1);
 
 namespace AveCore;
@@ -17,7 +19,7 @@ class Migration extends MySQL {
 
 	public function table_exists(string $table) : bool {
 		$result = $this->query("SHOW TABLES LIKE '$table'");
-		return ($result && $result->rowCount() == 1);
+		return $result && $result->rowCount() == 1;
 	}
 
 	public function migrate() : void {

@@ -1,6 +1,6 @@
 <?php
 
-/* AVE-PHP v2.2.2 */
+/* AVE-PHP v2.2.4 */
 
 declare(strict_types=1);
 
