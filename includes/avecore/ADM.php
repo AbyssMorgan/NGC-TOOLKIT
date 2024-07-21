@@ -16,8 +16,8 @@ class ADM {
 	private bool $is_changed;
 	private array $allocation;
 
-	const ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
-	const ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
+	const string ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
+	const string ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
 	
 	public function __construct(){
 		$this->container = new BinaryFile();
@@ -33,7 +33,7 @@ class ADM {
 
 	public function open(string $path) : bool {
 		if($this->is_open_index) return false;
-		$index_file = pathinfo($path, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_FILENAME)."-index.adm";		
+		$index_file = pathinfo($path, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($path, PATHINFO_FILENAME)."-index.adm";
 		if(!$this->index->open($index_file)) return false;
 		$this->is_open_index = true;
 		$this->path = $path;
@@ -136,10 +136,10 @@ class ADM {
 	public function save_index(bool $force = false) : bool {
 		if(!$this->is_open()) return false;
 		if(!$this->is_changed && !$force) return true;
-		$data = gzcompress(json_encode($this->allocation));
+		$data = gzcompress(json_encode($this->allocation), 9);
 		if($this->index->write($data, strlen(self::ADM_HEADER_INDEX), strlen(bin2hex($data)) / 2) === false) return false;
 		$this->is_changed = false;
-		return true;		
+		return true;
 	}
 
 	public function get_index() : array|false {

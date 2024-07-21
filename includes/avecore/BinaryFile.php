@@ -51,6 +51,7 @@ class BinaryFile {
 
 	public function read(int $offset = 0, ?int $length = null) : string|false {
 		if(is_null($this->file)) return false;
+		clearstatcache(true, $this->path);
 		fseek($this->file, $offset);
 		if(is_null($length)) $length = filesize($this->path) - $offset;
 		if($length <= 0) return "";
