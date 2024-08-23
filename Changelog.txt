@@ -1,3 +1,6 @@
+v2.2.5:
+- Fixes
+
 v2.2.2:
 - Linux support improvements and fixes
 - Updated tool: Media Tools > Video: Fetch media info: Added output folder setup

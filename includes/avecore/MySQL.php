@@ -13,9 +13,10 @@ use PDOStatement;
 class MySQL {
 
 	public ?PDO $db;
+	private bool $debug = false;
 
-	function __construct(){
-
+	function __construct(bool $debug = false){
+		$this->debug = $debug;
 	}
 	
 	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
@@ -33,6 +34,10 @@ class MySQL {
 			return false;
 		}
 		return true;
+	}
+
+	public function toggle_debug(bool $toggle) : void {
+		$this->debug = $toggle;
 	}
 
 	public function disconnect() : void {
@@ -56,6 +61,7 @@ class MySQL {
 	}
 
 	public function query(string $query, ?int $fetchMode = null) : PDOStatement|false {
+		if($this->debug) echo " [MySQL] $query\r\n";
 		return $this->db->query($query, $fetchMode);
 	}
 

@@ -245,9 +245,15 @@ class MediaFunctions {
 	}
 
 	public function get_image_color_count(string $path) : int|null {
-		$image = new Imagick($path);
-		if(!$image->valid()) return null;
-		return $image->getImageColors();
+		if(!file_exists($path)) return -1;
+		try {
+			$image = new Imagick($path);
+			if(!$image->valid()) return null;
+			return $image->getImageColors();
+		}
+		catch(Exception $e){
+			return -1;
+		}
 	}
 
 	public function get_image_color_group(int $colors) : string {

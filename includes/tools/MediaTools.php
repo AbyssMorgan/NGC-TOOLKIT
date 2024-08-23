@@ -419,7 +419,7 @@ class MediaTools {
 					'fps' => $fps,
 					'codec' => $codec,
 				]);
-				if($new % 25 == 0) $cache->save();
+				if($new > 0 && $new % 25 == 0) $cache->save();
 				$this->ave->write_log("FETCH MEDIA INFO \"$file\"");
 			}
 			$meta = [

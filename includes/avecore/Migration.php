@@ -12,14 +12,17 @@ class Migration extends MySQL {
 
 	protected string $table_version = 'ave_version';
 	protected string $table_config = 'ave_config';
+	protected array $tables = [];
 
 	public function __construct(){
 		parent::__construct();
 	}
 
 	public function table_exists(string $table) : bool {
+		if(isset($this->tables[$table])) return $this->tables[$table];
 		$result = $this->query("SHOW TABLES LIKE '$table'");
-		return $result && $result->rowCount() == 1;
+		$this->tables[$table] = ($result && $result->rowCount() == 1);
+		return $this->tables[$table];
 	}
 
 	public function migrate() : void {
@@ -32,6 +35,7 @@ class Migration extends MySQL {
 					PRIMARY KEY (`id`)
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 			");
+			$this->tables[$this->table_version] = true;
 		}
 
 		$version = $this->get_version($this->table_config, false);
@@ -45,6 +49,7 @@ class Migration extends MySQL {
 				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 			");
 			$this->set_version($this->table_config, 1);
+			$this->tables[$this->table_config] = true;
 		}
 	}
 
