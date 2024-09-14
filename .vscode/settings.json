@@ -1,11 +1,14 @@
 {
 	"files.associations": {
-		"*.ave-php": "php",
+		"*.ngcs": "php",
 	},
 	"editor.insertSpaces": false,
 	"php.stubs": [
 		"*",
 		"imagick"
 	],
-	"php.version": "8.3"
+	"php.version": "8.3",
+	"php.problems.exclude": {
+		"/": [7001,7103]
+	}
 }

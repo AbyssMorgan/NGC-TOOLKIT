@@ -1,9 +1,9 @@
-## AVE-PHP
+## NGC-TOOLKIT
 Windows console tool for media
 
 #### Functionality and how to use
-- [How to install](https://github.com/AbyssMorgan/AVE-PHP/wiki/HowToInstall)
-- [Wiki](https://github.com/AbyssMorgan/AVE-PHP/wiki)
+- [How to install](https://github.com/AbyssMorgan/NGC-TOOLKIT/wiki/HowToInstall)
+- [Wiki](https://github.com/AbyssMorgan/NGC-TOOLKIT/wiki)
 
 #### Requirements (Windows)
 - Operating system: Windows 7, 8, 8.1, 10, 11

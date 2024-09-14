@@ -1,5 +1,5 @@
 Setup/*.exe
 Setup/*.gz
-AVE-PHP-CRASH-*.txt
+NGC-TOOLKIT-CRASH-*.txt
 sync.ffs_db
 composer.lock

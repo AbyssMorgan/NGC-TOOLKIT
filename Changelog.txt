@@ -1,3 +1,6 @@
+v2.3.0:
+- Updated tool "Media Tools > Video: Fetch media info" changed default file name from "AveMediaInfo" to "MediaInfo"
+
 v2.2.5:
 - Fixes
 
@@ -6,7 +9,7 @@ v2.2.2:
 - Updated tool: Media Tools > Video: Fetch media info: Added output folder setup
 
 v2.2.0:
-- Update AVE-UTILITIES v1.1.0:
+- Update NGC-UTILITIES v1.1.0:
 1) Update PHP to v8.3.7
 2) Update 7Z to v23.01
 3) Update ffmpeg to version 2024-05-16 12:54
@@ -21,7 +24,7 @@ v2.1.0:
 - Added tool: Directory Names Editor > Remove keywords from directory name
 - Added tool: Directory Names Editor > Insert string into directory name
 - Added tool: Directory Names Editor > Replace keywords in directory name
-- Rebuild AveCore and separated libraries that can be used without AVE-PHP
+- Rebuild NGC\Core and separated libraries that can be used without NGC-TOOLKIT
 
 v2.0.1:
 - Improved tool: File Functions > Anti Duplicates (added mode a3 and b3 - detect duplicates and write logs only)
@@ -34,8 +37,8 @@ v2.0.0:
 - Fixed FTP Tools > Import FileZilla XML (Now you can import xml with single server)
 
 v1.9.6:
-- Tool: Generate video: CheckSum/Resolution/Thumbnail now can generate checksum for audio defined by AVE_EXTENSIONS_AUDIO
-- Added compression .ave-guard in tool Check File Integrity
+- Tool: Generate video: CheckSum/Resolution/Thumbnail now can generate checksum for audio defined by EXTENSIONS_AUDIO
+- Added compression .ngc-guard in tool Check File Integrity
 - Replace FTP command mlsd to rawlist due to lack support of some FTP servers
 
 v1.9.5:
@@ -52,15 +55,15 @@ v1.9.3:
 
 v1.9.2:
 - Compatibility updates for Linux operating system
-- Added config AVE_OPEN_FILE_BINARY
-- Move config to %LOCALAPPDATA%\AVE-PHP
+- Added config OPEN_FILE_BINARY
+- Move config to %LOCALAPPDATA%\NGC-TOOLKIT
 
 v1.9.1:
 - Improved media quality detection
-- Added config AVE_COMPRESS_LEVEL_WEBP, AVE_COMPRESS_LEVEL_PNG, AVE_COMPRESS_LEVEL_JPEG, AVE_COMPRESS_LEVEL_GIF
+- Added config COMPRESS_LEVEL_WEBP, COMPRESS_LEVEL_PNG, COMPRESS_LEVEL_JPEG, COMPRESS_LEVEL_GIF
 
 v1.9.0:
-- Added capturing extra arguments for .ave-php scripts (this feature need reinstall .ave-php script support)
+- Added capturing extra arguments for .ngcs scripts (this feature need reinstall .ngcs script support)
 - Added tool: FTP Tools > Configure connection
 - Added tool: FTP Tools > Remove connection
 - Added tool: FTP Tools > Open config folder
@@ -76,16 +79,16 @@ v1.9.0:
 - Added tool: Media Sorter > Sort Folders: Items quantity (First parent)
 - Improved tool: Media Sorter > Sort Images: Colors count (Added more groups)
 - Improved tool: Media Tools > Video: Fetch media info (Save .csv results and .ini cache in input directory)
-- Improved tool: File Functions > Anti Duplicates (Implement AVE_IGNORE_VALIDATE_EXTENSIONS and AVE_IGNORE_VALIDATE_FILES)
-- Improved tool: File Names Editor > CheckSum (Implement AVE_IGNORE_VALIDATE_EXTENSIONS and AVE_IGNORE_VALIDATE_FILES)
+- Improved tool: File Functions > Anti Duplicates (Implement IGNORE_VALIDATE_EXTENSIONS and IGNORE_VALIDATE_FILES)
+- Improved tool: File Names Editor > CheckSum (Implement IGNORE_VALIDATE_EXTENSIONS and IGNORE_VALIDATE_FILES)
 - Improved tool: MySQL Tools > Fetch data base info (Analyze table before fetch informations)
 - Improved tool: MySQL Tools > Compare data base info (Analyze table before fetch informations)
-- Merged config AVE_QUALITY_SUFFIX_HORIZONTAL, AVE_QUALITY_SUFFIX_SQUARE, AVE_QUALITY_SUFFIX_VERTICAL into AVE_QUALITY_SUFFIX
-- Removed config param AVE_FILE_COUNT_FORMAT, AVE_BACKUP_MAX_ALLOWED_PACKET
+- Merged config QUALITY_SUFFIX_HORIZONTAL, QUALITY_SUFFIX_SQUARE, QUALITY_SUFFIX_VERTICAL into QUALITY_SUFFIX
+- Removed config param FILE_COUNT_FORMAT, BACKUP_MAX_ALLOWED_PACKET
 - Fixes and optimizations
 
 v1.8.0:
-- Added tool: Help > Install .ave-php script support (administrator required). After install this feature you can execute PHP scripts by change extension into .ave-php
+- Added tool: Help > Install .ngcs script support (administrator required). After install this feature you can execute PHP scripts by change extension into .ngcs
 - Added tool: Media Sorter > Sort Media: Duration
 - Added tool: File Names Editor > Replace keywords in file name
 - Added tool: MySQL Tools > Fetch data base info
@@ -128,8 +131,7 @@ v1.7.0:
 - Updated tool: File Names Editor > Remove keywords from file name: Trim name after remove all keywords
 
 v1.6.0:
-- Now AVE-PHP is separated into AVE-PHP and AVE-UTILITIES Setup (AVE-UTILITIES contains binaries that dont need update every time)
-- Merged CommandLine service into AveCore V3
+- Now NGC-TOOLKIT is separated into NGC-TOOLKIT and NGC-UTILITIES Setup (NGC-UTILITIES contains binaries that dont need update every time)
 - Improve performance for MySQL Tools > Make backup and MySQL Tools > Clone DB1 to DB2
 - MySQL Tools: When an error is occurred during the backup, the table will be skipped with an error entry
 - MySQL Tools: Changed params order for connection setup
@@ -139,8 +141,8 @@ v1.6.0:
 - Added tool: MySQL Tools > Backup selected tables
 - Added tool: Help
 - Added tool: File Functions > Random file generator
-- Removed config param AVE_MAX_MEMORY_LIMIT now AVE-PHP will be work without memory limit
-- Added missing config in documentation AVE_COLOR
+- Removed config param MAX_MEMORY_LIMIT now NGC-TOOLKIT will be work without memory limit
+- Added missing config in documentation COLOR
 - Added ability to set tool and sub tool at once by typing <tool id>.<sub tool id> example if you type 0 0 then press any key then you will be redirected to File Names Editor > Generate names: CheckSum
 - Added flags into tool: File Names Editor > Pretty file name (New flags: Replace language characters, Chinese to PinYin, Hiragama to Romaji, Katakana to Romaji)
 
@@ -157,8 +159,7 @@ v1.5.1:
 
 v1.5.0:
 - Improve navigation (don't exit app after operation)
-- Move config to %LOCALAPPDATA%\AVE
-- Overwrite user config for keys AVE_LOG_FOLDER, AVE_DATA_FOLDER, AVE_EXTENSIONS_AUDIO
+- Overwrite user config for keys LOG_FOLDER, DATA_FOLDER, EXTENSIONS_AUDIO
 - Added option for open config folder
 
 v1.4.5:
@@ -177,7 +178,6 @@ v1.4.2:
 v1.4.1:
 - Added tool: MySQL Tools > Clone DB1 to DB2 (overwrite)
 - Fixes and improvements for MySQL Tools
-- Fixes set path on AVE-PHP.cmd
 
 v1.4.0:
 - Fixes and improvements for Check File Integrity
@@ -202,7 +202,7 @@ File Names Editor > Remove YouTube quality tag
 File Names Editor > Series episode editor
 - Directory Functions > Clone folder structure
 - Check for updates
-- Added new params to config AVE_LOG_EVENT, AVE_LOG_ERROR, AVE_IGNORE_VALIDATE_EXTENSIONS, AVE_EXTENSIONS_VIDEO_FOLLOW, AVE_EXTENSIONS_AUDIO
+- Added new params to config LOG_EVENT, LOG_ERROR, IGNORE_VALIDATE_EXTENSIONS, EXTENSIONS_VIDEO_FOLLOW, EXTENSIONS_AUDIO
 - Fixes
 
 v1.2.0:
