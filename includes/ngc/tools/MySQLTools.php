@@ -525,8 +525,6 @@ class MySQLTools {
 		$output = $backup->get_output();
 		if($ini->get('BACKUP_COMPRESS', false)){
 			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
-		} else {
-			$this->core->open_file($output);
 		}
 
 		$this->core->open_logs(true);
@@ -1026,8 +1024,6 @@ class MySQLTools {
 		$output = $backup->get_output();
 		if($ini->get('BACKUP_COMPRESS', false)){
 			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
-		} else {
-			$this->core->open_file($output);
 		}
 
 		$this->core->echo(" Backup for \"$label\" done");
@@ -1208,12 +1204,10 @@ class MySQLTools {
 			$this->core->echo(" Compress backup into \"$output.7z\" success");
 			$this->core->write_log("Compress backup into \"$output.7z\" success");
 			$this->core->rrmdir($output);
-			$this->core->open_file($backup_path);
 		} else {
 			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
 			$this->core->echo(" Compress backup into \"$output.7z\" fail");
 			$this->core->write_log("Compress backup into \"$output.7z\" fail");
-			$this->core->open_file($output);
 		}
 	}
 
@@ -1324,8 +1318,6 @@ class MySQLTools {
 		$output = $backup->get_output();
 		if($compress){
 			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
-		} else {
-			$this->core->open_file($output);
 		}
 
 		$this->core->open_logs(true);

@@ -128,7 +128,7 @@ class MediaSorter {
 				if(in_array($extension, $image_extensions)){
 					$resolution = $this->core->media->get_image_resolution($file);
 				} else {
-					$resolution = $this->core->media->get_video_resolution($file);
+					$resolution = $this->core->media->ffprobe_get_resolution($file);
 				}
 				if($resolution == '0x0'){
 					$this->core->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -442,14 +442,19 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$duration = $this->core->media->get_video_duration_seconds($file);
-				$multiplier = floor($duration / $interval);
+				$meta = $this->core->media->get_media_info_simple($file);
+				if(!$meta){
+					$this->core->write_error("FAILED GET MEDIA INFO \"$file\"");
+					$errors++;
+					continue;
+				}
+				$multiplier = floor($meta->video_duration / $interval);
 				if($multiplier == 0){
 					$start = '00_00';
 				} else {
-					$start = str_replace(":", "_", $this->core->media->sec_to_time(intval($interval * $multiplier) + 1));
+					$start = str_replace(":", "_", $this->core->seconds_to_time(intval($interval * $multiplier) + 1));
 				}
-				$end = str_replace(":", "_", $this->core->media->sec_to_time(intval($interval * ($multiplier + 1))));
+				$end = str_replace(":", "_", $this->core->seconds_to_time(intval($interval * ($multiplier + 1))));
 				$directory = "$folder/$start - $end";
 				$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
 				if($this->core->rename($file, $new_name)){

@@ -383,20 +383,19 @@ class MediaTools {
 				}
 			} else {
 				$new++;
-				$resolution = $this->core->media->get_video_resolution($file);
-				if($resolution == '0x0'){
-					$this->core->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
+				$meta = $this->core->media->get_media_info_simple($file);
+				if(!$meta){
+					$this->core->write_error("FAILED GET MEDIA INFO \"$file\"");
 					$errors++;
 					continue;
 				}
-				$size = explode('x', $resolution);
-				$orientation = $this->core->media->get_media_orientation(intval($size[0]), intval($size[1]));
-				$quality = $this->core->media->get_media_quality(intval($size[0]), intval($size[1]), true).$this->core->config->get('QUALITY_SUFFIX');
-				$duration = $this->core->media->get_video_duration($file);
-				$file_size = $this->core->format_bytes(filesize($file));
-				$orientation_name = $this->core->media->get_media_orientation_name($orientation);
-				$fps = $this->core->media->get_video_fps($file);
-				$codec = $this->core->media->get_video_codec($file);
+				$resolution = $meta->video_resolution;
+				$quality = $meta->video_quality;
+				$duration = $meta->video_duration;
+				$file_size = $meta->file_size_human;
+				$orientation_name = $meta->video_orientation;
+				$fps = $meta->video_fps;
+				$codec = $meta->video_codec;
 				if(file_exists("$file.md5")){
 					$checksum = file_get_contents("$file.md5");
 				} else if($generate_checksum){

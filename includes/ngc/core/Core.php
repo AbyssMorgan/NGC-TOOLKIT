@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.0 */
+/* NGC-TOOLKIT v2.3.1 */
 
 declare(strict_types=1);
 
@@ -241,6 +241,45 @@ class Core {
 		}
 		return 0;
 	}
+
+	public function seconds_to_time(int $seconds, bool $force_hours = false, bool $with_days = false) : string {
+		if($with_days){
+			$days = intval(floor($seconds / 86400));
+			$seconds -= ($days * 86400);
+		} else {
+			$days = 0;
+		}
+		$hours = intval(floor($seconds / 3600));
+		$seconds -= ($hours * 3600);
+		$minutes = intval(floor($seconds / 60));
+		$seconds -= ($minutes * 60);
+		if($days > 0){
+			return sprintf("%d:%02d:%02d:%02d", $days, $hours, $minutes, $seconds);
+		} else if($hours > 0 || $force_hours){
+			return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
+		} else {
+			return sprintf("%02d:%02d", $minutes, $seconds);
+		}
+	}
+
+	public function time_to_seconds(string $time) : int {
+		$parts = explode(':', $time);
+		$count = count($parts);
+		if($count == 4){
+			list($days, $hours, $minutes, $seconds) = $parts;
+			return ($days * 86400) + ($hours * 3600) + ($minutes * 60) + $seconds;
+		}
+		if($count == 3){
+			list($hours, $minutes, $seconds) = $parts;
+			return ($hours * 3600) + ($minutes * 60) + $seconds;
+		}
+		if($count == 2){
+			list($minutes, $seconds) = $parts;
+			return ($minutes * 60) + $seconds;
+		}
+		return 0;
+	}
+	
 
 	public function is_folder_empty(string $path) : bool {
 		if(!file_exists($path)) return true;

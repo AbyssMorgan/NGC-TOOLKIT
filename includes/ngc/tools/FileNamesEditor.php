@@ -385,7 +385,7 @@ class FileNamesEditor {
 					$hash = null;
 				}
 				if($this->params['resolution'] && in_array($extension, $video_extensions)){
-					$resolution = $this->core->media->get_video_resolution($file);
+					$resolution = $this->core->media->ffprobe_get_resolution($file);
 					if($resolution == '0x0'){
 						$this->core->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
 						$errors++;
@@ -464,9 +464,10 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		$video_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO'));
+		$follow_extensions = ['srt', 'ass', 'vtt'];
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->core->get_files($folder, $video_extensions);
+			$files = $this->core->get_files($folder, array_merge($video_extensions, $follow_extensions));
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){

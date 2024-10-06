@@ -55,7 +55,7 @@ class MediaFunctions {
 				return $w."x".$h;
 			}
 			catch(Exception $e){
-				return $this->get_video_resolution($path);
+				return $this->ffprobe_get_resolution($path);
 			}
 		}
 		$w = imagesx($image);
@@ -75,13 +75,16 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
+	/**
+	 * @deprecated Use `get_media_info()` instead.
+	 */
 	public function get_video_info(string $path): array {
-		$output = [];
-		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>".$this->core->get_output_null(), $output);
-		$info = json_decode(implode('', $output), true);
-		return $info;
+		return $this->get_media_info($path);
 	}
 
+	/**
+	 * @deprecated Use `get_media_info_simple()` instead.
+	 */
 	public function get_video_fps(string $path) : float {
 		$output = [];
 		$this->core->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>".$this->core->get_output_null(), $output);
@@ -89,24 +92,40 @@ class MediaFunctions {
 		return $fps;
 	}
 
+	/**
+	 * @deprecated Use `get_media_info_simple()` instead.
+	 */
 	public function get_video_codec(string $path) : string {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
 		return trim($output[0]);
 	}
 
+	/**
+	 * @deprecated Use `get_media_info_simple()` instead.
+	 */
 	public function get_video_resolution(string $path) : string {
+		return $this->ffprobe_get_resolution($path);
+	}
+
+	public function ffprobe_get_resolution(string $path) : string {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>".$this->core->get_output_null(), $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
+	/**
+	 * @deprecated Use `get_media_info()` instead.
+	 */
 	public function get_video_color_primaries(string $path): string {
 		$output = [];
 		$this->core->exec("ffprobe","-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
 		return trim($output[0] ?? '');
 	}
 
+	/**
+	 * @deprecated Use `get_media_info_simple()` instead.
+	 */
 	public function get_video_duration(string $path) : string {
 		$output = [];
 		$this->core->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>".$this->core->get_output_null(), $output);
@@ -116,6 +135,9 @@ class MediaFunctions {
 		return sprintf("%02d:%02d:%02d", $h, $m, $s);
 	}
 
+	/**
+	 * @deprecated Use `get_media_info_simple()` instead.
+	 */
 	public function get_video_duration_seconds(string $path) : int {
 		$output = [];
 		$this->core->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>".$this->core->get_output_null(), $output);
@@ -136,6 +158,9 @@ class MediaFunctions {
 		return $data;
 	}
 
+	/**
+	 * @deprecated Use `get_media_info_simple()` instead.
+	 */
 	public function get_audio_channels(string $path) : int {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -select_streams a:0 -show_entries stream=channels -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
@@ -168,20 +193,11 @@ class MediaFunctions {
 		}
 	}
 
-	public function sec_to_time(int $s) : string {
-		$d = intval(floor($s / 86400));
-		$s -= ($d * 86400);
-		$h = intval(floor($s / 3600));
-		$s -= ($h * 3600);
-		$m = intval(floor($s / 60));
-		$s -= ($m * 60);
-		if($d > 0){
-			return sprintf("%d:%02d:%02d:%02d", $d, $h, $m, $s);
-		} else if($h > 0){
-			return sprintf("%02d:%02d:%02d", $h, $m, $s);
-		} else {
-			return sprintf("%02d:%02d", $m, $s);
-		}
+	/**
+	 * @deprecated Use `seconds_to_time()` from Core instead.
+	 */
+	public function sec_to_time(int $seconds) : string {
+		return $this->core->media->seconds_to_time($seconds, true);
 	}
 
 	public function get_video_thumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
@@ -316,6 +332,88 @@ class MediaFunctions {
 			if(strpos("$name#", "{$tag}_ALPHA#") !== false) return true;
 		}
 		return false;
+	}
+
+	public function calculate_aspect_ratio(int $width, int $height) : string {
+		$gcd = function($a, $b) use (&$gcd) : mixed {
+			return ($b == 0) ? $a : $gcd($b, $a % $b);
+		};
+		$divisor = $gcd($width, $height);
+		$aspectRatioWidth = $width / $divisor;
+		$aspectRatioHeight = $height / $divisor;
+		return "$aspectRatioWidth:$aspectRatioHeight";
+	}
+
+	public function get_audio_channels_string(int $channels) : string {
+		switch($channels){
+			case 6: return '5.1';
+			case 2: return 'Stereo';
+			case 1: return 'Mono';
+			case 0: return 'None';
+		}
+		return 'Unknown';
+	}
+
+	public function get_media_info(string $path): array {
+		$output = [];
+		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>".$this->core->get_output_null(), $output);
+		$info = json_decode(implode('', $output), true);
+		return $info;
+	}
+
+	public function get_media_info_simple(string $path) : object|false {
+		if(!file_exists($path)) return false;
+		$media_info = $this->get_media_info($path);
+		$video_duration_seconds = intval(ceil(floatval($media_info['format']['duration'])));
+		$file_size = filesize($path);
+		$meta = [
+			'video_resolution' => null,
+			'video_quality' => 0,
+			'video_duration' => $this->core->seconds_to_time($video_duration_seconds, true),
+			'video_duration_seconds' => $video_duration_seconds,
+			'video_fps' => null,
+			'video_bitrate' => $media_info['format']['bit_rate'],
+			'video_codec' => null,
+			'video_aspect_ratio' => null,
+			'video_orientation' => null,
+			'audio_codec' => null,
+			'audio_bitrate' => 0,
+			'audio_channels' => 0,
+			'file_size' => $file_size,
+			'file_size_human' => $this->core->format_bytes($file_size),
+			'file_creation_time' => date("Y-m-d H:i:s", filectime($path)),
+			'file_modification_time' => date("Y-m-d H:i:s", fileatime($path)),
+		];
+		$need_audio = true;
+		foreach($media_info['streams'] as $stream){
+			switch($stream['codec_type']){
+				case 'video': {
+					if(($stream['disposition']['attached_pic'] ?? 0) == 1) continue 2;
+					$width = intval($stream['width']);
+					$height = intval($stream['height']);
+					$meta['video_resolution'] = "{$stream['width']}x{$stream['height']}";
+					$is_vr = $this->core->media->is_vr_video($path);
+					$is_ar = $this->core->media->is_ar_video($path);
+					$meta['video_quality'] = $this->core->media->get_media_quality($width, $height, $is_vr || $is_ar);
+					$orientation = $this->core->media->get_media_orientation($width, $height);
+					$meta['video_orientation'] = $this->core->media->get_media_orientation_name($orientation);
+					eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $stream['r_frame_rate'])).';');
+					$meta['video_fps'] = round($fps, 4);
+					$meta['video_codec'] = $stream['codec_name'] ?? null;
+					$meta['video_aspect_ratio'] = $this->calculate_aspect_ratio($stream['width'], $stream['height']);
+					break;
+				}
+				case 'audio': {
+					if(!$need_audio) continue 2;
+					$need_audio = false;
+					$meta['audio_codec'] = $stream['codec_name'] ?? null;
+					$meta['audio_bitrate'] = $stream['bit_rate'] ?? ($stream['tags']['BPS'] ?? null);
+					$meta['audio_channels'] = $stream['channels'];
+					break;
+				}
+			}
+		}
+		return (object)$meta;
 	}
 
 }

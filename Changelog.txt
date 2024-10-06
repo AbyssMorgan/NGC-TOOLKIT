@@ -1,3 +1,6 @@
+v2.3.1:
+- Improved MediaFunctions extension
+
 v2.3.0:
 - Updated tool "Media Tools > Video: Fetch media info" changed default file name from "AveMediaInfo" to "MediaInfo"
 
