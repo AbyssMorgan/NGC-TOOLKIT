@@ -317,6 +317,8 @@ class MediaTools {
 			goto set_input;
 		}
 		$output = $input;
+		
+		$file_name = 'MediaInfo';
 
 		set_output:
 		$line = $this->core->get_input(" Output (Empty, same as input): ");
@@ -328,7 +330,6 @@ class MediaTools {
 				$this->core->echo(" Invalid output folder");
 				goto set_output;
 			}
-			$file_name = 'MediaInfo';
 
 			$line = $this->core->get_input(" File name (Empty, default): ");
 			if($line == '#') return false;
