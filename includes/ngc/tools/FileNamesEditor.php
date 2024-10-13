@@ -427,18 +427,13 @@ class FileNamesEditor {
 					$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
 						if(file_exists("$file.$a")){
-							if(!$this->core->rename("$file.$a","$new_name.$a")) $errors++;
+							if(!$this->core->rename("$file.$a", "$new_name.$a")) $errors++;
 						}
-					}
-				}
-
-				$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.srt");
-				$name_new = $this->core->get_path("$directory/$name.srt");
-				if($renamed && file_exists($name_old)){
-					if($this->core->rename($name_old, $name_new)){
-						$renamed = true;
-					} else {
-						$errors++;
+						$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
+						$name_new = $this->core->get_path("$directory/$name.$a");
+						if(file_exists($name_old)){
+							if(!$this->core->rename($name_old, $name_new)) $errors++;
+						}
 					}
 				}
 				$this->core->progress($items, $total);

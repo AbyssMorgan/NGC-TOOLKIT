@@ -29,7 +29,7 @@ class Toolkit extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.3.1";
+	public string $version = "2.3.2";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 

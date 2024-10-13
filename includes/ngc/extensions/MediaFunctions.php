@@ -119,7 +119,7 @@ class MediaFunctions {
 	 */
 	public function get_video_color_primaries(string $path): string {
 		$output = [];
-		$this->core->exec("ffprobe","-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
+		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
 		return trim($output[0] ?? '');
 	}
 
@@ -204,7 +204,7 @@ class MediaFunctions {
 		$out = [];
 		if(!$this->core->windows && !file_exists("/usr/bin/mtn")) return false;
 		$input_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
-		$output_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_BASENAME).".webp");
+		$output_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_FILENAME).".webp");
 		if(file_exists($output_file)) return true;
 		if(!file_exists($input_file)){
 			$this->core->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >".$this->core->get_output_null()." 2>".$this->core->get_output_null(), $out);
@@ -236,10 +236,10 @@ class MediaFunctions {
 		return 'Unknown';
 	}
 
-	public function get_media_quality(int $width, int $height, bool $is_video = false) : string {
+	public function get_media_quality(int $width, int $height, bool $is_vr = false) : string {
 		$w = max($width, $height);
 		$h = min($width, $height);
-		if($is_video && $w / $h == 2) return strval($h);
+		if($is_vr) return strval($h);
 		if($w >= 61440 - 7680 || $h == 34560){
 			return '34560';
 		} else if($w >= 30720 - 3840 || $h == 17280){
@@ -376,7 +376,7 @@ class MediaFunctions {
 			'video_codec' => null,
 			'video_aspect_ratio' => null,
 			'video_orientation' => null,
-			'audio_codec' => null,
+			'audio_codec' => 'none',
 			'audio_bitrate' => 0,
 			'audio_channels' => 0,
 			'file_size' => $file_size,

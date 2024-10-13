@@ -137,7 +137,9 @@ class MediaSorter {
 					continue 1;
 				}
 				$size = explode("x", $resolution);
-				$quality = $this->core->media->get_media_quality(intval($size[0]), intval($size[1]), in_array($extension, $video_extensions)).$this->core->config->get('QUALITY_SUFFIX');
+				$is_vr = $this->core->media->is_vr_video($file);
+				$is_ar = $this->core->media->is_ar_video($file);
+				$quality = $this->core->media->get_media_quality(intval($size[0]), intval($size[1]), $is_vr || $is_ar).$this->core->config->get('QUALITY_SUFFIX');
 				$orientation_name = $this->core->media->get_media_orientation_name($this->core->media->get_media_orientation(intval($size[0]), intval($size[1])));
 				if($this->params['resolution'] && $this->params['quality']){
 					$directory = "$folder/$orientation_name/$quality";
@@ -448,7 +450,7 @@ class MediaSorter {
 					$errors++;
 					continue;
 				}
-				$multiplier = floor($meta->video_duration / $interval);
+				$multiplier = floor($meta->video_duration_seconds / $interval);
 				if($multiplier == 0){
 					$start = '00_00';
 				} else {
@@ -470,12 +472,10 @@ class MediaSorter {
 						if(file_exists("$file.$a")){
 							if(!$this->core->rename("$file.$a", "$new_name.$a")) $errors++;
 						}
-					}
-					$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.srt");
-					$name_new = $this->core->get_path("$directory/$name.srt");
-					if(file_exists($name_old)){
-						if(!$this->core->rename($name_old, $name_new)){
-							$errors++;
+						$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
+						$name_new = $this->core->get_path("$directory/$name.$a");
+						if(file_exists($name_old)){
+							if(!$this->core->rename($name_old, $name_new)) $errors++;
 						}
 					}
 				}

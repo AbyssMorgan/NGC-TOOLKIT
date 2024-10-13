@@ -875,7 +875,7 @@ class FtpTools {
 
 		$xml = file_get_contents($this->core->get_path($input));
 
-		$xml = str_replace(["\r","\n","\t"], '', $xml);
+		$xml = str_replace(["\r", "\n", "\t"], '', $xml);
 		$xml = preg_replace('/<Folder [^>]+>[^>]+>/', '<Folder><Server>', $xml);
 		$xml = str_replace(['<Folder>', '</Folder>', '<Servers>', '</Servers>'], '', $xml);
 		$xml = @simplexml_load_string($xml);
