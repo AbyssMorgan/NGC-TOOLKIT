@@ -305,6 +305,7 @@ class Core {
 			if(!$fp) continue;
 			array_push($data, $fp);
 		}
+		asort($data, SORT_STRING);
 		return $data;
 	}
 
@@ -327,18 +328,23 @@ class Core {
 				$data = array_merge($data, $this->get_folders($file->getRealPath(), true));
 			}
 		}
+		asort($data, SORT_STRING);
 		return $data;
 	}
 
-	public function get_files_ex(string $path) : array {
+	public function get_files_ex(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
 		if(!file_exists($path)) return [];
 		$data = [];
 		$files = scandir($path);
 		foreach($files as $file){
-			if($file != '..' && $file != '.' && !is_dir("$path/$file") && !is_link("$path/$file")){
-				array_push($data, $this->get_path("$path/$file"));
-			}
+			if($file == '..' || $file == '.' || is_dir("$path/$file") || is_link("$path/$file")) continue;
+			$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+			if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
+			if(!is_null($except) && in_array($ext, $except)) continue;
+			if(!is_null($filters) && !$this->filter(pathinfo($file, PATHINFO_BASENAME), $filters)) continue;
+			array_push($data, $this->get_path("$path/$file"));
 		}
+		asort($data, SORT_STRING);
 		return $data;
 	}
 
@@ -352,6 +358,7 @@ class Core {
 				array_push($data, $full_path);
 			}
 		}
+		asort($data, SORT_STRING);
 		return $data;
 	}
 
