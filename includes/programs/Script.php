@@ -17,7 +17,7 @@ class Script extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.3.2";
+	public string $version = "2.3.3";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 	public string $script;
@@ -52,7 +52,7 @@ class Script extends Core {
 		$changed = false;
 
 		$path_config_toolkit = $this->get_path("$this->app_data/config.ini");
-		
+
 		if(!file_exists($this->app_data)) mkdir($this->app_data);
 
 		$path_config_mysql = $this->get_path("$this->app_data/MySQL");
@@ -100,7 +100,7 @@ class Script extends Core {
 		$config_default->close();
 
 		$this->init_logs();
-		
+
 		$this->app_buffer = new AppBuffer($this->get_path($this->config->get('BUFFER_FOLDER')));
 		ini_set('memory_limit', -1);
 	}

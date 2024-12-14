@@ -1,7 +1,11 @@
+v2.3.3:
+- Renamed tool "Media Tools > Ident mime type: Images" to "Media Tools > Ident mime type"
+- Updated tool "File Names Editor > Pretty file name" add flag "P" for capitalize letters
+
 v2.3.2:
 - Fixed tools releated to MediaFunctions extension
 
-v2.3.2:
+v2.3.1:
 - Improved MediaFunctions extension
 
 v2.3.0:

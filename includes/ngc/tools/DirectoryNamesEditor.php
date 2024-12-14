@@ -81,7 +81,7 @@ class DirectoryNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -146,12 +146,12 @@ class DirectoryNamesEditor {
 			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Katakana.ini"));
 		}
 		$this->core->clear();
-		
+
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->core->get_input_folders($line);
 		$this->core->setup_folders($folders);
-		
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
@@ -187,7 +187,7 @@ class DirectoryNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename_case($file, $new_name)){
+						if(!$this->core->move_case($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -238,7 +238,7 @@ class DirectoryNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}
@@ -336,7 +336,7 @@ class DirectoryNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}
@@ -351,7 +351,7 @@ class DirectoryNamesEditor {
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
-	
+
 	public function tool_insert_string_into_directory_name() : bool {
 		$this->core->set_subtool("Insert string into directory name");
 
@@ -407,7 +407,7 @@ class DirectoryNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -490,7 +490,7 @@ class DirectoryNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}

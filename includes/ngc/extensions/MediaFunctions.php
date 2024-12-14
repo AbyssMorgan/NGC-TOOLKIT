@@ -75,76 +75,10 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
-	/**
-	 * @deprecated Use `get_media_info()` instead.
-	 */
-	public function get_video_info(string $path): array {
-		return $this->get_media_info($path);
-	}
-
-	/**
-	 * @deprecated Use `get_media_info_simple()` instead.
-	 */
-	public function get_video_fps(string $path) : float {
-		$output = [];
-		$this->core->exec("ffprobe", "-v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate \"$path\" 2>".$this->core->get_output_null(), $output);
-		eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $output[0])).';');
-		return $fps;
-	}
-
-	/**
-	 * @deprecated Use `get_media_info_simple()` instead.
-	 */
-	public function get_video_codec(string $path) : string {
-		$output = [];
-		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
-		return trim($output[0]);
-	}
-
-	/**
-	 * @deprecated Use `get_media_info_simple()` instead.
-	 */
-	public function get_video_resolution(string $path) : string {
-		return $this->ffprobe_get_resolution($path);
-	}
-
 	public function ffprobe_get_resolution(string $path) : string {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>".$this->core->get_output_null(), $output);
 		return rtrim($output[0] ?? '0x0', 'x');
-	}
-
-	/**
-	 * @deprecated Use `get_media_info()` instead.
-	 */
-	public function get_video_color_primaries(string $path): string {
-		$output = [];
-		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=color_primaries -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
-		return trim($output[0] ?? '');
-	}
-
-	/**
-	 * @deprecated Use `get_media_info_simple()` instead.
-	 */
-	public function get_video_duration(string $path) : string {
-		$output = [];
-		$this->core->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>".$this->core->get_output_null(), $output);
-		$file_duration = trim($output[0]);
-		$h = $m = $s = 0;
-		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
-		return sprintf("%02d:%02d:%02d", $h, $m, $s);
-	}
-
-	/**
-	 * @deprecated Use `get_media_info_simple()` instead.
-	 */
-	public function get_video_duration_seconds(string $path) : int {
-		$output = [];
-		$this->core->exec("ffprobe", "-i \"$path\" -show_entries format=duration -v quiet -of csv=\"p=0\" -sexagesimal 2>".$this->core->get_output_null(), $output);
-		$file_duration = trim($output[0]);
-		$h = $m = $s = 0;
-		sscanf($file_duration,"%d:%d:%d", $h, $m, $s);
-		return (intval($h) * 3600) + (intval($m) * 60) + intval($s);
 	}
 
 	public function get_video_languages(string $path) : array {
@@ -158,46 +92,11 @@ class MediaFunctions {
 		return $data;
 	}
 
-	/**
-	 * @deprecated Use `get_media_info_simple()` instead.
-	 */
-	public function get_audio_channels(string $path) : int {
-		$output = [];
-		$this->core->exec("ffprobe", "-v error -select_streams a:0 -show_entries stream=channels -of default=noprint_wrappers=1:nokey=1 \"$path\" 2>".$this->core->get_output_null(), $output);
-		return (int)trim($output[0] ?? '0');
-	}
-
 	public function get_extension_by_mime_type(string $path) : string|false {
-		if(!file_exists($path)) return false;			
-		switch(exif_imagetype($path)){
-			case IMAGETYPE_GIF: return 'gif';
-			case IMAGETYPE_JPEG: return 'jpg';
-			case IMAGETYPE_PNG: return 'png';
-			case IMAGETYPE_SWF: return 'swf';
-			case IMAGETYPE_PSD: return 'psd';
-			case IMAGETYPE_BMP: return 'bmp';
-			case IMAGETYPE_TIFF_II: return 'tiff';
-			case IMAGETYPE_TIFF_MM: return 'tiff';
-			case IMAGETYPE_JPC: return 'jpc';
-			case IMAGETYPE_JP2: return 'jp2';
-			case IMAGETYPE_JPX: return 'jpx';
-			case IMAGETYPE_JB2: return 'jb2';
-			case IMAGETYPE_SWC: return 'swc';
-			case IMAGETYPE_IFF: return 'iff';
-			case IMAGETYPE_WBMP: return 'wbmp';
-			case IMAGETYPE_XBM: return 'xbm';
-			case IMAGETYPE_ICO: return 'ico';
-			case IMAGETYPE_WEBP: return 'webp';
-			case IMAGETYPE_AVIF: return 'avif';
-			default: return false;
-		}
-	}
-
-	/**
-	 * @deprecated Use `seconds_to_time()` from Core instead.
-	 */
-	public function sec_to_time(int $seconds) : string {
-		return $this->core->media->seconds_to_time($seconds, true);
+		if(!file_exists($path)) return false;
+		$mime_type = mime_content_type($path);
+		if(!$mime_type) return false;
+		return $this->mime_type_to_extension($mime_type);
 	}
 
 	public function get_video_thumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
@@ -364,7 +263,7 @@ class MediaFunctions {
 	public function get_media_info_simple(string $path) : object|false {
 		if(!file_exists($path)) return false;
 		$media_info = $this->get_media_info($path);
-		$video_duration_seconds = intval(ceil(floatval($media_info['format']['duration'])));
+		$video_duration_seconds = intval(round(floatval($media_info['format']['duration'])));
 		$file_size = filesize($path);
 		$meta = [
 			'video_resolution' => null,
@@ -382,7 +281,7 @@ class MediaFunctions {
 			'file_size' => $file_size,
 			'file_size_human' => $this->core->format_bytes($file_size),
 			'file_creation_time' => date("Y-m-d H:i:s", filectime($path)),
-			'file_modification_time' => date("Y-m-d H:i:s", fileatime($path)),
+			'file_modification_time' => date("Y-m-d H:i:s", filemtime($path)),
 		];
 		$need_audio = true;
 		foreach($media_info['streams'] as $stream){
@@ -414,6 +313,83 @@ class MediaFunctions {
 			}
 		}
 		return (object)$meta;
+	}
+
+	public function mime_type_to_extension(string $mime_type) : string|false {
+		$mime_map = [
+			'video/3gpp2' => '3g2',
+			'video/3gpp' => '3gp',
+			'application/x-7z-compressed' => '7z',
+			'audio/x-aac' => 'aac',
+			'application/vnd.android.package-archive' => 'apk',
+			'audio/aac' => 'aac',
+			'application/x-abiword' => 'abw',
+			'application/x-freearc' => 'arc',
+			'video/x-msvideo' => 'avi',
+			'application/vnd.amazon.ebook' => 'azw',
+			'image/bmp' => 'bmp',
+			'application/x-bzip' => 'bz',
+			'application/x-bzip2' => 'bz2',
+			'application/x-csh' => 'csh',
+			'text/css' => 'css',
+			'text/csv' => 'csv',
+			'application/msword' => 'doc',
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+			'application/vnd.ms-fontobject' => 'eot',
+			'application/epub+zip' => 'epub',
+			'application/gzip' => 'gz',
+			'image/gif' => 'gif',
+			'text/html' => 'html',
+			'image/vnd.microsoft.icon' => 'ico',
+			'text/calendar' => 'ics',
+			'application/java-archive' => 'jar',
+			'image/jpeg' => 'jpg',
+			'text/javascript' => 'js',
+			'application/json' => 'json',
+			'application/ld+json' => 'jsonld',
+			'audio/midi' => 'midi',
+			'audio/mpeg' => 'mp3',
+			'video/mp4' => 'mp4',
+			'video/mpeg' => 'mpeg',
+			'application/vnd.apple.installer+xml' => 'mpkg',
+			'application/vnd.oasis.opendocument.presentation' => 'odp',
+			'application/vnd.oasis.opendocument.spreadsheet' => 'ods',
+			'application/vnd.oasis.opendocument.text' => 'odt',
+			'audio/ogg' => 'oga',
+			'video/ogg' => 'ogv',
+			'application/ogg' => 'ogx',
+			'audio/opus' => 'opus',
+			'font/otf' => 'otf',
+			'image/png' => 'png',
+			'application/pdf' => 'pdf',
+			'application/x-httpd-php' => 'php',
+			'application/vnd.ms-powerpoint' => 'ppt',
+			'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
+			'application/vnd.rar' => 'rar',
+			'application/rtf' => 'rtf',
+			'application/x-sh' => 'sh',
+			'image/svg+xml' => 'svg',
+			'application/x-tar' => 'tar',
+			'image/tiff' => 'tiff',
+			'video/mp2t' => 'ts',
+			'font/ttf' => 'ttf',
+			'text/plain' => 'txt',
+			'application/vnd.visio' => 'vsd',
+			'audio/wav' => 'wav',
+			'audio/webm' => 'weba',
+			'video/webm' => 'webm',
+			'image/webp' => 'webp',
+			'font/woff' => 'woff',
+			'font/woff2' => 'woff2',
+			'application/xhtml+xml' => 'xhtml',
+			'application/vnd.ms-excel' => 'xls',
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
+			'application/xml' => 'xml',
+			'text/xml' => 'xml',
+			'application/zip' => 'zip',
+		];
+
+		return isset($mime_map[$mime_type]) ? $mime_map[$mime_type] : false;
 	}
 
 }

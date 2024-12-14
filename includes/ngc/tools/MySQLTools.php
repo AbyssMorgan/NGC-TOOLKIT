@@ -869,7 +869,7 @@ class MySQLTools {
 			return false;
 		}
 		if($ini->get('DB_NAME') == "*") $backup->get_source()->query("USE $dbname");
-		
+
 		$this->core->echo(" Create backup");
 
 		$items = $backup->get_tables();

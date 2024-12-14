@@ -92,16 +92,16 @@ class AdmFileConverter {
 			$folders = $this->core->get_input_folders($line);
 			if(!isset($folders[0])) goto set_output;
 			$output = $folders[0];
-	
+
 			if(file_exists($output) && is_dir($output)){
 				$this->core->echo(" Invalid output file");
 				goto set_output;
 			}
-	
+
 			if(file_exists($output)){
 				if(!$this->core->get_confirm(" Output file exists, overwrite (Y/N): ")) goto set_output;
 			}
-	
+
 			if($input == $output){
 				$ini->save();
 			} else {
@@ -160,7 +160,7 @@ class AdmFileConverter {
 			$this->core->echo(" Failed create destination directory \"$directory\"");
 			goto set_output;
 		}
-		
+
 		file_put_contents($output, implode("\r\n", $journal->read()));
 
 		$this->core->pause(" Operation done, press any key to back to menu");

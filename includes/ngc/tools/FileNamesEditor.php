@@ -127,10 +127,10 @@ class FileNamesEditor {
 						if($this->core->config->get('ACTION_AFTER_DUPLICATE') == 'DELETE'){
 							if(!$this->core->delete($file)) $errors++;
 						} else {
-							if(!$this->core->rename($file, "$file.tmp")) $errors++;
+							if(!$this->core->move($file, "$file.tmp")) $errors++;
 						}
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -266,7 +266,7 @@ class FileNamesEditor {
 				$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 				$errors++;
 			} else {
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 			}
@@ -410,7 +410,7 @@ class FileNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if($this->core->rename($file, $new_name)){
+					if($this->core->move($file, $new_name)){
 						$renamed = true;
 					} else {
 						$errors++;
@@ -427,12 +427,12 @@ class FileNamesEditor {
 					$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
 						if(file_exists("$file.$a")){
-							if(!$this->core->rename("$file.$a", "$new_name.$a")) $errors++;
+							if(!$this->core->move("$file.$a", "$new_name.$a")) $errors++;
 						}
 						$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
 						$name_new = $this->core->get_path("$directory/$name.$a");
 						if(file_exists($name_old)){
-							if(!$this->core->rename($name_old, $name_new)) $errors++;
+							if(!$this->core->move($name_old, $name_new)) $errors++;
 						}
 					}
 				}
@@ -494,7 +494,7 @@ class FileNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -549,7 +549,7 @@ class FileNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -579,6 +579,7 @@ class FileNamesEditor {
 			' B   - Basic replacement',
 			' C   - Basic remove',
 			' L   - Replace language characters',
+			' P   - Capitalize properly',
 			' 0   - Chinese to PinYin',
 			' 1   - Hiragama to Romaji',
 			' 2   - Katakana to Romaji',
@@ -589,7 +590,7 @@ class FileNamesEditor {
 		$line = strtoupper($this->core->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
-		if(str_replace(['B', 'C', 'L', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
+		if(str_replace(['B', 'C', 'L', 'P', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
 			'basic_replace' => (strpos($line, 'B') !== false),
 			'basic_remove' => (strpos($line, 'C') !== false),
@@ -599,6 +600,7 @@ class FileNamesEditor {
 			'KatakanaToRomaji' => (strpos($line, '2') !== false),
 			'UpperCase' => (strpos($line, '+') !== false),
 			'LowerCase' => (strpos($line, '-') !== false),
+			'CapitalizeProperly' => (strpos($line, 'P') !== false),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
@@ -614,7 +616,7 @@ class FileNamesEditor {
 			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Katakana.ini"));
 		}
 		$this->core->clear();
-		
+
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->core->get_input_folders($line);
@@ -637,7 +639,7 @@ class FileNamesEditor {
 		} else {
 			$filters = explode(" ", $line);
 		}
-		
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
@@ -663,6 +665,12 @@ class FileNamesEditor {
 				} else if($flags->LowerCase){
 					$escaped_name = mb_strtolower($escaped_name);
 				}
+				if($flags->CapitalizeProperly){
+					$escaped_name = ucwords(strtolower($escaped_name));
+					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function($matches) : string {
+						return $matches[1] . strtoupper($matches[2]);
+					}, $escaped_name);
+				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
 				if(empty($escaped_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
@@ -673,7 +681,7 @@ class FileNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename_case($file, $new_name)){
+						if(!$this->core->move_case($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -741,7 +749,7 @@ class FileNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -845,7 +853,7 @@ class FileNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -964,7 +972,7 @@ class FileNamesEditor {
 				$this->core->write_error("UNABLE CHANGE NAME \"".$item['input']."\" TO \"".$item['output']."\" FILE ALREADY EXIST");
 				$errors++;
 			} else {
-				if(!$this->core->rename($item['input'], $item['output'])) $errors++;
+				if(!$this->core->move($item['input'], $item['output'])) $errors++;
 			}
 			$this->core->progress($items, $total);
 			$this->core->set_errors($errors);
@@ -1022,7 +1030,7 @@ class FileNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}
@@ -1129,7 +1137,7 @@ class FileNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}
@@ -1209,7 +1217,7 @@ class FileNamesEditor {
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
-						if(!$this->core->rename($file, $new_name)){
+						if(!$this->core->move($file, $new_name)){
 							$errors++;
 						}
 					}
@@ -1301,7 +1309,7 @@ class FileNamesEditor {
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}
@@ -1345,7 +1353,7 @@ class FileNamesEditor {
 				if(!file_exists($file)) continue 1;
 				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME));
 				if(!empty($extension_new)) $new_name .= ".$extension_new";
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->progress($items, $total);

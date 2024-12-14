@@ -1,4 +1,4 @@
-@AppType NGC_SCRIPT 2.3.2
+@AppType NGC_SCRIPT 2.3.3
 <?php
 	$app_name = 'NGC-TOOLKIT';
 

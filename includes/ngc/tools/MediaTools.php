@@ -31,7 +31,7 @@ class MediaTools {
 			' 2 - Avatar generator',
 			' 3 - Video: Fetch media info',
 			' 4 - Image converter',
-			' 5 - Ident mime type: Images',
+			' 5 - Ident mime type',
 		]);
 	}
 
@@ -317,7 +317,7 @@ class MediaTools {
 			goto set_input;
 		}
 		$output = $input;
-		
+
 		$file_name = 'MediaInfo';
 
 		set_output:
@@ -345,7 +345,7 @@ class MediaTools {
 		$ini_old = $this->core->get_path("$input/$file_name.ini");
 		$ini_new = $this->core->get_path("$output/$file_name.gz-ini");
 		if(file_exists($ini_old) && !file_exists($ini_new)){
-			$this->core->rename($ini_old, $ini_new);
+			$this->core->move($ini_old, $ini_new);
 		}
 		$cache = new IniFile($ini_new, true, true);
 		$this->core->echo(" Read file: $ini_new");
@@ -603,11 +603,9 @@ class MediaTools {
 
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$image_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
-		array_push($image_extensions, '');
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->core->get_files($folder, $image_extensions);
+			$files = $this->core->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -616,13 +614,13 @@ class MediaTools {
 				$extension_current = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$extension_detected = $this->core->media->get_extension_by_mime_type($file);
 				if(!$extension_detected){
-					$this->core->write_error("FAILED DETECT IMAGE TYPE \"$new_name\"");
+					$this->core->write_error("FAILED DETECT TYPE \"$file\"");
 					$errors++;
 					continue 1;
 				}
 				if($extension_current != $extension_detected){
 					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".".$extension_detected);
-					if(!$this->core->rename($file, $new_name)){
+					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
 				}

@@ -17,7 +17,7 @@
 
 	$includes_list_file = "$includes_path/includes.lst";
 	if(!file_exists($includes_list_file)) throw new Exception("File not exists includes.lst");
-	
+
 	$file = fopen($includes_list_file, "r");
 	if(!$file) throw new Exception("Failed open includes.lst");
 	while(($line = fgets($file)) !== false){
@@ -27,7 +27,7 @@
 	fclose($file);
 
 	require_once "$includes_path/programs/Toolkit.php";
-	
+
 	require_once "$includes_path/ngc/tools/AdmFileConverter.php";
 	require_once "$includes_path/ngc/tools/Settings.php";
 	require_once "$includes_path/ngc/tools/CheckFileIntegrity.php";

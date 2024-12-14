@@ -1,15 +1,15 @@
-@AppType NGC_SCRIPT 2.3.2
+@AppType NGC_SCRIPT 2.3.3
 <?php
 	$this->core->title("My script");
-	
+
 	$this->core->echo("Script file:      {$this->script}");
 	$this->core->echo("Script path:      {$this->path}");
 	$this->core->echo("NGC-TOOLKIT path: {$this->core->path}");
 	$this->core->echo();
-	
+
 	$this->core->echo("Script arguments");
 	$this->core->print($this->core->arguments);
 	$this->core->echo();
-	
+
 	$this->core->pause('Paused');
 ?>

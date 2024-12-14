@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.2 */
+/* NGC-TOOLKIT v2.3.3 */
 
 declare(strict_types=1);
 
@@ -14,7 +14,7 @@ use DirectoryIterator;
 
 class Core {
 
-	public int $core_version = 12;
+	public int $core_version = 13;
 
 	public IniFile $config;
 
@@ -279,7 +279,7 @@ class Core {
 		}
 		return 0;
 	}
-	
+
 
 	public function is_folder_empty(string $path) : bool {
 		if(!file_exists($path)) return true;
@@ -468,7 +468,7 @@ class Core {
 		}
 	}
 
-	public function rename(string $from, string $to, bool $log = true) : bool {
+	public function move(string $from, string $to, bool $log = true) : bool {
 		if(!file_exists($from)) return false;
 		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
@@ -477,7 +477,9 @@ class Core {
 		}
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
+		$modification_date = filemtime($from);
 		if(@rename($from, $to)){
+			touch($to, $modification_date);
 			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -486,12 +488,14 @@ class Core {
 		}
 	}
 
-	public function rename_case(string $from, string $to, bool $log = true) : bool {
+	public function move_case(string $from, string $to, bool $log = true) : bool {
 		if(!file_exists($from)) return false;
 		if(strcmp($from, $to) == 0) return true;
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
+		$modification_date = filemtime($from);
 		if(@rename($from, $to)){
+			touch($to, $modification_date);
 			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -509,7 +513,9 @@ class Core {
 		}
 		$dir = pathinfo($to, PATHINFO_DIRNAME);
 		if(!file_exists($dir)) $this->mkdir($dir);
+		$modification_date = filemtime($from);
 		if(@copy($from, $to)){
+			touch($to, $modification_date);
 			if($log) $this->write_log("COPY \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -797,13 +803,13 @@ class Core {
 			if(substr($path, 1, 1) == ':'){
 				$new_name = $this->get_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
 				if(file_exists($new_name) && !$this->delete($new_name)) return false;
-				return $this->rename($path, $new_name);
+				return $this->move($path, $new_name);
 			} else if(substr($path, 0, 2) == "\\\\"){
 				$device = substr($path, 2);
 				if(strpos($device, "\\") !== false){
 					$new_name = $this->get_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
 					if(file_exists($new_name) && !$this->delete($new_name)) return false;
-					return $this->rename($path, $new_name);
+					return $this->move($path, $new_name);
 				}
 			}
 		} else {
@@ -861,12 +867,21 @@ class Core {
 	}
 
 	/**
-	 * @deprecated Use get_path(string $path)
+	 * @deprecated Use move(string $from, string $to, bool $log = true)
 	 *
 	 * @return $this
 	 */
-	public function get_file_path(string $path) : string {
-		return $this->get_path($path);
+	public function rename(string $from, string $to, bool $log = true) : bool {
+		return $this->move($from, $to, $log);
+	}
+
+	/**
+	 * @deprecated Use move_case(string $from, string $to, bool $log = true)
+	 *
+	 * @return $this
+	 */
+	public function rename_case(string $from, string $to, bool $log = true) : bool {
+		return $this->move($from, $to, $log);
 	}
 
 }

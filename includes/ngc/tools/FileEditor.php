@@ -521,7 +521,7 @@ class FileEditor {
 			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Katakana.ini"));
 		}
 		$this->core->clear();
-		
+
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;
 		$folders = $this->core->get_input_folders($line);

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.2 */
+/* NGC-TOOLKIT v2.3.3 */
 
 declare(strict_types=1);
 
@@ -18,7 +18,7 @@ class MySQL {
 	function __construct(bool $debug = false){
 		$this->debug = $debug;
 	}
-	
+
 	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
 		$options = [
 			PDO::ATTR_EMULATE_PREPARES => true,
@@ -61,6 +61,7 @@ class MySQL {
 	}
 
 	public function query(string $query, ?int $fetchMode = null) : PDOStatement|false {
+		if(empty($query)) return false;
 		if($this->debug) echo " [MySQL] $query\r\n";
 		return $this->db->query($query, $fetchMode);
 	}

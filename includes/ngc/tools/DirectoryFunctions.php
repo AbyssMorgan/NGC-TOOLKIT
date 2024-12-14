@@ -218,7 +218,7 @@ class DirectoryFunctions {
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
-	
+
 }
 
 ?>

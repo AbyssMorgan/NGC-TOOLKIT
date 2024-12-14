@@ -71,7 +71,7 @@ class MediaSorter {
 				if(!file_exists($file)) continue 1;
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$new_name = $this->core->get_path("$folder/$extension/".pathinfo($file, PATHINFO_BASENAME));
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -148,7 +148,7 @@ class MediaSorter {
 				} else if($this->params['quality']){
 					$directory = "$folder/$quality";
 				}
-				if(!$this->core->rename($file, $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
+				if(!$this->core->move($file, $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -190,7 +190,7 @@ class MediaSorter {
 					$directory = "$folder/NotAnimated";
 				}
 				$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -266,7 +266,7 @@ class MediaSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$new_name = $this->tool_sort_date_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -327,7 +327,7 @@ class MediaSorter {
 					$group = $this->core->media->get_image_color_group($colors);
 				}
 				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$group/".pathinfo($file, PATHINFO_BASENAME));
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -406,7 +406,7 @@ class MediaSorter {
 							$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 							$errors++;
 						} else {
-							if(!$this->core->rename($file, $new_name)){
+							if(!$this->core->move($file, $new_name)){
 								$errors++;
 							}
 						}
@@ -459,7 +459,7 @@ class MediaSorter {
 				$end = str_replace(":", "_", $this->core->seconds_to_time(intval($interval * ($multiplier + 1))));
 				$directory = "$folder/$start - $end";
 				$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
-				if($this->core->rename($file, $new_name)){
+				if($this->core->move($file, $new_name)){
 					$renamed = true;
 				} else {
 					$renamed = false;
@@ -470,12 +470,12 @@ class MediaSorter {
 					$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
 						if(file_exists("$file.$a")){
-							if(!$this->core->rename("$file.$a", "$new_name.$a")) $errors++;
+							if(!$this->core->move("$file.$a", "$new_name.$a")) $errors++;
 						}
 						$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
 						$name_new = $this->core->get_path("$directory/$name.$a");
 						if(file_exists($name_old)){
-							if(!$this->core->rename($name_old, $name_new)) $errors++;
+							if(!$this->core->move($name_old, $name_new)) $errors++;
 						}
 					}
 				}
@@ -524,7 +524,7 @@ class MediaSorter {
 					$directory = "$folder/$end";
 				}
 				$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME));
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -562,7 +562,7 @@ class MediaSorter {
 				if($quantity == 0) $multiplier = 0;
 				$end = intval($interval * ($multiplier + 1));
 				$new_name = $this->core->get_path("$folder/$end/".pathinfo($file, PATHINFO_BASENAME));
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 				$this->core->set_errors($errors);

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.2 */
+/* NGC-TOOLKIT v2.3.3 */
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ use NGC\Core\IniFile;
 class AppStorage {
 
 	private object $core;
-	
+
 	public function __construct(object $core){
 		$this->core = $core;
 	}

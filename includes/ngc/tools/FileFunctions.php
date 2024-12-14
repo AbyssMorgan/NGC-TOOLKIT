@@ -113,7 +113,7 @@ class FileFunctions {
 					$this->core->write_error("DUPLICATE \"$file\" OF \"$duplicate\"");
 					$errors++;
 					if($this->params['action'] == '1'){
-						if(!$this->core->rename($file, "$file.tmp")) $errors++;
+						if(!$this->core->move($file, "$file.tmp")) $errors++;
 					} else if($this->params['action'] == '2'){
 						if(!$this->core->delete($file)) $errors++;
 					}
@@ -492,7 +492,7 @@ class FileFunctions {
 				$this->core->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
 			} else {
-				if(!$this->core->rename($file, $new_name)){
+				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
 			}
