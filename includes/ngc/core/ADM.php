@@ -16,8 +16,8 @@ class ADM {
 	private bool $is_changed;
 	private array $allocation;
 
-	const string ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
-	const string ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
+	const ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
+	const ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
 
 	public function __construct(){
 		$this->container = new BinaryFile();
