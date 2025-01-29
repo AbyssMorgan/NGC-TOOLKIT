@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ class BinaryFile {
 	private mixed $file = null;
 	private ?string $path = null;
 
-	function __construct(?string $path = null, ?int $allocate = null){
+	public function __construct(?string $path = null, ?int $allocate = null){
 		$this->path = $path;
 		if(!is_null($path)) $this->open($path, $allocate);
 	}

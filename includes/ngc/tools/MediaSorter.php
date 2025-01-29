@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace NGC\Tools;
 
+use Exception;
 use Toolkit;
+use Imagick;
 
 class MediaSorter {
 
@@ -30,6 +32,7 @@ class MediaSorter {
 			' 6 - Sort Media: Duration',
 			' 7 - Sort Files: Size',
 			' 8 - Sort Folders: Items quantity (First parent)',
+			' 9 - Sort Images: Monochrome',
 		]);
 	}
 
@@ -46,6 +49,7 @@ class MediaSorter {
 			case '6': return $this->tool_sort_media_duration();
 			case '7': return $this->tool_sort_files_size();
 			case '8': return $this->tool_sort_folders_quantity();
+			case '9': return $this->tool_sort_images_monochrome();
 		}
 		return false;
 	}
@@ -377,8 +381,8 @@ class MediaSorter {
 			} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
 			} else if(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-				if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1],1,1);
-				if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2],1,1);
+				if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
+				if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
 				$marker = $mathes[1].$mathes[2];
 			} else if(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
 				$marker = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
@@ -567,6 +571,68 @@ class MediaSorter {
 				}
 				$this->core->set_errors($errors);
 			}
+			unset($files);
+			$this->core->set_folder_done($folder);
+		}
+
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_sort_images_monochrome() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Sort images monochrome");
+		$line = $this->core->get_input(" Folders: ");
+		if($line == '#') return false;
+		$folders = $this->core->get_input_folders($line);
+
+		$this->core->setup_folders($folders);
+
+		$errors = 0;
+		$this->core->set_errors($errors);
+		$image_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->core->get_files($folder, $image_extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				try {
+					$image = new Imagick($file);
+				}
+				catch(Exception $e){
+					$this->core->write_error(" Failed open image \"$file\" ".$e->getMessage());
+					$errors++;
+					$this->core->set_errors($errors);
+					continue 1;
+				}
+				$image->setImageColorspace(Imagick::COLORSPACE_RGB);
+				$histogram = $image->getImageHistogram();
+				$is_monochrome = true;
+				$tolerance = 50;
+				foreach($histogram as $pixel){
+					$color = $pixel->getColor();
+					if(abs($color['r'] - $color['g']) > $tolerance || abs($color['g'] - $color['b']) > $tolerance || abs($color['b'] - $color['r']) > $tolerance){
+						$is_monochrome = false;
+						break;
+					}
+				}
+				if($is_monochrome && pathinfo($file, PATHINFO_EXTENSION) != 'gif'){
+					$group = 'Monochrome';
+				} else {
+					$group = 'Normal';
+				}
+				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$group/".pathinfo($file, PATHINFO_BASENAME));
+				if(!$this->core->move($file, $new_name)){
+					$errors++;
+				}
+				$this->core->progress($items, $total);
+				$this->core->set_errors($errors);
+			}
+			$this->core->progress($items, $total);
 			unset($files);
 			$this->core->set_folder_done($folder);
 		}

@@ -187,7 +187,7 @@ class FileFunctions {
 				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
 				$hash = hash_file($algo['name'], $file, false);
 				if($this->params['mode'] == '0'){
-					$checksum_file = "$file.".$algo['name'];
+					$checksum_file = "$file.{$algo['name']}";
 					if(!file_exists($checksum_file)){
 						$this->core->write_error("FILE NOT FOUND \"$checksum_file\"");
 						$errors++;
@@ -284,26 +284,27 @@ class FileFunctions {
 
 		switch($this->params['mode']){
 			case '0': {
-				$this->core->print_help([" Creating single file of size ".$this->core->format_bytes($bytes, 0)]);
+				$this->core->print_help([" Creating single file of size ".$this->core->format_bytes($bytes, 0, false)]);
 				$per_file_size = $bytes;
 				break;
 			}
 			case '1': {
-				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes($bytes, 0)." in total ".$this->core->format_bytes($bytes * $quantity, 0)]);
+				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes($bytes, 0, false)." in total ".$this->core->format_bytes($bytes * $quantity, 0, false)]);
 				$per_file_size = $bytes;
 				break;
 			}
 			case '2': {
-				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes(intval(floor($bytes / $quantity)), 0)." in total ".$this->core->format_bytes($bytes, 0)]);
+				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes(intval(floor($bytes / $quantity)), 0, false)." in total ".$this->core->format_bytes($bytes, 0, false)]);
 				$per_file_size = intval(floor($bytes / $quantity));
 				break;
 			}
 		}
 
 		$small_mode = $per_file_size < $write_buffer;
-		$size_text = $this->core->format_bytes($per_file_size);
+		$size_text = $this->core->format_bytes($per_file_size, 0, false);
 		for($i = 1; $i <= $quantity; $i++){
-			$file_path = $this->core->get_path($output."/NGC-TOOLKIT-".hash('md5', uniqid().$i).".tmp");
+			$random_name = hash('md5', uniqid().$i);
+			$file_path = $this->core->get_path("$output/NGC_TOOLKIT_$random_name.tmp");
 			if(file_exists($file_path)) $this->core->delete($file_path);
 			$fp = fopen($file_path, "w");
 			if($small_mode){

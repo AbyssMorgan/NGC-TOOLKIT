@@ -278,7 +278,7 @@ class MySQLTools {
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('DB_HOST')){
 				$label = pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".str_repeat(" ",32-strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+				$this->core->echo(" $label".str_repeat(" ", 32 - strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 				$cnt++;
 			}
 		}
@@ -1364,8 +1364,8 @@ class MySQLTools {
 
 		$items = $db->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
 		foreach($items as $item){
-			$data_size = $this->core->format_bytes(intval($item->DATA_LENGTH));
-			$index_size = $this->core->format_bytes(intval($item->INDEX_LENGTH));
+			$data_size = $this->core->format_bytes(intval($item->DATA_LENGTH), 2, false);
+			$index_size = $this->core->format_bytes(intval($item->INDEX_LENGTH), 2, false);
 			$this->core->write_data(str_replace("|", $separator, "$item->TABLE_NAME|$item->ENGINE|$item->TABLE_COLLATION|$item->TABLE_ROWS|$data_size|$item->DATA_LENGTH|$index_size|$item->INDEX_LENGTH|$item->ROW_FORMAT"));
 		}
 
@@ -1495,10 +1495,10 @@ class MySQLTools {
 					array_push($errors['rows'], "Table \"$table_name\" rows count are different. Source: ".$info_source[$table_name]['rows']." Destination: ".$info_dest[$table_name]['rows']);
 				}
 				if($info_source[$table_name]['data_size'] != $info_dest[$table_name]['data_size']){
-					array_push($errors['data_size'], "Table \"$table_name\" data size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['data_size'])." (".$info_source[$table_name]['data_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['data_size'])." (".$info_dest[$table_name]['data_size'].")");
+					array_push($errors['data_size'], "Table \"$table_name\" data size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['data_size'], 2, false)." (".$info_source[$table_name]['data_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['data_size'], 2, false)." (".$info_dest[$table_name]['data_size'].")");
 				}
 				if($info_source[$table_name]['index_size'] != $info_dest[$table_name]['index_size']){
-					array_push($errors['index_size'], "Table \"$table_name\" index size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['index_size'])." (".$info_source[$table_name]['index_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['index_size'])." (".$info_dest[$table_name]['index_size'].")");
+					array_push($errors['index_size'], "Table \"$table_name\" index size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['index_size'], 2, false)." (".$info_source[$table_name]['index_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['index_size'], 2, false)." (".$info_dest[$table_name]['index_size'].")");
 				}
 				if($info_source[$table_name]['row_format'] != $info_dest[$table_name]['row_format']){
 					array_push($errors['row_format'], "Table \"$table_name\" row format are different. Source: ".$info_source[$table_name]['row_format']." Destination: ".$info_dest[$table_name]['row_format']);

@@ -91,8 +91,8 @@ class FileNamesEditor {
 		];
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
-		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6','7'])) goto set_mode;
-		if(!in_array($this->params['algo'],['0','1','2','3'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
+		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
 
 		$this->core->clear();
 		$line = $this->core->get_input(" Folders: ");
@@ -163,11 +163,11 @@ class FileNamesEditor {
 			case '0': return $this->core->get_path("$folder/$hash.$extension");
 			case '1': return $this->core->get_path("$folder/$name $hash.$extension");
 			case '2': return $this->core->get_path("$folder/$foldername $hash.$extension");
-			case '3': return $this->core->get_path("$folder/$foldername ".sprintf("%04d",$file_id)." $hash.$extension");
-			case '4': return $this->core->get_path("$folder/".date("Y-m-d",filemtime($file))." $hash.$extension");
-			case '5': return $this->core->get_path("$folder/".date("Y-m-d",filemtime($file))." ".sprintf("%04d",$file_id)." $hash.$extension");
-			case '6': return $this->core->get_path("$folder/".sprintf("%04d",$file_id)." $hash.$extension");
-			case '7': return $this->core->get_path("$folder/".sprintf("%06d",$file_id)." $hash.$extension");
+			case '3': return $this->core->get_path("$folder/$foldername ".sprintf("%04d", $file_id)." $hash.$extension");
+			case '4': return $this->core->get_path("$folder/".date("Y-m-d", filemtime($file))." $hash.$extension");
+			case '5': return $this->core->get_path("$folder/".date("Y-m-d", filemtime($file))." ".sprintf("%04d", $file_id)." $hash.$extension");
+			case '6': return $this->core->get_path("$folder/".sprintf("%04d", $file_id)." $hash.$extension");
+			case '7': return $this->core->get_path("$folder/".sprintf("%06d", $file_id)." $hash.$extension");
 		}
 		return '';
 	}
@@ -196,8 +196,8 @@ class FileNamesEditor {
 			'mode' => strtolower($line[1] ?? '?'),
 		];
 
-		if(!in_array($this->params['type'],['s','g'])) goto set_mode;
-		if(!in_array($this->params['mode'],['0','1','2','3','4','5','6'])) goto set_mode;
+		if(!in_array($this->params['type'], ['s', 'g'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1', '2', '3', '4', '5', '6'])) goto set_mode;
 		switch($this->params['type']){
 			case 's': return $this->tool_number_action_single();
 			case 'g': return $this->tool_number_action_group();
@@ -215,13 +215,13 @@ class FileNamesEditor {
 		$extension = pathinfo($file, PATHINFO_EXTENSION);
 		if($this->core->config->get('EXTENSION_TO_LOWER')) $extension = strtolower($extension);
 		switch($mode){
-			case '0': return $this->core->get_path("$folder/$prefix".sprintf("%06d",$file_id).".$extension");
-			case '1': return $this->core->get_path("$input/".sprintf("%03d",$part_id)."/$prefix".sprintf("%06d",$file_id).".$extension");
-			case '2': return $this->core->get_path("$input/$prefix".sprintf("%06d",$file_id).".$extension");
-			case '3': return $this->core->get_path("$folder/$prefix$foldername"."_".sprintf("%06d",$file_id).".$extension");
-			case '4': return $this->core->get_path("$folder/$prefix$foldername"."_".sprintf("%04d",$file_id).".$extension");
-			case '5': return $this->core->get_path("$folder/$prefix".sprintf("%06d",$file_id).".$extension");
-			case '6': return $this->core->get_path("$folder/".sprintf("%06d",$file_id).".$extension");
+			case '0': return $this->core->get_path("$folder/$prefix".sprintf("%06d", $file_id).".$extension");
+			case '1': return $this->core->get_path("$input/".sprintf("%03d", $part_id)."/$prefix".sprintf("%06d", $file_id).".$extension");
+			case '2': return $this->core->get_path("$input/$prefix".sprintf("%06d", $file_id).".$extension");
+			case '3': return $this->core->get_path("$folder/{$prefix}{$foldername}_".sprintf("%06d", $file_id).".$extension");
+			case '4': return $this->core->get_path("$folder/{$prefix}{$foldername}_".sprintf("%04d", $file_id).".$extension");
+			case '5': return $this->core->get_path("$folder/{$prefix}".sprintf("%06d", $file_id).".$extension");
+			case '6': return $this->core->get_path("$folder/".sprintf("%06d", $file_id).".$extension");
 		}
 		return null;
 	}
@@ -241,7 +241,7 @@ class FileNamesEditor {
 			$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 			$part_id = (int) floor($file_id / intval($this->core->config->get('PART_SIZE'))) + 1;
 			if($this->params['mode'] == 1){
-				$prefix_id = sprintf("%03d",$part_id);
+				$prefix_id = sprintf("%03d", $part_id);
 			}
 			if(in_array($extension, $image_extensions)){
 				$prefix = $this->core->config->get('PREFIX_PHOTO')."_$prefix_id"."_";
@@ -350,11 +350,11 @@ class FileNamesEditor {
 
 		if($this->params['algo'] == '?') $this->params['algo'] = '0';
 
-		if(!in_array($this->params['mode'],['0','1','2','3','4'])) goto set_mode;
-		if(!in_array($this->params['algo'],['0','1','2','3'])) goto set_mode;
-		$this->params['checksum'] = in_array($this->params['mode'],['0','3','4']);
-		$this->params['resolution'] = in_array($this->params['mode'],['1','3','4']);
-		$this->params['thumbnail'] = in_array($this->params['mode'],['2','3']);
+		if(!in_array($this->params['mode'], ['0', '1', '2', '3', '4'])) goto set_mode;
+		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
+		$this->params['checksum'] = in_array($this->params['mode'], ['0', '3', '4']);
+		$this->params['resolution'] = in_array($this->params['mode'], ['1', '3', '4']);
+		$this->params['thumbnail'] = in_array($this->params['mode'], ['2', '3']);
 
 		$this->core->clear();
 		$line = $this->core->get_input(" Folders: ");
@@ -366,7 +366,8 @@ class FileNamesEditor {
 		$this->core->set_errors($errors);
 		$video_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO'));
 		$audio_extensions = explode(" ", $this->core->config->get('EXTENSIONS_AUDIO'));
-		$extensions = array_merge($video_extensions, $audio_extensions);
+		$images_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
+		$extensions = array_merge($video_extensions, $audio_extensions, $images_extensions);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
@@ -384,7 +385,7 @@ class FileNamesEditor {
 				} else {
 					$hash = null;
 				}
-				if($this->params['resolution'] && in_array($extension, $video_extensions)){
+				if($this->params['resolution'] && in_array($extension, $video_extensions) || in_array($extension, $images_extensions)){
 					$resolution = $this->core->media->ffprobe_get_resolution($file);
 					if($resolution == '0x0'){
 						$this->core->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -417,7 +418,7 @@ class FileNamesEditor {
 					}
 				}
 				if(isset($hash)){
-					if(file_put_contents("$new_name.$algo",$hash)){
+					if(file_put_contents("$new_name.$algo", $hash)){
 						$this->core->write_log("CREATE \"$new_name.$algo\"");
 					} else {
 						$this->core->write_error("FAILED CREATE \"$new_name.$algo\"");
@@ -477,8 +478,8 @@ class FileNamesEditor {
 				} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
 					$escaped_name = $mathes[0];
 				} else if(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-					if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1],1,1);
-					if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2],1,1);
+					if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
+					if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
 					$escaped_name = $mathes[1].$mathes[2];
 				} else if(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
 					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
@@ -786,7 +787,7 @@ class FileNamesEditor {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['0','1'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1'])) goto set_mode;
 		switch($this->params['mode']){
 			case '0': return $this->tool_series_episode_editor_action_season();
 			case '1': return $this->tool_series_episode_editor_action_episode();
@@ -901,7 +902,7 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_start == '') goto set_start;
-		if($episode_start[0] == '0') $episode_start = substr($episode_start,1);
+		if($episode_start[0] == '0') $episode_start = substr($episode_start, 1);
 		$episode_start = intval($episode_start);
 
 		set_end:
@@ -909,7 +910,7 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_end == '') goto set_end;
-		if($episode_end[0] == '0') $episode_end = substr($episode_end,1);
+		if($episode_end[0] == '0') $episode_end = substr($episode_end, 1);
 		$episode_end = intval($episode_end);
 
 		$this->core->echo(" Choose step as integer (example 5 or -5)");
@@ -951,7 +952,7 @@ class FileNamesEditor {
 					$directory = pathinfo($file, PATHINFO_DIRNAME);
 					$extension = pathinfo($file, PATHINFO_EXTENSION);
 					$new_name = $this->core->get_path("$directory/$season"."E".$this->core->media->format_episode($episode + $episode_step, $digits, $max)."$name.$extension");
-					array_push($list,[
+					array_push($list, [
 						'input' => $file,
 						'output' => $new_name,
 					]);
@@ -969,7 +970,7 @@ class FileNamesEditor {
 			if(file_exists($item['output']) && $round == 0) continue;
 			$items++;
 			if(file_exists($item['output'])){
-				$this->core->write_error("UNABLE CHANGE NAME \"".$item['input']."\" TO \"".$item['output']."\" FILE ALREADY EXIST");
+				$this->core->write_error("UNABLE CHANGE NAME \"{$item['input']}\" TO \"{$item['output']}\" FILE ALREADY EXIST");
 				$errors++;
 			} else {
 				if(!$this->core->move($item['input'], $item['output'])) $errors++;

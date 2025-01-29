@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -15,7 +15,7 @@ class MySQL {
 	public ?PDO $db;
 	private bool $debug = false;
 
-	function __construct(bool $debug = false){
+	public function __construct(bool $debug = false){
 		$this->debug = $debug;
 	}
 

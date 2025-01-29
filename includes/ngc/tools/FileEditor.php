@@ -247,7 +247,7 @@ class FileEditor {
 			$content = file_get_contents($file);
 			$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
 			if(!empty($bom)){
-				$content = str_replace($bom, "" ,$content);
+				$content = str_replace($bom, "", $content);
 			}
 			if(strpos($content, "\r\n") !== false){
 				$eol = "\r\n";
@@ -358,7 +358,7 @@ class FileEditor {
 				if($utf8_bom) fwrite($out, "\xEF\xBB\xBF");
 				$part_id++;
 			}
-			fwrite($out, $line.$eol);
+			fwrite($out, "{$line}{$eol}");
 			$count++;
 		}
 		if($out){
@@ -444,7 +444,7 @@ class FileEditor {
 			$content = file_get_contents($file);
 			$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
 			if(!empty($bom)){
-				$content = str_replace($bom, "" ,$content);
+				$content = str_replace($bom, "", $content);
 			}
 			if(strpos($content, "\r\n") !== false){
 				$eol = "\r\n";
@@ -580,7 +580,7 @@ class FileEditor {
 				if($flags->RemoveWhitespaceEOL){
 					$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
 					if(!empty($bom)){
-						$content = str_replace($bom, "" ,$content);
+						$content = str_replace($bom, "", $content);
 					}
 					if(strpos($content, "\r\n") !== false){
 						$eol = "\r\n";

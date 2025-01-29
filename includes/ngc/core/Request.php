@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -122,7 +122,9 @@ class Request {
 		if(!$response){
 			return [
 				'code' => curl_getinfo($curl, CURLINFO_HTTP_CODE),
-				'data' => []
+				'data' => [
+					'message' => curl_error($curl),
+				]
 			];
 		}
 		return [

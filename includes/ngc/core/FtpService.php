@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -34,13 +34,13 @@ class FtpService {
 			$chunks = preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
 			if(substr($chunks[0], 0, 1) == 'd'){
-				$data = array_merge($data, $this->get_files($path.'/'.$chunks[8], $extensions, $except));
+				$data = array_merge($data, $this->get_files("$path/$chunks[8]", $extensions, $except));
 			} else {
 				$ext = strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 				if(!is_null($except) && in_array($ext, $except)) continue;
 				if(!is_null($filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $filters)) continue;
-				array_push($data, $path.'/'.$chunks[8]);
+				array_push($data, "$path/$chunks[8]");
 			}
 		}
 		return $data;
@@ -53,19 +53,19 @@ class FtpService {
 			$chunks = preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
 			if(substr($chunks[0], 0, 1) == 'd'){
-				$data = array_merge($data, $this->get_files_meta($path.'/'.$chunks[8], $extensions, $except));
+				$data = array_merge($data, $this->get_files_meta("$path/$chunks[8]", $extensions, $except));
 			} else {
 				$ext = strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 				if(!is_null($except) && in_array($ext, $except)) continue;
 				if(!is_null($filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $filters)) continue;
 				array_push($data, [
-					'path' => $path.'/'.$chunks[8],
+					'path' => "$path/$chunks[8]",
 					'directory' => $path,
 					'name' => $chunks[8],
-					'date' => date("Y-m-d H:i:s", $this->ftp->mdtm($path.'/'.$chunks[8])),
+					'date' => date("Y-m-d H:i:s", $this->ftp->mdtm("$path/$chunks[8]")),
 					'permission' => $this->unix_permission(substr($chunks[0], 1)),
-					'size' => $this->ftp->size($path.'/'.$chunks[8]),
+					'size' => $this->ftp->size("$path/$chunks[8]"),
 				]);
 			}
 		}
@@ -81,7 +81,7 @@ class FtpService {
 			$chunks = preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
 			if(substr($chunks[0], 0, 1) == 'd'){
-				$data = array_merge($data, $this->get_folders($path.'/'.$chunks[8]));
+				$data = array_merge($data, $this->get_folders("$path/$chunks[8]"));
 			}
 		}
 		return $data;

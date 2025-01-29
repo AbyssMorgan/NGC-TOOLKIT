@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -18,7 +18,7 @@ class IniFile {
 	protected bool $compressed;
 	protected ?object $encoder = null;
 
-	function __construct(?string $path = null, bool $sort = false, bool $compressed = false, ?object $encoder = null){
+	public function __construct(?string $path = null, bool $sort = false, bool $compressed = false, ?object $encoder = null){
 		$this->path = $path;
 		$this->data = [];
 		$this->original = [];
@@ -332,7 +332,7 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos('#'.$key, '#'.$search) !== false){
+			if(strpos("#$key", "#$search") !== false){
 				array_push($results, $key);
 			}
 		}

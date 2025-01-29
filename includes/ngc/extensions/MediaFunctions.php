@@ -12,11 +12,11 @@ class MediaFunctions {
 
 	public object $core;
 
-	public array $vr_tags = ['_180', '_360', '_FISHEYE', '_FISHEYE190', '_RF52', '_MKX200', '_VRCA220'];
+	public array $vr_tags = ['_LR_180', '_FISHEYE190', '_MKX200', '_MKX220', '_VRCA220', '_TB_180', '_360'];
 
-	const MEDIA_ORIENTATION_HORIZONTAL = 0;
-	const MEDIA_ORIENTATION_VERTICAL = 1;
-	const MEDIA_ORIENTATION_SQUARE = 2;
+	public const MEDIA_ORIENTATION_HORIZONTAL = 0;
+	public const MEDIA_ORIENTATION_VERTICAL = 1;
+	public const MEDIA_ORIENTATION_SQUARE = 2;
 
 	public function __construct(object $core){
 		$this->core = $core;
@@ -52,7 +52,7 @@ class MediaFunctions {
 				$w = @$image->getImageWidth();
 				$h = @$image->getImageHeight();
 				@$image->clear();
-				return $w."x".$h;
+				return "{$w}x{$h}";
 			}
 			catch(Exception $e){
 				return $this->ffprobe_get_resolution($path);
@@ -61,7 +61,7 @@ class MediaFunctions {
 		$w = imagesx($image);
 		$h = imagesy($image);
 		imagedestroy($image);
-		return $w."x".$h;
+		return "{$w}x{$h}";
 	}
 
 	public function is_gif_animated(string $path) : bool {
@@ -233,6 +233,58 @@ class MediaFunctions {
 		return false;
 	}
 
+	public function get_vr_mode(string $name) : array {
+		if(strpos($name, '_LR_180') !== false){
+			$screen_type = "dome";
+			$stereo_mode = "sbs";
+		} else if(strpos($name, '_FISHEYE190') !== false){
+			$screen_type = "fisheye";
+			$stereo_mode = "sbs";
+		} else if(strpos($name, '_MKX200') !== false){
+			$screen_type = "mkx200";
+			$stereo_mode = "sbs";
+		} else if(strpos($name, '_MKX220') !== false || strpos($name, '_VRCA220') !== false){
+			$screen_type = "mkx220";
+			$stereo_mode = "sbs";
+		} else if(strpos($name, '_TB_180') !== false){
+			$screen_type = "180";
+			$stereo_mode = "tb";
+		} else if(strpos($name, '_360') !== false){
+			$screen_type = "360";
+			$stereo_mode = (strpos($name, '_SBS_') !== false) ? "sbs" : "off";
+		} else {
+			$screen_type = "flat";
+			$stereo_mode = "off";
+		}
+		return [
+			'screen_type' => $screen_type,
+			'stereo_mode' => $stereo_mode,
+			'alpha' => (strpos($name, '_ALPHA') !== false),
+		];
+	}
+
+	public function vr_screen_type(string $screen_type) : string {
+		switch($screen_type){
+			case "dome": return "Dome 180°";
+			case "fisheye": return "Fisheye 190°";
+			case "mkx200": return "MKX 200°";
+			case "mkx220": return "MKX 220°";
+			case "180": return "180°";
+			case "360": return "360°";
+			case "flat": return "Flat";
+			default: return "Unknown";
+		}
+	}
+
+	public function vr_stereo_mode(string $stereo_mode) : string {
+		switch($stereo_mode){
+			case "sbs": return "Side-by-Side (SBS)";
+			case "tb": return "Top-Bottom (TB)";
+			case "off": return "No Stereo";
+			default: return "Unknown";
+		}
+	}
+
 	public function calculate_aspect_ratio(int $width, int $height) : string {
 		$gcd = function($a, $b) use (&$gcd) : mixed {
 			return ($b == 0) ? $a : $gcd($b, $a % $b);
@@ -271,7 +323,7 @@ class MediaFunctions {
 			'video_duration' => $this->core->seconds_to_time($video_duration_seconds, true),
 			'video_duration_seconds' => $video_duration_seconds,
 			'video_fps' => null,
-			'video_bitrate' => $media_info['format']['bit_rate'],
+			'video_bitrate' => intval($media_info['format']['bit_rate'] ?? 0),
 			'video_codec' => null,
 			'video_aspect_ratio' => null,
 			'video_orientation' => null,
@@ -279,7 +331,7 @@ class MediaFunctions {
 			'audio_bitrate' => 0,
 			'audio_channels' => 0,
 			'file_size' => $file_size,
-			'file_size_human' => $this->core->format_bytes($file_size),
+			'file_size_human' => $this->core->format_bytes($file_size, 2, false),
 			'file_creation_time' => date("Y-m-d H:i:s", filectime($path)),
 			'file_modification_time' => date("Y-m-d H:i:s", filemtime($path)),
 		];
@@ -307,6 +359,7 @@ class MediaFunctions {
 					$need_audio = false;
 					$meta['audio_codec'] = $stream['codec_name'] ?? null;
 					$meta['audio_bitrate'] = $stream['bit_rate'] ?? ($stream['tags']['BPS'] ?? null);
+					if(!is_null($meta['audio_bitrate'])) $meta['audio_bitrate'] = intval($meta['audio_bitrate']);
 					$meta['audio_channels'] = $stream['channels'];
 					break;
 				}
@@ -387,6 +440,7 @@ class MediaFunctions {
 			'application/xml' => 'xml',
 			'text/xml' => 'xml',
 			'application/zip' => 'zip',
+			'audio/eac3' => 'eac3',
 		];
 
 		return isset($mime_map[$mime_type]) ? $mime_map[$mime_type] : false;

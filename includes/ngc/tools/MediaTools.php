@@ -354,8 +354,33 @@ class MediaTools {
 		$csv_file = $this->core->get_path("$output/$file_name.csv");
 		$this->core->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
-		$s = $this->core->config->get('CSV_SEPARATOR');
-		$csv->write('"File path"'.$s.'"Dir name"'.$s.'"File name"'.$s.'"Extension"'.$s.'"Resolution"'.$s.'"Quality"'.$s.'"Duration"'.$s.'"Size"'.$s.'"Orientation"'.$s.'"Checksum (MD5)"'.$s.'"FPS"'.$s.'"Codec"');
+		$separator = $this->core->config->get('CSV_SEPARATOR');
+
+		$labels = [
+			"\"File path\"",
+			"\"Dir name\"",
+			"\"File name\"",
+			"\"Extension\"",
+			"\"Checksum (MD5)\"",
+			"\"Size\"",
+			"\"Modification date\"",
+			"\"Resolution\"",
+			"\"Quality\"",
+			"\"Duration\"",
+			"\"FPS\"",
+			"\"Video bitrate\"",
+			"\"Video codec\"",
+			"\"Video aspect ratio\"",
+			"\"Video orientation\"",
+			"\"Audio codec\"",
+			"\"Audio bitrate\"",
+			"\"Audio channels\"",
+			"\"Display type (VR)\"",
+			"\"Stereo mode (VR)\"",
+			"\"Passthrough (AR)\"",
+		];
+
+		$csv->write(implode($separator, $labels));
 
 		$keys = [];
 		$video_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO'));
@@ -368,71 +393,68 @@ class MediaTools {
 			$this->core->set_errors($errors);
 			if(!file_exists($file)) continue;
 			$key = hash('md5', str_ireplace($input, '', $file));
-			if($cache->is_set($key)){
-				$media_info = $cache->get($key);
-				$resolution = $media_info['resolution'];
-				$quality = $media_info['quality'];
-				$duration = $media_info['duration'];
-				$file_size = $media_info['file_size'];
-				$orientation_name = $media_info['orientation_name'];
-				$checksum = $media_info['checksum'];
-				$fps = $media_info['fps'];
-				$codec = $media_info['codec'];
-				if(is_null($checksum) && $generate_checksum){
-					$checksum = strtoupper(hash_file('md5', $file));
-					$new++;
-				}
-			} else {
-				$new++;
+
+			$file_info = (object)[
+				'path' => str_replace("\\\\", "\\", addslashes($file)),
+				'directory' => str_replace("\\\\", "\\", addslashes(pathinfo(pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))),
+				'filename' => str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_FILENAME))),
+				'extension' => str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_EXTENSION))),
+			];
+
+			$media_cache = $cache->get($key, []);
+			if(($media_cache['version'] ?? 0) < 1){
 				$meta = $this->core->media->get_media_info_simple($file);
 				if(!$meta){
 					$this->core->write_error("FAILED GET MEDIA INFO \"$file\"");
 					$errors++;
 					continue;
 				}
-				$resolution = $meta->video_resolution;
-				$quality = $meta->video_quality;
-				$duration = $meta->video_duration;
-				$file_size = $meta->file_size_human;
-				$orientation_name = $meta->video_orientation;
-				$fps = $meta->video_fps;
-				$codec = $meta->video_codec;
-				if(file_exists("$file.md5")){
-					$checksum = file_get_contents("$file.md5");
-				} else if($generate_checksum){
-					$checksum = strtoupper(hash_file('md5', $file));
-				} else {
-					$checksum = null;
-				}
-				$cache->set($key, [
-					'resolution' => $resolution,
-					'quality' => $quality,
-					'duration' => $duration,
-					'file_size' => $file_size,
-					'orientation_name' => $orientation_name,
-					'checksum' => $checksum,
-					'fps' => $fps,
-					'codec' => $codec,
-				]);
-				if($new > 0 && $new % 25 == 0) $cache->save();
-				$this->core->write_log("FETCH MEDIA INFO \"$file\"");
+				$new++;
+			} else {
+				$meta = (object)$media_cache;
 			}
-			$meta = [
-				'"'.str_replace("\\\\", "\\", addslashes($file)).'"',
-				'"'.str_replace("\\\\", "\\", addslashes(pathinfo(pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))).'"',
-				'"'.str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_FILENAME))).'"',
-				'"'.str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_EXTENSION))).'"',
-				'"'.$resolution.'"',
-				'"'.$quality.'"',
-				'"'.$duration.'"',
-				'"'.$file_size.'"',
-				'"'.$orientation_name.'"',
-				'"'.($checksum ?? 'None').'"',
-				'"'.$fps.'"',
-				'"'.$codec.'"',
+
+			if(file_exists("$file.md5")){
+				$meta->checksum = file_get_contents("$file.md5");
+			} else if($generate_checksum){
+				$meta->checksum = strtoupper(hash_file('md5', $file));
+			} else {
+				$meta->checksum = null;
+			}
+
+			$media_cache = array_merge((array)$meta, ['version' => 1]);
+			$cache->set($key, $media_cache);
+
+			if($new > 0 && $new % 25 == 0) $cache->save();
+			$this->core->write_log("FETCH MEDIA INFO \"$file\"");
+
+			$meta->name = $file_info->filename;
+			$this->translate_media_info($meta);
+			$data = [
+				"\"$file_info->path\"",
+				"\"$file_info->directory\"",
+				"\"$file_info->filename\"",
+				"\"$file_info->extension\"",
+				"\"$meta->checksum\"",
+				"\"$meta->file_size_human\"",
+				"\"$meta->file_modification_time\"",
+				"\"$meta->video_resolution\"",
+				"\"$meta->video_quality\"",
+				"\"$meta->video_duration\"",
+				"\"$meta->video_fps\"",
+				"\"$meta->video_bitrate\"",
+				"\"$meta->video_codec\"",
+				"\"$meta->video_aspect_ratio\"",
+				"\"$meta->video_orientation\"",
+				"\"$meta->audio_codec\"",
+				"\"$meta->audio_bitrate\"",
+				"\"$meta->audio_channels\"",
+				"\"$meta->vr_screen_type\"",
+				"\"$meta->vr_stereo_mode\"",
+				"\"$meta->vr_alpha\"",
 			];
 			array_push($keys, $key);
-			$csv->write(implode($this->core->config->get('CSV_SEPARATOR'), $meta));
+			$csv->write(implode($separator, $data));
 			$this->core->progress($items, $total);
 			$this->core->set_errors($errors);
 		}
@@ -469,7 +491,7 @@ class MediaTools {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'],['0','1','2','3'])) goto set_mode;
+		if(!in_array($this->params['mode'], ['0', '1', '2', '3'])) goto set_mode;
 		$this->core->clear();
 
 		set_input:
@@ -636,6 +658,35 @@ class MediaTools {
 		$this->core->open_logs(true);
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;
+	}
+
+	private function translate_media_info(object &$meta) : void {
+		$vr_mode = $this->core->media->get_vr_mode($meta->name);
+		$meta->video_bitrate = is_null($meta->video_bitrate) ? 'N/A' : $this->core->format_bits($meta->video_bitrate, 2, false).'/s';
+		$meta->video_quality = "{$meta->video_quality}p";
+		switch($meta->video_codec){
+			case 'h264': {
+				$meta->video_codec = 'AVC';
+				break;
+			}
+			default: {
+				$meta->video_codec = strtoupper($meta->video_codec);
+				break;
+			}
+		}
+		$meta->audio_codec = $meta->audio_codec == 'none' ? 'None' : strtoupper($meta->audio_codec);
+		if(is_null($meta->audio_bitrate)){
+			$meta->audio_bitrate = 'N/A';
+		} else if($meta->audio_bitrate == 0){
+			$meta->audio_bitrate = 'None';
+		} else {
+			$meta->audio_bitrate = $this->core->format_bits($meta->audio_bitrate, 2, false).'/s';
+		}
+		$meta->audio_channels = $this->core->media->get_audio_channels_string($meta->audio_channels);
+		$meta->vr_screen_type = $this->core->media->vr_screen_type($vr_mode['screen_type']);
+		$meta->vr_stereo_mode = $this->core->media->vr_stereo_mode($vr_mode['stereo_mode']);
+		$meta->vr_alpha = $vr_mode['alpha'] ? 'YES' : 'NO';
+		$meta->checksum ??= 'None';
 	}
 
 }

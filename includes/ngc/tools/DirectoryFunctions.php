@@ -157,7 +157,7 @@ class DirectoryFunctions {
 
 		$separator = $this->core->config->get('CSV_SEPARATOR');
 		foreach($data as $path => $count){
-			$this->core->write_data($count.$separator."\"$path\"");
+			$this->core->write_data("{$count}{$separator}\"$path\"");
 		}
 
 		unset($data);

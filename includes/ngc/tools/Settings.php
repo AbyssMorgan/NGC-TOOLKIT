@@ -85,7 +85,7 @@ class Settings {
 		$this->core->echo(" Check for updates ...");
 		$version = '';
 		if($this->check_for_updates($version)){
-			$this->core->echo(" Update available v$version current v".$this->core->version);
+			$this->core->echo(" Update available v$version current v{$this->core->version}");
 			if($this->core->get_confirm(" Open download website now (Y/N): ")){
 				$this->core->open_url("https://github.com/AbyssMorgan/NGC-TOOLKIT/releases/tag/v$version");
 			}
@@ -126,7 +126,7 @@ class Settings {
 			$version = strval($response['data']);
 			return ($ver_repo > $ver_current);
 		}
-		$this->core->echo(" Failed check for updates: ".$response['code']);
+		$this->core->echo(" Failed check for updates: {$response['code']}");
 		return false;
 	}
 
@@ -138,7 +138,7 @@ class Settings {
 			$this->core->echo(" Use command: /usr/bin/php8.3 \"$program_path/includes/script.php\" <path> [...]");
 			$this->core->pause(" Press any key to back to menu");
 		} else if(!$this->core->is_admin()){
-			$this->core->echo(" You must run ".$this->core->app_name." as administrator to use this feature");
+			$this->core->echo(" You must run {$this->core->app_name} as administrator to use this feature");
 			$this->core->pause(" Press any key to back to menu");
 		} else {
 			if($this->core->get_confirm(" Install .ngcs scripts support (Y/N): ")){

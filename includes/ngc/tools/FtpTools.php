@@ -131,7 +131,7 @@ class FtpTools {
 
 		try {
 			try_login_same:
-			$this->core->echo(" Connecting to: ".$auth['host'].":".$auth['port']);
+			$this->core->echo(" Connecting to: {$auth['host']}:{$auth['port']}");
 			$ftp->connect($auth['host'], $auth['ssl'], $auth['port']);
 		}
 		catch(FtpException $e){
@@ -216,7 +216,7 @@ class FtpTools {
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('FTP_HOST')){
 				$label = pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".str_repeat(" ",32-strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
+				$this->core->echo(" $label".str_repeat(" ", 32 - strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
 				$cnt++;
 			}
 		}
@@ -301,7 +301,7 @@ class FtpTools {
 			$files = $remote->get_files_meta($input, $extensions, null, $filters);
 			if(!empty($files)){
 				$s = $this->core->config->get('CSV_SEPARATOR');
-				$csv->write('"File path"'.$s.'"Dir name"'.$s.'"File name"'.$s.'"Date"'.$s.'"Size"'.$s.'"Permission"');
+				$csv->write("\"File path\"{$s}\"Dir name\"{$s}\"File name\"{$s}\"Date\"{$s}\"Size\"{$s}\"Permission\"");
 			}
 			foreach($files as $file){
 				$meta = [
@@ -894,23 +894,23 @@ class FtpTools {
 					continue;
 				}
 				if(!isset($server['Host'])){
-					$this->core->echo(" Import ".$server['Name']." failed, missing property: Host");
+					$this->core->echo(" Import {$server['Name']} failed, missing property: Host");
 					continue;
 				}
 				if(!isset($server['Port'])){
-					$this->core->echo(" Import ".$server['Name']." failed, missing property: Port");
+					$this->core->echo(" Import {$server['Name']} failed, missing property: Port");
 					continue;
 				}
 				if(!isset($server['User'])){
-					$this->core->echo(" Import ".$server['Name']." failed, missing property: User");
+					$this->core->echo(" Import {$server['Name']} failed, missing property: User");
 					continue;
 				}
 				if(!isset($server['Pass'])){
-					$this->core->echo(" Import ".$server['Name']." failed, missing property: Pass");
+					$this->core->echo(" Import {$server['Name']} failed, missing property: Pass");
 					continue;
 				}
 				if(!isset($server['Protocol'])){
-					$this->core->echo(" Import ".$server['Name']." failed, missing property: Protocol");
+					$this->core->echo(" Import {$server['Name']} failed, missing property: Protocol");
 					continue;
 				}
 				$label = substr(preg_replace("/[^A-Za-z0-9_\-]/", '', str_replace(" ", "_", trim($server['Name']))), 0, 32);
@@ -925,9 +925,9 @@ class FtpTools {
 						'FTP_PORT' => intval($server['Port']),
 					], true);
 					$ini->close();
-					$this->core->echo(" Import ".$server['Name']." as $label success");
+					$this->core->echo(" Import {$server['Name']} as $label success");
 				} else {
-					$this->core->echo(" Import ".$server['Name']." failed, invalid label");
+					$this->core->echo(" Import {$server['Name']} failed, invalid label");
 				}
 			}
 		}

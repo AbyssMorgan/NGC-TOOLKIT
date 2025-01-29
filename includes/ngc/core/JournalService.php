@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -11,9 +11,9 @@ class JournalService {
 	protected ?string $path;
 	protected BitFunctions $bits;
 
-	const FILE_HEADER_DATA = 'ADM-JOURNAL';
+	public const FILE_HEADER_DATA = 'ADM-JOURNAL';
 
-	function __construct(?string $path = null){
+	public function __construct(?string $path = null){
 		$this->path = $path;
 		$this->bits = new BitFunctions(32);
 	}

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -14,7 +14,7 @@ use DirectoryIterator;
 
 class Core {
 
-	public int $core_version = 13;
+	public int $core_version = 14;
 
 	public IniFile $config;
 
@@ -33,7 +33,8 @@ class Core {
 	public string $subtool_name;
 	public array $folders_state = [];
 	public ?object $tool;
-	public array $unit_sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	public array $units_bytes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+	public array $units_bits = ['bit', 'Kbit', 'Mbit', 'Gbit', 'Tbit', 'Pbit', 'Ebit', 'Zbit', 'Ybit'];
 	public bool $toggle_log_event = true;
 	public bool $toggle_log_error = true;
 	public string $utilities_path;
@@ -62,15 +63,16 @@ class Core {
 				if(file_exists($this->utilities_path)){
 					$utilities_main = new IniFile($this->get_path("$this->utilities_path/main.ini"));
 					$utilities_imagick = new IniFile($this->get_path("$this->utilities_path/imagick.ini"));
-					if($utilities_main->get('APP_VERSION') == $this->utilities_version && $utilities_imagick->get('APP_VERSION') == $this->utilities_version){
+					$utilities_version = $utilities_main->get('APP_VERSION');
+					if($utilities_version == $this->utilities_version && $utilities_imagick->get('APP_VERSION') == $this->utilities_version){
 						$utilities = true;
-						$this->core_path = $this->get_path("$this->utilities_path/core/".$utilities_main->get('APP_VERSION'));
+						$this->core_path = $this->get_path("$this->utilities_path/core/$utilities_version");
 					}
 				}
 
 				if(!$utilities){
 					$this->echo();
-					$this->echo(" Invalid NGC-UTILITIES version detected: v".$utilities_main->get('APP_VERSION')." required: v$this->utilities_version");
+					$this->echo(" Invalid NGC-UTILITIES version detected: v{$utilities_version} required: v$this->utilities_version");
 					$this->echo();
 					$this->pause();
 					die("");
@@ -193,7 +195,7 @@ class Core {
 	}
 
 	public function is_valid_label(string $label) : bool {
-		return preg_match('/(?=[a-zA-Z0-9_\-]{3,32}$)/i', $label) == 1;
+		return preg_match('/(?=[a-zA-Z0-9_\- ]{3,48}$)/i', $label) == 1;
 	}
 
 	public function progress_ex(string $label, int|float $count, int|float $total) : void {
@@ -220,14 +222,30 @@ class Core {
 		return $cnt;
 	}
 
-	public function format_bytes(int $bytes, int $precision = 2) : string {
-		if($bytes <= 0) return '0.00 B';
-		$i = floor(log($bytes)/log(1024));
-		return sprintf('%.'.$precision.'f', $bytes/pow(1024, $i)).' '.($this->unit_sizes[$i] ?? '');
+	public function format_bytes(float|int $bytes, int $precision = 2, bool $dot = true) : string {
+		if($bytes > 0){
+			$i = floor(log($bytes) / log(1024));
+			$res = sprintf("%.{$precision}f", $bytes / pow(1024, $i)).' '.$this->units_bytes[$i];
+		} else {
+			$res = sprintf("%.{$precision}f", 0).' B';
+		}
+		if(!$dot) $res = str_replace(".", ",", $res);
+		return $res;
+	}
+
+	public function format_bits(float|int $bits, int $precision = 2, bool $dot = true) : string {
+		if($bits > 0){
+			$i = floor(log($bits) / log(1000));
+			$res = sprintf("%.{$precision}f", $bits / pow(1000, $i)).' '.$this->units_bits[$i];
+		} else {
+			$res = sprintf("%.{$precision}f", 0).' bit';
+		}
+		if(!$dot) $res = str_replace(".", ",", $res);
+		return $res;
 	}
 
 	public function size_unit_to_bytes(int $value, string $unit) : int {
-		$index = array_search(strtoupper($unit), $this->unit_sizes);
+		$index = array_search(strtoupper($unit), $this->units_bytes);
 		if($index === false) return -1;
 		return intval($value * pow(1024, $index));
 	}
@@ -444,6 +462,19 @@ class Core {
 			if($log) $this->write_error("FAILED RMDIR \"$path\"");
 			return false;
 		}
+	}
+
+	public function rmdir_empty(string $path, bool $log = true) : bool {
+		if(!file_exists($path) || !is_dir($path)) return false;
+		$files = array_reverse($this->get_folders($path, true));
+		foreach($files as $file){
+			if(!file_exists($file)) continue;
+			$count = iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
+			if($count == 0){
+				$this->rmdir($file, $log);
+			}
+		}
+		return !file_exists($path);
 	}
 
 	public function delete(string $path, bool $log = true) : bool {
@@ -669,7 +700,7 @@ class Core {
 			$device = substr($path, 2);
 			if(strpos($device, "\\") !== false){
 				$parts = explode("\\", $device);
-				return file_exists("\\\\".$parts[0]."\\".$parts[1]);
+				return file_exists("\\\\{$parts[0]}\\{$parts[1]}");
 			}
 		}
 		return false;
@@ -692,9 +723,9 @@ class Core {
 		foreach($arguments as $argument){
 			$argument = $this->get_path($argument);
 			if(substr($argument, 0, 1) == '"'){
-				$output .= ' '.$argument;
+				$output .= " $argument";
 			} else {
-				$output .= ' "'.$argument.'"';
+				$output .= " \"$argument\"";
 			}
 		}
 		return $output;
@@ -731,8 +762,8 @@ class Core {
 		set_size:
 		$this->clear();
 		$this->print_help([
-			' Type integer and unit separate by space, example: 1 GB',
-			' Size units: B, KB, MB, GB, TB',
+			' Type integer and unit separate by space, example: 1 GiB',
+			' Size units: B, KiB, MiB, GiB, TiB',
 		]);
 
 		$line = $this->get_input($name);
@@ -741,7 +772,7 @@ class Core {
 		if(!isset($size[1])) goto set_size;
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
-		if(!in_array(strtoupper($size[1]), ['B', 'KB', 'MB', 'GB', 'TB'])) goto set_size;
+		if(!in_array(strtoupper($size[1]), ['B', 'KiB', 'MiB', 'GiB', 'TiB'])) goto set_size;
 		$bytes = $this->size_unit_to_bytes(intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 		return $bytes;
@@ -792,7 +823,8 @@ class Core {
 		$write_buffer = $this->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->clear();
-			$this->pause(" Operation aborted: invalid config value for WRITE_BUFFER_SIZE=\"".$this->config->get('WRITE_BUFFER_SIZE')."\", press any key to back to menu.");
+			$write_buffer_size = $this->config->get('WRITE_BUFFER_SIZE');
+			$this->pause(" Operation aborted: invalid config value for WRITE_BUFFER_SIZE=\"$write_buffer_size\", press any key to back to menu.");
 			return false;
 		}
 		return $write_buffer;
@@ -864,24 +896,6 @@ class Core {
 		} else {
 			return '/dev/null';
 		}
-	}
-
-	/**
-	 * @deprecated Use move(string $from, string $to, bool $log = true)
-	 *
-	 * @return $this
-	 */
-	public function rename(string $from, string $to, bool $log = true) : bool {
-		return $this->move($from, $to, $log);
-	}
-
-	/**
-	 * @deprecated Use move_case(string $from, string $to, bool $log = true)
-	 *
-	 * @return $this
-	 */
-	public function rename_case(string $from, string $to, bool $log = true) : bool {
-		return $this->move($from, $to, $log);
 	}
 
 }

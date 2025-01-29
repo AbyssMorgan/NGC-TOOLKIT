@@ -1,6 +1,11 @@
+v2.4.0:
+- Added tool: Media Sorter > Sort Images: Monochrome
+- Updated tool Media Tools > Video: Fetch media info added more media info
+- Renamed size unit to informatics format
+
 v2.3.3:
-- Renamed tool "Media Tools > Ident mime type: Images" to "Media Tools > Ident mime type"
-- Updated tool "File Names Editor > Pretty file name" add flag "P" for capitalize letters
+- Renamed tool Media Tools > Ident mime type: Images to Media Tools > Ident mime type
+- Updated tool File Names Editor > Pretty file name add flag "P" for capitalize letters
 
 v2.3.2:
 - Fixed tools releated to MediaFunctions extension

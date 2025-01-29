@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -16,8 +16,8 @@ class ADM {
 	private bool $is_changed;
 	private array $allocation;
 
-	const ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
-	const ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
+	public const ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
+	public const ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
 
 	public function __construct(){
 		$this->container = new BinaryFile();

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -12,7 +12,7 @@ class AppBuffer {
 
 	protected string $path;
 
-	function __construct(string $path){
+	public function __construct(string $path){
 		$this->path = $path;
 		if(!file_exists($this->path)) mkdir($this->path, 0755, true);
 	}

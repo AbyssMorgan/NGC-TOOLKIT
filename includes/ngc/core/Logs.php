@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.3.3 */
+/* NGC-TOOLKIT v2.4.0 */
 
 declare(strict_types=1);
 
@@ -13,7 +13,7 @@ class Logs {
 	private bool $hold_open;
 	private $file;
 
-	function __construct(string $path, bool $timestamp = true, bool $hold_open = false){
+	public function __construct(string $path, bool $timestamp = true, bool $hold_open = false){
 		$this->path = $path;
 		$this->timestamp = $timestamp;
 		$this->hold_open = $hold_open;
