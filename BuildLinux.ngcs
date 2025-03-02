@@ -1,29 +1,48 @@
-@AppType NGC_SCRIPT 2.4.0
+@AppType NGC_SCRIPT 2.5.0
 <?php
-	$app_name = 'NGC-TOOLKIT';
+	class BuildLinux {
 
-	$version = file_get_contents($this->core->get_path("$this->path/version"));
+		private string $name = "Build Linux";
+		private Script $core;
+		private string $path;
 
-	$this->core->title("$app_name Builder v$version");
+		public function __construct(Script $core, string $path){
+			$this->core = $core;
+			$this->path = $path;
+			$this->core->title($this->name);
+		}
 
-	$output = "$this->path/Setup";
-	$zip_name_a = $this->core->get_path("$output/{$app_name}_v{$version}_LINUX.tar");
-	$this->core->delete($zip_name_a);
+		public function execute() : void {
+			$app_name = 'NGC-TOOLKIT';
 
-	$zip_name_b = $this->core->get_path("$output/{$app_name}_v{$version}_LINUX.tar.gz");
-	$this->core->delete($zip_name_b);
+			$version = file_get_contents($this->core->get_path("$this->path/version"));
 
-	$this->core->echo(" Compress \"$zip_name_a\"");
-	$this->core->exec("7z", "a -mx0 -ttar -- \"$zip_name_a\" \"includes\" \"vendor\" \"bin\*.sh\" \"composer.json\" \"Changelog.txt\" \"LICENSE\"");
+			$this->core->title("$app_name Builder v$version");
 
-	$this->core->echo(" Compress \"$zip_name_b\"");
-	$this->core->exec("7z", "a -mx9 -tgzip -- \"$zip_name_b\" \"$zip_name_a\"");
+			$output = "$this->path/Setup";
+			$zip_name_a = $this->core->get_path("$output/{$app_name}_v{$version}_LINUX_MACOS.tar");
+			$this->core->delete($zip_name_a);
 
-	$this->core->delete($zip_name_a);
+			$zip_name_b = $this->core->get_path("$output/{$app_name}_v{$version}_LINUX_MACOS.tar.gz");
+			$this->core->delete($zip_name_b);
 
-	if(file_exists($zip_name_b)){
-		$this->core->pause(" Operation done, press any key to back to menu");
-	} else {
-		$this->core->pause(" Failed compress files.");
+			$this->core->echo(" Compress \"$zip_name_a\"");
+			$this->core->exec("7z", "a -mx0 -ttar -- \"$zip_name_a\" \"includes\" \"vendor\" \"bin\*.sh\" \"composer.json\" \"Changelog.txt\" \"LICENSE\"");
+
+			$this->core->echo(" Compress \"$zip_name_b\"");
+			$this->core->exec("7z", "a -mx9 -tgzip -- \"$zip_name_b\" \"$zip_name_a\"");
+
+			$this->core->delete($zip_name_a);
+
+			if(file_exists($zip_name_b)){
+				$this->core->pause(" Operation done, press any key to back to menu");
+			} else {
+				$this->core->pause(" Failed compress files.");
+			}
+		}
+
 	}
+
+	$tool = new BuildLinux($this->core, $this->path);
+	$tool->execute();
 ?>

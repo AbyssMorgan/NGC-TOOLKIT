@@ -55,7 +55,7 @@ class AdmFileConverter {
 		if($line == '#') return false;
 
 		$this->params = [
-			'mode' => strtolower($line[0] ?? '?'),
+			'mode' => $line[0] ?? '?',
 		];
 
 		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;

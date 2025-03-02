@@ -85,7 +85,7 @@ class FileFunctions {
 		$except_extensions = explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$extension = strtolower(pathinfo($folder, PATHINFO_EXTENSION));
+			$extension = $this->core->get_extension($folder);
 			if(is_file($folder)){
 				$this->core->get_hash_from_idx($folder, $keys, true);
 				$this->core->set_folder_done($folder);
@@ -97,14 +97,14 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
-				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+				if(in_array(mb_strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
+				$extension = $this->core->get_extension($file);
 				if($extension == 'idx' && $this->core->config->get('LOAD_IDX_CHECKSUM')){
 					$this->core->get_hash_from_idx($file, $keys, false);
 					continue 1;
 				}
 				if($this->params['mode'] == 'a'){
-					$key = hash_file('md5', $file, false);
+					$key = strtoupper(hash_file('md5', $file, false));
 				} else {
 					$key = pathinfo($file, PATHINFO_FILENAME);
 				}
@@ -183,16 +183,15 @@ class FileFunctions {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				if(in_array(strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
-				$file_name = strtolower(pathinfo($file, PATHINFO_FILENAME));
-				$hash = hash_file($algo['name'], $file, false);
+				if(in_array(mb_strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
+				$hash = strtoupper(hash_file($algo['name'], $file, false));
 				if($this->params['mode'] == '0'){
 					$checksum_file = "$file.{$algo['name']}";
 					if(!file_exists($checksum_file)){
 						$this->core->write_error("FILE NOT FOUND \"$checksum_file\"");
 						$errors++;
 					} else {
-						$hash_current = strtolower(trim(file_get_contents($checksum_file)));
+						$hash_current = strtoupper(trim(file_get_contents($checksum_file)));
 						if($hash_current != $hash){
 							$this->core->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $hash_current");
 							$errors++;
@@ -201,6 +200,7 @@ class FileFunctions {
 						}
 					}
 				} else {
+					$file_name = strtoupper(pathinfo($file, PATHINFO_FILENAME));
 					$len = strlen($file_name);
 					if($len < $algo['length']){
 						$this->core->write_error("INVALID FILE NAME \"$file\"");
@@ -710,7 +710,7 @@ class FileFunctions {
 				} else {
 					$hash_output = hash_file($algo, $new_name);
 				}
-				if($hash_input != $hash_output){
+				if(strtoupper($hash_input) != strtoupper($hash_output)){
 					if(!$this->core->delete($new_name)){
 						$errors++;
 					} else if(!$this->core->copy($file, $new_name)){

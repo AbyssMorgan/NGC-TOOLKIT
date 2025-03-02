@@ -24,7 +24,9 @@ class MediaFunctions {
 
 	public function get_image_from_path(string $path) : GdImage|bool|null {
 		if(!file_exists($path)) return null;
-		switch(strtolower(pathinfo($path, PATHINFO_EXTENSION))){
+		$extension = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+		if($extension === 'webp' && $this->is_webp_animated($path)) return null;
+		switch($extension){
 			case 'bmp': return @imagecreatefrombmp($path);
 			case 'avif': return @imagecreatefromavif($path);
 			case 'gd2': return @imagecreatefromgd2($path);
@@ -75,15 +77,23 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
+	public function is_webp_animated(string $path): bool {
+		$file = fopen($path, 'rb');
+		if(!$file) return false;
+		$header = fread($file, 1024);
+		fclose($file);
+		return str_contains($header, 'ANMF');
+	}
+
 	public function ffprobe_get_resolution(string $path) : string {
 		$output = [];
-		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>".$this->core->get_output_null(), $output);
+		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>{$this->core->device_null}", $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
 	public function get_video_languages(string $path) : array {
 		$output = [];
-		$this->core->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> ".$this->core->get_output_null(), $output);
+		$this->core->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> {$this->core->device_null}", $output);
 		$data = [];
 		foreach($output as $language){
 			$parts = explode("|", $language);
@@ -101,17 +111,18 @@ class MediaFunctions {
 
 	public function get_video_thumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
 		$out = [];
-		if(!$this->core->windows && !file_exists("/usr/bin/mtn")) return false;
+		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS && !file_exists("/usr/bin/mtn")) return false;
 		$input_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
 		$output_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_FILENAME).".webp");
 		if(file_exists($output_file)) return true;
 		if(!file_exists($input_file)){
-			$this->core->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >".$this->core->get_output_null()." 2>".$this->core->get_output_null(), $out);
+			$this->core->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >{$this->core->device_null}"." 2>{$this->core->device_null}", $out);
 			if(!file_exists($input_file)) return false;
 		}
 		$image = new Imagick();
 		$image->readImage($input_file);
 		$image->writeImage($output_file);
+		$image->clear();
 		unlink($input_file);
 		return file_exists($output_file);
 	}
@@ -135,45 +146,47 @@ class MediaFunctions {
 		return 'Unknown';
 	}
 
-	public function get_media_quality(int $width, int $height, bool $is_vr = false) : string {
+	public function get_media_quality(int $width, int $height, bool $is_vr = false) : int {
 		$w = max($width, $height);
 		$h = min($width, $height);
-		if($is_vr) return strval($h);
+		if($is_vr) return $h;
 		if($w >= 61440 - 7680 || $h == 34560){
-			return '34560';
+			return 34560;
 		} else if($w >= 30720 - 3840 || $h == 17280){
-			return '17280';
+			return 17280;
 		} else if($w >= 15360 - 1920 || $h == 8640){
-			return '8640';
+			return 8640;
 		} else if($w >= 7680 - 960 || $h == 4320){
-			return '4320';
+			return 4320;
 		} else if($w >= 3840 - 320 || $h == 2160){
-			return '2160';
+			return 2160;
 		} else if($w >= 2560 - 160 || $h == 1440){
-			return '1440';
+			return 1440;
 		} else if($w >= 1920 - 160 || $h == 1080){
-			return '1080';
+			return 1080;
 		} else if($w >= 1280 - 80 || $h == 720){
-			return '720';
+			return 720;
 		} else if($w >= 960 - 80 || $h == 540){
-			return '540';
+			return 540;
 		} else if($w >= 640 - 40 || $h == 480){
-			return '480';
+			return 480;
 		} else if($w >= 480 - 40 || $h == 360){
-			return '360';
+			return 360;
 		} else if($w >= 320 - 32 || $h == 240){
-			return '240';
+			return 240;
 		} else {
-			return '144';
+			return 144;
 		}
 	}
 
-	public function get_image_color_count(string $path) : int|null {
+	public function get_image_color_count(string $path) : ?int {
 		if(!file_exists($path)) return -1;
 		try {
 			$image = new Imagick($path);
 			if(!$image->valid()) return null;
-			return $image->getImageColors();
+			$count = $image->getImageColors();
+			$image->clear();
+			return $count;
 		}
 		catch(Exception $e){
 			return -1;
@@ -218,40 +231,40 @@ class MediaFunctions {
 	}
 
 	public function is_vr_video(string $path) : bool {
-		$name = strtoupper(pathinfo($path, PATHINFO_FILENAME));
+		$name = mb_strtoupper(pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
-			if(strpos("$name#", "$tag#") !== false) return true;
+			if(str_contains("$name#", "$tag#")) return true;
 		}
 		return false;
 	}
 
 	public function is_ar_video(string $path) : bool {
-		$name = strtoupper(pathinfo($path, PATHINFO_FILENAME));
+		$name = mb_strtoupper(pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
-			if(strpos("$name#", "{$tag}_ALPHA#") !== false) return true;
+			if(str_contains("$name#", "{$tag}_ALPHA#")) return true;
 		}
 		return false;
 	}
 
 	public function get_vr_mode(string $name) : array {
-		if(strpos($name, '_LR_180') !== false){
+		if(str_contains($name, '_LR_180')){
 			$screen_type = "dome";
 			$stereo_mode = "sbs";
-		} else if(strpos($name, '_FISHEYE190') !== false){
+		} else if(str_contains($name, '_FISHEYE190')){
 			$screen_type = "fisheye";
 			$stereo_mode = "sbs";
-		} else if(strpos($name, '_MKX200') !== false){
+		} else if(str_contains($name, '_MKX200')){
 			$screen_type = "mkx200";
 			$stereo_mode = "sbs";
-		} else if(strpos($name, '_MKX220') !== false || strpos($name, '_VRCA220') !== false){
+		} else if(str_contains($name, '_MKX220') || str_contains($name, '_VRCA220')){
 			$screen_type = "mkx220";
 			$stereo_mode = "sbs";
-		} else if(strpos($name, '_TB_180') !== false){
+		} else if(str_contains($name, '_TB_180')){
 			$screen_type = "180";
 			$stereo_mode = "tb";
-		} else if(strpos($name, '_360') !== false){
+		} else if(str_contains($name, '_360')){
 			$screen_type = "360";
-			$stereo_mode = (strpos($name, '_SBS_') !== false) ? "sbs" : "off";
+			$stereo_mode = (str_contains($name, '_SBS_')) ? "sbs" : "off";
 		} else {
 			$screen_type = "flat";
 			$stereo_mode = "off";
@@ -259,7 +272,7 @@ class MediaFunctions {
 		return [
 			'screen_type' => $screen_type,
 			'stereo_mode' => $stereo_mode,
-			'alpha' => (strpos($name, '_ALPHA') !== false),
+			'alpha' => (str_contains($name, '_ALPHA')),
 		];
 	}
 
@@ -307,7 +320,7 @@ class MediaFunctions {
 
 	public function get_media_info(string $path): array {
 		$output = [];
-		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>".$this->core->get_output_null(), $output);
+		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>{$this->core->device_null}", $output);
 		$info = json_decode(implode('', $output), true);
 		return $info;
 	}
@@ -441,9 +454,10 @@ class MediaFunctions {
 			'text/xml' => 'xml',
 			'application/zip' => 'zip',
 			'audio/eac3' => 'eac3',
+			'video/x-matroska' => 'mkv',
 		];
 
-		return isset($mime_map[$mime_type]) ? $mime_map[$mime_type] : false;
+		return $mime_map[$mime_type] ?? false;
 	}
 
 }

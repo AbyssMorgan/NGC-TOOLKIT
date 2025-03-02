@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.4.0 */
+/* NGC-TOOLKIT v2.5.0 */
 
 declare(strict_types=1);
 
@@ -26,7 +26,7 @@ class FtpService {
 		return "0$num";
 	}
 
-	public function get_files(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
+	public function get_files(string $path, ?array $extensions = null, ?array $except = null, ?array $filters = null) : array {
 		$data = [];
 		$files = $this->ftp->rawlist($path);
 		if($files === false) return [];
@@ -36,7 +36,7 @@ class FtpService {
 			if(substr($chunks[0], 0, 1) == 'd'){
 				$data = array_merge($data, $this->get_files("$path/$chunks[8]", $extensions, $except));
 			} else {
-				$ext = strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
+				$ext = mb_strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 				if(!is_null($except) && in_array($ext, $except)) continue;
 				if(!is_null($filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $filters)) continue;
@@ -46,7 +46,7 @@ class FtpService {
 		return $data;
 	}
 
-	public function get_files_meta(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
+	public function get_files_meta(string $path, ?array $extensions = null, ?array $except = null, ?array $filters = null) : array {
 		$data = [];
 		$files = $this->ftp->rawlist($path);
 		foreach($files as $file){
@@ -55,7 +55,7 @@ class FtpService {
 			if(substr($chunks[0], 0, 1) == 'd'){
 				$data = array_merge($data, $this->get_files_meta("$path/$chunks[8]", $extensions, $except));
 			} else {
-				$ext = strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
+				$ext = mb_strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 				if(!is_null($except) && in_array($ext, $except)) continue;
 				if(!is_null($filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $filters)) continue;
@@ -106,7 +106,7 @@ class FtpService {
 
 	public function filter(string $search, array $filters) : bool {
 		foreach($filters as $filter){
-			if(strpos($search, $filter) !== false){
+			if(str_contains($search, $filter)){
 				return true;
 			}
 		}

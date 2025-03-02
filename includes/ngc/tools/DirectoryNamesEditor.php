@@ -68,7 +68,7 @@ class DirectoryNamesEditor {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$escaped_name = pathinfo($file, PATHINFO_BASENAME);
-				while(strpos($escaped_name, '  ') !== false){
+				while(str_contains($escaped_name, '  ')){
 					$escaped_name = str_replace('  ', ' ', $escaped_name);
 				}
 				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-.]/', '', str_replace(' ', '_', $escaped_name)), ' ');
@@ -77,7 +77,7 @@ class DirectoryNamesEditor {
 					$errors++;
 				} else {
 					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name");
-					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -123,14 +123,14 @@ class DirectoryNamesEditor {
 		if(empty($line)) $line = 'BC';
 		if(str_replace(['B', 'C', 'L', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
-			'basic_replace' => (strpos($line, 'B') !== false),
-			'basic_remove' => (strpos($line, 'C') !== false),
-			'language_replace' => (strpos($line, 'L') !== false),
-			'ChineseToPinYin' => (strpos($line, '0') !== false),
-			'HiragamaToRomaji' => (strpos($line, '1') !== false),
-			'KatakanaToRomaji' => (strpos($line, '2') !== false),
-			'UpperCase' => (strpos($line, '+') !== false),
-			'LowerCase' => (strpos($line, '-') !== false),
+			'basic_replace' => str_contains($line, 'B'),
+			'basic_remove' => str_contains($line, 'C'),
+			'language_replace' => str_contains($line, 'L'),
+			'ChineseToPinYin' => str_contains($line, '0'),
+			'HiragamaToRomaji' => str_contains($line, '1'),
+			'KatakanaToRomaji' => str_contains($line, '2'),
+			'UpperCase' => str_contains($line, '+'),
+			'LowerCase' => str_contains($line, '-'),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
@@ -183,7 +183,7 @@ class DirectoryNamesEditor {
 					$errors++;
 				} else {
 					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name");
-					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -234,7 +234,7 @@ class DirectoryNamesEditor {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$prefix".pathinfo($file, PATHINFO_BASENAME).$suffix);
-				if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+				if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -270,7 +270,7 @@ class DirectoryNamesEditor {
 		if($line == '#') return false;
 
 		$this->params = [
-			'mode' => strtolower($line[0] ?? '?'),
+			'mode' => $line[0] ?? '?',
 		];
 
 		if(!in_array($this->params['mode'], ['0', '1'])) goto set_mode;
@@ -309,7 +309,7 @@ class DirectoryNamesEditor {
 				goto set_keyword_file;
 			}
 			while(($line = fgets($fp)) !== false){
-				$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+				$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 				if(empty(trim($line))) continue;
 				array_push($keywords, $line);
 			}
@@ -332,7 +332,7 @@ class DirectoryNamesEditor {
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} else if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+				} else if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -403,7 +403,7 @@ class DirectoryNamesEditor {
 						$name = $insert_string.$name;
 					}
 					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name");
-					if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -454,7 +454,7 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		while(($line = fgets($fp)) !== false){
 			$i++;
-			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if(empty(trim($line))) continue;
 			$replace = $this->core->get_input_folders($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
@@ -486,7 +486,7 @@ class DirectoryNamesEditor {
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} else if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+				} else if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {

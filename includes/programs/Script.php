@@ -17,7 +17,7 @@ class Script extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.4.0";
+	public string $version = "2.5.0";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 	public string $script;
@@ -26,16 +26,26 @@ class Script extends Core {
 		parent::__construct($arguments, true);
 		if($this->abort) return;
 		$config_default = new IniFile($this->get_path("$this->path/includes/config/default.ini"), true);
-		if($this->windows){
+		switch($this->get_system_type()){
+			case SYSTEM_TYPE_WINDOWS: {
+				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/windows.ini"), true);
+				$this->app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/NGC-TOOLKIT");
+				break;
+			}
+			case SYSTEM_TYPE_LINUX: {
+				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/linux.ini"), true);
+				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/.config/NGC-TOOLKIT");
+				break;
+			}
+			case SYSTEM_TYPE_MACOS: {
+				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/macos.ini"), true);
+				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/Library/Application Support/NGC-TOOLKIT");
+				break;
+			}
+		}
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			dl('php_imagick.dll');
-			dl('php_exif.dll');
-			$config_default_system = new IniFile($this->get_path("$this->path/includes/config/windows.ini"), true);
-			$old_app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/AVE-PHP");
-			$this->app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/NGC-TOOLKIT");
-			if(file_exists($old_app_data) && !file_exists($this->app_data)) rename($old_app_data, $this->app_data);
 		} else {
-			$config_default_system = new IniFile($this->get_path("$this->path/includes/config/linux.ini"), true);
-			$this->app_data = $this->get_path("/etc/NGC-TOOLKIT");
 			$open_file_binary = null;
 			$variants = ['xdg-open', 'nautilus', 'dolphin'];
 			foreach($variants as $variant){
@@ -80,7 +90,7 @@ class Script extends Core {
 			}
 		}
 
-		if($this->windows) popen('color '.$this->config->get('COLOR'), 'w');
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS) popen('color '.$this->config->get('COLOR'), 'w');
 
 		if($changed){
 			$this->config->save();

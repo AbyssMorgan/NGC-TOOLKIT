@@ -18,3 +18,8 @@ ngc/services/DataBaseBackup.php
 ngc/services/StringConverter.php
 ngc/extensions/MediaFunctions.php
 ngc/extensions/AppStorage.php
+ngc/extensions/VolumeIntegrity.php
+ngc/extensions/VolumeInfo.php
+ngc/library/FtpClient/FtpClient.php
+ngc/library/FtpClient/FtpException.php
+ngc/library/FtpClient/FtpWrapper.php

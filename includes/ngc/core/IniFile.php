@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.4.0 */
+/* NGC-TOOLKIT v2.5.0 */
 
 declare(strict_types=1);
 
@@ -200,9 +200,10 @@ class IniFile {
 
 	public function clean_value(int|bool|string|array|float|null $value) : mixed {
 		if(gettype($value) == 'string'){
-			if(strtolower($value) == 'true'){
+			$lvalue = mb_strtolower($value);
+			if($lvalue == 'true'){
 				return true;
-			} else if(strtolower($value) == 'false'){
+			} else if($lvalue == 'false'){
 				return false;
 			}
 		}
@@ -232,8 +233,8 @@ class IniFile {
 		}
 	}
 
-	public function save() : bool {
-		if(!$this->is_valid()) return false;
+	public function save(bool $as_output = false) : string|bool {
+		if(!$this->is_valid() && !$as_output) return false;
 		if($this->sort) ksort($this->data);
 		$content = "\xEF\xBB\xBF";
 		foreach($this->data as $key => $value){
@@ -261,12 +262,20 @@ class IniFile {
 				if(is_null($content)) return false;
 				$content = $this->encoder->get_header().$content;
 			}
-			file_put_contents($this->path, $content);
+			if($as_output){
+				return $content;
+			} else {
+				file_put_contents($this->path, $content);
+			}
 		}
 		catch(Exception $e){
 			return false;
 		}
 		return true;
+	}
+
+	public function get_output() : string|bool {
+		return $this->save(true);
 	}
 
 	public function is_valid() : bool {

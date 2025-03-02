@@ -83,7 +83,7 @@ class DirectoryFunctions {
 	public function tool_force_load_icon() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Force load icon");
-		if(!$this->core->windows) return $this->core->windows_only();
+		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS) return $this->core->windows_only();
 
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;

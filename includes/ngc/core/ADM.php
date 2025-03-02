@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.4.0 */
+/* NGC-TOOLKIT v2.5.0 */
 
 declare(strict_types=1);
 
@@ -16,8 +16,8 @@ class ADM {
 	private bool $is_changed;
 	private array $allocation;
 
-	public const ADM_HEADER_INDEX = 		'ADM_V1_INDEX:';
-	public const ADM_HEADER_CONTAINER =	'ADM_V1_CONTAINER:';
+	public const ADM_HEADER_INDEX = 'ADM_V1_INDEX:';
+	public const ADM_HEADER_CONTAINER = 'ADM_V1_CONTAINER:';
 
 	public function __construct(){
 		$this->container = new BinaryFile();
@@ -127,7 +127,7 @@ class ADM {
 		return array_keys($this->allocation['files']);
 	}
 
-	public function get_file_info(string $internal_name, string $key = null) : mixed {
+	public function get_file_info(string $internal_name, ?string $key = null) : mixed {
 		if(!$this->is_open()) return false;
 		if(is_null($key)) return $this->allocation['files'][$internal_name];
 		return $this->allocation['files'][$internal_name][$key] ?? false;

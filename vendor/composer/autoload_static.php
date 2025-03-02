@@ -56,16 +56,6 @@ class ComposerStaticInitaecfb81923c65b9c1a4c2698e041983a
         ),
     );
 
-    public static $prefixesPsr0 = array (
-        'F' => 
-        array (
-            'FtpClient' => 
-            array (
-                0 => __DIR__ . '/..' . '/nicolab/php-ftp-client/src',
-            ),
-        ),
-    );
-
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
@@ -75,7 +65,6 @@ class ComposerStaticInitaecfb81923c65b9c1a4c2698e041983a
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitaecfb81923c65b9c1a4c2698e041983a::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitaecfb81923c65b9c1a4c2698e041983a::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitaecfb81923c65b9c1a4c2698e041983a::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitaecfb81923c65b9c1a4c2698e041983a::$classMap;
 
         }, null, ClassLoader::class);

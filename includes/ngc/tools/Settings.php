@@ -100,10 +100,19 @@ class Settings {
 		$this->core->clear();
 		if($this->core->get_confirm(" Restore default settings (Y/N): ")){
 			$config_default = new IniFile($this->core->get_path($this->core->path."/includes/config/default.ini"), true);
-			if($this->core->windows){
-				$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/windows.ini"), true);
-			} else {
-				$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/linux.ini"), true);
+			switch($this->core->get_system_type()){
+				case SYSTEM_TYPE_WINDOWS: {
+					$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/windows.ini"), true);
+					break;
+				}
+				case SYSTEM_TYPE_LINUX: {
+					$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/linux.ini"), true);
+					break;
+				}
+				case SYSTEM_TYPE_MACOS: {
+					$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/macos.ini"), true);
+					break;
+				}
 			}
 			$config_default->update($config_default_system->get_all());
 			$this->core->config->update($config_default->get_all(), true);
@@ -133,9 +142,9 @@ class Settings {
 	public function tool_install_toolkit_script() : bool {
 		$this->core->clear();
 		$program_path = realpath($this->core->get_path($this->core->path));
-		if(!$this->core->windows){
+		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS){
 			$this->core->echo(" This feature is available only on windows operating system.");
-			$this->core->echo(" Use command: /usr/bin/php8.3 \"$program_path/includes/script.php\" <path> [...]");
+			$this->core->echo(" Use command: /usr/bin/php8.4 \"$program_path/includes/script.php\" <path> [...]");
 			$this->core->pause(" Press any key to back to menu");
 		} else if(!$this->core->is_admin()){
 			$this->core->echo(" You must run {$this->core->app_name} as administrator to use this feature");

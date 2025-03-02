@@ -283,7 +283,7 @@ class MediaTools {
 						$errors++;
 					} else {
 						foreach($variants as $variant){
-							$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."@$variant.".pathinfo($file, PATHINFO_EXTENSION));
+							$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."@$variant.".$this->core->get_extension($file));
 							if($detector->save_variant_image(floatval($variant), $file, $new_name, $size)){
 								$this->core->write_log("WRITE VARIANT $variant FOR \"$file\"");
 							}
@@ -398,7 +398,7 @@ class MediaTools {
 				'path' => str_replace("\\\\", "\\", addslashes($file)),
 				'directory' => str_replace("\\\\", "\\", addslashes(pathinfo(pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))),
 				'filename' => str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_FILENAME))),
-				'extension' => str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_EXTENSION))),
+				'extension' => str_replace("\\\\", "\\", addslashes($this->core->get_extension($file))),
 			];
 
 			$media_cache = $cache->get($key, []);
@@ -533,7 +533,7 @@ class MediaTools {
 			$items++;
 			$this->core->set_errors($errors);
 			if(!file_exists($file)) continue;
-			if(!in_array(pathinfo($file, PATHINFO_EXTENSION), $extensions)){
+			if(!in_array($this->core->get_extension($file), $extensions)){
 				$this->core->write_error("FILE FORMAT NOT SUPORTED \"$file\"");
 				$errors++;
 				continue;
@@ -583,7 +583,7 @@ class MediaTools {
 				}
 			}
 			if(file_exists($new_name)){
-				$image->destroy();
+				$image->clear();
 				$this->core->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
 				continue;
@@ -594,7 +594,7 @@ class MediaTools {
 			catch(Exception $e){
 				$this->core->write_error($e->getMessage());
 			}
-			$image->destroy();
+			$image->clear();
 			if(!file_exists($new_name)){
 				$this->core->write_error("FAILED SAVE FILE \"$new_name\"");
 				$errors++;
@@ -616,7 +616,6 @@ class MediaTools {
 	public function tool_ident_mime_type() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Ident mime type");
-		if(!$this->core->windows) return $this->core->windows_only();
 
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;
@@ -633,7 +632,7 @@ class MediaTools {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$extension_current = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+				$extension_current = $this->core->get_extension($file);
 				$extension_detected = $this->core->media->get_extension_by_mime_type($file);
 				if(!$extension_detected){
 					$this->core->write_error("FAILED DETECT TYPE \"$file\"");
@@ -670,11 +669,11 @@ class MediaTools {
 				break;
 			}
 			default: {
-				$meta->video_codec = strtoupper($meta->video_codec);
+				$meta->video_codec = mb_strtoupper($meta->video_codec);
 				break;
 			}
 		}
-		$meta->audio_codec = $meta->audio_codec == 'none' ? 'None' : strtoupper($meta->audio_codec);
+		$meta->audio_codec = $meta->audio_codec == 'none' ? 'None' : mb_strtoupper($meta->audio_codec);
 		if(is_null($meta->audio_bitrate)){
 			$meta->audio_bitrate = 'N/A';
 		} else if($meta->audio_bitrate == 0){

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.4.0 */
+/* NGC-TOOLKIT v2.5.0 */
 
 declare(strict_types=1);
 
@@ -10,11 +10,13 @@ use PDO;
 
 class Migration extends MySQL {
 
-	protected string $table_version = 'ngc_version';
-	protected string $table_config = 'ngc_config';
+	protected string $table_version;
+	protected string $table_config;
 	protected array $tables = [];
 
-	public function __construct(){
+	public function __construct(string $table_version = 'ngc_version', string $table_config = 'ngc_config'){
+		$this->table_version = $table_version;
+		$this->table_config = $table_config;
 		parent::__construct();
 	}
 

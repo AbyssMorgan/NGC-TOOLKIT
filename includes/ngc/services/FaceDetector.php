@@ -26,7 +26,7 @@ use Imagick;
 class FaceDetector {
 
 	private array $detection_data;
-	private array|null $face;
+	private ?array $face;
 	private GdImage $canvas;
 	private GdImage $reduced_canvas;
 
@@ -131,7 +131,7 @@ class FaceDetector {
 		return ['ii' => $ii, 'ii2' => $ii2];
 	}
 
-	private function do_detect_greedy_big_to_small(array $ii, array $ii2, int $width, int $height) : array|null {
+	private function do_detect_greedy_big_to_small(array $ii, array $ii2, int $width, int $height) : ?array {
 		$s_w = $width/20.0;
 		$s_h = $height/20.0;
 		$start_scale = $s_h < $s_w ? $s_h : $s_w;
@@ -210,3 +210,5 @@ class FaceDetector {
 	}
 
 }
+
+?>

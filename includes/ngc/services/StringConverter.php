@@ -46,7 +46,7 @@ class StringConverter {
 	}
 
 	public function remove_double_spaces(string $string) : string {
-		while(strpos($string, '  ') !== false){
+		while(str_contains($string, '  ')){
 			$string = str_replace('  ', ' ', $string);
 		}
 		return trim($string, ' ');

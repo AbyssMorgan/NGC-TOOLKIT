@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.4.0 */
+/* NGC-TOOLKIT v2.5.0 */
 
 declare(strict_types=1);
 
@@ -12,9 +12,14 @@ use RecursiveDirectoryIterator;
 use FilesystemIterator;
 use DirectoryIterator;
 
+define('SYSTEM_TYPE_UNKNOWN', 0);
+define('SYSTEM_TYPE_WINDOWS', 1);
+define('SYSTEM_TYPE_LINUX', 2);
+define('SYSTEM_TYPE_MACOS', 3);
+
 class Core {
 
-	public int $core_version = 14;
+	public int $core_version = 15;
 
 	public IniFile $config;
 
@@ -26,7 +31,6 @@ class Core {
 	public string $version = "0.0.0";
 	public ?string $command;
 	public array $arguments;
-	public bool $windows;
 	public string $logo;
 	public string $path;
 	public string $tool_name;
@@ -39,10 +43,12 @@ class Core {
 	public bool $toggle_log_error = true;
 	public string $utilities_path;
 	public ?string $core_path;
-	public string $utilities_version = "1.1.0";
+	public string $utilities_version = "1.2.0";
 	public string $current_title;
 	public array $drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 	public bool $can_exit = true;
+	public string $device_null;
+	public string $utf8_bom = "\xEF\xBB\xBF";
 
 	public function __construct(array $arguments, bool $require_utilities){
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
@@ -50,15 +56,20 @@ class Core {
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);
 		$this->arguments = array_values($arguments);
-		$this->windows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 		$this->path = realpath($this->get_path(__DIR__."/../../.."));
 		$this->logo = '';
 		$this->current_title = '';
-		$this->utilities_path = $this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES");
 		$this->core_path = null;
+		$this->utilities_path = '';
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			$this->device_null = 'nul';
+		} else {
+			$this->device_null = '/dev/null';
+		}
 
 		if($require_utilities){
-			if($this->windows){
+			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+				$this->utilities_path = $this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES");
 				$utilities = false;
 				if(file_exists($this->utilities_path)){
 					$utilities_main = new IniFile($this->get_path("$this->utilities_path/main.ini"));
@@ -84,8 +95,8 @@ class Core {
 				];
 				$errors = 0;
 				foreach($programs as $program_name => $install_name){
-					if(!file_exists("/usr/bin/$program_name")){
-						$this->echo("[ERROR] Required $program_name not found, please istall $install_name");
+					if(!file_exists("/usr/bin/$program_name") && !file_exists("/opt/homebrew/bin/$program_name") && !file_exists("/usr/local/bin/$program_name")){
+						$this->echo("[ERROR] Required $program_name not found, please install $install_name");
 						$errors++;
 					}
 				}
@@ -166,7 +177,7 @@ class Core {
 	}
 
 	public function clear() : void {
-		if($this->windows){
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			popen('cls', 'w');
 		} else {
 			system('clear');
@@ -184,7 +195,8 @@ class Core {
 	}
 
 	public function print_help(array $help) : void {
-		echo implode("\r\n", $help)."\r\n\r\n";
+		$this->echo(implode("\r\n", $help));
+		$this->echo();
 	}
 
 	public function progress(int|float $count, int|float $total) : void {
@@ -213,7 +225,8 @@ class Core {
 		if($fp){
 			while(($line = fgets($fp)) !== false){
 				$line = trim($line);
-				$keys[pathinfo($line, PATHINFO_FILENAME)] = $line;
+				$hash = strtoupper(pathinfo(str_replace("\\", "/", $line), PATHINFO_FILENAME));
+				$keys[$hash] = $line;
 				$cnt++;
 				if($progress) $this->progress(ftell($fp), $size);
 			}
@@ -245,7 +258,7 @@ class Core {
 	}
 
 	public function size_unit_to_bytes(int $value, string $unit) : int {
-		$index = array_search(strtoupper($unit), $this->units_bytes);
+		$index = array_search(strtolower($unit), $this->array_to_lower($this->units_bytes));
 		if($index === false) return -1;
 		return intval($value * pow(1024, $index));
 	}
@@ -309,13 +322,14 @@ class Core {
 		return true;
 	}
 
-	public function get_files(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
+	public function get_files(string $path, ?array $extensions = null, ?array $except = null, ?array $filters = null, bool $case_sensitive = false) : array {
 		if(!file_exists($path)) return [];
+		if(!$case_sensitive && !is_null($filters)) $filters = $this->array_to_lower($filters);
 		$data = [];
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
 		foreach($files as $file){
 			if($file->isDir() || $file->isLink()) continue;
-			$ext = strtolower($file->getExtension());
+			$ext = mb_strtolower($file->getExtension());
 			if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 			if(!is_null($except) && in_array($ext, $except)) continue;
 			if(!is_null($filters) && !$this->filter($file->getBasename(), $filters)) continue;
@@ -327,9 +341,10 @@ class Core {
 		return $data;
 	}
 
-	public function filter(string $search, array $filters) : bool {
+	public function filter(string $search, array $filters, bool $case_sensitive = false) : bool {
+		if(!$case_sensitive) $search = mb_strtolower($search);
 		foreach($filters as $filter){
-			if(strpos($search, $filter) !== false){
+			if(str_contains($search, $filter)){
 				return true;
 			}
 		}
@@ -350,13 +365,14 @@ class Core {
 		return $data;
 	}
 
-	public function get_files_ex(string $path, array|null $extensions = null, array|null $except = null, array|null $filters = null) : array {
+	public function get_files_ex(string $path, ?array $extensions = null, ?array $except = null, ?array $filters = null, bool $case_sensitive = false) : array {
 		if(!file_exists($path)) return [];
+		if(!$case_sensitive && !is_null($filters)) $filters = $this->array_to_lower($filters);
 		$data = [];
 		$files = scandir($path);
 		foreach($files as $file){
 			if($file == '..' || $file == '.' || is_dir("$path/$file") || is_link("$path/$file")) continue;
-			$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+			$ext = $this->get_extension($file);
 			if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
 			if(!is_null($except) && in_array($ext, $except)) continue;
 			if(!is_null($filters) && !$this->filter(pathinfo($file, PATHINFO_BASENAME), $filters)) continue;
@@ -499,6 +515,21 @@ class Core {
 		}
 	}
 
+	public function clone_folder_structure(string $input, string $output) : int|false {
+		if(!file_exists($input) || !is_dir($input)) return false;
+		$errors = 0;
+		$folders = $this->get_folders($input);
+		foreach($folders as $folder){
+			$directory = str_ireplace($input, $output, $folder);
+			if(!file_exists($directory)){
+				if(!$this->mkdir($directory)){
+					$errors++;
+				}
+			}
+		}
+		return $errors;
+	}
+
 	public function move(string $from, string $to, bool $log = true) : bool {
 		if(!file_exists($from)) return false;
 		if($from == $to) return true;
@@ -555,7 +586,41 @@ class Core {
 		}
 	}
 
-	public function delete_files(string $path, array|null $extensions = null, array|null $except = null) : void {
+	public function acopy(string $from, string $to, bool $log = true) : bool {
+		if(!file_exists($from)) return false;
+		if($from === $to) return true;
+		$write_buffer = $this->get_write_buffer();
+		if(!$write_buffer) return false;
+		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) !== pathinfo($to, PATHINFO_DIRNAME)){
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXISTS");
+			return false;
+		}
+		$dir = pathinfo($to, PATHINFO_DIRNAME);
+		if(!file_exists($dir)) $this->mkdir($dir);
+		$modification_date = filemtime($from);
+		$filesize = filesize($from);
+		$source = fopen($from, 'rb');
+		$destination = fopen($to, 'wb');
+		if(!$source || !$destination){
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
+			return false;
+		}
+		if(function_exists('ftruncate')){
+			ftruncate($destination, $filesize);
+		}
+		while(!feof($source)){
+			$buffer = fread($source, $write_buffer);
+			fwrite($destination, $buffer);
+		}
+		fclose($source);
+		fclose($destination);
+		touch($to, $modification_date);
+		if($log) $this->write_log("COPY \"$from\" \"$to\"");
+		return true;
+	}
+	
+
+	public function delete_files(string $path, ?array $extensions = null, ?array $except = null) : void {
 		$files = $this->get_files($path, $extensions, $except);
 		foreach($files as $file){
 			$this->delete($file);
@@ -567,7 +632,7 @@ class Core {
 	}
 
 	public function title(string $title) : void {
-		if($this->windows){
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$title = $this->cmd_escape($title);
 			if($this->current_title != $title){
 				$this->current_title = $title;
@@ -580,7 +645,7 @@ class Core {
 		ask_confirm:
 		$answer = strtoupper($this->get_input($question));
 		if(!in_array($answer, ['Y', 'N'])) goto ask_confirm;
-		return ($answer == 'Y');
+		return $answer == 'Y';
 	}
 
 	public function get_input(?string $message = null) : string {
@@ -593,7 +658,7 @@ class Core {
 
 	public function pause(?string $message = null) : void {
 		if(!is_null($message)) echo $message;
-		if($this->windows){
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			system("PAUSE > nul");
 		} else {
 			$this->get_input();
@@ -634,8 +699,56 @@ class Core {
 		echo "$string\r\n";
 	}
 
-	public function print(mixed $value) : void {
-		echo print_r($value, true);
+	public function print(mixed $var, bool $add_space = false) : void {
+		echo $this->get_print($var, 0, $add_space);
+	}
+
+	public function get_print(mixed $var, int $indent = 0, bool $add_space = false) : string {
+		$output = '';
+		$prefix = str_repeat("\t", $indent);
+		if($add_space) $prefix = " $prefix";
+		if(is_array($var)){
+			if(empty($var)){
+				$output .= "{$prefix}(array) []\n";
+			} else {
+				$output .= "{$prefix}(array) [\n";
+				foreach($var as $key => $value){
+					if(!is_numeric($key)) $key = "'$key'";
+					$output .= "$prefix\t$key => ".ltrim($this->get_print($value, $indent + 1, $add_space));
+				}
+				$output .= "$prefix]\n";
+			}
+		} elseif(is_object($var)){
+			$class = get_class($var);
+			if(empty($var)){
+				$output .= "{$prefix}($class) {}\n";
+			} else {
+				$output .= "{$prefix}($class) {\n";
+				foreach(get_object_vars($var) as $key => $value){
+					if(!is_numeric($key)) $key = "'$key'";
+					$output .= "$prefix\t$key => ".ltrim($this->get_print($value, $indent + 1, $add_space));
+				}
+				$output .= "$prefix}\n";
+			}
+		} else {
+			$type = strtolower(gettype($var));
+			switch($type){
+				case 'integer': {
+					$type = 'int';
+					break;
+				}
+				case 'boolean': {
+					$type = 'bool';
+					break;
+				}
+			}
+			if($indent > 0){
+				$output .= "$prefix\t($type) ".var_export($var, true)."\n";
+			} else {
+				$output .= "($type) ".var_export($var, true)."\n";
+			}
+		}
+		return $output;
 	}
 
 	public function get_variable(string $string) : string {
@@ -645,7 +758,7 @@ class Core {
 
 	public function open_file(string $path, string $params = '/MIN') : void {
 		if(file_exists($path)){
-			if($this->windows){
+			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 				exec("START $params \"\" \"$path\"");
 			} else if(!is_null($this->config->get('OPEN_FILE_BINARY'))){
 				exec($this->config->get('OPEN_FILE_BINARY')." \"$path\"");
@@ -656,8 +769,8 @@ class Core {
 	}
 
 	public function open_url(string $url) : void {
-		if(strpos($url, "https://") !== false || strpos($url, "http://") !== false){
-			if($this->windows){
+		if(str_contains($url, "https://") || str_contains($url, "http://")){
+			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 				exec("START \"\" \"$url\"");
 			} else if(!is_null($this->config->get('OPEN_FILE_BINARY'))){
 				exec($this->config->get('OPEN_FILE_BINARY')." \"$url\"");
@@ -669,19 +782,19 @@ class Core {
 
 	public function get_file_attributes(string $path) : array {
 		$path = $this->get_path($path);
-		if(!$this->windows || !file_exists($path)) return ['R' => false, 'A' => false, 'S' => false, 'H' => false, 'I' => false];
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !file_exists($path)) return ['R' => false, 'A' => false, 'S' => false, 'H' => false, 'I' => false];
 		$attributes = substr(shell_exec("attrib ".escapeshellarg($path)), 0, 21);
 		return [
-			'R' => (strpos($attributes, "R") !== false),
-			'A' => (strpos($attributes, "A") !== false),
-			'S' => (strpos($attributes, "S") !== false),
-			'H' => (strpos($attributes, "H") !== false),
-			'I' => (strpos($attributes, "I") !== false),
+			'R' => str_contains($attributes, "R"),
+			'A' => str_contains($attributes, "A"),
+			'S' => str_contains($attributes, "S"),
+			'H' => str_contains($attributes, "H"),
+			'I' => str_contains($attributes, "I"),
 		];
 	}
 
-	public function set_file_attributes(string $path, bool|null $r = null, bool|null $a = null, bool|null $s = null, bool|null $h = null, bool|null $i = null) : bool {
-		if(!$this->windows || !file_exists($path)) return false;
+	public function set_file_attributes(string $path, ?bool $r = null, ?bool $a = null, ?bool $s = null, ?bool $h = null, ?bool $i = null) : bool {
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !file_exists($path)) return false;
 		$attributes = '';
 		if(!is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
 		if(!is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
@@ -693,12 +806,12 @@ class Core {
 	}
 
 	public function is_valid_device(string $path) : bool {
-		if(!$this->windows) return true;
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) return true;
 		if(substr($path, 1, 1) == ':'){
 			return file_exists(substr($path, 0, 3));
 		} else if(substr($path, 0, 2) == "\\\\"){
 			$device = substr($path, 2);
-			if(strpos($device, "\\") !== false){
+			if(str_contains($device, "\\")){
 				$parts = explode("\\", $device);
 				return file_exists("\\\\{$parts[0]}\\{$parts[1]}");
 			}
@@ -710,8 +823,12 @@ class Core {
 		return str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
 	}
 
+	public function get_extension(string $path) : string {
+		return mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+	}
+
 	public function get_computer_name() : string {
-		if($this->windows){
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			return $this->get_variable("%COMPUTERNAME%");
 		} else {
 			return shell_exec('hostname');
@@ -747,14 +864,14 @@ class Core {
 		return (substr(finfo_file($finfo, $path), 0, 4) == 'text');
 	}
 
-	public function exec(string $program, string $command, array &$output = null, int &$result_code = null) : string|false {
-		if($this->windows && is_null($this->core_path)) return false;
-		if($this->windows) $program = $this->get_path("$this->core_path/$program.exe");
+	public function exec(string $program, string $command, ?array &$output = null, ?int &$result_code = null) : string|false {
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS && is_null($this->core_path)) return false;
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS) $program = $this->get_path("$this->core_path/$program.exe");
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 
 	public function is_admin() : bool {
-		if(!$this->windows) return false;
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) return false;
 		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
 	}
 
@@ -772,7 +889,6 @@ class Core {
 		if(!isset($size[1])) goto set_size;
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
-		if(!in_array(strtoupper($size[1]), ['B', 'KiB', 'MiB', 'GiB', 'TiB'])) goto set_size;
 		$bytes = $this->size_unit_to_bytes(intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 		return $bytes;
@@ -792,7 +908,6 @@ class Core {
 		if(!isset($size[1])) goto set_interval;
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_interval;
-		if(!in_array(strtolower($size[1]), ['sec', 'min', 'hour', 'day'])) goto set_interval;
 		$interval = $this->time_unit_to_seconds(intval($size[0]), $size[1]);
 		if($interval <= 0) goto set_interval;
 		return $interval;
@@ -831,14 +946,14 @@ class Core {
 	}
 
 	public function trash(string $path) : bool {
-		if($this->windows){
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			if(substr($path, 1, 1) == ':'){
 				$new_name = $this->get_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
 				if(file_exists($new_name) && !$this->delete($new_name)) return false;
 				return $this->move($path, $new_name);
 			} else if(substr($path, 0, 2) == "\\\\"){
 				$device = substr($path, 2);
-				if(strpos($device, "\\") !== false){
+				if(str_contains($device, "\\")){
 					$new_name = $this->get_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
 					if(file_exists($new_name) && !$this->delete($new_name)) return false;
 					return $this->move($path, $new_name);
@@ -862,7 +977,7 @@ class Core {
 		if(!isset($folders[0])) goto set_path;
 		$path = $folders[0];
 		if((file_exists($path) && !is_dir($path)) || !$this->mkdir($path)){
-			echo " Invalid ".strtolower($title)." path\r\n";
+			$this->echo(" Invalid ".mb_strtolower($title)." path");
 			goto set_path;
 		}
 		return $path;
@@ -887,15 +1002,61 @@ class Core {
 	}
 
 	public function clean_file_extension(string $extension) : string {
-		return strtolower(preg_replace("/\s/is", "", $extension));
+		return mb_strtolower(preg_replace("/\s/is", "", $extension));
 	}
 
+	/**
+	 * @deprecated
+	 *
+	 * @return $this
+	 */
 	public function get_output_null() : string {
-		if($this->windows){
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			return 'nul';
 		} else {
 			return '/dev/null';
 		}
+	}
+
+	public function array_to_lower(array $items) : array {
+		$data = [];
+		foreach($items as $item){
+			$data[] = mb_strtolower($item);
+		}
+		return $data;
+	}
+
+	public function array_to_upper(array $items) : array {
+		$data = [];
+		foreach($items as $item){
+			$data[] = mb_strtoupper($item);
+		}
+		return $data;
+	}
+
+	public function get_system_type() : int {
+		switch(PHP_OS_FAMILY){
+			case 'Windows': return SYSTEM_TYPE_WINDOWS;
+			case 'Linux': return SYSTEM_TYPE_LINUX;
+			case 'Darwin': return SYSTEM_TYPE_MACOS;
+			default: return SYSTEM_TYPE_UNKNOWN;
+		}
+	}
+
+	public function detect_eol(string &$content) : string {
+		if(str_contains($content, "\r\n")){
+			return "\r\n";
+		} else if(str_contains($content, "\n")){
+			return "\n";
+		} else if(str_contains($content, "\r")){
+			return "\r";
+		} else {
+			return "\r\n";
+		}
+	}
+
+	public function has_utf8_bom(string &$content) : bool {
+		return str_contains($content, $this->utf8_bom);
 	}
 
 }

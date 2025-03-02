@@ -1,13 +1,12 @@
 {
     "require": {
         "liborm85/composer-vendor-cleaner": "^1.7",
-        "nicolab/php-ftp-client": "^2.0",
         "symfony/dom-crawler": "^7.0",
         "symfony/css-selector": "^7.0"
     },
     "config": {
 		"platform": {
-			"php": "8.3"
+			"php": "8.2"
 		},
         "allow-plugins": {
             "liborm85/composer-vendor-cleaner": true

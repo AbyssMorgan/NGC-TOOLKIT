@@ -1102,7 +1102,7 @@ class MySQLTools {
 			query:
 			if($save_output) $this->core->write_data("");
 			$query = $this->core->get_input_no_trim(" MySQL: ");
-			$lquery = strtolower($query);
+			$lquery = mb_strtolower($query);
 			if($lquery == '@exit'){
 				goto close_connection;
 			} else if($lquery == '@clear'){
@@ -1214,7 +1214,7 @@ class MySQLTools {
 	public function backup_selected(string $type, bool $need_lock) : bool {
 		$ftype = explode(" ", $type);
 		$ftype = $ftype[0];
-		$stype = strtolower($type);
+		$stype = mb_strtolower($type);
 		$type = str_replace(" ", "", $type);
 		$this->core->clear();
 		$this->core->set_subtool("Backup selected ".$stype);

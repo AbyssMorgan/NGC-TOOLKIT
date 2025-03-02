@@ -29,7 +29,7 @@ class Toolkit extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.4.0";
+	public string $version = "2.5.0";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 
@@ -37,18 +37,26 @@ class Toolkit extends Core {
 		parent::__construct($arguments, true);
 		if($this->abort) return;
 		$config_default = new IniFile($this->get_path("$this->path/includes/config/default.ini"), true);
-		if($this->windows){
-			dl('php_imagick.dll');
-			dl('php_exif.dll');
-			$config_default_system = new IniFile($this->get_path("$this->path/includes/config/windows.ini"), true);
-			$old_app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/AVE-PHP");
-			$this->app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/NGC-TOOLKIT");
-			if(file_exists($old_app_data) && !file_exists($this->app_data)){
-				rename($old_app_data, $this->app_data);
+		switch($this->get_system_type()){
+			case SYSTEM_TYPE_WINDOWS: {
+				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/windows.ini"), true);
+				$this->app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/NGC-TOOLKIT");
+				break;
 			}
+			case SYSTEM_TYPE_LINUX: {
+				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/linux.ini"), true);
+				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/.config/NGC-TOOLKIT");
+				break;
+			}
+			case SYSTEM_TYPE_MACOS: {
+				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/macos.ini"), true);
+				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/Library/Application Support/NGC-TOOLKIT");
+				break;
+			}
+		}
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			dl('php_imagick.dll');
 		} else {
-			$config_default_system = new IniFile($this->get_path("$this->path/includes/config/linux.ini"), true);
-			$this->app_data = $this->get_path("/etc/NGC-TOOLKIT");
 			$open_file_binary = null;
 			$variants = ['xdg-open', 'nautilus', 'dolphin'];
 			foreach($variants as $variant){
@@ -93,7 +101,7 @@ class Toolkit extends Core {
 			}
 		}
 
-		if($this->windows) popen('color '.$this->config->get('COLOR'), 'w');
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS) popen('color '.$this->config->get('COLOR'), 'w');
 
 		$check_for_updates = false;
 		if($this->command == '--interactive'){
@@ -110,12 +118,12 @@ class Toolkit extends Core {
 				}
 			}
 
+			$program_files = $this->get_variable("%PROGRAMFILES%");
 			$files = [
-				$this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES/main"),
-				$this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES/php/8.1"),
+				$this->get_path("$program_files/NGC-UTILITIES/php/8.3"),
 			];
 
-			$items = $this->get_folders_ex($this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES/core"));
+			$items = $this->get_folders_ex($this->get_path("$program_files/NGC-UTILITIES/core"));
 			foreach($items as $item){
 				if(pathinfo($item, PATHINFO_BASENAME) != $this->utilities_version) array_push($files, $item);
 			}
@@ -131,7 +139,7 @@ class Toolkit extends Core {
 					return;
 				}
 				$this->rrmdir($file, false);
-				if(strpos($file, "php") !== false){
+				if(str_contains($file, "php")){
 					$this->delete($this->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_BASENAME).".ini"), false);
 				}
 			}
@@ -171,7 +179,7 @@ class Toolkit extends Core {
 	}
 
 	public function execute() : void {
-		switch(strtolower($this->command ?? '')){
+		switch(mb_strtolower($this->command ?? '')){
 			case '--make-backup': {
 				if(empty($this->arguments[0] ?? '')){
 					$this->print_help([" Usage: --make-backup <label> [dbname]"]);
@@ -216,12 +224,12 @@ class Toolkit extends Core {
 			' 10 - Directory Names Editor',
 			' H  - Help',
 		];
-		if(!$this->windows) array_push($options, ' # - Close program');
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) array_push($options, ' #  - Close program');
 		$this->print_help($options);
 
 		$line = $this->get_input(' Tool: ');
 		$dynamic_action = explode(' ', $line);
-		switch(strtoupper($dynamic_action[0])){
+		switch(mb_strtoupper($dynamic_action[0])){
 			case '0': {
 				$this->tool = new FileNamesEditor($this);
 				break;
@@ -271,7 +279,7 @@ class Toolkit extends Core {
 				break;
 			}
 			case '#': {
-				if($this->can_exit || !$this->windows) return true;
+				if($this->can_exit || $this->get_system_type() != SYSTEM_TYPE_WINDOWS) return true;
 			}
 		}
 		if(!$this->abort && !is_null($this->tool)){

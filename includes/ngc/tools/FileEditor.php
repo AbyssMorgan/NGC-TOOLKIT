@@ -87,7 +87,7 @@ class FileEditor {
 		$errors = 0;
 		while(($line = fgets($fp)) !== false){
 			$i++;
-			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if(empty(trim($line))) continue;
 			$replace = $this->core->get_input_folders($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
@@ -176,7 +176,7 @@ class FileEditor {
 			goto set_keyword_file;
 		}
 		while(($line = fgets($fp)) !== false){
-			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if(empty(trim($line))) continue;
 			array_push($keywords, $line);
 		}
@@ -245,17 +245,11 @@ class FileEditor {
 
 		try {
 			$content = file_get_contents($file);
-			$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
+			$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 			if(!empty($bom)){
 				$content = str_replace($bom, "", $content);
 			}
-			if(strpos($content, "\r\n") !== false){
-				$eol = "\r\n";
-			} else if(strpos($content, "\n") !== false){
-				$eol = "\n";
-			} else {
-				$eol = "\r";
-			}
+			$eol = $this->core->detect_eol($content);
 			$data = [];
 			$lines = explode($eol, $content);
 			foreach($lines as $line){
@@ -323,30 +317,20 @@ class FileEditor {
 		$first_line = fgets($fp);
 		fseek($fp, 0);
 
-		$utf8_bom = (strpos($first_line, "\xEF\xBB\xBF") !== false);
-		if(strpos($first_line, "\r\n") !== false){
-			$eol = "\r\n";
-		} else if(strpos($first_line, "\n") !== false){
-			$eol = "\n";
-		} else if(strpos($first_line, "\r") !== false){
-			$eol = "\r";
-		} else {
-			fclose($fp);
-			$this->core->echo(" The selected file has no newlines");
-			goto set_input;
-		}
+		$utf8_bom = $this->core->has_utf8_bom($first_line);
+		$eol = $this->core->detect_eol($content);
 
 		$count = 0;
 		$part_id = 1;
 		$out = false;
 		while(($line = fgets($fp)) !== false){
-			$line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if($count % $lines_limit == 0){
 				if($out){
 					fclose($out);
 					$out = false;
 				}
-				$output_file = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".pathinfo($file, PATHINFO_EXTENSION));
+				$output_file = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".$this->core->get_extension($file));
 				if(file_exists($output_file)) $this->core->delete($output_file);
 				$out = fopen($output_file, 'w');
 				if(!$out){
@@ -355,7 +339,7 @@ class FileEditor {
 				} else {
 					$this->core->write_log("CREATE FILE \"$output_file\"");
 				}
-				if($utf8_bom) fwrite($out, "\xEF\xBB\xBF");
+				if($utf8_bom) fwrite($out, $this->core->utf8_bom);
 				$part_id++;
 			}
 			fwrite($out, "{$line}{$eol}");
@@ -400,7 +384,7 @@ class FileEditor {
 		$part_id = 1;
 		while(!feof($fp)){
 			$buffer = fread($fp, $bytes);
-			$output_file = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".pathinfo($file, PATHINFO_EXTENSION));
+			$output_file = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".$this->core->get_extension($file));
 			if(file_exists($output_file)) $this->core->delete($output_file);
 			$out = fopen($output_file, 'w');
 			if(!$out){
@@ -442,17 +426,11 @@ class FileEditor {
 
 		try {
 			$content = file_get_contents($file);
-			$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
+			$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 			if(!empty($bom)){
 				$content = str_replace($bom, "", $content);
 			}
-			if(strpos($content, "\r\n") !== false){
-				$eol = "\r\n";
-			} else if(strpos($content, "\n") !== false){
-				$eol = "\n";
-			} else {
-				$eol = "\r";
-			}
+			$eol = $this->core->detect_eol($content);
 			$lines = array_reverse(explode($eol, $content));
 			$new_content = $bom.implode($eol, $lines);
 			$changed = ($content != $new_content);
@@ -496,16 +474,16 @@ class FileEditor {
 		if(empty($line)) $line = 'BC';
 		if(str_replace(['B', 'C', 'L', 'S', 'W', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
-			'basic_replace' => (strpos($line, 'B') !== false),
-			'basic_remove' => (strpos($line, 'C') !== false),
-			'language_replace' => (strpos($line, 'L') !== false),
-			'RemoveDoubleSpace' => (strpos($line, 'S') !== false),
-			'RemoveWhitespaceEOL' => (strpos($line, 'W') !== false),
-			'ChineseToPinYin' => (strpos($line, '0') !== false),
-			'HiragamaToRomaji' => (strpos($line, '1') !== false),
-			'KatakanaToRomaji' => (strpos($line, '2') !== false),
-			'UpperCase' => (strpos($line, '+') !== false),
-			'LowerCase' => (strpos($line, '-') !== false),
+			'basic_replace' => str_contains($line, 'B'),
+			'basic_remove' => str_contains($line, 'C'),
+			'language_replace' => str_contains($line, 'L'),
+			'RemoveDoubleSpace' => str_contains($line, 'S'),
+			'RemoveWhitespaceEOL' => str_contains($line, 'W'),
+			'ChineseToPinYin' => str_contains($line, '0'),
+			'HiragamaToRomaji' => str_contains($line, '1'),
+			'KatakanaToRomaji' => str_contains($line, '2'),
+			'UpperCase' => str_contains($line, '+'),
+			'LowerCase' => str_contains($line, '-'),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
@@ -578,17 +556,11 @@ class FileEditor {
 					$content = $converter->remove_double_spaces($content);
 				}
 				if($flags->RemoveWhitespaceEOL){
-					$bom = (strpos($content, "\xEF\xBB\xBF") !== false) ? "\xEF\xBB\xBF" : "";
+					$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 					if(!empty($bom)){
 						$content = str_replace($bom, "", $content);
 					}
-					if(strpos($content, "\r\n") !== false){
-						$eol = "\r\n";
-					} else if(strpos($content, "\n") !== false){
-						$eol = "\n";
-					} else {
-						$eol = "\r";
-					}
+					$eol = $this->core->detect_eol($content);
 					$lines = explode($eol, $content);
 					foreach($lines as &$line){
 						$line = rtrim($line);

@@ -25,7 +25,7 @@ class MediaSorter {
 			' Actions:',
 			' 0 - Sort Files: Date',
 			' 1 - Sort Files: Extension',
-			' 2 - Sort Gif: Animated',
+			' 2 - Sort GIF/WEBP: Animated/NotAnimated',
 			' 3 - Sort Media: Quality',
 			' 4 - Sort Images: Colors count',
 			' 5 - Sort Videos: Auto detect series name',
@@ -73,7 +73,7 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+				$extension = $this->core->get_extension($file);
 				$new_name = $this->core->get_path("$folder/$extension/".pathinfo($file, PATHINFO_BASENAME));
 				if(!$this->core->move($file, $new_name)){
 					$errors++;
@@ -128,7 +128,7 @@ class MediaSorter {
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+				$extension = $this->core->get_extension($file);
 				if(in_array($extension, $image_extensions)){
 					$resolution = $this->core->media->get_image_resolution($file);
 				} else {
@@ -182,7 +182,7 @@ class MediaSorter {
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->core->get_files($folder, ['gif']);
+			$files = $this->core->get_files($folder, ['gif', 'webp']);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -372,7 +372,7 @@ class MediaSorter {
 		foreach($files as $file){
 			$items++;
 			if(!file_exists($file)) continue;
-			$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], strtoupper(pathinfo($file, PATHINFO_FILENAME)));
+			$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)));
 			$file_name = str_replace([' ', '.', '[', ']'], '', $file_name);
 			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
@@ -397,7 +397,7 @@ class MediaSorter {
 				} else {
 					$folder_name = str_replace(['_', '.', "\u{00A0}"], ' ', substr(pathinfo($file, PATHINFO_FILENAME), 0, $end));
 					$folder_name = str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $folder_name);
-					while(strpos($folder_name, '  ') !== false){
+					while(str_contains($folder_name, '  ')){
 						$folder_name = str_replace('  ', ' ', $folder_name);
 					}
 					$folder_name = trim($folder_name, ' ');
@@ -406,7 +406,7 @@ class MediaSorter {
 						$errors++;
 					} else {
 						$new_name = $this->core->get_path("$input/$folder_name/".pathinfo($file, PATHINFO_BASENAME));
-						if(file_exists($new_name) && strtoupper($new_name) != strtoupper($file)){
+						if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 							$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 							$errors++;
 						} else {
@@ -454,7 +454,7 @@ class MediaSorter {
 					$errors++;
 					continue;
 				}
-				$multiplier = floor($meta->video_duration_seconds / $interval);
+				$multiplier = max(floor(($meta->video_duration_seconds - 1) / $interval), 0);
 				if($multiplier == 0){
 					$start = '00_00';
 				} else {
@@ -620,7 +620,8 @@ class MediaSorter {
 						break;
 					}
 				}
-				if($is_monochrome && pathinfo($file, PATHINFO_EXTENSION) != 'gif'){
+				$image->clear();
+				if($is_monochrome && $this->core->get_extension($file) != 'gif'){
 					$group = 'Monochrome';
 				} else {
 					$group = 'Normal';

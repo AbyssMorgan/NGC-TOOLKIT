@@ -184,7 +184,7 @@ class DataBaseBackup {
 		$data = [];
 		$columns = $this->source->query("SELECT `COLUMN_NAME`, `DATA_TYPE` FROM INFORMATION_SCHEMA.COLUMNS WHERE `TABLE_SCHEMA` = '$this->database' AND `TABLE_NAME` = '$name'", PDO::FETCH_OBJ);
 		foreach($columns as $column){
-			$data[$column->COLUMN_NAME] = strtolower($column->DATA_TYPE);
+			$data[$column->COLUMN_NAME] = mb_strtolower($column->DATA_TYPE);
 		}
 		return $data;
 	}
@@ -198,7 +198,7 @@ class DataBaseBackup {
 		$removals = [];
 		foreach($items as $key => &$item){
 			$item = trim($item);
-			if(strpos($item, 'CONSTRAINT ') !== false){
+			if(str_contains($item, 'CONSTRAINT ')){
 				$item = rtrim($item, ",");
 				array_push($alters, "ALTER TABLE `$name` ADD $item;");
 				array_push($removals, ", $item");
