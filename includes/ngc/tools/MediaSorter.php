@@ -390,7 +390,7 @@ class MediaSorter {
 				$marker = '';
 			}
 			if(!empty($marker)){
-				$end = strpos($file_name, $marker);
+				$end = strpos(mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)), $marker);
 				if($end === false){
 					$this->core->write_error("FAILED GET MARKER \"$file\"");
 					$errors++;

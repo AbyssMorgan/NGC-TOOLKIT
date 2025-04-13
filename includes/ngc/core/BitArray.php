@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.0 */
+/* NGC-TOOLKIT v2.5.1 */
 
 declare(strict_types=1);
 

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.0 */
+/* NGC-TOOLKIT v2.5.1 */
 
 declare(strict_types=1);
 
@@ -311,7 +311,6 @@ class Core {
 		return 0;
 	}
 
-
 	public function is_folder_empty(string $path) : bool {
 		if(!file_exists($path)) return true;
 		$files = scandir($path);
@@ -618,7 +617,6 @@ class Core {
 		if($log) $this->write_log("COPY \"$from\" \"$to\"");
 		return true;
 	}
-	
 
 	public function delete_files(string $path, ?array $extensions = null, ?array $except = null) : void {
 		$files = $this->get_files($path, $extensions, $except);
