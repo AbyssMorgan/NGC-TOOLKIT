@@ -33,20 +33,26 @@
 		if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') system("PAUSE > nul");
 	});
 
+	function get_includes_list(string $path) : array {
+		if(!file_exists($path)) throw new Exception("File not exists \"$path\"");
+		$data = [];
+		$file = fopen($path, "r");
+		if(!$file) throw new Exception("Failed open \"$path\"");
+		while(($line = fgets($file)) !== false){
+			$data[] = trim($line);
+		}
+		fclose($file);
+		return $data;
+	}
+
 	require __DIR__.'/../vendor/autoload.php';
 
 	$includes_path = __DIR__;
 
-	$includes_list_file = "$includes_path/includes.lst";
-	if(!file_exists($includes_list_file)) throw new Exception("File not exists includes.lst");
-
-	$file = fopen($includes_list_file, "r");
-	if(!$file) throw new Exception("Failed open includes.lst");
-	while(($line = fgets($file)) !== false){
-		$name = trim($line);
-		require_once "$includes_path/$name";
+	$includes = get_includes_list("$includes_path/includes.lst");
+	foreach($includes as $include){
+		require_once "$includes_path/$include";
 	}
-	fclose($file);
 
 	require_once "$includes_path/ngc/extensions/Console.php";
 	require_once "$includes_path/programs/Script.php";

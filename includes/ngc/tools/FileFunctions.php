@@ -20,13 +20,13 @@ class FileFunctions {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0  - Anti Duplicates',
-			' 1  - Validate CheckSum',
-			' 2  - Random file generator',
-			' 3  - Overwrite folders content',
-			' 4  - Move files with structure',
-			' 5  - Copy files with structure',
-			' 6  - Clone files with structure (Mirror)',
+			' 0 - Anti Duplicates',
+			' 1 - Validate CheckSum',
+			' 2 - Random file generator',
+			' 3 - Overwrite folders content',
+			' 4 - Move files with structure',
+			' 5 - Copy files with structure',
+			' 6 - Clone files with structure (Mirror)',
 		]);
 	}
 
@@ -94,8 +94,7 @@ class FileFunctions {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				if(in_array(mb_strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
-				$extension = $this->core->get_extension($file);
-				if($extension == 'idx' && $this->core->config->get('LOAD_IDX_CHECKSUM')){
+				if($this->core->get_extension($file) == 'idx'){
 					$this->core->get_hash_from_idx($file, $keys, false);
 					continue 1;
 				}
@@ -138,12 +137,12 @@ class FileFunctions {
 		$this->core->clear();
 		$this->core->print_help([
 			' Modes:',
-			' 0   - From file',
-			' 1   - From name',
-			' ?0  - md5 (default)',
-			' ?1  - sha256',
-			' ?2  - crc32',
-			' ?3  - whirlpool',
+			' 0  - From file',
+			' 1  - From name',
+			' ?0 - md5 (default)',
+			' ?1 - sha256',
+			' ?2 - crc32',
+			' ?3 - whirlpool',
 		]);
 
 		$line = $this->core->get_input(" Mode: ");
@@ -355,12 +354,13 @@ class FileFunctions {
 		$write_buffer = $this->core->get_write_buffer();
 		if(!$write_buffer) return false;
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
+		$this->core->setup_folders($folders);
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){

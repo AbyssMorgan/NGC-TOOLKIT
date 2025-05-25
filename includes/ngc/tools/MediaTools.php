@@ -29,7 +29,7 @@ class MediaTools {
 			' 0  - Merge: Video + Audio',
 			' 1  - Merge: Video + SRT',
 			' 2  - Avatar generator',
-			' 3  - Video: Fetch media info',
+			' 3  - Fetch media info (Video)',
 			' 4  - Image converter',
 			' 5  - Ident mime type',
 			' 6  - Extract video',
@@ -46,7 +46,7 @@ class MediaTools {
 			case '0': return $this->tool_merge_video_audio();
 			case '1': return $this->tool_merge_video_subtitles();
 			case '2': return $this->tool_avatar_generator();
-			case '3': return $this->tool_video_fetch_media_info();
+			case '3': return $this->tool_fetch_media_info();
 			case '4': return $this->tool_image_converter();
 			case '5': return $this->tool_ident_mime_type();
 			case '6': return $this->tool_extract_video();
@@ -201,9 +201,8 @@ class MediaTools {
 		$size = $this->core->get_input_integer(" Width (0 - no resize): ", 0);
 		if(!$size) return false;
 
-		$image_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
 		$variants = explode(" ", $this->core->config->get('AVATAR_GENERATOR_VARIANTS'));
-		$files = $this->core->get_files($input, $image_extensions);
+		$files = $this->core->get_files($input, $this->core->media->extensions_images);
 
 		$errors = 0;
 
@@ -250,9 +249,9 @@ class MediaTools {
 		return false;
 	}
 
-	public function tool_video_fetch_media_info() : bool {
+	public function tool_fetch_media_info() : bool {
 		$this->core->clear();
-		$this->core->set_subtool("Video fetch media info");
+		$this->core->set_subtool("Fetch media info");
 
 		$input = $this->core->get_input_folder(" Input (Folder): ");
 		if($input === false) return false;
@@ -437,7 +436,6 @@ class MediaTools {
 
 		$errors = 0;
 
-		$extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
 		$files = $this->core->get_files($input);
 		$items = 0;
 		$total = count($files);
@@ -445,7 +443,7 @@ class MediaTools {
 			$items++;
 			$this->core->set_errors($errors);
 			if(!file_exists($file)) continue;
-			if(!in_array($this->core->get_extension($file), $extensions)){
+			if(!in_array($this->core->get_extension($file), $this->core->media->extensions_images)){
 				$this->core->write_error("FILE FORMAT NOT SUPORTED \"$file\"");
 				$errors++;
 				continue;
@@ -595,14 +593,18 @@ class MediaTools {
 			$media_info = $this->core->media->get_media_info($file);
 			foreach($media_info['streams'] as $stream){
 				if($stream['codec_type'] == 'video'){
+					$language = $stream['tags']['language'] ?? 'unk';
 					$index = $stream['index'];
+					$suffix = "-$index-$language";
 					$codec = strtolower($stream['codec_name'] ?? 'unknown');
 					$extension = $this->core->media->get_video_extension($codec);
 					if(is_null($extension)){
 						$this->core->write_error("UNSUPPORTED VIDEO CODEC \"$codec\" IN \"$file\"");
 						$errors++;
 					} else {
-						$new_name = $this->core->get_path(pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."-video$index.$extension");
+						$directory = pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$this->core->mkdir($directory);
+						$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
 						if(!file_exists($new_name)){
 							$this->core->write_log("EXTRACT \"$new_name\"");
 							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy -f $extension \"$new_name\" 2>{$this->core->device_null}");
@@ -663,7 +665,9 @@ class MediaTools {
 						$this->core->write_error("UNSUPPORTED AUDIO CODEC \"{$stream['codec_name']}\" IN \"$file\"");
 						$errors++;
 					} else {
-						$new_name = $this->core->get_path(pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						$directory = pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$this->core->mkdir($directory);
+						$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
 						if(!file_exists($new_name)){
 							$this->core->write_log("EXTRACT \"$new_name\"");
 							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy \"$new_name\" 2>{$this->core->device_null}");
@@ -724,7 +728,9 @@ class MediaTools {
 						$this->core->write_error("UNSUPORTED SUBTITLES \"{$stream['codec_name']}\" IN \"$file\"");
 						$errors++;
 					} else {
-						$new_name = $this->core->get_path(pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						$directory = pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$this->core->mkdir($directory);
+						$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
 						if(!file_exists($new_name)){
 							$this->core->write_log("EXTRACT \"$new_name\"");
 							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy \"$new_name\" 2>{$this->core->device_null}");

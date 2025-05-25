@@ -164,7 +164,6 @@ class Core {
 		foreach($this->folders_state as $folder_name => $state){
 			$this->echo(" Scan: \"$folder_name\" $state");
 		}
-		$this->echo();
 	}
 
 	public function get_tool_name() : string {
@@ -957,6 +956,10 @@ class Core {
 		return mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
 	}
 
+	public function put_folder_to_path(string $path, string $subfolder) : string {
+		return $this->get_path(pathinfo($path, PATHINFO_DIRNAME)."/$subfolder/".pathinfo($path, PATHINFO_BASENAME));
+	}
+
 	public function get_computer_name() : string {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			return $this->get_variable("%COMPUTERNAME%");
@@ -991,7 +994,7 @@ class Core {
 	public function is_text_file(string $path) : bool {
 		if(!file_exists($path)) return false;
 		$finfo = finfo_open(FILEINFO_MIME);
-		return (substr(finfo_file($finfo, $path), 0, 4) == 'text');
+		return substr(finfo_file($finfo, $path), 0, 4) == 'text';
 	}
 
 	public function exec(string $program, string $command, ?array &$output = null, ?int &$result_code = null) : string|false {

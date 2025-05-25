@@ -1,6 +1,10 @@
 v2.6.0:
+- Changed menu order and actions keywords
+- Changed rules for tools: Media Sorter
+- Media Sorter tools have been split into: File Sorter / Directory Sorter / Media Sorter
 - Updated tool File Editor > Pretty file content add flag "F" for remove whitespace on EOF
 - Updated tool Directory Names Editor > Pretty directory name add flag "P" for capitalize letters
+- Added tool: File sorter > Sort by name prefix
 - Added tool: Media Tools > Extract video
 - Added tool: Media Tools > Extract audio
 - Added tool: Media Tools > Extract subtitles
@@ -10,7 +14,7 @@ v2.6.0:
 - Added basic censor for input password (Windows)
 - Added censor for input password (Linux/Mac OS)
 - Improved exception handler
-- Removed config: EXTENSIONS_AUDIO, EXTENSIONS_VIDEO, SHOW_LOGO
+- Removed config: EXTENSIONS_AUDIO, EXTENSIONS_VIDEO, SHOW_LOGO, EXTENSIONS_PHOTO, QUALITY_SUFFIX, LOAD_IDX_CHECKSUM
 
 v2.5.1:
 - Fixed tool "Media Sorter > Sort videos auto detect series name"
@@ -31,7 +35,7 @@ v2.5.0:
 
 v2.4.0:
 - Added tool: Media Sorter > Sort Images: Monochrome
-- Updated tool Media Tools > Video: Fetch media info added more media info
+- Updated tool Media Tools > Fetch media info (Video) added more media info
 - Renamed size unit to informatics format
 
 v2.3.3:
@@ -45,14 +49,14 @@ v2.3.1:
 - Improved MediaFunctions extension
 
 v2.3.0:
-- Updated tool "Media Tools > Video: Fetch media info" changed default file name from "AveMediaInfo" to "MediaInfo"
+- Updated tool "Media Tools > Fetch media info (Video)" changed default file name from "AveMediaInfo" to "MediaInfo"
 
 v2.2.5:
 - Fixes
 
 v2.2.2:
 - Linux support improvements and fixes
-- Updated tool: Media Tools > Video: Fetch media info: Added output folder setup
+- Updated tool: Media Tools > Fetch media info (Video): Added output folder setup
 
 v2.2.0:
 - Update NGC-UTILITIES v1.1.0:
@@ -74,7 +78,7 @@ v2.1.0:
 
 v2.0.1:
 - Improved tool: File Functions > Anti Duplicates (added mode a3 and b3 - detect duplicates and write logs only)
-- Improved tool: Media Tools > Video: Fetch media info (added FPS and codec)
+- Improved tool: Media Tools > Fetch media info (Video) (added FPS and codec)
 - Added tool: ADM File Converter > Ini converter (INI <=> GZ-INI)
 - Added tool: ADM File Converter > ADM Journal converter (ADM-JOURNAL => Text)
 
@@ -124,7 +128,7 @@ v1.9.0:
 - Added tool: Media Sorter > Sort Files: Size
 - Added tool: Media Sorter > Sort Folders: Items quantity (First parent)
 - Improved tool: Media Sorter > Sort Images: Colors count (Added more groups)
-- Improved tool: Media Tools > Video: Fetch media info (Save .csv results and .ini cache in input directory)
+- Improved tool: Media Tools > Fetch media info (Video) (Save .csv results and .ini cache in input directory)
 - Improved tool: File Functions > Anti Duplicates (Implement IGNORE_VALIDATE_EXTENSIONS and IGNORE_VALIDATE_FILES)
 - Improved tool: File Names Editor > CheckSum (Implement IGNORE_VALIDATE_EXTENSIONS and IGNORE_VALIDATE_FILES)
 - Improved tool: MySQL Tools > Fetch data base info (Analyze table before fetch informations)
@@ -198,7 +202,7 @@ v1.5.3:
 - Improvements
 
 v1.5.2:
-- Added tool: Media Tools > Video: Fetch media info
+- Added tool: Media Tools > Fetch media info (Video)
 
 v1.5.1:
 - Fixed tool "Directory Functions > Force load icon (desktop.ini)"

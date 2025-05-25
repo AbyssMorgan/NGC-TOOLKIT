@@ -22,13 +22,13 @@ class FileEditor {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0  - Replace keywords in files',
-			' 1  - Remove keywords in files',
-			' 2  - Remove duplicate lines in file',
-			' 3  - Split file by lines count',
-			' 4  - Split file by size (Binary)',
-			' 5  - Reverse text file lines',
-			' 6  - Pretty file content',
+			' 0 - Replace keywords in files',
+			' 1 - Remove keywords in files',
+			' 2 - Remove duplicate lines in file',
+			' 3 - Split file by lines count',
+			' 4 - Split file by size (Binary)',
+			' 5 - Reverse text file lines',
+			' 6 - Pretty file content',
 		]);
 	}
 
@@ -57,19 +57,11 @@ class FileEditor {
 		if($extensions === false) return false;
 
 		set_keyword_file:
+		$keywords_file = $this->core->get_input_file(" Keywords file: ", true);
+		if($keywords_file === false) return false;
+
 		$replacements = [];
-		$line = $this->core->get_input(" Keywords file: ");
-		if($line == '#') return false;
-		$line = $this->core->get_input_folders($line);
-		if(!isset($line[0])) goto set_keyword_file;
-		$input = $line[0];
-
-		if(!file_exists($input) || is_dir($input)){
-			$this->core->echo(" Invalid keywords file");
-			goto set_keyword_file;
-		}
-
-		$fp = fopen($input, 'r');
+		$fp = fopen($keywords_file, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
@@ -80,7 +72,7 @@ class FileEditor {
 			$i++;
 			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if(empty(trim($line))) continue;
-			$replace = $this->core->get_input_folders($line, false);
+			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
 				$errors++;
@@ -108,7 +100,7 @@ class FileEditor {
 				try {
 					$content = file_get_contents($file);
 					$new_content = str_replace(array_keys($replacements), $replacements, $content);
-					$changed = ($content != $new_content);
+					$changed = $content != $new_content;
 					unset($content);
 					if($changed){
 						file_put_contents($file, $new_content);
@@ -142,19 +134,11 @@ class FileEditor {
 		if($extensions === false) return false;
 
 		set_keyword_file:
+		$keywords_file = $this->core->get_input_file(" Keywords file: ", true);
+		if($keywords_file === false) return false;
+
 		$keywords = [];
-		$line = $this->core->get_input(" Keywords file: ");
-		if($line == '#') return false;
-		$line = $this->core->get_input_folders($line);
-		if(!isset($line[0])) goto set_keyword_file;
-		$input = $line[0];
-
-		if(!file_exists($input) || is_dir($input)){
-			$this->core->echo(" Invalid keywords file");
-			goto set_keyword_file;
-		}
-
-		$fp = fopen($input, 'r');
+		$fp = fopen($keywords_file, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
@@ -208,16 +192,8 @@ class FileEditor {
 		$this->core->set_subtool("Remove duplicate lines in file");
 
 		set_input:
-		$line = $this->core->get_input(" File: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$file = $folders[0];
-
-		if(!file_exists($file) || is_dir($file)){
-			$this->core->echo(" Invalid input file");
-			goto set_input;
-		}
+		$file = $this->core->get_input_file(" File: ", true);
+		if($file === false) return false;
 
 		if(!$this->core->is_text_file($file)){
 			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
@@ -277,16 +253,8 @@ class FileEditor {
 		if(!$lines_limit) return false;
 
 		set_input:
-		$line = $this->core->get_input(" File: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$file = $folders[0];
-
-		if(!file_exists($file) || is_dir($file)){
-			$this->core->echo(" Invalid input file");
-			goto set_input;
-		}
+		$file = $this->core->get_input_file(" File: ", true);
+		if($file === false) return false;
 
 		if(!$this->core->is_text_file($file)){
 			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
@@ -348,16 +316,8 @@ class FileEditor {
 		if(!$bytes) return false;
 
 		set_input:
-		$line = $this->core->get_input(" File: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$file = $folders[0];
-
-		if(!file_exists($file) || is_dir($file)){
-			$this->core->echo(" Invalid input file");
-			goto set_input;
-		}
+		$file = $this->core->get_input_file(" File: ", true);
+		if($file === false) return false;
 
 		$fp = fopen($file, 'r');
 		if(!$fp){
@@ -393,16 +353,8 @@ class FileEditor {
 		$this->core->set_subtool("Reverse file lines");
 
 		set_input:
-		$line = $this->core->get_input(" File: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$file = $folders[0];
-
-		if(!file_exists($file) || is_dir($file)){
-			$this->core->echo(" Invalid input file");
-			goto set_input;
-		}
+		$file = $this->core->get_input_file(" File: ", true);
+		if($file === false) return false;
 
 		if(!$this->core->is_text_file($file)){
 			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
@@ -441,17 +393,17 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->print_help([
 			' Flags (type in one line, default BC):',
-			' B   - Basic replacement',
-			' C   - Basic remove',
-			' L   - Replace language characters',
-			' S   - Remove double spaces',
-			' W   - Remove whitespace characters on EOL',
-			' F   - Remove whitespace characters on EOF',
-			' 0   - Chinese to PinYin',
-			' 1   - Hiragama to Romaji',
-			' 2   - Katakana to Romaji',
-			' +   - To upper case',
-			' -   - To lower case',
+			' B - Basic replacement',
+			' C - Basic remove',
+			' L - Replace language characters',
+			' S - Remove double spaces',
+			' W - Remove whitespace characters on EOL',
+			' F - Remove whitespace characters on EOF',
+			' 0 - Chinese to PinYin',
+			' 1 - Hiragama to Romaji',
+			' 2 - Katakana to Romaji',
+			' + - To upper case',
+			' - - To lower case',
 		]);
 
 		$line = strtoupper($this->core->get_input(" Flags: "));
@@ -486,7 +438,7 @@ class FileEditor {
 		}
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -501,6 +453,7 @@ class FileEditor {
 			$filters = explode(" ", $line);
 		}
 
+		$this->core->setup_folders($folders);
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){

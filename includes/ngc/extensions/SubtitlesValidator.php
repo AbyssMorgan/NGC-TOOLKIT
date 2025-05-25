@@ -55,19 +55,23 @@ class SubtitlesValidator {
 				}
 			}
 		}
-		usort($timestamps, function(array $a, array $b) : int {
-			return $a['start'] <=> $b['start'];
-		});
-		for($i = 0, $j = count($timestamps) - 1; $i < $j; $i++){
+		for($i = 0; $i < count($timestamps) - 1; $i++){
 			if($timestamps[$i]['end'] > $timestamps[$i + 1]['start']){
 				$errors[] = sprintf(
-					"Time in line %d (%s–%s) overlaps with line %d (%s–%s)",
+					"Time in line %d (%s --> %s) overlaps with line %d (%s --> %s)",
 					$timestamps[$i]['line'],
 					$this->core->seconds_to_time($timestamps[$i]['start'], true, false, true),
 					$this->core->seconds_to_time($timestamps[$i]['end'], true, false, true),
 					$timestamps[$i + 1]['line'],
 					$this->core->seconds_to_time($timestamps[$i + 1]['start'], true, false, true),
 					$this->core->seconds_to_time($timestamps[$i + 1]['end'], true, false, true)
+				);
+			}
+			if($timestamps[$i]['start'] > $timestamps[$i + 1]['start']) {
+				$errors[] = sprintf(
+					"Subtitle timing out of order: line %d starts after line %d",
+					$timestamps[$i]['line'],
+					$timestamps[$i + 1]['line']
 				);
 			}
 		}

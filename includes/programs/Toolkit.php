@@ -9,17 +9,19 @@ use NGC\Extensions\AppStorage;
 use NGC\Extensions\MediaFunctions;
 
 use NGC\Tools\AdmFileConverter;
-use NGC\Tools\Settings;
 use NGC\Tools\CheckFileIntegrity;
 use NGC\Tools\DirectoryFunctions;
 use NGC\Tools\DirectoryNamesEditor;
+use NGC\Tools\DirectorySorter;
 use NGC\Tools\FileEditor;
 use NGC\Tools\FileFunctions;
 use NGC\Tools\FileNamesEditor;
+use NGC\Tools\FileSorter;
 use NGC\Tools\FtpTools;
 use NGC\Tools\MediaSorter;
 use NGC\Tools\MediaTools;
 use NGC\Tools\MySQLTools;
+use NGC\Tools\Settings;
 
 class Toolkit extends Core {
 
@@ -189,6 +191,7 @@ class Toolkit extends Core {
 			case '--interactive': {
 				while(!$this->abort){
 					$this->abort = $this->select_tool();
+					gc_collect_cycles();
 				}
 				$this->close(false);
 				break;
@@ -207,17 +210,19 @@ class Toolkit extends Core {
 		$this->tool_name = '';
 		$options = [
 			' Tools:',
-			' 0  - File Names Editor',
-			' 1  - File Functions',
-			' 2  - Media Sorter',
-			' 3  - Directory Functions',
-			' 4  - Media Tools',
-			' 5  - Check File Integrity',
-			' 6  - MySQL Tools',
-			' 7  - File Editor',
-			' 8  - FTP Tools',
-			' 9  - ADM File Converter',
-			' 10 - Directory Names Editor',
+			' F1 - File Functions',
+			' F2 - File Sorter',
+			' F3 - File Names Editor',
+			' F4 - File Editor',
+			' D1 - Directory Functions',
+			' D2 - Directory Sorter',
+			' D3 - Directory Names Editor',
+			' M1 - Media Tools',
+			' M2 - Media Sorter',
+			' T1 - MySQL Tools',
+			' T2 - FTP Tools',
+			' O1 - Check File Integrity',
+			' O2 - ADM File Converter',
 			' H  - Help',
 			' #  - Close program',
 		];
@@ -226,48 +231,56 @@ class Toolkit extends Core {
 		$line = $this->get_input(' Tool: ');
 		$dynamic_action = explode(' ', $line);
 		switch(mb_strtoupper($dynamic_action[0])){
-			case '0': {
-				$this->tool = new FileNamesEditor($this);
-				break;
-			}
-			case '1': {
+			case 'F1': {
 				$this->tool = new FileFunctions($this);
 				break;
 			}
-			case '2': {
-				$this->tool = new MediaSorter($this);
+			case 'F2': {
+				$this->tool = new FileSorter($this);
 				break;
 			}
-			case '3': {
-				$this->tool = new DirectoryFunctions($this);
+			case 'F3': {
+				$this->tool = new FileNamesEditor($this);
 				break;
 			}
-			case '4': {
-				$this->tool = new MediaTools($this);
-				break;
-			}
-			case '5': {
-				$this->tool = new CheckFileIntegrity($this);
-				break;
-			}
-			case '6': {
-				$this->tool = new MySQLTools($this);
-				break;
-			}
-			case '7': {
+			case 'F4': {
 				$this->tool = new FileEditor($this);
 				break;
 			}
-			case '8': {
+			case 'D1': {
+				$this->tool = new DirectoryFunctions($this);
+				break;
+			}
+			case 'D2': {
+				$this->tool = new DirectorySorter($this);
+				break;
+			}
+			case 'D3': {
+				$this->tool = new DirectoryNamesEditor($this);
+				break;
+			}
+			case 'M1': {
+				$this->tool = new MediaTools($this);
+				break;
+			}
+			case 'M2': {
+				$this->tool = new MediaSorter($this);
+				break;
+			}
+			case 'T1': {
+				$this->tool = new MySQLTools($this);
+				break;
+			}
+			case 'T2': {
 				$this->tool = new FtpTools($this);
 				break;
 			}
-			case '9': {
-				$this->tool = new AdmFileConverter($this);
+			case 'O1': {
+				$this->tool = new CheckFileIntegrity($this);
 				break;
 			}
-			case '10': {
-				$this->tool = new DirectoryNamesEditor($this);
+			case 'O2': {
+				$this->tool = new AdmFileConverter($this);
 				break;
 			}
 			case 'H': {
@@ -280,7 +293,9 @@ class Toolkit extends Core {
 			}
 		}
 		if(!$this->abort && !is_null($this->tool)){
-			return $this->select_action($dynamic_action[1] ?? null);
+			$response = $this->select_action($dynamic_action[1] ?? null);
+			gc_collect_cycles();
+			return $response;
 		}
 		return false;
 	}

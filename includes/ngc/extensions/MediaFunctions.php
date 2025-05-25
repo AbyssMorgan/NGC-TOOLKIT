@@ -17,6 +17,7 @@ class MediaFunctions {
 	private ?IniFile $mime_types = null;
 
 	public array $vr_tags = ['_LR_180', '_FISHEYE190', '_MKX200', '_MKX220', '_VRCA220', '_TB_180', '_360'];
+	public array $extensions_images = ['bmp', 'dpx', 'exr', 'gif', 'jpeg', 'jpg', 'jpe', 'pam', 'pbm', 'pcx', 'pgm', 'png', 'ppm', 'sgi', 'tga', 'tif', 'tiff', 'webp', 'xwd'];
 	public array $extensions_video = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'rm', 'rmvb', 'vob', 'asf', 'f4v', 'divx', 'dv', 'mts', 'yuv', 'mxf', 'nut', 'h264', 'hevc', 'av1', 'prores', 'mpv', 'nsv', 'amv', 'drc', 'm1v', 'm2v', 'roq'];
 	public array $extensions_audio = ['aac', 'ac3', 'amr', 'ape', 'dts', 'eac3', 'flac', 'm4a', 'mlp', 'mp2', 'mp3', 'ogg', 'opus', 'ra', 'thd', 'tta', 'vqf', 'wav', 'wma', 'wv'];
 	public array $extensions_subtitle = ['srt', 'ass', 'ssa', 'vtt', 'sub', 'mpl2', 'jss', 'smi', 'rt', 'txt'];
@@ -107,26 +108,23 @@ class MediaFunctions {
 		$this->core = $core;
 	}
 
-	public function get_image_from_path(string $path) : GdImage|bool|null {
+	public function get_image_from_path(string $path): GdImage|bool|null {
 		if(!file_exists($path)) return null;
-		$extension = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
-		if($extension === 'webp' && $this->is_webp_animated($path)) return null;
-		switch($extension){
-			case 'bmp': return @imagecreatefrombmp($path);
-			case 'avif': return @imagecreatefromavif($path);
-			case 'gd2': return @imagecreatefromgd2($path);
-			case 'gd': return @imagecreatefromgd($path);
-			case 'gif': return @imagecreatefromgif($path);
-			case 'jpeg':
-			case 'jpg': {
-				return @imagecreatefromjpeg($path);
-			}
-			case 'png': return @imagecreatefrompng($path);
-			case 'tga': return @imagecreatefromtga($path);
-			case 'wbmp': return @imagecreatefromwbmp($path);
-			case 'webp': return @imagecreatefromwebp($path);
-			case 'xbm': return @imagecreatefromxbm($path);
-			case 'xpm': return @imagecreatefromxpm($path);
+		$mime = mime_content_type($path);
+		if($this->is_image_animated($path)) return null;
+		switch($mime){
+			case 'image/bmp': return @imagecreatefrombmp($path);
+			case 'image/avif': return @imagecreatefromavif($path);
+			case 'image/gd2': return @imagecreatefromgd2($path);
+			case 'image/gd': return @imagecreatefromgd($path);
+			case 'image/gif': return @imagecreatefromgif($path);
+			case 'image/jpeg': return @imagecreatefromjpeg($path);
+			case 'image/png': return @imagecreatefrompng($path);
+			case 'image/x-tga': return @imagecreatefromtga($path);
+			case 'image/vnd.wap.wbmp': return @imagecreatefromwbmp($path);
+			case 'image/webp': return @imagecreatefromwebp($path);
+			case 'image/x-xbitmap': return @imagecreatefromxbm($path);
+			case 'image/x-xpixmap': return @imagecreatefromxpm($path);
 		}
 		return null;
 	}
@@ -151,23 +149,54 @@ class MediaFunctions {
 		return "{$w}x{$h}";
 	}
 
-	public function is_gif_animated(string $path) : bool {
-		if(!($fh = @fopen($path, 'rb'))) return false;
-		$count = 0;
-		while(!feof($fh) && $count < 2){
-			$chunk = fread($fh, 1024 * 100);
-			$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
+	public function is_image_animated(string $path) : bool {
+		if(!file_exists($path)) return false;
+		switch(mime_content_type($path)){
+			case 'image/gif': {
+				if(!($fp = @fopen($path, 'rb'))) return false;
+				$count = 0;
+				while(!feof($fp) && $count < 2){
+					$chunk = fread($fp, 1024 * 100);
+					$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
+				}
+				fclose($fp);
+				return $count > 1;
+			}
+			case 'image/webp': {
+				if(!($fp = @fopen($path, 'rb'))) return false;
+				$header = fread($fp, 1024);
+				fclose($fp);
+				return str_contains($header, 'ANMF');
+			}
+			case 'image/apng': {
+				if(!($fp = @fopen($path, 'rb'))) return false;
+				$data = fread($fp, 1024 * 100);
+				fclose($fp);
+				return strpos($data, 'acTL') !== false;
+			}
+			default: return false;
 		}
-		fclose($fh);
-		return $count > 1;
 	}
 
+	/**
+	 * @deprecated Use is_image_animated
+	 */
+	public function is_gif_animated(string $path) : bool {
+		return $this->is_image_animated($path);
+	}
+
+	/**
+	 * @deprecated Use is_image_animated
+	 */
+	public function is_apng_animated(string $path) : bool {
+		return $this->is_image_animated($path);
+	}
+
+	/**
+	 * @deprecated Use is_image_animated
+	 */
 	public function is_webp_animated(string $path) : bool {
-		$file = fopen($path, 'rb');
-		if(!$file) return false;
-		$header = fread($file, 1024);
-		fclose($file);
-		return str_contains($header, 'ANMF');
+		return $this->is_image_animated($path);
 	}
 
 	public function ffprobe_get_resolution(string $path) : string {

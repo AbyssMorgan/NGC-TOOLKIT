@@ -21,12 +21,12 @@ class DirectoryNamesEditor {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0  - Escape directory name (WWW)',
-			' 1  - Pretty directory name',
-			' 2  - Add directory name prefix/suffix',
-			' 3  - Remove keywords from directory name',
-			' 4  - Insert string into directory name',
-			' 5  - Replace keywords in directory name',
+			' 0 - Escape directory name (WWW)',
+			' 1 - Pretty directory name',
+			' 2 - Add directory name prefix/suffix',
+			' 3 - Remove keywords from directory name',
+			' 4 - Insert string into directory name',
+			' 5 - Replace keywords in directory name',
 		]);
 	}
 
@@ -106,15 +106,15 @@ class DirectoryNamesEditor {
 		$this->core->clear();
 		$this->core->print_help([
 			' Flags (type in one line, default BC):',
-			' B   - Basic replacement',
-			' C   - Basic remove',
-			' L   - Replace language characters',
-			' P   - Capitalize properly',
-			' 0   - Chinese to PinYin',
-			' 1   - Hiragama to Romaji',
-			' 2   - Katakana to Romaji',
-			' +   - To upper case',
-			' -   - To lower case',
+			' B - Basic replacement',
+			' C - Basic remove',
+			' L - Replace language characters',
+			' P - Capitalize properly',
+			' 0 - Chinese to PinYin',
+			' 1 - Hiragama to Romaji',
+			' 2 - Katakana to Romaji',
+			' + - To upper case',
+			' - - To lower case',
 		]);
 
 		$line = strtoupper($this->core->get_input(" Flags: "));

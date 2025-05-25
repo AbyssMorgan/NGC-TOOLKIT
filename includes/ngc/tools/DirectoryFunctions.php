@@ -113,12 +113,14 @@ class DirectoryFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Count files");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
+		$this->core->setup_folders($folders);
+		
 		$data = [];
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;

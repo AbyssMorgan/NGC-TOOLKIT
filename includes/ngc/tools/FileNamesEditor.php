@@ -174,14 +174,14 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Group Single Format                   Range',
-			' g0    s0    "PREFIX_DDDDDD"           000001 - 999999',
-			' g1    s1    "PART\PREFIX_DDDDDD"      000001 - 999999',
-			' g2    s2    "PREFIX_DDDDDD"           000001 - 999999',
-			' g3    s3    "PREFIX_dir_name_DDDDDD"  000001 - 999999',
-			' g4    s4    "PREFIX_dir_name_DDDD"    0001 -   9999',
-			' g5    s5    "PREFIX_DDDDDD"           999999 - 000001',
-			' g6    s6    "DDDDDD"                  000001 - 999999',
+			' Group | Single | Format                  | Range',
+			' g0    | s0     | PREFIX_DDDDDD           | 000001 - 999999',
+			' g1    | s1     | PART\PREFIX_DDDDDD      | 000001 - 999999',
+			' g2    | s2     | PREFIX_DDDDDD           | 000001 - 999999',
+			' g3    | s3     | PREFIX_dir_name_DDDDDD  | 000001 - 999999',
+			' g4    | s4     | PREFIX_dir_name_DDDD    |   0001 -   9999',
+			' g5    | s5     | PREFIX_DDDDDD           | 999999 - 000001',
+			' g6    | s6     | DDDDDD                  | 000001 - 999999',
 		]);
 
 		$line = $this->core->get_input(" Mode: ");
@@ -225,8 +225,7 @@ class FileNamesEditor {
 		if(!file_exists($folder)) return false;
 		$file_id = ($mode == 5) ? 999999 : 1;
 		$prefix_id = $this->tool_number_get_prefix_id();
-		$image_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
-		$files = $this->core->get_files($folder, array_merge($image_extensions, $this->core->media->extensions_video));
+		$files = $this->core->get_files($folder, array_merge($this->core->media->extensions_images, $this->core->media->extensions_video));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -237,7 +236,7 @@ class FileNamesEditor {
 			if($mode == 1){
 				$prefix_id = sprintf("%03d", $part_id);
 			}
-			if(in_array($extension, $image_extensions)){
+			if(in_array($extension, $this->core->media->extensions_images)){
 				$prefix = $this->core->config->get('PREFIX_PHOTO')."_$prefix_id"."_";
 			} else {
 				$prefix = $this->core->config->get('PREFIX_VIDEO')."_$prefix_id"."_";
@@ -358,8 +357,7 @@ class FileNamesEditor {
 		$algo = $this->core->get_hash_alghoritm(intval($params['algo']))['name'];
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$images_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
-		$extensions = array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio, $images_extensions);
+		$extensions = array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio, $this->core->media->extensions_images);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
@@ -376,7 +374,7 @@ class FileNamesEditor {
 				} else {
 					$hash = null;
 				}
-				if($params['resolution'] && in_array($extension, $this->core->media->extensions_video) || in_array($extension, $images_extensions)){
+				if($params['resolution'] && in_array($extension, $this->core->media->extensions_video) || in_array($extension, $this->core->media->extensions_images)){
 					$resolution = $this->core->media->ffprobe_get_resolution($file);
 					if($resolution == '0x0'){
 						$this->core->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -512,12 +510,13 @@ class FileNamesEditor {
 			" Be careful to prevent use on Japanese, Chinese, Korean, etc. file names",
 		]);
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
+		$this->core->setup_folders($folders);
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
@@ -610,7 +609,7 @@ class FileNamesEditor {
 		}
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -625,6 +624,7 @@ class FileNamesEditor {
 			$filters = explode(" ", $line);
 		}
 
+		$this->core->setup_folders($folders);
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
