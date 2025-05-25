@@ -14,7 +14,6 @@ use FtpClient\FtpException;
 class FtpTools {
 
 	private string $name = "Ftp Tools";
-	private array $params = [];
 	private string $action;
 	private string $path;
 	private Toolkit $core;
@@ -46,7 +45,6 @@ class FtpTools {
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_configure_connection();
@@ -144,7 +142,7 @@ class FtpTools {
 		set_ftp_user:
 		$auth['user'] = $this->core->get_input(" FTP User: ");
 		if($auth['user'] == '#') return false;
-		$auth['password'] = $this->core->get_input_no_trim(" FTP Pass: ");
+		$auth['password'] = $this->core->get_input_password(" FTP Pass: ");
 		if($auth['password'] == '#') return false;
 		try {
 			try_login_same_user:
@@ -238,19 +236,10 @@ class FtpTools {
 
 		$remote = new FtpService($ftp);
 
-		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#'){
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false){
 			$ftp->close();
 			return false;
-		}
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
 		}
 
 		set_input:
@@ -264,16 +253,10 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#'){
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false){
 			$ftp->close();
 			return false;
-		}
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
 		}
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
@@ -344,16 +327,10 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#'){
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false){
 			$ftp->close();
 			return false;
-		}
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
 		}
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
@@ -368,19 +345,10 @@ class FtpTools {
 			$filters = explode(" ", $line);
 		}
 
-		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#'){
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false){
 			$ftp->close();
 			return false;
-		}
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
 		}
 
 		$errors = 0;
@@ -424,31 +392,16 @@ class FtpTools {
 
 		$remote = new FtpService($ftp);
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#'){
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false){
 			$ftp->close();
 			return false;
 		}
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
 
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
-
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#'){
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false){
 			$ftp->close();
 			return false;
-		}
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
 		}
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
@@ -546,16 +499,10 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#'){
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false){
 			$ftp->close();
 			return false;
-		}
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
 		}
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
@@ -757,17 +704,11 @@ class FtpTools {
 			goto set_output;
 		}
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#'){
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false){
 			$ftp_source->close();
 			$ftp_destination->close();
 			return false;
-		}
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
 		}
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
@@ -862,18 +803,10 @@ class FtpTools {
 		$this->core->set_subtool("Import file zilla XML");
 
 		set_xml_file:
-		$line = $this->core->get_input(" XML file: ");
-		if($line == '#') return false;
-		$line = $this->core->get_input_folders($line);
-		if(!isset($line[0])) goto set_xml_file;
-		$input = $line[0];
+		$input = $this->core->get_input_file(" XML file: ", true);
+		if($input === false) return false;
 
-		if(!file_exists($input) || is_dir($input)){
-			$this->core->echo(" Invalid file");
-			goto set_xml_file;
-		}
-
-		$xml = file_get_contents($this->core->get_path($input));
+		$xml = file_get_contents($input);
 
 		$xml = str_replace(["\r", "\n", "\t"], '', $xml);
 		$xml = preg_replace('/<Folder [^>]+>[^>]+>/', '<Folder><Server>', $xml);

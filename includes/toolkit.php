@@ -3,10 +3,18 @@
 	error_reporting(E_ALL);
 
 	set_exception_handler(function(Throwable $e) : void {
-		$error = $e->getMessage()."\r\n".$e->getFile().':'.$e->getLine()."\r\n".$e->getTraceAsString()."\r\n\r\n";
-		echo $error."ABORT, PRESS ANY KEY TO EXIT\r\n";
+		$file = $e->getFile();
+		$line_count = $e->getLine();
+		$message = "\r\n";
+		$message .= " File: $file\r\n";
+		$message .= " Line: $line_count\r\n";
+		$message .= " Error: ".$e->getMessage()."\r\n";
+		$message .= " Trace: \r\n";
+		$message .= preg_replace('/^/m', ' ', $e->getTraceAsString())."\r\n\r\n";
+		echo $message;
+		echo " ABORT, PRESS ANY KEY TO EXIT\r\n";
 		if(file_exists('.git')){
-			file_put_contents('NGC-TOOLKIT-CRASH-'.date('Y-m-d His').'.txt', $error);
+			file_put_contents('NGC-TOOLKIT-CRASH-'.date('Y-m-d His').'.txt', $message);
 		}
 		if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') system("PAUSE > nul");
 	});

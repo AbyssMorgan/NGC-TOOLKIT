@@ -11,7 +11,6 @@ use NGC\Core\IniFile;
 class Settings {
 
 	private string $name = "Settings";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -35,7 +34,6 @@ class Settings {
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_show_documentation();
@@ -89,7 +87,7 @@ class Settings {
 			if($this->core->get_confirm(" Open download website now (Y/N): ")){
 				$this->core->open_url("https://github.com/AbyssMorgan/NGC-TOOLKIT/releases/tag/v$version");
 			}
-		} else if($response){
+		} elseif($response){
 			$this->core->echo(" No updates available");
 			$this->core->pause();
 		}
@@ -99,18 +97,18 @@ class Settings {
 	public function tool_restore_default_settings() : bool {
 		$this->core->clear();
 		if($this->core->get_confirm(" Restore default settings (Y/N): ")){
-			$config_default = new IniFile($this->core->get_path($this->core->path."/includes/config/default.ini"), true);
+			$config_default = new IniFile($this->core->get_path("{$this->core->path}/includes/config/default.ini"), true);
 			switch($this->core->get_system_type()){
 				case SYSTEM_TYPE_WINDOWS: {
-					$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/windows.ini"), true);
+					$config_default_system = new IniFile($this->core->get_path("{$this->core->path}/includes/config/windows.ini"), true);
 					break;
 				}
 				case SYSTEM_TYPE_LINUX: {
-					$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/linux.ini"), true);
+					$config_default_system = new IniFile($this->core->get_path("{$this->core->path}/includes/config/linux.ini"), true);
 					break;
 				}
 				case SYSTEM_TYPE_MACOS: {
-					$config_default_system = new IniFile($this->core->get_path($this->core->path."/includes/config/macos.ini"), true);
+					$config_default_system = new IniFile($this->core->get_path("{$this->core->path}/includes/config/macos.ini"), true);
 					break;
 				}
 			}
@@ -141,12 +139,12 @@ class Settings {
 
 	public function tool_install_toolkit_script() : bool {
 		$this->core->clear();
-		$program_path = realpath($this->core->get_path($this->core->path));
+		$program_path = realpath($this->core->path);
 		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS){
 			$this->core->echo(" This feature is available only on windows operating system.");
 			$this->core->echo(" Use command: /usr/bin/php8.4 \"$program_path/includes/script.php\" <path> [...]");
 			$this->core->pause(" Press any key to back to menu");
-		} else if(!$this->core->is_admin()){
+		} elseif(!$this->core->is_admin()){
 			$this->core->echo(" You must run {$this->core->app_name} as administrator to use this feature");
 			$this->core->pause(" Press any key to back to menu");
 		} else {

@@ -10,7 +10,6 @@ use NGC\Services\StringConverter;
 class DirectoryNamesEditor {
 
 	private string $name = "Directory Names Editor";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -22,17 +21,16 @@ class DirectoryNamesEditor {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0 - Escape directory name (WWW)',
-			' 1 - Pretty directory name',
-			' 2 - Add directory name prefix/suffix',
-			' 3 - Remove keywords from directory name',
-			' 4 - Insert string into directory name',
-			' 5 - Replace keywords in directory name',
+			' 0  - Escape directory name (WWW)',
+			' 1  - Pretty directory name',
+			' 2  - Add directory name prefix/suffix',
+			' 3  - Remove keywords from directory name',
+			' 4  - Insert string into directory name',
+			' 5  - Replace keywords in directory name',
 		]);
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_escape_directory_name_www();
@@ -53,10 +51,10 @@ class DirectoryNamesEditor {
 			" Characters after escape: A-Z a-z 0-9 _ - .",
 			" Be careful to prevent use on Japanese, Chinese, Korean, etc. directory names",
 		]);
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
@@ -111,17 +109,18 @@ class DirectoryNamesEditor {
 			' B   - Basic replacement',
 			' C   - Basic remove',
 			' L   - Replace language characters',
+			' P   - Capitalize properly',
 			' 0   - Chinese to PinYin',
 			' 1   - Hiragama to Romaji',
 			' 2   - Katakana to Romaji',
 			' +   - To upper case',
 			' -   - To lower case',
 		]);
-
+		
 		$line = strtoupper($this->core->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
-		if(str_replace(['B', 'C', 'L', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
+		if(str_replace(['B', 'C', 'L', 'P', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
 			'basic_replace' => str_contains($line, 'B'),
 			'basic_remove' => str_contains($line, 'C'),
@@ -131,26 +130,25 @@ class DirectoryNamesEditor {
 			'KatakanaToRomaji' => str_contains($line, '2'),
 			'UpperCase' => str_contains($line, '+'),
 			'LowerCase' => str_contains($line, '-'),
+			'CapitalizeProperly' => str_contains($line, 'P'),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
-			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/LanguageReplacement.ini"));
+			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->import_pin_yin($this->core->get_path($this->core->path."/includes/data/PinYin.ini"));
+			$converter->import_pin_yin($this->core->get_path("{$this->core->path}/includes/data/PinYin.ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Hiragama.ini"));
+			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Hiragama.ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Katakana.ini"));
+			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Katakana.ini"));
 		}
 		$this->core->clear();
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -174,8 +172,13 @@ class DirectoryNamesEditor {
 				}
 				if($flags->UpperCase){
 					$escaped_name = mb_strtoupper($escaped_name);
-				} else if($flags->LowerCase){
+				} elseif($flags->LowerCase){
 					$escaped_name = mb_strtolower($escaped_name);
+				} elseif($flags->CapitalizeProperly){
+					$escaped_name = ucwords(mb_strtolower($escaped_name));
+					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function($matches) : string {
+						return $matches[1].mb_strtoupper($matches[2]);
+					}, $escaped_name);
 				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
 				if(empty($escaped_name)){
@@ -210,15 +213,14 @@ class DirectoryNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Add directory name prefix/suffix");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		if($folders === false) return false;
 
-		$prefix = $this->core->get_input_no_trim(" Prefix (may be empty): ");
+		$prefix = $this->core->get_input(" Prefix (may be empty): ", false);
 		if($prefix == '#') return false;
 		$prefix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
 
-		$suffix = $this->core->get_input_no_trim(" Suffix (may be empty): ");
+		$suffix = $this->core->get_input(" Suffix (may be empty): ", false);
 		if($suffix == '#') return false;
 		$suffix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
 
@@ -269,39 +271,31 @@ class DirectoryNamesEditor {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params = [
+		$params = [
 			'mode' => $line[0] ?? '?',
 		];
 
-		if(!in_array($this->params['mode'], ['0', '1'])) goto set_mode;
+		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
 
 		$this->core->clear();
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		if($folders === false) return false;
 
 		$keywords = [];
-		if($this->params['mode'] == '0'){
+		if($params['mode'] == '0'){
 			$this->core->echo(" Put numbers how much keywords you want remove");
 
 			$quantity = $this->core->get_input_integer(" Quantity: ");
 			if(!$quantity) return false;
 
 			for($i = 0; $i < $quantity; $i++){
-				$keywords[$i] = $this->core->get_input_no_trim(" Keyword ".($i+1).": ");
+				$keywords[$i] = $this->core->get_input(" Keyword ".($i+1).": ", false);
 			}
-		} else if($this->params['mode'] == '1'){
+		} elseif($params['mode'] == '1'){
 			set_keyword_file:
-			$line = $this->core->get_input(" Keywords file: ");
-			if($line == '#') return false;
-			$line = $this->core->get_input_folders($line);
-			if(!isset($line[0])) goto set_keyword_file;
-			$input = $line[0];
-
-			if(!file_exists($input) || is_dir($input)){
-				$this->core->echo(" Invalid keywords file");
-				goto set_keyword_file;
-			}
+			$input = $this->core->get_input_file(" Keywords file: ", true);
+			if($input === false) return false;
 
 			$fp = fopen($input, 'r');
 			if(!$fp){
@@ -332,7 +326,7 @@ class DirectoryNamesEditor {
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} else if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				} elseif(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -372,14 +366,13 @@ class DirectoryNamesEditor {
 		$this->core->print_help([
 			' Specify the string you want to inject the file name, may contain spaces',
 		]);
-		$insert_string = $this->core->get_input_no_trim(" String: ");
+		$insert_string = $this->core->get_input(" String: ", false);
 
 		$this->core->clear();
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
-		$this->core->setup_folders($folders);
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
@@ -397,7 +390,7 @@ class DirectoryNamesEditor {
 				} else {
 					if($offset > 0){
 						$name = substr($name, 0, $offset).$insert_string.substr($name, $offset);
-					} else if($offset < 0){
+					} elseif($offset < 0){
 						$name = substr($name, 0, strlen($name) + $offset).$insert_string.substr($name, $offset);
 					} else {
 						$name = $insert_string.$name;
@@ -428,35 +421,27 @@ class DirectoryNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Replace keywords in directory name");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		if($folders === false) return false;
 
 		set_keyword_file:
-		$replacements = [];
-		$line = $this->core->get_input(" Keywords file: ");
-		if($line == '#') return false;
-		$line = $this->core->get_input_folders($line);
-		if(!isset($line[0])) goto set_keyword_file;
-		$input = $line[0];
-
-		if(!file_exists($input) || is_dir($input)){
-			$this->core->echo(" Invalid keywords file");
-			goto set_keyword_file;
-		}
+		$input = $this->core->get_input_file(" Keywords file: ", true);
+		if($input === false) return false;
 
 		$fp = fopen($input, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
 		}
+
+		$replacements = [];
 		$i = 0;
 		$errors = 0;
 		while(($line = fgets($fp)) !== false){
 			$i++;
 			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if(empty(trim($line))) continue;
-			$replace = $this->core->get_input_folders($line, false);
+			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
 				$errors++;
@@ -486,7 +471,7 @@ class DirectoryNamesEditor {
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} else if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				} elseif(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {

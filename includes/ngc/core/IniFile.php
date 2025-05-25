@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.1 */
+/* NGC-TOOLKIT v2.6.0 */
 
 declare(strict_types=1);
 
@@ -109,19 +109,19 @@ class IniFile {
 			$key = trim($option[0]);
 			if(!isset($option[1])){
 				$data = null;
-			} else if(is_numeric($option[1])){
+			} elseif(is_numeric($option[1])){
 				if(strpos($option[1], ".") !== false){
 					$data = floatval($option[1]);
 				} else {
 					$data = intval($option[1]);
 				}
-			} else if(empty($option[1])){
+			} elseif(empty($option[1])){
 				$data = "";
-			} else if($option[1] == 'false'){
+			} elseif($option[1] == 'false'){
 				$data = false;
-			} else if($option[1] == 'true'){
+			} elseif($option[1] == 'true'){
 				$data = true;
-			} else if($option[1] == 'null'){
+			} elseif($option[1] == 'null'){
 				$data = null;
 			} else {
 				if(substr($option[1], 0, 1) == '"' && substr($option[1], -1, 1) == '"'){
@@ -203,7 +203,7 @@ class IniFile {
 			$lvalue = mb_strtolower($value);
 			if($lvalue == 'true'){
 				return true;
-			} else if($lvalue == 'false'){
+			} elseif($lvalue == 'false'){
 				return false;
 			}
 		}
@@ -240,14 +240,14 @@ class IniFile {
 		foreach($this->data as $key => $value){
 			if(is_numeric($value)){
 				$content .= "$key=$value\r\n";
-			} else if(is_null($value)){
+			} elseif(is_null($value)){
 				$content .= "$key=null\r\n";
-			} else if(is_bool($value)){
+			} elseif(is_bool($value)){
 				$value = $value ? 'true' : 'false';
 				$content .= "$key=$value\r\n";
-			} else if(empty($value) && !is_array($value)){
+			} elseif(empty($value) && !is_array($value)){
 				$content .= "$key=\"\"\r\n";
-			} else if(is_array($value)){
+			} elseif(is_array($value)){
 				$value = "JSON:".base64_encode(json_encode($value));
 				$content .= "$key=\"$value\"\r\n";
 			} else {

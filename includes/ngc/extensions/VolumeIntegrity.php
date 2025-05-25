@@ -1,5 +1,7 @@
 <?php
 
+/* NGC-TOOLKIT v2.6.0 */
+
 declare(strict_types=1);
 
 namespace NGC\Extensions;
@@ -208,18 +210,20 @@ class VolumeIntegrity {
 		return $stmt->execute();
 	}
 
-	public function cleanup(array $items) : bool {
+	public function cleanup(array $items) : array|false {
 		if(is_null($this->db)) return false;
 		$except = [];
 		foreach($items as $item){
 			$except[] = $this->container_escape($item);
 		}
 		unset($items, $item);
+		$removed = [];
 		$items = array_diff(array_keys($this->data), $except);
 		foreach($items as $path){
+			$removed[] = $path;
 			$this->unset($path);
 		}
-		return true;
+		return $removed;
 	}
 
 	public function get_loaded() : array {

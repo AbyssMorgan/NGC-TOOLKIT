@@ -71,9 +71,9 @@ class GuardPattern {
 		foreach($data as $pat){
 			if(substr($pat, 0, 7) == 'folder:'){
 				array_push($folders, substr($pat, 7));
-			} else if(substr($pat, 0, 5) == 'file:'){
+			} elseif(substr($pat, 0, 5) == 'file:'){
 				array_push($files, substr($pat, 5));
-			} else if(substr($pat, 0, 6) == 'input:'){
+			} elseif(substr($pat, 0, 6) == 'input:'){
 				$this->set_input(substr($pat, 6));
 			}
 		}

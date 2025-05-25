@@ -1,5 +1,7 @@
 <?php
 
+/* NGC-TOOLKIT v2.6.0 */
+
 declare(strict_types=1);
 
 namespace NGC\Extensions;
@@ -16,6 +18,7 @@ class Console {
 
 	public function execute(string $path) : bool {
 		$this->core->title($path);
+		$this->core->clear();
 		$this->script = $path;
 		$this->path = pathinfo($path, PATHINFO_DIRNAME);
 		$content = file_get_contents($path);

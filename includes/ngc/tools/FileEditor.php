@@ -11,7 +11,6 @@ use NGC\Services\StringConverter;
 class FileEditor {
 
 	private string $name = "File Editor";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -23,18 +22,17 @@ class FileEditor {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0 - Replace keywords in files',
-			' 1 - Remove keywords in files',
-			' 2 - Remove duplicate lines in file',
-			' 3 - Split file by lines count',
-			' 4 - Split file by size (Binary)',
-			' 5 - Reverse text file lines',
-			' 6 - Pretty file content',
+			' 0  - Replace keywords in files',
+			' 1  - Remove keywords in files',
+			' 2  - Remove duplicate lines in file',
+			' 3  - Split file by lines count',
+			' 4  - Split file by size (Binary)',
+			' 5  - Reverse text file lines',
+			' 6  - Pretty file content',
 		]);
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_replace_keywords_in_files();
@@ -52,18 +50,11 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Replace keywords in files");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		if($folders === false) return false;
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#') return false;
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
-		}
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		set_keyword_file:
 		$replacements = [];
@@ -144,18 +135,11 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Remove keywords in files");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		if($folders === false) return false;
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#') return false;
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
-		}
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		set_keyword_file:
 		$keywords = [];
@@ -318,7 +302,7 @@ class FileEditor {
 		fseek($fp, 0);
 
 		$utf8_bom = $this->core->has_utf8_bom($first_line);
-		$eol = $this->core->detect_eol($content);
+		$eol = $this->core->detect_eol($first_line);
 
 		$count = 0;
 		$part_id = 1;
@@ -462,6 +446,7 @@ class FileEditor {
 			' L   - Replace language characters',
 			' S   - Remove double spaces',
 			' W   - Remove whitespace characters on EOL',
+			' F   - Remove whitespace characters on EOF',
 			' 0   - Chinese to PinYin',
 			' 1   - Hiragama to Romaji',
 			' 2   - Katakana to Romaji',
@@ -472,13 +457,14 @@ class FileEditor {
 		$line = strtoupper($this->core->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
-		if(str_replace(['B', 'C', 'L', 'S', 'W', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
+		if(str_replace(['B', 'C', 'L', 'S', 'W', 'F', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
 			'basic_replace' => str_contains($line, 'B'),
 			'basic_remove' => str_contains($line, 'C'),
 			'language_replace' => str_contains($line, 'L'),
 			'RemoveDoubleSpace' => str_contains($line, 'S'),
 			'RemoveWhitespaceEOL' => str_contains($line, 'W'),
+			'RemoveWhitespaceEOF' => str_contains($line, 'F'),
 			'ChineseToPinYin' => str_contains($line, '0'),
 			'HiragamaToRomaji' => str_contains($line, '1'),
 			'KatakanaToRomaji' => str_contains($line, '2'),
@@ -487,32 +473,24 @@ class FileEditor {
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
-			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/LanguageReplacement.ini"));
+			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->import_pin_yin($this->core->get_path($this->core->path."/includes/data/PinYin.ini"));
+			$converter->import_pin_yin($this->core->get_path("{$this->core->path}/includes/data/PinYin.ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Hiragama.ini"));
+			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Hiragama.ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->import_replacement($this->core->get_path($this->core->path."/includes/data/Katakana.ini"));
+			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Katakana.ini"));
 		}
 		$this->core->clear();
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#') return false;
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
-		}
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
 		$line = $this->core->get_input(" Name filter: ");
@@ -546,7 +524,7 @@ class FileEditor {
 				}
 				if($flags->UpperCase){
 					$content = mb_strtoupper($content);
-				} else if($flags->LowerCase){
+				} elseif($flags->LowerCase){
 					$content = mb_strtolower($content);
 				}
 				if($flags->basic_replace){
@@ -566,6 +544,9 @@ class FileEditor {
 						$line = rtrim($line);
 					}
 					$content = $bom.implode($eol, $lines);
+				}
+				if($flags->RemoveWhitespaceEOF){
+					$content = rtrim($content);
 				}
 				if($content != $original){
 					file_put_contents($file, $content);

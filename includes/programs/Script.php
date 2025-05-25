@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use NGC\Core\Core;
 use NGC\Core\IniFile;
-use NGC\Core\AppBuffer;
 
 use NGC\Extensions\Console;
 use NGC\Extensions\AppStorage;
@@ -13,32 +12,32 @@ use NGC\Extensions\MediaFunctions;
 class Script extends Core {
 
 	public IniFile $mkvmerge;
-	public AppBuffer $app_buffer;
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.5.1";
+	public string $version = "2.6.0";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 	public string $script;
 
 	public function __construct(array $arguments){
-		parent::__construct($arguments, true);
+		parent::__construct($arguments);
+		$this->require_utilities();
 		if($this->abort) return;
 		$config_default = new IniFile($this->get_path("$this->path/includes/config/default.ini"), true);
 		switch($this->get_system_type()){
 			case SYSTEM_TYPE_WINDOWS: {
-				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/windows.ini"), true);
+				$config_default_system = new IniFile($this->get_path("{$this->path}/includes/config/windows.ini"), true);
 				$this->app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/NGC-TOOLKIT");
 				break;
 			}
 			case SYSTEM_TYPE_LINUX: {
-				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/linux.ini"), true);
+				$config_default_system = new IniFile($this->get_path("{$this->path}/includes/config/linux.ini"), true);
 				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/.config/NGC-TOOLKIT");
 				break;
 			}
 			case SYSTEM_TYPE_MACOS: {
-				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/macos.ini"), true);
+				$config_default_system = new IniFile($this->get_path("{$this->path}/includes/config/macos.ini"), true);
 				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/Library/Application Support/NGC-TOOLKIT");
 				break;
 			}
@@ -90,7 +89,7 @@ class Script extends Core {
 			}
 		}
 
-		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS) popen('color '.$this->config->get('COLOR'), 'w');
+		$this->set_console_color($this->config->get('COLOR'));
 
 		if($changed){
 			$this->config->save();
@@ -98,11 +97,10 @@ class Script extends Core {
 		$keys = [
 			'LOG_FOLDER',
 			'DATA_FOLDER',
-			'BUFFER_FOLDER',
 		];
 		foreach($keys as $key){
 			$this->config->set($key, $this->get_variable($this->config->get($key)));
-			if(!$this->is_valid_device($this->config->get($key))){
+			if(!$this->is_valid_path($this->config->get($key))){
 				$this->config->set($key, $this->get_variable($config_default->get($key)));
 			}
 		}
@@ -111,7 +109,6 @@ class Script extends Core {
 
 		$this->init_logs();
 
-		$this->app_buffer = new AppBuffer($this->get_path($this->config->get('BUFFER_FOLDER')));
 		ini_set('memory_limit', -1);
 	}
 
@@ -123,7 +120,7 @@ class Script extends Core {
 		} else {
 			$console = new Console($this);
 			$console->execute($path);
-			$this->exit(0, false);
+			$this->close(false);
 		}
 	}
 

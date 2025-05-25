@@ -15,7 +15,6 @@ use NGC\Services\DataBaseBackup;
 class MySQLTools {
 
 	private string $name = "MySQL Tools";
-	private array $params = [];
 	private string $action;
 	private string $path;
 	private Toolkit $core;
@@ -52,7 +51,6 @@ class MySQLTools {
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_configure_connection();
@@ -159,17 +157,8 @@ class MySQLTools {
 			" Setup label: \"$label\"",
 		]);
 
-		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		set_db_connection:
 		$db['host'] = $this->core->get_input(" DB Host: ");
@@ -180,7 +169,7 @@ class MySQLTools {
 		if($db['name'] == '#') return false;
 		$db['user'] = $this->core->get_input(" DB User: ");
 		if($db['user'] == '#') return false;
-		$db['password'] = $this->core->get_input_no_trim(" DB Pass: ");
+		$db['password'] = $this->core->get_input_password(" DB Pass: ");
 		if($db['password'] == '#') return false;
 
 		try_login_same:
@@ -319,7 +308,7 @@ class MySQLTools {
 		$callback = $ini->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
 
-		if(!$this->core->is_valid_device($path)){
+		if(!$this->core->is_valid_path($path)){
 			$this->core->echo(" Output device \"$path\" is not available");
 			goto set_label;
 		}
@@ -847,7 +836,7 @@ class MySQLTools {
 		$callback = $ini->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
 
-		if(!$this->core->is_valid_device($path)){
+		if(!$this->core->is_valid_path($path)){
 			$this->core->echo(" Output device \"$path\" is not available");
 			return false;
 		}
@@ -1101,13 +1090,13 @@ class MySQLTools {
 		try {
 			query:
 			if($save_output) $this->core->write_data("");
-			$query = $this->core->get_input_no_trim(" MySQL: ");
+			$query = $this->core->get_input(" MySQL: ", false);
 			$lquery = mb_strtolower($query);
 			if($lquery == '@exit'){
 				goto close_connection;
-			} else if($lquery == '@clear'){
+			} elseif($lquery == '@clear'){
 				goto clear;
-			} else if($lquery == '@open'){
+			} elseif($lquery == '@open'){
 				$this->core->open_file($this->core->get_path($this->core->config->get('DATA_FOLDER')), '');
 				goto query;
 			}
@@ -1119,7 +1108,7 @@ class MySQLTools {
 			if($last_insert_id){
 				$this->core->echo(" Last insert id: $last_insert_id");
 				if($save_output) $this->core->write_data(" Last insert id: $last_insert_id");
-			} else if(count($results) == 0){
+			} elseif(count($results) == 0){
 				if(substr($lquery, 0, 6) == 'select' || substr($lquery, 0, 4) == 'show'){
 					$this->core->echo(" MySQL returned an empty result");
 					if($save_output) $this->core->write_data(" MySQL returned an empty result");
@@ -1243,7 +1232,7 @@ class MySQLTools {
 		$callback = $ini->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
 
-		if(!$this->core->is_valid_device($path)){
+		if(!$this->core->is_valid_path($path)){
 			$this->core->echo(" Output device \"$path\" is not available");
 			goto set_label;
 		}
@@ -1268,7 +1257,7 @@ class MySQLTools {
 		]);
 		$line = $this->core->get_input(" Names: ");
 		if($line == '#') return false;
-		$items = $this->core->get_input_folders($line);
+		$items = $this->core->parse_input_path($line);
 
 		$this->core->write_log("Initialize backup for \"$label\"");
 		$this->core->echo(" Initialize backup service");

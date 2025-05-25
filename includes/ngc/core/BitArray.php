@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.1 */
+/* NGC-TOOLKIT v2.6.0 */
 
 declare(strict_types=1);
 
@@ -119,10 +119,7 @@ class BitArray {
 		$max_address = $this->get_config_used_size();
 		for($address = 0; $address < $max_address; $address++){
 			$this->bits->extract_value($this->original[$address] ?? 0, $int1, $int2, $int3, $int4);
-			$data .= chr($int1);
-			$data .= chr($int2);
-			$data .= chr($int3);
-			$data .= chr($int4);
+			$data .= chr($int1).chr($int2).chr($int3).chr($int4);
 			$length += 4;
 		}
 		return $data;

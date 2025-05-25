@@ -10,11 +10,11 @@ use Exception;
 use NGC\Core\Logs;
 use NGC\Core\IniFile;
 use NGC\Services\FaceDetector;
+use NGC\Extensions\SubtitlesValidator;
 
 class MediaTools {
 
 	private string $name = "Media Tools";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -26,17 +26,21 @@ class MediaTools {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0 - Merge: Video + Audio',
-			' 1 - Merge: Video + SRT',
-			' 2 - Avatar generator',
-			' 3 - Video: Fetch media info',
-			' 4 - Image converter',
-			' 5 - Ident mime type',
+			' 0  - Merge: Video + Audio',
+			' 1  - Merge: Video + SRT',
+			' 2  - Avatar generator',
+			' 3  - Video: Fetch media info',
+			' 4  - Image converter',
+			' 5  - Ident mime type',
+			' 6  - Extract video',
+			' 7  - Extract audio',
+			' 8  - Extract subtitles',
+			' 9  - Validate subtitles (SRT)',
+			' 10 - Compare subtitles (SRT)',
 		]);
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_merge_video_audio();
@@ -45,6 +49,11 @@ class MediaTools {
 			case '3': return $this->tool_video_fetch_media_info();
 			case '4': return $this->tool_image_converter();
 			case '5': return $this->tool_ident_mime_type();
+			case '6': return $this->tool_extract_video();
+			case '7': return $this->tool_extract_audio();
+			case '8': return $this->tool_extract_subtitles();
+			case '9': return $this->tool_validate_subtitles();
+			case '10': return $this->tool_compare_subtitles();
 		}
 		return false;
 	}
@@ -53,44 +62,18 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Merge video audio");
 
-		set_video:
-		$line = $this->core->get_input(" Video: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_video;
-		$video = $folders[0];
+		$video = $this->core->get_input_folder(" Video (Folder): ");
+		if($video === false) return false;
 
-		if(!file_exists($video) || !is_dir($video)){
-			$this->core->echo(" Invalid video folder");
-			goto set_video;
-		}
-
-		set_audio:
-		$line = $this->core->get_input(" Audio: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_audio;
-		$audio = $folders[0];
-
-		if(!file_exists($audio) || !is_dir($audio)){
-			$this->core->echo(" Invalid audio folder");
-			goto set_audio;
-		}
+		$audio = $this->core->get_input_folder(" Audio (Folder): ");
+		if($audio === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($audio == $output || $video == $output){
 			$this->core->echo(" Output folder must be different than audio/video folder");
-			goto set_output;
-		}
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
 			goto set_output;
 		}
 
@@ -117,7 +100,7 @@ class MediaTools {
 			if(!file_exists($file)){
 				$this->core->write_error("FILE NOT FOUND \"$file\"");
 				$errors++;
-			} else if(!isset($files_audio[$key])){
+			} elseif(!isset($files_audio[$key])){
 				$this->core->write_error("AUDIO FILE NOT FOUND FOR \"$file\"");
 				$errors++;
 			} else {
@@ -150,32 +133,15 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Merge video subtitles");
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($input == $output){
 			$this->core->echo(" Output folder must be different than input folder");
-			goto set_output;
-		}
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
 			goto set_output;
 		}
 
@@ -194,7 +160,7 @@ class MediaTools {
 			if(file_exists($out)){
 				$this->core->write_error("FILE ALREADY EXISTS \"$out\"");
 				$errors++;
-			} else if(!file_exists($srt)){
+			} elseif(!file_exists($srt)){
 				$this->core->write_error("FILE NOT EXISTS \"$srt\"");
 				$errors++;
 			} else {
@@ -220,37 +186,20 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Avatar generator");
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
-
-		$size = $this->core->get_input_integer(" Width (0 - no resize): ", 0);
-		if(!$size) return false;
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($input == $output){
 			$this->core->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
+		$size = $this->core->get_input_integer(" Width (0 - no resize): ", 0);
+		if(!$size) return false;
 
 		$image_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
 		$variants = explode(" ", $this->core->config->get('AVATAR_GENERATOR_VARIANTS'));
@@ -258,7 +207,7 @@ class MediaTools {
 
 		$errors = 0;
 
-		$detector = new FaceDetector($this->core->get_path($this->core->path."/includes/data/FaceDetector.dat"));
+		$detector = new FaceDetector($this->core->get_path("{$this->core->path}/includes/data/FaceDetector.dat"));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -305,37 +254,18 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Video fetch media info");
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
-		$output = $input;
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		$file_name = 'MediaInfo';
 
-		set_output:
-		$line = $this->core->get_input(" Output (Empty, same as input): ");
+		$line = $this->core->get_input(" File name (Empty, default): ");
 		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(isset($folders[0])){
-			$output = $folders[0];
-			if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-				$this->core->echo(" Invalid output folder");
-				goto set_output;
-			}
-
-			$line = $this->core->get_input(" File name (Empty, default): ");
-			if($line == '#') return false;
-			$fname = $this->core->clean_file_name($line);
-			if(!empty($fname)) $file_name = $fname;
-		}
+		$fname = $this->core->clean_file_name($line);
+		if(!empty($fname)) $file_name = $fname;
 
 		$generate_checksum = $this->core->get_confirm(" Generate checksum if .md5 file not found (Y/N): ");
 
@@ -383,8 +313,7 @@ class MediaTools {
 		$csv->write(implode($separator, $labels));
 
 		$keys = [];
-		$video_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO'));
-		$files = $this->core->get_files($input, $video_extensions);
+		$files = $this->core->get_files($input, $this->core->media->extensions_video);
 		$items = 0;
 		$new = 0;
 		$total = count($files);
@@ -416,7 +345,7 @@ class MediaTools {
 
 			if(file_exists("$file.md5")){
 				$meta->checksum = file_get_contents("$file.md5");
-			} else if($generate_checksum){
+			} elseif($generate_checksum){
 				$meta->checksum = strtoupper(hash_file('md5', $file));
 			} else {
 				$meta->checksum = null;
@@ -487,39 +416,22 @@ class MediaTools {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params = [
+		$params = [
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'], ['0', '1', '2', '3'])) goto set_mode;
+		if(!in_array($params['mode'], ['0', '1', '2', '3'])) goto set_mode;
 		$this->core->clear();
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($input == $output){
 			$this->core->echo(" Output folder must be different than input folder");
-			goto set_output;
-		}
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
 			goto set_output;
 		}
 
@@ -553,7 +465,7 @@ class MediaTools {
 				$errors++;
 				continue;
 			}
-			switch(intval($this->params['mode'])){
+			switch(intval($params['mode'])){
 				case 0: {
 					$image->setImageFormat('webp');
 					if($image->getImageFormat() == 'PNG'){
@@ -617,10 +529,8 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Ident mime type");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -659,6 +569,300 @@ class MediaTools {
 		return false;
 	}
 
+	public function tool_extract_video() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Extract video");
+	
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
+
+		set_output:
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
+
+		if($input == $output){
+			$this->core->echo(" Output folder must be different than input folder");
+			goto set_output;
+		}
+	
+		$errors = 0;
+		$this->core->set_errors($errors);
+		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue 1;
+			$media_info = $this->core->media->get_media_info($file);
+			foreach($media_info['streams'] as $stream){
+				if($stream['codec_type'] == 'video'){
+					$index = $stream['index'];
+					$codec = strtolower($stream['codec_name'] ?? 'unknown');
+					$extension = $this->core->media->get_video_extension($codec);
+					if(is_null($extension)){
+						$this->core->write_error("UNSUPPORTED VIDEO CODEC \"$codec\" IN \"$file\"");
+						$errors++;
+					} else {
+						$new_name = $this->core->get_path(pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."-video$index.$extension");
+						if(!file_exists($new_name)){
+							$this->core->write_log("EXTRACT \"$new_name\"");
+							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy -f $extension \"$new_name\" 2>{$this->core->device_null}");
+							if(!file_exists($new_name)){
+								$this->core->write_error("EXTRACT FAILED \"$new_name\"");
+								$errors++;
+							}
+						}
+					}
+				}
+			}
+			$this->core->progress($items, $total);
+			$this->core->set_errors($errors);
+		}
+		$this->core->progress($items, $total);
+		unset($files);
+	
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_extract_audio() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Extract audio");
+	
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
+
+		set_output:
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
+
+		if($input == $output){
+			$this->core->echo(" Output folder must be different than input folder");
+			goto set_output;
+		}
+	
+		$errors = 0;
+		$this->core->set_errors($errors);
+		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue 1;
+			$media_info = $this->core->media->get_media_info($file);
+			foreach($media_info['streams'] as $stream){
+				if($stream['codec_type'] == 'audio'){
+					$language = $stream['tags']['language'] ?? 'unk';
+					$index = $stream['index'];
+					$suffix = "-$index-$language";
+					if(($stream['disposition']['comment'] ?? 0) == 1){
+						$suffix .= "-commentary";
+					}
+					$extension = $this->core->media->get_audio_extension($stream['codec_name'] ?? 'aac');
+					if(is_null($extension)){
+						$this->core->write_error("UNSUPPORTED AUDIO CODEC \"{$stream['codec_name']}\" IN \"$file\"");
+						$errors++;
+					} else {
+						$new_name = $this->core->get_path(pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						if(!file_exists($new_name)){
+							$this->core->write_log("EXTRACT \"$new_name\"");
+							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy \"$new_name\" 2>{$this->core->device_null}");
+							if(!file_exists($new_name)){
+								$this->core->write_error("EXTRACT FAILED \"$new_name\"");
+								$errors++;
+							}
+						}
+					}
+				}
+			}
+			$this->core->progress($items, $total);
+			$this->core->set_errors($errors);
+		}
+		$this->core->progress($items, $total);
+		unset($files);
+	
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_extract_subtitles() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Extract subtitles");
+
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
+
+		set_output:
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
+
+		if($input == $output){
+			$this->core->echo(" Output folder must be different than input folder");
+			goto set_output;
+		}
+
+		$errors = 0;
+		$this->core->set_errors($errors);
+		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
+		$items = 0;
+		$total = count($files);
+		foreach($files as $file){
+			$items++;
+			if(!file_exists($file)) continue 1;
+			$media_info = $this->core->media->get_media_info($file);
+			foreach($media_info['streams'] as $stream){
+				if($stream['codec_type'] == 'subtitle'){
+					$language = $stream['tags']['language'] ?? 'unk';
+					$index = $stream['index'];
+					$suffix = "-$index-$language";
+					if(($stream['disposition']['forced'] ?? 0) == 1){
+						$suffix .= "-forced";
+					}
+					$extension = $this->core->media->get_subtitle_extension($stream['codec_name'] ?? 'vtt');
+					if(is_null($extension)){
+						$this->core->write_error("UNSUPORTED SUBTITLES \"{$stream['codec_name']}\" IN \"$file\"");
+						$errors++;
+					} else {
+						$new_name = $this->core->get_path(pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						if(!file_exists($new_name)){
+							$this->core->write_log("EXTRACT \"$new_name\"");
+							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy \"$new_name\" 2>{$this->core->device_null}");
+							if(!file_exists($new_name)){
+								$this->core->write_error("EXTRACT FAILED \"$new_name\"");
+								$errors++;
+							}
+						}
+					}
+				}
+			}
+			$this->core->progress($items, $total);
+			$this->core->set_errors($errors);
+		}
+		$this->core->progress($items, $total);
+		unset($files);
+
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_validate_subtitles() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Validate subtitles");
+
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
+		$subtitles_validator = new SubtitlesValidator($this->core);
+
+		$errors = 0;
+		$this->core->set_errors($errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->core->get_files($folder, ['srt']);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				$validation = $subtitles_validator->srt_validate($file);
+				if($validation === false) continue 1;
+				$errors_in_file = count($validation);
+				$errors += $errors_in_file;
+				if(!empty($validation)){
+					$this->core->write_error("Validation \"$file\" total $errors_in_file errors");
+					$this->core->write_error($validation);
+					$this->core->write_error("");
+				}
+				$this->core->progress($items, $total);
+				$this->core->set_errors($errors);
+			}
+			$this->core->progress($items, $total);
+			unset($files);
+			$this->core->set_folder_done($folder);
+		}
+
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_compare_subtitles() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Compare subtitles");
+
+		$input_a = $this->core->get_input_folder(" Input (Folder A): ");
+		if($input_a === false) return false;
+
+		set_input_b:
+		$input_b = $this->core->get_input_folder(" Input (Folder B): ");
+		if($input_b === false) return false;
+
+		if($input_a == $input_b){
+			$this->core->echo(" Input Folder A must be different than input Folder B");
+			goto set_input_b;
+		}
+
+		$files_a = $this->core->get_files($input_a, ['srt']);
+		$files_b = $this->core->get_files($input_b, ['srt']);
+
+		$subtitles_validator = new SubtitlesValidator($this->core);
+
+		$map = [];
+		foreach($files_b as $file){
+			$map[basename($file)] = $file;
+		}
+
+		$errors = 0;
+		$this->core->set_errors($errors);
+		$items = 0;
+		$total = count($files_a);
+		foreach($files_a as $file){
+			$items++;
+			$fname = basename($file);
+			if(!isset($map[$fname])){
+				$this->core->write_error("File \"$fname\" not found in folder B");
+				$errors++;
+				continue;
+			}
+			$validation = $subtitles_validator->srt_compare($file, $map[$fname]);
+			$count = (object)[
+				'global' => count($validation->global),
+				'file_a' => count($validation->file_a),
+				'file_b' => count($validation->file_b),
+			];
+			if($count->global > 0 || $count->file_a > 0 || $count->file_b > 0){
+				$this->core->write_error("Comparsion \"$file\" to \"{$map[$fname]}\"");
+				if($count->global > 0){
+					$this->core->write_error("Global errors:");
+					$this->core->write_error($validation->global);
+					$errors += $count->global;
+				}
+				if($count->file_a > 0){
+					$this->core->write_error("File left errors:");
+					$this->core->write_error($validation->file_a);
+					$errors += $count->file_a;
+				}
+				if($count->file_b > 0){
+					$this->core->write_error("File right errors:");
+					$this->core->write_error($validation->file_b);
+					$errors += $count->file_b;
+				}
+				$this->core->write_error("");
+			} else {
+				$this->core->write_log("Comparsion \"$file\" to \"{$map[$fname]}\" SUCCESS");
+			}
+			$this->core->progress($items, $total);
+			$this->core->set_errors($errors);
+		}
+		$this->core->progress($items, $total);
+
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
 	private function translate_media_info(object &$meta) : void {
 		$vr_mode = $this->core->media->get_vr_mode($meta->name);
 		$meta->video_bitrate = is_null($meta->video_bitrate) ? 'N/A' : $this->core->format_bits($meta->video_bitrate, 2, false).'/s';
@@ -676,7 +880,7 @@ class MediaTools {
 		$meta->audio_codec = $meta->audio_codec == 'none' ? 'None' : mb_strtoupper($meta->audio_codec);
 		if(is_null($meta->audio_bitrate)){
 			$meta->audio_bitrate = 'N/A';
-		} else if($meta->audio_bitrate == 0){
+		} elseif($meta->audio_bitrate == 0){
 			$meta->audio_bitrate = 'None';
 		} else {
 			$meta->audio_bitrate = $this->core->format_bits($meta->audio_bitrate, 2, false).'/s';

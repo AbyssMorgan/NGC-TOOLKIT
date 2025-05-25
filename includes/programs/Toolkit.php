@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use NGC\Core\Core;
 use NGC\Core\IniFile;
-use NGC\Core\AppBuffer;
 
 use NGC\Extensions\AppStorage;
 use NGC\Extensions\MediaFunctions;
@@ -25,31 +24,31 @@ use NGC\Tools\MySQLTools;
 class Toolkit extends Core {
 
 	public IniFile $mkvmerge;
-	public AppBuffer $app_buffer;
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.5.1";
+	public string $version = "2.6.0";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 
 	public function __construct(array $arguments){
-		parent::__construct($arguments, true);
+		parent::__construct($arguments);
+		$this->require_utilities();
 		if($this->abort) return;
 		$config_default = new IniFile($this->get_path("$this->path/includes/config/default.ini"), true);
 		switch($this->get_system_type()){
 			case SYSTEM_TYPE_WINDOWS: {
-				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/windows.ini"), true);
+				$config_default_system = new IniFile($this->get_path("$this->path/includes/config/windows.ini"), true);
 				$this->app_data = $this->get_path($this->get_variable("%LOCALAPPDATA%")."/NGC-TOOLKIT");
 				break;
 			}
 			case SYSTEM_TYPE_LINUX: {
-				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/linux.ini"), true);
+				$config_default_system = new IniFile($this->get_path("$this->path/includes/config/linux.ini"), true);
 				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/.config/NGC-TOOLKIT");
 				break;
 			}
 			case SYSTEM_TYPE_MACOS: {
-				$config_default_system = new IniFile($this->get_path($this->path."/includes/config/macos.ini"), true);
+				$config_default_system = new IniFile($this->get_path("$this->path/includes/config/macos.ini"), true);
 				$this->app_data = $this->get_path($this->get_variable("\$HOME")."/Library/Application Support/NGC-TOOLKIT");
 				break;
 			}
@@ -101,7 +100,7 @@ class Toolkit extends Core {
 			}
 		}
 
-		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS) popen('color '.$this->config->get('COLOR'), 'w');
+		$this->set_console_color($this->config->get('COLOR'));
 
 		$check_for_updates = false;
 		if($this->command == '--interactive'){
@@ -135,7 +134,7 @@ class Toolkit extends Core {
 					$this->echo(" Please run once NGC-TOOLKIT as administrator for remove old NGC-UTILITIES files");
 					$this->echo();
 					$this->pause();
-					$this->exit(0, false);
+					$this->close(false);
 					return;
 				}
 				$this->rrmdir($file, false);
@@ -150,11 +149,10 @@ class Toolkit extends Core {
 		$keys = [
 			'LOG_FOLDER',
 			'DATA_FOLDER',
-			'BUFFER_FOLDER',
 		];
 		foreach($keys as $key){
 			$this->config->set($key, $this->get_variable($this->config->get($key)));
-			if(!$this->is_valid_device($this->config->get($key))){
+			if(!$this->is_valid_path($this->config->get($key))){
 				$this->config->set($key, $this->get_variable($config_default->get($key)));
 			}
 		}
@@ -163,7 +161,6 @@ class Toolkit extends Core {
 
 		$this->init_logs();
 
-		$this->app_buffer = new AppBuffer($this->get_path($this->config->get('BUFFER_FOLDER')));
 		ini_set('memory_limit', -1);
 
 		$dev = file_exists($this->get_path("$this->path/.git"));
@@ -190,11 +187,10 @@ class Toolkit extends Core {
 				break;
 			}
 			case '--interactive': {
-				$this->can_exit = false;
 				while(!$this->abort){
 					$this->abort = $this->select_tool();
 				}
-				$this->exit(0, false);
+				$this->close(false);
 				break;
 			}
 			default: {
@@ -223,8 +219,8 @@ class Toolkit extends Core {
 			' 9  - ADM File Converter',
 			' 10 - Directory Names Editor',
 			' H  - Help',
+			' #  - Close program',
 		];
-		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) array_push($options, ' #  - Close program');
 		$this->print_help($options);
 
 		$line = $this->get_input(' Tool: ');
@@ -279,7 +275,8 @@ class Toolkit extends Core {
 				break;
 			}
 			case '#': {
-				if($this->can_exit || $this->get_system_type() != SYSTEM_TYPE_WINDOWS) return true;
+				$this->close();
+				break;
 			}
 		}
 		if(!$this->abort && !is_null($this->tool)){

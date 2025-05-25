@@ -474,7 +474,7 @@ class FtpClient implements Countable {
 	 * @see countItems
 	 * @return int
 	 */
-	public function count(): int {
+	public function count() : int {
 		return $this->countItems();
 	}
 
@@ -570,7 +570,7 @@ class FtpClient implements Countable {
 	 */
 	public function getAll(string $source_directory, string $target_directory, int $mode = FTP_BINARY) : static {
 		if($source_directory != "."){
-			if($this->ftp->chdir($source_directory) == false){
+			if($this->ftp->chdir($source_directory) === false){
 				throw new FtpException("Unable to change directory: ".$source_directory);
 			}
 			if(!(is_dir($target_directory))){

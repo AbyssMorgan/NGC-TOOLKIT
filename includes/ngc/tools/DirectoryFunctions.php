@@ -10,7 +10,6 @@ use FilesystemIterator;
 class DirectoryFunctions {
 
 	private string $name = "Directory Functions";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -30,7 +29,6 @@ class DirectoryFunctions {
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_delete_empty_folders();
@@ -44,15 +42,12 @@ class DirectoryFunctions {
 	public function tool_delete_empty_folders() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Delete empty folders");
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-
-		$this->core->setup_folders($folders);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
-
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = array_reverse($this->core->get_folders($folder));
@@ -85,10 +80,8 @@ class DirectoryFunctions {
 		$this->core->set_subtool("Force load icon");
 		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS) return $this->core->windows_only();
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
@@ -120,26 +113,16 @@ class DirectoryFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Count files");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#') return false;
-		if($line == ''){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
-		}
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		$data = [];
-
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
-			$this->core->write_log($files);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -171,29 +154,11 @@ class DirectoryFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Clone folder structure");
 
-		set_input:
-		$line = $this->core->get_input(" Input (Folder): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
-
-		set_output:
-		$line = $this->core->get_input(" Output (Folder): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);

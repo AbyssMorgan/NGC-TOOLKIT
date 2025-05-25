@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.1 */
+/* NGC-TOOLKIT v2.6.0 */
 
 declare(strict_types=1);
 
@@ -19,7 +19,7 @@ define('SYSTEM_TYPE_MACOS', 3);
 
 class Core {
 
-	public int $core_version = 15;
+	public int $core_version = 16;
 
 	public IniFile $config;
 
@@ -29,85 +29,100 @@ class Core {
 
 	public string $app_name = "";
 	public string $version = "0.0.0";
-	public ?string $command;
-	public array $arguments;
-	public string $logo;
-	public string $path;
-	public string $tool_name;
-	public string $subtool_name;
+	public ?string $command = null;
+	public array $arguments = [];
+	public string $logo = '';
+	public string $path = '';
+	public string $tool_name = '';
+	public string $subtool_name = '';
 	public array $folders_state = [];
-	public ?object $tool;
+	public ?object $tool = null;
 	public array $units_bytes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 	public array $units_bits = ['bit', 'Kbit', 'Mbit', 'Gbit', 'Tbit', 'Pbit', 'Ebit', 'Zbit', 'Ybit'];
 	public bool $toggle_log_event = true;
 	public bool $toggle_log_error = true;
-	public string $utilities_path;
-	public ?string $core_path;
+	public string $utilities_path = '';
+	public ?string $core_path = null;
 	public string $utilities_version = "1.2.0";
-	public string $current_title;
+	public string $current_title = '';
 	public array $drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-	public bool $can_exit = true;
 	public string $device_null;
 	public string $utf8_bom = "\xEF\xBB\xBF";
 
-	public function __construct(array $arguments, bool $require_utilities){
+	public array $console_color_map = [
+		'0' => ['30', '40'],
+		'1' => ['34', '44'],
+		'2' => ['32', '42'],
+		'3' => ['36', '46'],
+		'4' => ['31', '41'],
+		'5' => ['35', '45'],
+		'6' => ['33', '43'],
+		'7' => ['37', '47'],
+		'8' => ['90', '100'],
+		'9' => ['94', '104'],
+		'A' => ['92', '102'],
+		'B' => ['96', '106'],
+		'C' => ['91', '101'],
+		'D' => ['95', '105'],
+		'E' => ['93', '103'],
+		'F' => ['97', '107'],
+	];
+
+	public function __construct(array $arguments){
 		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
+		mb_internal_encoding('UTF-8');
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);
 		$this->arguments = array_values($arguments);
 		$this->path = realpath($this->get_path(__DIR__."/../../.."));
-		$this->logo = '';
-		$this->current_title = '';
-		$this->core_path = null;
-		$this->utilities_path = '';
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$this->device_null = 'nul';
 		} else {
 			$this->device_null = '/dev/null';
 		}
+	}
 
-		if($require_utilities){
-			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-				$this->utilities_path = $this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES");
-				$utilities = false;
-				if(file_exists($this->utilities_path)){
-					$utilities_main = new IniFile($this->get_path("$this->utilities_path/main.ini"));
-					$utilities_imagick = new IniFile($this->get_path("$this->utilities_path/imagick.ini"));
-					$utilities_version = $utilities_main->get('APP_VERSION');
-					if($utilities_version == $this->utilities_version && $utilities_imagick->get('APP_VERSION') == $this->utilities_version){
-						$utilities = true;
-						$this->core_path = $this->get_path("$this->utilities_path/core/$utilities_version");
-					}
+	public function require_utilities() : void {
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			$this->utilities_path = $this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES");
+			$utilities = false;
+			if(file_exists($this->utilities_path)){
+				$utilities_main = new IniFile($this->get_path("$this->utilities_path/main.ini"));
+				$utilities_imagick = new IniFile($this->get_path("$this->utilities_path/imagick.ini"));
+				$utilities_version = $utilities_main->get('APP_VERSION');
+				if($utilities_version == $this->utilities_version && $utilities_imagick->get('APP_VERSION') == $this->utilities_version){
+					$utilities = true;
+					$this->core_path = $this->get_path("$this->utilities_path/core/$utilities_version");
 				}
+			}
 
-				if(!$utilities){
-					$this->echo();
-					$this->echo(" Invalid NGC-UTILITIES version detected: v{$utilities_version} required: v$this->utilities_version");
-					$this->echo();
-					$this->pause();
-					die("");
-				}
-			} else {
-				$programs = [
-					'ffprobe' => 'ffmpeg',
-					'mkvmerge' => 'mkvtoolnix',
-				];
-				$errors = 0;
-				foreach($programs as $program_name => $install_name){
-					if(!file_exists("/usr/bin/$program_name") && !file_exists("/opt/homebrew/bin/$program_name") && !file_exists("/usr/local/bin/$program_name")){
-						$this->echo("[ERROR] Required $program_name not found, please install $install_name");
-						$errors++;
-					}
-				}
-				if(!extension_loaded('imagick')){
-					$this->echo("[ERROR] Imagick is not installed");
+			if(!$utilities){
+				$this->echo();
+				$this->echo(" Invalid NGC-UTILITIES version detected: v{$utilities_version} required: v$this->utilities_version");
+				$this->echo();
+				$this->pause();
+				die("");
+			}
+		} else {
+			$programs = [
+				'ffprobe' => 'ffmpeg',
+				'mkvmerge' => 'mkvtoolnix',
+			];
+			$errors = 0;
+			foreach($programs as $program_name => $install_name){
+				if(!file_exists("/usr/bin/$program_name") && !file_exists("/opt/homebrew/bin/$program_name") && !file_exists("/usr/local/bin/$program_name")){
+					$this->echo("[ERROR] Required $program_name not found, please install $install_name");
 					$errors++;
 				}
-				if($errors > 0){
-					$this->abort = true;
-					return;
-				}
+			}
+			if(!extension_loaded('imagick')){
+				$this->echo("[ERROR] Imagick is not installed");
+				$errors++;
+			}
+			if($errors > 0){
+				$this->abort = true;
+				return;
 			}
 		}
 	}
@@ -149,6 +164,7 @@ class Core {
 		foreach($this->folders_state as $folder_name => $state){
 			$this->echo(" Scan: \"$folder_name\" $state");
 		}
+		$this->echo();
 	}
 
 	public function get_tool_name() : string {
@@ -182,7 +198,7 @@ class Core {
 		} else {
 			system('clear');
 		}
-		if($this->config->get('SHOW_LOGO', false) && !empty($this->logo)){
+		if(!empty($this->logo)){
 			$this->echo("$this->logo");
 		} else {
 			$this->echo();
@@ -202,7 +218,7 @@ class Core {
 	public function progress(int|float $count, int|float $total) : void {
 		if($total > 0){
 			$percent = sprintf("%.02f", ($count / $total) * 100.0);
-			echo " Progress: $percent %        \r";
+			$this->current_line(" Progress: $percent %");
 		}
 	}
 
@@ -213,7 +229,7 @@ class Core {
 	public function progress_ex(string $label, int|float $count, int|float $total) : void {
 		if($total > 0){
 			$percent = sprintf("%.02f", ($count / $total) * 100.0);
-			echo " $label Progress: $percent %                                        \r";
+			$this->current_line(" $label Progress: $percent %");
 		}
 	}
 
@@ -273,24 +289,33 @@ class Core {
 		return 0;
 	}
 
-	public function seconds_to_time(int $seconds, bool $force_hours = false, bool $with_days = false) : string {
+	public function seconds_to_time(float $seconds, bool $force_hours = false, bool $with_days = false, bool $with_ms = false) : string {
+		$output = "";
 		if($with_days){
 			$days = intval(floor($seconds / 86400));
 			$seconds -= ($days * 86400);
 		} else {
 			$days = 0;
 		}
-		$hours = intval(floor($seconds / 3600));
-		$seconds -= ($hours * 3600);
-		$minutes = intval(floor($seconds / 60));
-		$seconds -= ($minutes * 60);
+		$h = intval(floor($seconds / 3600));
+		$seconds -= $h * 3600;
+		$m = intval(floor($seconds / 60));
+		$seconds -= $m * 60;
+		$s = floor($seconds);
+		$seconds -= $s;
+		$ms = round($seconds * 1000);
 		if($days > 0){
-			return sprintf("%d:%02d:%02d:%02d", $days, $hours, $minutes, $seconds);
-		} else if($hours > 0 || $force_hours){
-			return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
-		} else {
-			return sprintf("%02d:%02d", $minutes, $seconds);
+			$output = "$days:";
 		}
+		if($h > 0 || $force_hours){
+			$output .= sprintf("%02d:%02d:%02d", $h, $m, $s);
+		} else {
+			$output .= sprintf("%02d:%02d", $m, $s);
+		}
+		if($with_ms){
+			$output .= sprintf(",%03d", $ms);
+		}
+		return $output;
 	}
 
 	public function time_to_seconds(string $time) : int {
@@ -298,15 +323,15 @@ class Core {
 		$count = count($parts);
 		if($count == 4){
 			list($days, $hours, $minutes, $seconds) = $parts;
-			return ($days * 86400) + ($hours * 3600) + ($minutes * 60) + $seconds;
+			return $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds;
 		}
 		if($count == 3){
 			list($hours, $minutes, $seconds) = $parts;
-			return ($hours * 3600) + ($minutes * 60) + $seconds;
+			return $hours * 3600 + $minutes * 60 + $seconds;
 		}
 		if($count == 2){
 			list($minutes, $seconds) = $parts;
-			return ($minutes * 60) + $seconds;
+			return $minutes * 60 + $seconds;
 		}
 		return 0;
 	}
@@ -395,9 +420,17 @@ class Core {
 		return $data;
 	}
 
+	/**
+	 * @deprecated Use close
+	 */
 	public function exit(int $seconds = 10, bool $open_log = false) : void {
 		$this->open_logs($open_log, false);
 		if($seconds > 0) $this->timeout($seconds);
+	}
+
+	public function close(bool $open_log = false) : void {
+		$this->open_logs($open_log, false);
+		exit(0);
 	}
 
 	public function init_logs() : void {
@@ -423,6 +456,9 @@ class Core {
 		if($init) $this->init_logs();
 	}
 
+	/**
+	 * @deprecated Use sleep + close
+	 */
 	public function timeout(int $seconds) : void {
 		$this->title("$this->app_name v$this->version > Exit $seconds seconds");
 		if($seconds > 0){
@@ -646,10 +682,101 @@ class Core {
 		return $answer == 'Y';
 	}
 
-	public function get_input(?string $message = null) : string {
-		return trim(readline($message));
+	public function get_input(?string $message = null, bool $trim = true, bool $history = true) : string {
+		$line = readline($message);
+		if($line === false){
+			$this->write_error("Failed readline from prompt");
+			$this->close();
+			return '';
+		}
+		if($trim) $line = trim($line);
+		if($history) readline_add_history($line);
+		return $line;
 	}
 
+	public function get_input_password(string $message) : string {
+		echo $message;
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			$color = $this->config->get('COLOR');
+			$this->set_console_color(substr($color, 0, 1).substr($color, 0, 1));
+			$password = readline();
+			$this->set_console_color($color);
+			echo "\033[1A$message".str_repeat("*", strlen($password))."\r\n";
+		} else {
+			system('stty -echo');
+			$password = fgets(STDIN);
+			system('stty echo');
+			echo "\r\n";
+		}
+		return rtrim($password, "\r\n");
+	}
+
+	public function get_input_multiple_folders(string $title, bool $setup = true) : array|false {
+		$line = $this->get_input($title);
+		if($line == '#') return false;
+		$folders = $this->parse_input_path($line);
+		if($setup) $this->setup_folders($folders);
+		return $folders;
+	}
+
+	public function get_input_folder(string $title, bool $as_output = false) : string|false {
+		set_path:
+		$line = $this->get_input($title);
+		if($line == '#') return false;
+		$folders = $this->parse_input_path($line);
+		if(!isset($folders[0])) goto set_path;
+		$path = $folders[0];
+		if(file_exists($path) && !is_dir($path)){
+			$this->echo(" Invalid folder path");
+			goto set_path;
+		}
+		if($as_output && !$this->mkdir($path)){
+			$this->echo(" Failed create folder");
+			goto set_path;
+		}
+		if(!file_exists($path)){
+			$this->echo(" Folder not exists");
+			goto set_path;
+		}
+		return $path;
+	}
+
+	public function get_input_file(string $title, bool $required = true, bool $create_directory = false) : string|false {
+		set_path:
+		$line = $this->get_input($title);
+		if($line == '#') return false;
+		$files = $this->parse_input_path($line);
+		if(!isset($files[0])) goto set_path;
+		$path = $files[0];
+		if(file_exists($path) && is_dir($path)){
+			$this->echo(" Invalid file path");
+			goto set_path;
+		}
+		if($required && !file_exists($path)){
+			$this->echo(" Input file not exists");
+			goto set_path;
+		}
+		if($create_directory){
+			$directory = pathinfo($$path, PATHINFO_DIRNAME);
+			if(!file_exists($directory) && !$this->mkdir($directory)){
+				$this->echo(" Failed create destination directory \"$directory\"");
+				goto set_path;
+			}
+		}
+		return $path;
+	}
+
+	public function get_input_extensions(string $title, ?string $help_message = " Empty for all, separate with spaces for multiple") : array|null|false {
+		if(!is_null($help_message)) $this->echo($help_message);
+		$line = $this->get_input($title);
+		if($line == '#') return false;
+		if(empty($line)) return null;
+		return explode(" ", $line);
+	}
+
+	/**
+	 * @deprecated Use get_input(?string $message = null, false)
+	 */
 	public function get_input_no_trim(?string $message = null) : string {
 		return readline($message);
 	}
@@ -663,38 +790,34 @@ class Core {
 		}
 	}
 
+	/**
+	 * @deprecated Use parse_input_path
+	 */
 	public function get_input_folders(string $string, bool $unique = true) : array {
-		$string = trim($string);
-		$folders = [];
-
-		$length = strlen($string);
-		$offset = 0;
-
-		while($offset < $length){
-			if(substr($string, $offset, 1) == '"'){
-				$end = strpos($string, '"', $offset+1);
-				array_push($folders, $this->get_path(substr($string, $offset+1, $end - $offset-1)));
-				$offset = $end + 1;
-			} else if(substr($string, $offset, 1) == ' '){
-				$offset++;
-			} else {
-				$end = strpos($string, ' ', $offset);
-				if($end !== false){
-					array_push($folders, $this->get_path(substr($string, $offset, $end - $offset)));
-					$offset = $end + 1;
-				} else {
-					array_push($folders, $this->get_path(substr($string, $offset)));
-					$offset = $length;
-				}
-			}
-		}
-
-		if(!$unique) return $folders;
-		return array_unique($folders);
+		return $this->parse_input_path($string, $unique);
 	}
 
-	public function echo(string $string = '') : void {
+	public function echo(string $string = '', ?string $color_code = null) : void {
+		if(!is_null($color_code)) $this->set_console_color($color_code);
 		echo "$string\r\n";
+		if(!is_null($color_code)) $this->set_console_color("XX");
+	}
+
+	public function cecho(string $string = '') : void {
+		$output = '';
+		$offset = 0;
+		while(preg_match('/\{([0-9A-Fa-f]{2}|XX)\}/', $string, $match, PREG_OFFSET_CAPTURE, $offset)){
+			$output .= substr($string, $offset, (int)$match[0][1] - (int)$offset);
+			$output .= $this->convert_color_to_ansi($match[1][0]);
+			$offset = $match[0][1] + 4;
+		}
+		$output .= substr($string, $offset);
+		echo "$output\r\n";
+		$this->set_console_color("XX");
+	}
+
+	public function current_line(string $string = '') : void {
+		echo "$string".str_repeat(" ", (int)max(62 - strlen($string), 0))."\r";
 	}
 
 	public function print(mixed $var, bool $add_space = false) : void {
@@ -758,7 +881,7 @@ class Core {
 		if(file_exists($path)){
 			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 				exec("START $params \"\" \"$path\"");
-			} else if(!is_null($this->config->get('OPEN_FILE_BINARY'))){
+			} elseif(!is_null($this->config->get('OPEN_FILE_BINARY'))){
 				exec($this->config->get('OPEN_FILE_BINARY')." \"$path\"");
 			} else {
 				$this->write_error("Failed open file OPEN_FILE_BINARY is not configured");
@@ -770,7 +893,7 @@ class Core {
 		if(str_contains($url, "https://") || str_contains($url, "http://")){
 			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 				exec("START \"\" \"$url\"");
-			} else if(!is_null($this->config->get('OPEN_FILE_BINARY'))){
+			} elseif(!is_null($this->config->get('OPEN_FILE_BINARY'))){
 				exec($this->config->get('OPEN_FILE_BINARY')." \"$url\"");
 			} else {
 				$this->write_error("Failed open url OPEN_FILE_BINARY is not configured");
@@ -803,18 +926,27 @@ class Core {
 		return true;
 	}
 
-	public function is_valid_device(string $path) : bool {
+	public function is_valid_path(string $path) : bool {
 		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) return true;
-		if(substr($path, 1, 1) == ':'){
+		if(strlen($path) >= 2 && $path[1] === ':' && ctype_alpha($path[0])){
 			return file_exists(substr($path, 0, 3));
-		} else if(substr($path, 0, 2) == "\\\\"){
+		} elseif(substr($path, 0, 2) == "\\\\"){
 			$device = substr($path, 2);
 			if(str_contains($device, "\\")){
 				$parts = explode("\\", $device);
-				return file_exists("\\\\{$parts[0]}\\{$parts[1]}");
+				if(count($parts) >= 2){
+					return is_dir("\\\\{$parts[0]}\\{$parts[1]}");
+				}
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * @deprecated Use is_valid_path
+	 */
+	public function is_valid_device(string $path) : bool {
+		return $this->is_valid_path($path);
 	}
 
 	public function get_path(string $path) : string {
@@ -863,8 +995,10 @@ class Core {
 	}
 
 	public function exec(string $program, string $command, ?array &$output = null, ?int &$result_code = null) : string|false {
-		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS && is_null($this->core_path)) return false;
-		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS) $program = $this->get_path("$this->core_path/$program.exe");
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			if(is_null($this->core_path)) return false;
+			$program = $this->get_path("$this->core_path/$program.exe");
+		}
 		return exec("\"$program\" $command", $output, $result_code);
 	}
 
@@ -873,7 +1007,7 @@ class Core {
 		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
 	}
 
-	public function get_input_bytes_size(string $name) : int|bool {
+	public function get_input_bytes_size(string $name) : int|false {
 		set_size:
 		$this->clear();
 		$this->print_help([
@@ -892,7 +1026,7 @@ class Core {
 		return $bytes;
 	}
 
-	public function get_input_time_interval(string $name) : int|bool {
+	public function get_input_time_interval(string $name) : int|false {
 		set_interval:
 		$this->clear();
 		$this->print_help([
@@ -911,7 +1045,7 @@ class Core {
 		return $interval;
 	}
 
-	public function get_input_integer(string $name, int $min = 1, int $max = 2147483647) : int|bool {
+	public function get_input_integer(string $name, int $min = 1, int $max = 2147483647) : int|false {
 		set_number:
 		$line = $this->get_input($name);
 		if($line == '#') return false;
@@ -924,7 +1058,7 @@ class Core {
 		if($number < $min){
 			$this->echo(" Number must be have greater than or equal $min");
 			goto set_number;
-		} else if($number > $max){
+		} elseif($number > $max){
 			$this->echo(" Number must be have less than or equal $max");
 			goto set_number;
 		}
@@ -949,7 +1083,7 @@ class Core {
 				$new_name = $this->get_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
 				if(file_exists($new_name) && !$this->delete($new_name)) return false;
 				return $this->move($path, $new_name);
-			} else if(substr($path, 0, 2) == "\\\\"){
+			} elseif(substr($path, 0, 2) == "\\\\"){
 				$device = substr($path, 2);
 				if(str_contains($device, "\\")){
 					$new_name = $this->get_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
@@ -967,18 +1101,11 @@ class Core {
 		return false;
 	}
 
-	public function configure_path(string $title) : string|bool {
-		set_path:
-		$line = $this->get_input(" $title path: ");
-		if($line == '#') return false;
-		$folders = $this->get_input_folders($line);
-		if(!isset($folders[0])) goto set_path;
-		$path = $folders[0];
-		if((file_exists($path) && !is_dir($path)) || !$this->mkdir($path)){
-			$this->echo(" Invalid ".mb_strtolower($title)." path");
-			goto set_path;
-		}
-		return $path;
+	/**
+	 * @deprecated Use get_input_folder
+	 */
+	public function configure_path(string $title) : string|false {
+		return $this->get_input_folder(" $title path: ", true);
 	}
 
 	public function windows_only() : bool {
@@ -987,11 +1114,12 @@ class Core {
 		return false;
 	}
 
-	public function base64_length(string $string) : int {
+	public function base64_length(string $string) : ?int {
 		$string = trim(str_replace(["\r", "\n"], "", $string));
 		$base64_length = strlen($string);
 		$padding_length = substr_count($string, '=');
 		$original_length = ($base64_length / 4) * 3 - $padding_length;
+		if($original_length != (int)$original_length) return null;
 		return $original_length;
 	}
 
@@ -1001,19 +1129,6 @@ class Core {
 
 	public function clean_file_extension(string $extension) : string {
 		return mb_strtolower(preg_replace("/\s/is", "", $extension));
-	}
-
-	/**
-	 * @deprecated
-	 *
-	 * @return $this
-	 */
-	public function get_output_null() : string {
-		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			return 'nul';
-		} else {
-			return '/dev/null';
-		}
 	}
 
 	public function array_to_lower(array $items) : array {
@@ -1041,20 +1156,48 @@ class Core {
 		}
 	}
 
-	public function detect_eol(string &$content) : string {
+	public function detect_eol(string $content) : string {
 		if(str_contains($content, "\r\n")){
 			return "\r\n";
-		} else if(str_contains($content, "\n")){
+		} elseif(str_contains($content, "\n")){
 			return "\n";
-		} else if(str_contains($content, "\r")){
+		} elseif(str_contains($content, "\r")){
 			return "\r";
 		} else {
 			return "\r\n";
 		}
 	}
 
-	public function has_utf8_bom(string &$content) : bool {
+	public function has_utf8_bom(string $content) : bool {
 		return str_contains($content, $this->utf8_bom);
+	}
+
+	public function convert_color_to_ansi(string $color_code) : string {
+		$code = strtoupper($color_code);
+		if(strlen($code) !== 2 || !isset($this->console_color_map[$code[0]]) || !isset($this->console_color_map[$code[1]])){
+			return "\033[0m";
+		}
+		[$fg, $bg] = [$this->console_color_map[$code[1]][0], $this->console_color_map[$code[0]][1]];
+		return "\033[{$fg};{$bg}m";
+	}
+
+	public function set_console_color(string $color_code) : bool {
+		if($color_code == "XX") $color_code = $this->config->get('COLOR');
+		if(!preg_match('/^[0-9A-Fa-f]{2}$/', $color_code)) return false;
+		echo $this->convert_color_to_ansi($color_code);
+		return true;
+	}
+
+	public function parse_input_path(string $string, bool $unique = true) : array {
+		$string = trim($string);
+		preg_match_all('/"([^"]+)"|\'([^\']+)\'|(\S+)/', $string, $matches);
+		$folders = [];
+		foreach($matches[0] as $match){
+			$match = trim($match, '"\'');
+			$folders[] = $this->get_path($match);
+		}
+		if(!$unique) return $folders;
+		return array_unique($folders);
 	}
 
 }

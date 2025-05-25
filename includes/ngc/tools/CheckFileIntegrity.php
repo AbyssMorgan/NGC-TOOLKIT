@@ -12,7 +12,6 @@ use NGC\Core\IniFile;
 class CheckFileIntegrity {
 
 	private string $name = "Check File Integrity";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -36,7 +35,6 @@ class CheckFileIntegrity {
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_create_pattern();
@@ -55,35 +53,17 @@ class CheckFileIntegrity {
 		$this->core->clear();
 		$this->core->set_subtool("Create pattern");
 
-		set_input:
-		$line = $this->core->get_input(" Input (Folder): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
-
-		set_output:
-		$line = $this->core->get_input(" Output (Folder): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
-
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		set_name:
 		$line = $this->core->get_input(" Name: ");
 		if($line == '#') return false;
 
-		$pattern_file = $this->core->get_input_folders($line);
+		$pattern_file = $this->core->parse_input_path($line);
 		if(!isset($pattern_file[0])) goto set_name;
 		$pattern_file = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pattern_file[0]).".ngc-pat";
 
@@ -93,7 +73,7 @@ class CheckFileIntegrity {
 		set_folders:
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;
-		foreach($this->core->get_input_folders($line) as $folder){
+		foreach($this->core->parse_input_path($line) as $folder){
 			$pattern->add_folders(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
 		}
 
@@ -104,7 +84,7 @@ class CheckFileIntegrity {
 		set_files:
 		$line = $this->core->get_input(" Files: ");
 		if($line == '#') return false;
-		foreach($this->core->get_input_folders($line) as $file){
+		foreach($this->core->parse_input_path($line) as $file){
 			$pattern->add_files(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
 		}
 
@@ -126,16 +106,8 @@ class CheckFileIntegrity {
 		$this->core->set_subtool("Guard generate");
 
 		set_pattern:
-		$line = $this->core->get_input(" Pattern (.ngc-pat): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_pattern;
-		$pattern_file = $folders[0];
-
-		if(!file_exists($pattern_file)){
-			$this->core->echo(" Pattern file not exists");
-			goto set_pattern;
-		}
+		$pattern_file = $this->core->get_input_file(" Pattern (.ngc-pat): ", true);
+		if($pattern_file === false) return false;
 
 		$pattern = new GuardPattern();
 		$pattern->load(file_get_contents($pattern_file));
@@ -169,16 +141,8 @@ class CheckFileIntegrity {
 		$this->core->set_subtool("Check integrity");
 
 		set_guard:
-		$line = $this->core->get_input(" Guard (.ngc-guard): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_guard;
-		$guard_file = $folders[0];
-
-		if(!file_exists($guard_file)){
-			$this->core->echo(" Guard file not exists");
-			goto set_guard;
-		}
+		$guard_file = $this->core->get_input_file(" Guard (.ngc-guard): ", true);
+		if($guard_file === false) return false;
 
 		$ini = new IniFile($guard_file, true);
 		if(is_null($ini->get('keys'))){
@@ -243,16 +207,8 @@ class CheckFileIntegrity {
 		$this->core->set_subtool("Get files tree");
 
 		set_guard:
-		$line = $this->core->get_input(" Guard (.ngc-guard): ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_guard;
-		$guard_file = $folders[0];
-
-		if(!file_exists($guard_file)){
-			$this->core->echo(" Guard file not exists");
-			goto set_guard;
-		}
+		$guard_file = $this->core->get_input_file(" Guard (.ngc-guard): ", true);
+		if($guard_file === false) return false;
 
 		$ini = new IniFile($guard_file, true);
 		if(is_null($ini->get('keys'))){
@@ -318,16 +274,8 @@ class CheckFileIntegrity {
 
 	public function tool_guard_set_file() : ?string {
 		set_guard:
-		$line = $this->core->get_input(" Guard (.ngc-guard): ");
-		if($line == '#') return null;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_guard;
-		$guard_file = $folders[0];
-
-		if(!file_exists($guard_file)){
-			$this->core->echo(" Guard file not exists");
-			goto set_guard;
-		}
+		$guard_file = $this->core->get_input_file(" Guard (.ngc-guard): ", true);
+		if($guard_file === false) return null;
 
 		$ini = new IniFile($guard_file, true, true);
 		if(is_null($ini->get('keys'))){

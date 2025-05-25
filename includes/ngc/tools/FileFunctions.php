@@ -9,7 +9,6 @@ use Toolkit;
 class FileFunctions {
 
 	private string $name = "File Functions";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -21,18 +20,17 @@ class FileFunctions {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0 - Anti Duplicates',
-			' 1 - Validate CheckSum',
-			' 2 - Random file generator',
-			' 3 - Overwrite folders content',
-			' 4 - Move files with structure',
-			' 5 - Copy files with structure',
-			' 6 - Clone files with structure (Mirror)',
+			' 0  - Anti Duplicates',
+			' 1  - Validate CheckSum',
+			' 2  - Random file generator',
+			' 3  - Overwrite folders content',
+			' 4  - Move files with structure',
+			' 5  - Copy files with structure',
+			' 6  - Clone files with structure (Mirror)',
 		]);
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_anti_duplicates();
@@ -62,20 +60,18 @@ class FileFunctions {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params = [
+		$params = [
 			'mode' => strtolower($line[0] ?? '?'),
 			'action' => strtolower($line[1] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'], ['a', 'b'])) goto set_mode;
-		if(!in_array($this->params['action'], ['1', '2', '3'])) goto set_mode;
+		if(!in_array($params['mode'], ['a', 'b'])) goto set_mode;
+		if(!in_array($params['action'], ['1', '2', '3'])) goto set_mode;
 
 		$this->core->clear();
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
 
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -103,7 +99,7 @@ class FileFunctions {
 					$this->core->get_hash_from_idx($file, $keys, false);
 					continue 1;
 				}
-				if($this->params['mode'] == 'a'){
+				if($params['mode'] == 'a'){
 					$key = strtoupper(hash_file('md5', $file, false));
 				} else {
 					$key = pathinfo($file, PATHINFO_FILENAME);
@@ -112,9 +108,9 @@ class FileFunctions {
 					$duplicate = $keys[$key];
 					$this->core->write_error("DUPLICATE \"$file\" OF \"$duplicate\"");
 					$errors++;
-					if($this->params['action'] == '1'){
+					if($params['action'] == '1'){
 						if(!$this->core->move($file, "$file.tmp")) $errors++;
-					} else if($this->params['action'] == '2'){
+					} elseif($params['action'] == '2'){
 						if(!$this->core->delete($file)) $errors++;
 					}
 				} else {
@@ -130,7 +126,7 @@ class FileFunctions {
 
 		unset($keys);
 
-		$this->core->open_logs($this->params['action'] != '3');
+		$this->core->open_logs($params['action'] != '3');
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;
 	}
@@ -153,23 +149,22 @@ class FileFunctions {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params = [
+		$params = [
 			'mode' => strtolower($line[0] ?? '?'),
 			'algo' => strtolower($line[1] ?? '0'),
 		];
 
-		if($this->params['algo'] == '?') $this->params['algo'] = '0';
+		if($params['algo'] == '?') $params['algo'] = '0';
 
-		if(!in_array($this->params['mode'], ['0', '1'])) goto set_mode;
-		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
+		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
+		if(!in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
 
 		$this->core->clear();
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
 
-		$algo = $this->core->get_hash_alghoritm(intval($this->params['algo']));
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
+		$algo = $this->core->get_hash_alghoritm(intval($params['algo']));
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -185,7 +180,7 @@ class FileFunctions {
 				if(!file_exists($file)) continue 1;
 				if(in_array(mb_strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
 				$hash = strtoupper(hash_file($algo['name'], $file, false));
-				if($this->params['mode'] == '0'){
+				if($params['mode'] == '0'){
 					$checksum_file = "$file.{$algo['name']}";
 					if(!file_exists($checksum_file)){
 						$this->core->write_error("FILE NOT FOUND \"$checksum_file\"");
@@ -253,36 +248,26 @@ class FileFunctions {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params = [
+		$params = [
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;
+		if(!in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
 
 		$bytes = $this->core->get_input_bytes_size(" Size: ");
 		if(!$bytes) return false;
 
-		if(in_array($this->params['mode'], ['1', '2'])){
+		if(in_array($params['mode'], ['1', '2'])){
 			$quantity = $this->core->get_input_integer(" Quantity: ");
 			if(!$quantity) return false;
 		} else {
 			$quantity = 1;
 		}
 
-		set_output:
-		$this->core->clear();
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
-
-		switch($this->params['mode']){
+		switch($params['mode']){
 			case '0': {
 				$this->core->print_help([" Creating single file of size ".$this->core->format_bytes($bytes, 0, false)]);
 				$per_file_size = $bytes;
@@ -308,9 +293,9 @@ class FileFunctions {
 			if(file_exists($file_path)) $this->core->delete($file_path);
 			$fp = fopen($file_path, "w");
 			if($small_mode){
-				echo " Files: $i / $quantity                                       \r";
+				$this->core->current_line(" Files: $i / $quantity");
 			} else {
-				echo " Files: $i / $quantity Progress: 0.00 %                      \r";
+				$this->core->current_line(" Files: $i / $quantity Progress: 0.00 %");
 			}
 			if($fp){
 				$this->core->write_log("FILE CREATE WITH DISK ALLOCATION \"$file_path\" Size: $size_text");
@@ -324,9 +309,9 @@ class FileFunctions {
 				while($bytes_needle > 0){
 					$percent = sprintf("%.02f", ($current_size / $per_file_size) * 100.0);
 					if($small_mode){
-						echo " Files: $i / $quantity                                           \r";
+						$this->core->current_line( " Files: $i / $quantity");
 					} else {
-						echo " Files: $i / $quantity Progress: $percent %                      \r";
+						$this->core->current_line( " Files: $i / $quantity Progress: $percent %");
 					}
 					if($bytes_needle > $write_buffer){
 						$current_size += $write_buffer;
@@ -347,9 +332,9 @@ class FileFunctions {
 					}
 				}
 				if($small_mode){
-					echo " Files: $i / $quantity                                           \r";
+					$this->core->current_line( " Files: $i / $quantity");
 				} else {
-					echo " Files: $i / $quantity Progress: 100.00 %                        \r";
+					$this->core->current_line( " Files: $i / $quantity Progress: 100.00 %");
 				}
 				fclose($fp);
 				$this->core->write_log("FILE CREATION FINISH \"$file_path\"");
@@ -370,15 +355,17 @@ class FileFunctions {
 		$write_buffer = $this->core->get_write_buffer();
 		if(!$write_buffer) return false;
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->core->get_files($folder);
+			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -432,43 +419,20 @@ class FileFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Move files with structure");
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($input == $output){
 			$this->core->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
-
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#') return false;
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
-		}
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
 		$line = $this->core->get_input(" Name filter: ");
@@ -511,43 +475,20 @@ class FileFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Copy files with structure");
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($input == $output){
 			$this->core->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
-
-		$this->core->echo(" Empty for all, separate with spaces for multiple");
-		$line = $this->core->get_input(" Extensions: ");
-		if($line == '#') return false;
-		if(empty($line)){
-			$extensions = null;
-		} else {
-			$extensions = explode(" ", $line);
-		}
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		$this->core->echo(" Empty for none, separate with spaces for multiple");
 		$line = $this->core->get_input(" Name filter: ");
@@ -602,47 +543,30 @@ class FileFunctions {
 		$line = $this->core->get_input(" Algorithm: ");
 		if($line == '#') return false;
 
-		$this->params = [
+		$params = [
 			'algo' => strtolower($line[0] ?? '0'),
 		];
 
-		if(!in_array($this->params['algo'], ['0', '1', '2', '3'])) goto set_mode;
+		if(!in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
 
 		$this->core->clear();
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		set_output:
-		$line = $this->core->get_input(" Output: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_output;
-		$output = $folders[0];
+		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		if($output === false) return false;
 
 		if($input == $output){
 			$this->core->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
 
-		if((file_exists($output) && !is_dir($output)) || !$this->core->mkdir($output)){
-			$this->core->echo(" Invalid output folder");
-			goto set_output;
-		}
-
 		$errors = 0;
 		$this->core->set_errors($errors);
 
-		$algo = $this->core->get_hash_alghoritm(intval($this->params['algo']))['name'];
+		$algo = $this->core->get_hash_alghoritm(intval($params['algo']))['name'];
 
 		$this->core->echo(" Delete not existing files on output");
 		$files = $this->core->get_files($output);
@@ -713,7 +637,7 @@ class FileFunctions {
 				if(strtoupper($hash_input) != strtoupper($hash_output)){
 					if(!$this->core->delete($new_name)){
 						$errors++;
-					} else if(!$this->core->copy($file, $new_name)){
+					} elseif(!$this->core->copy($file, $new_name)){
 						$errors++;
 					}
 				}

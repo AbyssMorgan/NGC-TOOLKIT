@@ -11,7 +11,6 @@ use Imagick;
 class MediaSorter {
 
 	private string $name = "Media Sorter";
-	private array $params = [];
 	private string $action;
 	private Toolkit $core;
 
@@ -23,21 +22,21 @@ class MediaSorter {
 	public function help() : void {
 		$this->core->print_help([
 			' Actions:',
-			' 0 - Sort Files: Date',
-			' 1 - Sort Files: Extension',
-			' 2 - Sort GIF/WEBP: Animated/NotAnimated',
-			' 3 - Sort Media: Quality',
-			' 4 - Sort Images: Colors count',
-			' 5 - Sort Videos: Auto detect series name',
-			' 6 - Sort Media: Duration',
-			' 7 - Sort Files: Size',
-			' 8 - Sort Folders: Items quantity (First parent)',
-			' 9 - Sort Images: Monochrome',
+			' 0  - Sort Files: Date',
+			' 1  - Sort Files: Extension',
+			' 2  - Sort GIF/WEBP: Animated/NotAnimated',
+			' 3  - Sort Media: Quality',
+			' 4  - Sort Images: Colors count',
+			' 5  - Sort Videos: Auto detect series name',
+			' 6  - Sort Media: Duration',
+			' 7  - Sort Files: Size',
+			' 8  - Sort Folders: Items quantity (First parent)',
+			' 9  - Sort Images: Monochrome',
+			' 10 - Sort Files: Name prefix',
 		]);
 	}
 
 	public function action(string $action) : bool {
-		$this->params = [];
 		$this->action = $action;
 		switch($this->action){
 			case '0': return $this->tool_sort_date();
@@ -50,6 +49,7 @@ class MediaSorter {
 			case '7': return $this->tool_sort_files_size();
 			case '8': return $this->tool_sort_folders_quantity();
 			case '9': return $this->tool_sort_images_monochrome();
+			case '10': return $this->tool_sort_files_name_prefix();
 		}
 		return false;
 	}
@@ -57,11 +57,9 @@ class MediaSorter {
 	public function tool_sort_extension() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort extension");
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-
-		$this->core->setup_folders($folders);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -106,21 +104,20 @@ class MediaSorter {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($this->params['mode'], ['0', '1', '2'])) goto set_mode;
-		$this->params['resolution'] = in_array($this->params['mode'], ['0', '1']);
-		$this->params['quality'] = in_array($this->params['mode'], ['0', '2']);
+		$params['mode'] = strtolower($line[0] ?? '?');
+		if(!in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
+		$params['resolution'] = in_array($params['mode'], ['0', '1']);
+		$params['quality'] = in_array($params['mode'], ['0', '2']);
 
 		$this->core->clear();
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$video_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO'));
 		$image_extensions = explode(" ", $this->core->config->get('EXTENSIONS_PHOTO'));
-		$extensions = array_merge($image_extensions, $video_extensions);
+		$extensions = array_merge($image_extensions, $this->core->media->extensions_video);
 		foreach($folders as $folder){
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
@@ -145,11 +142,11 @@ class MediaSorter {
 				$is_ar = $this->core->media->is_ar_video($file);
 				$quality = $this->core->media->get_media_quality(intval($size[0]), intval($size[1]), $is_vr || $is_ar).$this->core->config->get('QUALITY_SUFFIX');
 				$orientation_name = $this->core->media->get_media_orientation_name($this->core->media->get_media_orientation(intval($size[0]), intval($size[1])));
-				if($this->params['resolution'] && $this->params['quality']){
+				if($params['resolution'] && $params['quality']){
 					$directory = "$folder/$orientation_name/$quality";
-				} else if($this->params['resolution']){
+				} elseif($params['resolution']){
 					$directory = "$folder/$orientation_name";
-				} else if($this->params['quality']){
+				} elseif($params['quality']){
 					$directory = "$folder/$quality";
 				}
 				if(!$this->core->move($file, $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
@@ -171,11 +168,9 @@ class MediaSorter {
 	public function tool_sort_gif_animated() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort gif animated");
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-
-		$this->core->setup_folders($folders);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -235,8 +230,8 @@ class MediaSorter {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$this->params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($this->params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
+		$params['mode'] = strtolower($line[0] ?? '?');
+		if(!in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
 
 		set_separator:
 		$this->core->clear();
@@ -247,29 +242,30 @@ class MediaSorter {
 
 		$separator = $this->core->get_input(" Separator: ");
 		if($separator == '#') return false;
-		$this->params['separator'] = strtolower($separator[0] ?? '?');
-		if(!in_array($this->params['separator'], ['.', '-', '_', '\\', '@'])) goto set_separator;
-		if($this->params['separator'] == '\\') $this->params['separator'] = DIRECTORY_SEPARATOR;
+		$params['separator'] = strtolower($separator[0] ?? '?');
+		if(!in_array($params['separator'], ['.', '-', '_', '\\', '@'])) goto set_separator;
+		if($params['separator'] == '\\') $params['separator'] = DIRECTORY_SEPARATOR;
 
 		$this->core->clear();
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
-		$this->core->setup_folders($folders);
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
 
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$files = $this->core->get_files($folder);
+			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
 				if(!file_exists($file)) continue 1;
-				$new_name = $this->tool_sort_date_get_pattern($folder, $this->params['mode'], $file, $this->params['separator']);
+				$new_name = $this->tool_sort_date_get_pattern($folder, $params['mode'], $file, $params['separator']);
 				if(!$this->core->move($file, $new_name)){
 					$errors++;
 				}
@@ -307,11 +303,9 @@ class MediaSorter {
 	public function tool_sort_images_color() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort images color");
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-
-		$this->core->setup_folders($folders);
+		
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -351,40 +345,31 @@ class MediaSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort videos auto detect series name");
 
-		set_input:
-		$line = $this->core->get_input(" Input: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		if(!isset($folders[0])) goto set_input;
-		$input = $folders[0];
-
-		if(!file_exists($input) || !is_dir($input)){
-			$this->core->echo(" Invalid input folder");
-			goto set_input;
-		}
+		$input = $this->core->get_input_folder(" Input (Folder): ");
+		if($input === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$video_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO'));
-		$files = $this->core->get_files($input, $video_extensions);
+		$files = $this->core->get_files($input, $this->core->media->extensions_video);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
 			if(!file_exists($file)) continue;
 			$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)));
-			$file_name = str_replace([' ', '.', '[', ']'], '', $file_name);
+			$file_name = str_replace([' ', '.', '[', ']'], ' ', $file_name);
+			$mathes = [];
 			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
-			} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){
+			} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
-			} else if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
+			} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
-			} else if(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
+			} elseif(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
 				if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
 				if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
 				$marker = $mathes[1].$mathes[2];
-			} else if(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
+			} elseif(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
 				$marker = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
 			} else {
 				$marker = '';
@@ -434,13 +419,12 @@ class MediaSorter {
 		$interval = $this->core->get_input_time_interval(" Interval: ");
 		if(!$interval) return false;
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$extensions = array_merge(explode(" ", $this->core->config->get('EXTENSIONS_VIDEO')), explode(" ", $this->core->config->get('EXTENSIONS_AUDIO')));
+		$extensions = array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio);
 		foreach($folders as $folder){
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
@@ -505,14 +489,16 @@ class MediaSorter {
 
 		$prefix = $this->core->get_confirm(" Add numeric prefix for better sort folders (Y/N): ");
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			$files = $this->core->get_files($folder);
+			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
@@ -551,10 +537,9 @@ class MediaSorter {
 		$interval = $this->core->get_input_integer(" Quantity interval: ");
 		if(!$interval) return false;
 
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
@@ -583,11 +568,9 @@ class MediaSorter {
 	public function tool_sort_images_monochrome() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort images monochrome");
-		$line = $this->core->get_input(" Folders: ");
-		if($line == '#') return false;
-		$folders = $this->core->get_input_folders($line);
 
-		$this->core->setup_folders($folders);
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -604,7 +587,7 @@ class MediaSorter {
 					$image = new Imagick($file);
 				}
 				catch(Exception $e){
-					$this->core->write_error(" Failed open image \"$file\" ".$e->getMessage());
+					$this->core->write_error("Failed open image \"$file\" ".$e->getMessage());
 					$errors++;
 					$this->core->set_errors($errors);
 					continue 1;
@@ -628,6 +611,81 @@ class MediaSorter {
 				}
 				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$group/".pathinfo($file, PATHINFO_BASENAME));
 				if(!$this->core->move($file, $new_name)){
+					$errors++;
+				}
+				$this->core->progress($items, $total);
+				$this->core->set_errors($errors);
+			}
+			$this->core->progress($items, $total);
+			unset($files);
+			$this->core->set_folder_done($folder);
+		}
+
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_sort_files_name_prefix() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Sort files name prefix");
+
+		set_mode:
+		$this->core->clear();
+		$this->core->print_help([
+			' Modes:',
+			' 0 - Delimiter',
+			' 1 - Word length',
+		]);
+
+		$line = $this->core->get_input(" Mode: ");
+		if($line == '#') return false;
+
+		$params['mode'] = strtolower($line[0] ?? '?');
+		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
+
+		if($params['mode'] == '0'){
+			set_delimiter:
+			$delimiter = $this->core->get_input(" Delimiter: ");
+			if(strlen($delimiter) == 0) goto set_delimiter;
+		} elseif($params['mode'] == '1'){
+			$length = $this->core->get_input_integer(" Word length: ");
+		}
+
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
+		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		if($extensions === false) return false;
+
+		$errors = 0;
+		$this->core->set_errors($errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->core->get_files($folder, $extensions);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$name = pathinfo($file, PATHINFO_BASENAME);
+				if($params['mode'] == '0'){
+					$end = strpos($name, $delimiter);
+					if($end === false){
+						$prefix = null;
+					} else {
+						$prefix = trim(substr($name, 0, $end));
+					}
+				} elseif($params['mode'] == '1'){
+					$prefix = trim(substr($name, 0, $length));
+				}
+				if(!is_null($prefix)){
+					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$prefix/$name");
+					if(!$this->core->move($file, $new_name)){
+						$errors++;
+					}
+				} else {
+					$this->core->write_error("Failed get prefix \"$file\"");
 					$errors++;
 				}
 				$this->core->progress($items, $total);

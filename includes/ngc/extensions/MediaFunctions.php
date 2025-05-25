@@ -1,5 +1,7 @@
 <?php
 
+/* NGC-TOOLKIT v2.6.0 */
+
 declare(strict_types=1);
 
 namespace NGC\Extensions;
@@ -7,12 +9,95 @@ namespace NGC\Extensions;
 use GdImage;
 use Imagick;
 use Exception;
+use NGC\Core\IniFile;
 
 class MediaFunctions {
 
-	public object $core;
-
+	private object $core;
+	private ?IniFile $mime_types = null;
+	
 	public array $vr_tags = ['_LR_180', '_FISHEYE190', '_MKX200', '_MKX220', '_VRCA220', '_TB_180', '_360'];
+	public array $extensions_video = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'rm', 'rmvb', 'vob', 'asf', 'f4v', 'divx', 'dv', 'mts', 'yuv', 'mxf', 'nut', 'h264', 'hevc', 'av1', 'prores', 'mpv', 'nsv', 'amv', 'drc', 'm1v', 'm2v', 'roq'];
+	public array $extensions_audio = ['aac', 'ac3', 'amr', 'ape', 'dts', 'eac3', 'flac', 'm4a', 'mlp', 'mp2', 'mp3', 'ogg', 'opus', 'ra', 'thd', 'tta', 'vqf', 'wav', 'wma', 'wv'];
+	public array $extensions_subtitle = ['srt', 'ass', 'ssa', 'vtt', 'sub', 'mpl2', 'jss', 'smi', 'rt', 'txt'];
+	public array $extensions_media_container = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'vob', 'asf', 'f4v', 'mxf', 'nut', 'rm', 'rmvb', 'drc', 'nsv', 'amv', 'mks', 'mka'];
+
+	public array $codec_extensions_video = [
+		'h264' => 'h264',
+		'hevc' => 'h265',
+		'mpeg2video' => 'm2v',
+		'mpeg1video' => 'm1v',
+		'vp8' => 'ivf',
+		'vp9' => 'ivf',
+		'av1' => 'ivf',
+		'prores' => 'mov',
+		'dvvideo' => 'dv',
+		'mjpeg' => 'mjpeg',
+		'png' => 'png',
+		'gif' => 'gif',
+		'ffv1' => 'nut',
+		'theora' => 'ogv',
+		'vc1' => 'vc1',
+		'msmpeg4v2' => 'avi',
+		'msmpeg4v3' => 'avi',
+		'huffyuv' => 'avi',
+		'snow' => 'nut',
+	];
+	
+	public array $codec_extensions_audio = [
+		'aac' => 'aac',
+		'mp3' => 'mp3',
+		'ac3' => 'ac3',
+		'eac3' => 'eac3',
+		'mp2' => 'mp2',
+		'vorbis' => 'ogg',
+		'opus' => 'opus',
+		'amr_nb' => 'amr',
+		'amr_wb' => 'amr',
+		'flac' => 'flac',
+		'alac' => 'm4a',
+		'pcm_s16le' => 'wav',
+		'pcm_s24le' => 'wav',
+		'pcm_s32le' => 'wav',
+		'pcm_u8' => 'wav',
+		'pcm_mulaw' => 'wav',
+		'pcm_alaw' => 'wav',
+		'ape' => 'ape',
+		'tta' => 'tta',
+		'wavpack' => 'wv',
+		'mlp' => 'mlp',
+		'dts' => 'dts',
+		'dts_hd' => 'dts',
+		'truehd' => 'thd',
+		'ra' => 'ra',
+		'wma' => 'wma',
+		'vqf' => 'vqf',
+		'adpcm_ima_wav' => 'wav',
+	];
+
+	public array $codec_extensions_subtitle = [
+		'subrip' => 'srt',
+		'ass' => 'ass',
+		'ssa' => 'ssa',
+		'mov_text' => 'srt',
+		'webvtt' => 'vtt',
+		'microdvd' => 'sub',
+		'mpl2' => 'mpl2',
+		'jacosub' => 'jss',
+		'sami' => 'smi',
+		'realtext' => 'rt',
+		'subviewer' => 'sub',
+		'subviewer1' => 'sub',
+		'vplayer' => 'txt',
+	];
+
+	public array $vr_quality_map = [
+		7680 => '8K',
+		5760 => '6K',
+		3840 => '4K',
+		1920 => '2K',
+		1600 => 'FullHD',
+	];
 
 	public const MEDIA_ORIENTATION_HORIZONTAL = 0;
 	public const MEDIA_ORIENTATION_VERTICAL = 1;
@@ -77,7 +162,7 @@ class MediaFunctions {
 		return $count > 1;
 	}
 
-	public function is_webp_animated(string $path): bool {
+	public function is_webp_animated(string $path) : bool {
 		$file = fopen($path, 'rb');
 		if(!$file) return false;
 		$header = fread($file, 1024);
@@ -130,7 +215,7 @@ class MediaFunctions {
 	public function get_media_orientation(int $width, int $height) : int {
 		if($width > $height){
 			return self::MEDIA_ORIENTATION_HORIZONTAL;
-		} else if($height > $width){
+		} elseif($height > $width){
 			return self::MEDIA_ORIENTATION_VERTICAL;
 		} else {
 			return self::MEDIA_ORIENTATION_SQUARE;
@@ -152,27 +237,27 @@ class MediaFunctions {
 		if($is_vr) return $h;
 		if($w >= 61440 - 7680 || $h == 34560){
 			return 34560;
-		} else if($w >= 30720 - 3840 || $h == 17280){
+		} elseif($w >= 30720 - 3840 || $h == 17280){
 			return 17280;
-		} else if($w >= 15360 - 1920 || $h == 8640){
+		} elseif($w >= 15360 - 1920 || $h == 8640){
 			return 8640;
-		} else if($w >= 7680 - 960 || $h == 4320){
+		} elseif($w >= 7680 - 960 || $h == 4320){
 			return 4320;
-		} else if($w >= 3840 - 320 || $h == 2160){
+		} elseif($w >= 3840 - 320 || $h == 2160){
 			return 2160;
-		} else if($w >= 2560 - 160 || $h == 1440){
+		} elseif($w >= 2560 - 160 || $h == 1440){
 			return 1440;
-		} else if($w >= 1920 - 160 || $h == 1080){
+		} elseif($w >= 1920 - 160 || $h == 1080){
 			return 1080;
-		} else if($w >= 1280 - 80 || $h == 720){
+		} elseif($w >= 1280 - 80 || $h == 720){
 			return 720;
-		} else if($w >= 960 - 80 || $h == 540){
+		} elseif($w >= 960 - 80 || $h == 540){
 			return 540;
-		} else if($w >= 640 - 40 || $h == 480){
+		} elseif($w >= 640 - 40 || $h == 480){
 			return 480;
-		} else if($w >= 480 - 40 || $h == 360){
+		} elseif($w >= 480 - 40 || $h == 360){
 			return 360;
-		} else if($w >= 320 - 32 || $h == 240){
+		} elseif($w >= 320 - 32 || $h == 240){
 			return 240;
 		} else {
 			return 144;
@@ -196,27 +281,27 @@ class MediaFunctions {
 	public function get_image_color_group(int $colors) : string {
 		if($colors > 500000){
 			return '500001 - 999999';
-		} else if($colors > 400000 && $colors <= 500000){
+		} elseif($colors > 400000 && $colors <= 500000){
 			return '400001 - 500000';
-		} else if($colors > 300000 && $colors <= 400000){
+		} elseif($colors > 300000 && $colors <= 400000){
 			return '300001 - 400000';
-		} else if($colors > 200000 && $colors <= 300000){
+		} elseif($colors > 200000 && $colors <= 300000){
 			return '200001 - 300000';
-		} else if($colors > 100000 && $colors <= 200000){
+		} elseif($colors > 100000 && $colors <= 200000){
 			return '100001 - 200000';
-		} else if($colors > 50000 && $colors <= 100000){
+		} elseif($colors > 50000 && $colors <= 100000){
 			return '050001 - 100000';
-		} else if($colors > 40000 && $colors <= 50000){
+		} elseif($colors > 40000 && $colors <= 50000){
 			return '040001 - 050000';
-		} else if($colors > 30000 && $colors <= 40000){
+		} elseif($colors > 30000 && $colors <= 40000){
 			return '030001 - 040000';
-		} else if($colors > 20000 && $colors <= 30000){
+		} elseif($colors > 20000 && $colors <= 30000){
 			return '020001 - 030000';
-		} else if($colors > 10000 && $colors <= 20000){
+		} elseif($colors > 10000 && $colors <= 20000){
 			return '010001 - 020000';
-		} else if($colors > 5000 && $colors <= 10000){
+		} elseif($colors > 5000 && $colors <= 10000){
 			return '005001 - 010000';
-		} else if($colors > 1000 && $colors <= 5000){
+		} elseif($colors > 1000 && $colors <= 5000){
 			return '001001 - 005000';
 		} else {
 			return '000000 - 001000';
@@ -246,23 +331,32 @@ class MediaFunctions {
 		return false;
 	}
 
+	public function get_vr_quality_string(int $width) : ?string {
+		foreach($this->vr_quality_map as $min_width => $label){
+			if($width >= $min_width){
+				return $label;
+			}
+		}
+		return null;
+	}
+
 	public function get_vr_mode(string $name) : array {
 		if(str_contains($name, '_LR_180')){
 			$screen_type = "dome";
 			$stereo_mode = "sbs";
-		} else if(str_contains($name, '_FISHEYE190')){
+		} elseif(str_contains($name, '_FISHEYE190')){
 			$screen_type = "fisheye";
 			$stereo_mode = "sbs";
-		} else if(str_contains($name, '_MKX200')){
+		} elseif(str_contains($name, '_MKX200')){
 			$screen_type = "mkx200";
 			$stereo_mode = "sbs";
-		} else if(str_contains($name, '_MKX220') || str_contains($name, '_VRCA220')){
+		} elseif(str_contains($name, '_MKX220') || str_contains($name, '_VRCA220')){
 			$screen_type = "mkx220";
 			$stereo_mode = "sbs";
-		} else if(str_contains($name, '_TB_180')){
+		} elseif(str_contains($name, '_TB_180')){
 			$screen_type = "180";
 			$stereo_mode = "tb";
-		} else if(str_contains($name, '_360')){
+		} elseif(str_contains($name, '_360')){
 			$screen_type = "360";
 			$stereo_mode = (str_contains($name, '_SBS_')) ? "sbs" : "off";
 		} else {
@@ -309,7 +403,10 @@ class MediaFunctions {
 	}
 
 	public function get_audio_channels_string(int $channels) : string {
+		if($channels > 8) return "{$channels}ch (Multi)";
 		switch($channels){
+			case 8: return '7.1';
+			case 7: return '6.1';
 			case 6: return '5.1';
 			case 2: return 'Stereo';
 			case 1: return 'Mono';
@@ -318,7 +415,7 @@ class MediaFunctions {
 		return 'Unknown';
 	}
 
-	public function get_media_info(string $path): array {
+	public function get_media_info(string $path) : array {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>{$this->core->device_null}", $output);
 		$info = json_decode(implode('', $output), true);
@@ -382,84 +479,32 @@ class MediaFunctions {
 	}
 
 	public function mime_type_to_extension(string $mime_type) : string|false {
-		$mime_map = [
-			'video/3gpp2' => '3g2',
-			'video/3gpp' => '3gp',
-			'application/x-7z-compressed' => '7z',
-			'audio/x-aac' => 'aac',
-			'application/vnd.android.package-archive' => 'apk',
-			'audio/aac' => 'aac',
-			'application/x-abiword' => 'abw',
-			'application/x-freearc' => 'arc',
-			'video/x-msvideo' => 'avi',
-			'application/vnd.amazon.ebook' => 'azw',
-			'image/bmp' => 'bmp',
-			'application/x-bzip' => 'bz',
-			'application/x-bzip2' => 'bz2',
-			'application/x-csh' => 'csh',
-			'text/css' => 'css',
-			'text/csv' => 'csv',
-			'application/msword' => 'doc',
-			'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
-			'application/vnd.ms-fontobject' => 'eot',
-			'application/epub+zip' => 'epub',
-			'application/gzip' => 'gz',
-			'image/gif' => 'gif',
-			'text/html' => 'html',
-			'image/vnd.microsoft.icon' => 'ico',
-			'text/calendar' => 'ics',
-			'application/java-archive' => 'jar',
-			'image/jpeg' => 'jpg',
-			'text/javascript' => 'js',
-			'application/json' => 'json',
-			'application/ld+json' => 'jsonld',
-			'audio/midi' => 'midi',
-			'audio/mpeg' => 'mp3',
-			'video/mp4' => 'mp4',
-			'video/mpeg' => 'mpeg',
-			'application/vnd.apple.installer+xml' => 'mpkg',
-			'application/vnd.oasis.opendocument.presentation' => 'odp',
-			'application/vnd.oasis.opendocument.spreadsheet' => 'ods',
-			'application/vnd.oasis.opendocument.text' => 'odt',
-			'audio/ogg' => 'oga',
-			'video/ogg' => 'ogv',
-			'application/ogg' => 'ogx',
-			'audio/opus' => 'opus',
-			'font/otf' => 'otf',
-			'image/png' => 'png',
-			'application/pdf' => 'pdf',
-			'application/x-httpd-php' => 'php',
-			'application/vnd.ms-powerpoint' => 'ppt',
-			'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
-			'application/vnd.rar' => 'rar',
-			'application/rtf' => 'rtf',
-			'application/x-sh' => 'sh',
-			'image/svg+xml' => 'svg',
-			'application/x-tar' => 'tar',
-			'image/tiff' => 'tiff',
-			'video/mp2t' => 'ts',
-			'font/ttf' => 'ttf',
-			'text/plain' => 'txt',
-			'application/vnd.visio' => 'vsd',
-			'audio/wav' => 'wav',
-			'audio/webm' => 'weba',
-			'video/webm' => 'webm',
-			'image/webp' => 'webp',
-			'font/woff' => 'woff',
-			'font/woff2' => 'woff2',
-			'application/xhtml+xml' => 'xhtml',
-			'application/vnd.ms-excel' => 'xls',
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
-			'application/xml' => 'xml',
-			'text/xml' => 'xml',
-			'application/zip' => 'zip',
-			'audio/eac3' => 'eac3',
-			'video/x-matroska' => 'mkv',
-		];
-
-		return $mime_map[$mime_type] ?? false;
+		if($mime_type == 'application/octet-stream') return false;
+		if(is_null($this->mime_types)){
+			$this->mime_types = new IniFile($this->core->get_path("{$this->core->path}/includes/data/MimeTypes.ini"));
+		}
+		return $this->mime_types->get($mime_type, false);
 	}
 
+	public function get_subtitle_extension(string $codec_name) : ?string {
+		$codec_name = strtolower($codec_name);
+		return $this->codec_extensions_subtitle[$codec_name] ?? null;
+	}
+
+	public function get_audio_extension(string $codec_name) : ?string {
+		$codec_name = strtolower($codec_name);
+		return $this->codec_extensions_audio[$codec_name] ?? null;
+	}
+
+	public function get_video_extension(string $codec_name) : ?string {
+		$codec_name = strtolower($codec_name);
+		return $this->codec_extensions_video[$codec_name] ?? null;
+	}
+
+	public function timecode_to_seconds(int $h, int $m, int $s, int $ms) : float {
+		return $h * 3600 + $m * 60 + $s + $ms / 1000;
+	}
+	
 }
 
 ?>

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.1 */
+/* NGC-TOOLKIT v2.6.0 */
 
 declare(strict_types=1);
 
@@ -11,12 +11,14 @@ class Logs {
 	private string $path;
 	private bool $timestamp;
 	private bool $hold_open;
+	private string $date_format;
 	private $file;
 
-	public function __construct(string $path, bool $timestamp = true, bool $hold_open = false){
+	public function __construct(string $path, bool $timestamp = true, bool $hold_open = false, string $date_format = 'Y-m-d H:i:s'){
 		$this->path = $path;
 		$this->timestamp = $timestamp;
 		$this->hold_open = $hold_open;
+		$this->date_format = $date_format;
 		$this->file = false;
 	}
 
@@ -33,8 +35,10 @@ class Logs {
 	protected function write_string(string $line) : bool {
 		if(!$this->file) $this->file = fopen($this->path, "a");
 		if(!$this->file) return false;
-		if($this->timestamp) fwrite($this->file, "[".date("Y-m-d H:i:s")."] ");
-		fwrite($this->file, $line."\r\n");
+		if($this->timestamp){
+			fwrite($this->file, "[".$this->get_timestamp()."] ");
+		}
+		fwrite($this->file, mb_convert_encoding("$line\r\n", 'UTF-8', 'auto'));
 		if(!$this->hold_open) $this->close();
 		return true;
 	}
@@ -43,11 +47,21 @@ class Logs {
 		if(!$this->file) $this->file = fopen($this->path, "a");
 		if(!$this->file) return false;
 		foreach($lines as $line){
-			if($this->timestamp) fwrite($this->file, "[".date("Y-m-d H:i:s")."] ");
-			fwrite($this->file, $line."\r\n");
+			if($this->timestamp){
+				fwrite($this->file, "[".$this->get_timestamp()."] ");
+			}
+			fwrite($this->file, mb_convert_encoding("$line\r\n", 'UTF-8', 'auto'));
 		}
 		if(!$this->hold_open) $this->close();
 		return true;
+	}
+
+	public function set_date_format(string $date_format) : void {
+		$this->date_format = $date_format;
+	}
+
+	public function get_timestamp() : string {
+		return date($this->date_format);
 	}
 
 	public function write(string|array $content) : bool {

@@ -202,7 +202,7 @@ class DataBaseBackup {
 				$item = rtrim($item, ",");
 				array_push($alters, "ALTER TABLE `$name` ADD $item;");
 				array_push($removals, ", $item");
-			} else if(empty($item)){
+			} elseif(empty($item)){
 				unset($items[$key]);
 			}
 		}
@@ -371,15 +371,15 @@ class DataBaseBackup {
 								} else {
 									$values[] = "'0'";
 								}
-							} else if(is_null($row->$column)){
+							} elseif(is_null($row->$column)){
 								$values[] = "NULL";
-							} else if($type == 'bit'){
+							} elseif($type == 'bit'){
 								if(empty($row->$column)){
 									$values[] = "b'0'";
 								} else {
 									$values[] = "b'".decbin(intval($row->$column))."'";
 								}
-							} else if($type == 'blob' || $type == 'binary' || $type == 'longblob'){
+							} elseif($type == 'blob' || $type == 'binary' || $type == 'longblob'){
 								if(empty($row->$column)){
 									$values[] = "''";
 								} else {
@@ -460,15 +460,15 @@ class DataBaseBackup {
 								} else {
 									$values[] = "'0'";
 								}
-							} else if(is_null($row->$column)){
+							} elseif(is_null($row->$column)){
 								$values[] = "NULL";
-							} else if($type == 'bit'){
+							} elseif($type == 'bit'){
 								if(empty($row->$column)){
 									$values[] = "b'0'";
 								} else {
 									$values[] = "b'".decbin(intval($row->$column))."'";
 								}
-							} else if($type == 'blob' || $type == 'binary' || $type == 'longblob'){
+							} elseif($type == 'blob' || $type == 'binary' || $type == 'longblob'){
 								if(empty($row->$column)){
 									$values[] = "''";
 								} else {

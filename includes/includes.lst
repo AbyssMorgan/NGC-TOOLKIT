@@ -10,13 +10,13 @@ ngc/core/BitArray.php
 ngc/core/JournalService.php
 ngc/core/AppBuffer.php
 ngc/core/BinaryFile.php
-ngc/core/ADM.php
 ngc/services/GuardPattern.php
 ngc/services/GuardDriver.php
 ngc/services/FaceDetector.php
 ngc/services/DataBaseBackup.php
 ngc/services/StringConverter.php
 ngc/extensions/MediaFunctions.php
+ngc/extensions/SubtitlesValidator.php
 ngc/extensions/AppStorage.php
 ngc/extensions/VolumeIntegrity.php
 ngc/extensions/VolumeInfo.php

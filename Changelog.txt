@@ -1,3 +1,17 @@
+v2.6.0:
+- Updated tool File Editor > Pretty file content add flag "F" for remove whitespace on EOF
+- Updated tool Directory Names Editor > Pretty directory name add flag "P" for capitalize letters
+- Added tool: Media Tools > Extract video
+- Added tool: Media Tools > Extract audio
+- Added tool: Media Tools > Extract subtitles
+- Added tool: Media Tools > Validate subtitles (SRT)
+- Added tool: Media Tools > Compare subtitles (SRT)
+- Improved tool: Media Tools > Ident mime type (981 mime types)
+- Added basic censor for input password (Windows)
+- Added censor for input password (Linux/Mac OS)
+- Improved exception handler
+- Removed config: EXTENSIONS_AUDIO, EXTENSIONS_VIDEO, SHOW_LOGO
+
 v2.5.1:
 - Fixed tool "Media Sorter > Sort videos auto detect series name"
 

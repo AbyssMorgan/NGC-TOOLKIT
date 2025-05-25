@@ -1,5 +1,7 @@
 <?php
 
+/* NGC-TOOLKIT v2.6.0 */
+
 declare(strict_types=1);
 
 namespace NGC\Extensions;

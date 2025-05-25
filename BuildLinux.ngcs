@@ -1,4 +1,4 @@
-@AppType NGC_SCRIPT 2.5.1
+@AppType NGC_SCRIPT 2.6.0
 <?php
 	class BuildLinux {
 

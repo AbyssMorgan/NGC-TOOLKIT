@@ -9,6 +9,6 @@
 	],
 	"php.version": "8.4",
 	"php.problems.exclude": {
-		"**/*.php": [7001,7103]
+		"*": [7001,7103]
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-/* NGC-TOOLKIT v2.5.1 */
+/* NGC-TOOLKIT v2.6.0 */
 
 declare(strict_types=1);
 
@@ -29,7 +29,7 @@ class BitFunctions {
 	}
 
 	public function set_bit_Value(int &$value, int $bitid, bool $state) : void {
-		$value = (($value & ~(0x01 << $bitid)) | ((0x01 << $bitid)*($state ? 1 : 0)));
+		$value = ($value & ~(0x01 << $bitid)) | ((0x01 << $bitid) * ($state ? 1 : 0));
 	}
 
 	public function get_bit(int $bitid) : bool {
@@ -47,14 +47,14 @@ class BitFunctions {
 	public function from_array(array $array) : void {
 		$this->original = 0;
 		for($bitid = 0; $bitid < $this->max_bits; $bitid++){
-			$this->set_bit($bitid, ($array[$bitid] ?? false));
+			$this->set_bit($bitid, $array[$bitid] ?? false);
 		}
 	}
 
 	public function from_assoc(array $assoc, array $keys) : void {
 		$this->original = 0;
 		foreach($keys as $bitid => $key){
-			$this->set_bit($bitid, ($assoc[$key] ?? false));
+			$this->set_bit($bitid, $assoc[$key] ?? false);
 		}
 	}
 
@@ -147,11 +147,11 @@ class BitFunctions {
 		$int5 = (int)($value >> 24) & 0xFF;
 		$int6 = (int)($value >> 16) & 0xFF;
 		$int7 = (int)($value >> 8) & 0xFF;
-		$int8 = (int)($value) & 0xFF;
+		$int8 = (int)$value & 0xFF;
 	}
 
 	public function merge_value_64(int $int1, int $int2, int $int3, int $int4, int $int5, int $int6, int $int7, int $int8) : int {
-		return ((($int1 & 0xFF) << 56) | (($int2 & 0xFF) << 48) | (($int3 & 0xFF) << 40) | (($int4 & 0xFF) << 32) | (($int5 & 0xFF) << 24) | (($int6 & 0xFF) << 16) | (($int7 & 0xFF) << 8) | ($int8 & 0xFF));
+		return (($int1 & 0xFF) << 56) | (($int2 & 0xFF) << 48) | (($int3 & 0xFF) << 40) | (($int4 & 0xFF) << 32) | (($int5 & 0xFF) << 24) | (($int6 & 0xFF) << 16) | (($int7 & 0xFF) << 8) | ($int8 & 0xFF);
 	}
 
 	public function extract(?int &$int1, ?int &$int2, ?int &$int3, ?int &$int4) : void {
@@ -173,12 +173,12 @@ class BitFunctions {
 	public function bin64_to_float(int $value) : float {
 		$sign = ($value >> 63) & 0x1;
 		$exponent = ($value >> 52) & 0x7FF;
-		$fraction = ($value & 0xFFFFFFFFFFFFF);
+		$fraction = $value & 0xFFFFFFFFFFFFF;
 		$this->max_bits = 64;
 		$this->from_int($fraction);
 		$e = 1.0;
 		for($i = 1; $i <= 52; $i++) $e += ($this->get_bit(52-$i) ? 1 : 0) * pow(2.0, -$i);
-		return pow(-1.0, $sign) * ($e) * pow(2.0, ($exponent-1023));
+		return pow(-1.0, $sign) * $e * pow(2.0, ($exponent-1023));
 	}
 
 }
