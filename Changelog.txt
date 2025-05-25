@@ -1,6 +1,6 @@
 v2.6.0:
 - Changed menu order and actions keywords
-- Changed rules for tools: Media Sorter
+- Changed rules for tools: File Sorter / Directory Sorter / Media Sorter
 - Media Sorter tools have been split into: File Sorter / Directory Sorter / Media Sorter
 - Updated tool File Editor > Pretty file content add flag "F" for remove whitespace on EOF
 - Updated tool Directory Names Editor > Pretty directory name add flag "P" for capitalize letters
