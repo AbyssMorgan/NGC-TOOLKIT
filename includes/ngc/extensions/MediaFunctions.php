@@ -15,7 +15,7 @@ class MediaFunctions {
 
 	private object $core;
 	private ?IniFile $mime_types = null;
-	
+
 	public array $vr_tags = ['_LR_180', '_FISHEYE190', '_MKX200', '_MKX220', '_VRCA220', '_TB_180', '_360'];
 	public array $extensions_video = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'rm', 'rmvb', 'vob', 'asf', 'f4v', 'divx', 'dv', 'mts', 'yuv', 'mxf', 'nut', 'h264', 'hevc', 'av1', 'prores', 'mpv', 'nsv', 'amv', 'drc', 'm1v', 'm2v', 'roq'];
 	public array $extensions_audio = ['aac', 'ac3', 'amr', 'ape', 'dts', 'eac3', 'flac', 'm4a', 'mlp', 'mp2', 'mp3', 'ogg', 'opus', 'ra', 'thd', 'tta', 'vqf', 'wav', 'wma', 'wv'];
@@ -43,7 +43,7 @@ class MediaFunctions {
 		'huffyuv' => 'avi',
 		'snow' => 'nut',
 	];
-	
+
 	public array $codec_extensions_audio = [
 		'aac' => 'aac',
 		'mp3' => 'mp3',
@@ -504,7 +504,7 @@ class MediaFunctions {
 	public function timecode_to_seconds(int $h, int $m, int $s, int $ms) : float {
 		return $h * 3600 + $m * 60 + $s + $ms / 1000;
 	}
-	
+
 }
 
 ?>

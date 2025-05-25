@@ -90,7 +90,7 @@ class SubtitlesValidator {
 			array_push($errors->global, "File \"$path_b\" not exists");
 			return $errors;
 		}
-		
+
 		$lines = $this->srt_extract($path_a);
 		$srt_content_a = [];
 		foreach($lines as $line){

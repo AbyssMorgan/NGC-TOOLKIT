@@ -292,7 +292,7 @@ class FileNamesEditor {
 
 	public function tool_number_action_group(string $mode) : bool {
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -351,7 +351,7 @@ class FileNamesEditor {
 		$params['thumbnail'] = in_array($params['mode'], ['2', '3']);
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -444,7 +444,7 @@ class FileNamesEditor {
 	public function tool_generate_series_name() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Generate series name");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -511,7 +511,7 @@ class FileNamesEditor {
 			" Characters after escape: A-Z a-z 0-9 _ - .",
 			" Be careful to prevent use on Japanese, Chinese, Korean, etc. file names",
 		]);
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -687,7 +687,7 @@ class FileNamesEditor {
 	public function tool_remove_youtube_quality_tag() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Remove YouTube quality tag");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -1025,7 +1025,7 @@ class FileNamesEditor {
 		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
@@ -1119,7 +1119,7 @@ class FileNamesEditor {
 		$insert_string = $this->core->get_input(" String: ", false);
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
@@ -1190,7 +1190,7 @@ class FileNamesEditor {
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
 		}
-		
+
 		$replacements = [];
 		$i = 0;
 		$errors = 0;
@@ -1251,7 +1251,7 @@ class FileNamesEditor {
 	public function tool_extension_change() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Extension change");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 

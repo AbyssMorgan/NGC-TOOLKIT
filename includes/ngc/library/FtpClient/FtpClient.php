@@ -73,7 +73,7 @@ class FtpClient implements Countable {
 	 * @param resource|null $connection
 	 * @throws FtpException If FTP extension is not loaded.
 	 */
-	public function __construct($connection = null){
+	public function __construct(mixed $connection = null){
 		if(!extension_loaded('ftp')){
 			throw new FtpException('FTP extension is not loaded!');
 		}
@@ -156,7 +156,7 @@ class FtpClient implements Countable {
 	 *
 	 * @return resource
 	 */
-	public function getConnection(){
+	public function getConnection() : mixed {
 		return $this->conn;
 	}
 

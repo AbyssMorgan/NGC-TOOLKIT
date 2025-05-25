@@ -563,7 +563,6 @@ class MediaTools {
 			$this->core->set_folder_done($folder);
 		}
 
-
 		$this->core->open_logs(true);
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;
@@ -572,7 +571,7 @@ class MediaTools {
 	public function tool_extract_video() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Extract video");
-	
+
 		$input = $this->core->get_input_folder(" Input (Folder): ");
 		if($input === false) return false;
 
@@ -584,7 +583,7 @@ class MediaTools {
 			$this->core->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
-	
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
@@ -620,7 +619,7 @@ class MediaTools {
 		}
 		$this->core->progress($items, $total);
 		unset($files);
-	
+
 		$this->core->open_logs(true);
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;
@@ -629,7 +628,7 @@ class MediaTools {
 	public function tool_extract_audio() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Extract audio");
-	
+
 		$input = $this->core->get_input_folder(" Input (Folder): ");
 		if($input === false) return false;
 
@@ -641,7 +640,7 @@ class MediaTools {
 			$this->core->echo(" Output folder must be different than input folder");
 			goto set_output;
 		}
-	
+
 		$errors = 0;
 		$this->core->set_errors($errors);
 		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
@@ -681,7 +680,7 @@ class MediaTools {
 		}
 		$this->core->progress($items, $total);
 		unset($files);
-	
+
 		$this->core->open_logs(true);
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;

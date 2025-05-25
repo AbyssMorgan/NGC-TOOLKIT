@@ -116,7 +116,7 @@ class DirectoryNamesEditor {
 			' +   - To upper case',
 			' -   - To lower case',
 		]);
-		
+
 		$line = strtoupper($this->core->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
@@ -278,7 +278,7 @@ class DirectoryNamesEditor {
 		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
@@ -369,7 +369,7 @@ class DirectoryNamesEditor {
 		$insert_string = $this->core->get_input(" String: ", false);
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 

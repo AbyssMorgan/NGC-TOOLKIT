@@ -105,9 +105,9 @@ class VolumeIntegrity {
 
 	public function set(string $path, array $values = []) : bool {
 		if(is_null($this->db)) return false;
-		
+
 		$path = $this->container_escape($path);
-		
+
 		if(!isset($this->data[$path])){
 			$this->data[$path] = (object)[
 				'id' => null,
@@ -117,11 +117,11 @@ class VolumeIntegrity {
 				'validation_date' => null,
 			];
 		}
-		
+
 		$columns = [];
 		$placeholders = [];
 		$params = [];
-		
+
 		if(isset($values['checksum'])){
 			$this->data[$path]->checksum = $values['checksum'];
 			$columns[] = "`checksum`";
@@ -146,7 +146,7 @@ class VolumeIntegrity {
 			$placeholders[] = ":validation_date";
 			$params[':validation_date'] = $values['validation_date'];
 		}
-		
+
 		if(isset($this->data[$path]->id)){
 			$updateParts = [];
 			foreach($params as $key => $value){
@@ -164,20 +164,20 @@ class VolumeIntegrity {
 			$placeholdersClause = implode(", ", $placeholders);
 			$stmt = $this->db->prepare("INSERT INTO `media_items` ($columnsClause) VALUES ($placeholdersClause)");
 		}
-		
+
 		foreach($params as $key => $value){
 			$stmt->bindValue($key, $value);
 		}
-		
+
 		$stmt->execute();
-		
+
 		if(!isset($this->data[$path]->id)){
 			$this->data[$path]->id = $this->db->lastInsertId();
 		}
-	
+
 		return true;
 	}
-	
+
 	public function unset(string $path) : bool {
 		if(is_null($this->db)) return false;
 		$path = $this->container_escape($path);
@@ -205,8 +205,8 @@ class VolumeIntegrity {
 
 	public function rename(string $path_input, string $path_output) : bool {
 		$stmt = $this->db->prepare("UPDATE `media_items` SET `path` = :path_output WHERE `path` = :path_input");
-		$stmt->bindValue(':path_input', $path_input);			
-		$stmt->bindValue(':path_output', $path_output);			
+		$stmt->bindValue(':path_input', $path_input);
+		$stmt->bindValue(':path_output', $path_output);
 		return $stmt->execute();
 	}
 

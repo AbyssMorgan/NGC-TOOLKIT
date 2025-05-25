@@ -57,7 +57,7 @@ class MediaSorter {
 	public function tool_sort_extension() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort extension");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -110,7 +110,7 @@ class MediaSorter {
 		$params['quality'] = in_array($params['mode'], ['0', '2']);
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -168,7 +168,7 @@ class MediaSorter {
 	public function tool_sort_gif_animated() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort gif animated");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -247,7 +247,7 @@ class MediaSorter {
 		if($params['separator'] == '\\') $params['separator'] = DIRECTORY_SEPARATOR;
 
 		$this->core->clear();
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
@@ -303,7 +303,7 @@ class MediaSorter {
 	public function tool_sort_images_color() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Sort images color");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 

@@ -42,7 +42,7 @@ class DirectoryFunctions {
 	public function tool_delete_empty_folders() : bool {
 		$this->core->clear();
 		$this->core->set_subtool("Delete empty folders");
-		
+
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 

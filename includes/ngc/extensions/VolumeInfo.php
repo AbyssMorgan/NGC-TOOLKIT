@@ -21,7 +21,7 @@ class VolumeInfo {
 			$this->search_folders = $search_folders ?? ['/media', '/mnt'];
 		}
 	}
-	
+
 	public function get_volume_info(string $volume_id) : ?object {
 		$volumes = $this->get_volumes(false);
 		return $volumes[$volume_id] ?? null;
