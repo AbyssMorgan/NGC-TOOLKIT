@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -67,7 +74,7 @@ class BitArray {
 		$this->original = [];
 		$address = 0;
 		for($offset = 0; $offset < $length; $offset += 4){
-			$this->original[$address] = $this->bits->merge_value(ord($binary[$offset] ?? 0), ord($binary[$offset+1] ?? 0), ord($binary[$offset+2] ?? 0), ord($binary[$offset+3] ?? 0));
+			$this->original[$address] = $this->bits->merge_value(ord($binary[$offset] ?? 0), ord($binary[$offset + 1] ?? 0), ord($binary[$offset + 2] ?? 0), ord($binary[$offset + 3] ?? 0));
 			$address++;
 		}
 	}

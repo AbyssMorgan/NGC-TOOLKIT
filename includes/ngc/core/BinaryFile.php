@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -16,10 +23,10 @@ class BinaryFile {
 		if(!is_null($path)) $this->open($path, $allocate);
 	}
 
-	public function create(string $path, ?int $allocate = null) : bool {
+	public function create(string $path, ?int $allocate = null, int $permissions = 0755) : bool {
 		if(file_exists($path)) return false;
 		$folder = pathinfo($path, PATHINFO_DIRNAME);
-		if(!file_exists($folder) && !@mkdir($folder, 0755, true)) return false;
+		if(!file_exists($folder) && !@mkdir($folder, $permissions, true)) return false;
 		$file = @fopen($path, "wb");
 		if(!$file) return false;
 		if(!is_null($allocate) && $allocate > 0){
@@ -32,9 +39,9 @@ class BinaryFile {
 		return file_exists($path);
 	}
 
-	public function open(string $path, ?int $allocate = null) : bool {
+	public function open(string $path, ?int $allocate = null, int $permissions = 0755) : bool {
 		if(!is_null($this->file)) return false;
-		if(!file_exists($path) && !$this->create($path, $allocate)) return false;
+		if(!file_exists($path) && !$this->create($path, $allocate, $permissions)) return false;
 		$this->file = fopen($path, "r+b");
 		if(!$this->file) return false;
 		$this->path = $path;

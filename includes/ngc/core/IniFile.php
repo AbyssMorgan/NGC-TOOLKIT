@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -10,35 +17,24 @@ use Exception;
 
 class IniFile {
 
-	protected ?string $path;
-	protected array $data;
-	protected bool $valid;
-	protected bool $sort;
-	protected array $original;
-	protected bool $compressed;
+	protected ?string $path = null;
+	protected array $data = [];
+	protected array $original = [];
+	protected bool $valid = false;
+	protected bool $sort = false;
+	protected bool $compressed = false;
 	protected ?object $encoder = null;
+	protected int $permissions = 0755;
 
-	public function __construct(?string $path = null, bool $sort = false, bool $compressed = false, ?object $encoder = null){
-		$this->path = $path;
-		$this->data = [];
-		$this->original = [];
-		$this->sort = $sort;
-		$this->compressed = $compressed;
-		if(!is_null($encoder)){
-			if(method_exists($encoder, 'encrypt') && method_exists($encoder, 'decrypt') && method_exists($encoder, 'get_header')){
-				$this->encoder = $encoder;
-			}
-		}
-		if(is_null($this->path)){
-			$this->valid = false;
-		} else {
-			$this->valid = $this->read();
+	public function __construct(?string $path = null, bool $sort = false, bool $compressed = false, ?object $encoder = null, int $permissions = 0755){
+		if(!is_null($path)){
+			$this->open($path, $sort, $compressed, $encoder, $permissions);
 		}
 	}
 
 	protected function create() : bool {
 		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, 0755, true);
+		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		fwrite($file, "");
@@ -46,10 +42,16 @@ class IniFile {
 		return file_exists($this->path);
 	}
 
-	public function open(string $path, bool $sort = false, bool $compressed = false) : bool {
+	public function open(string $path, bool $sort = false, bool $compressed = false, ?object $encoder = null, int $permissions = 0755) : bool {
 		$this->path = $path;
 		$this->sort = $sort;
 		$this->compressed = $compressed;
+		$this->permissions = $permissions;
+		if(!is_null($encoder)){
+			if(method_exists($encoder, 'encrypt') && method_exists($encoder, 'decrypt') && method_exists($encoder, 'get_header')){
+				$this->encoder = $encoder;
+			}
+		}
 		$this->valid = $this->read();
 		return $this->valid;
 	}
@@ -182,7 +184,7 @@ class IniFile {
 		if($save) $this->save();
 	}
 
-	public function get(string $key, int|bool|string|array|float|null $default = null) : mixed {
+	public function get(string $key, int|bool|string|array|float|null $default = null) : int|bool|string|array|float|null {
 		return $this->data[$key] ?? $default;
 	}
 
@@ -190,7 +192,7 @@ class IniFile {
 		return strval($this->data[$key] ?? $default);
 	}
 
-	public function get_original(string $key, int|bool|string|array|float|null $default = null) : mixed {
+	public function get_original(string $key, int|bool|string|array|float|null $default = null) : int|bool|string|array|float|null {
 		return $this->original[$key] ?? $default;
 	}
 
@@ -198,7 +200,7 @@ class IniFile {
 		$this->data[$key] = $this->clean_value($value);
 	}
 
-	public function clean_value(int|bool|string|array|float|null $value) : mixed {
+	public function clean_value(int|bool|string|array|float|null $value) : int|bool|string|array|float|null {
 		if(gettype($value) == 'string'){
 			$lvalue = mb_strtolower($value);
 			if($lvalue == 'true'){

@@ -1,19 +1,28 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
 namespace NGC\Extensions;
 
+use Script;
+use Toolkit;
 use NGC\Core\IniFile;
 
 class VolumeInfo {
 
-	private object $core;
+	private Toolkit|Script $core;
 	private array $search_folders;
 
-	public function __construct(object $core, ?array $search_folders = null){
+	public function __construct(Toolkit|Script $core, ?array $search_folders = null){
 		$this->core = $core;
 		if($this->core->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$this->search_folders = $search_folders ?? [];
@@ -38,7 +47,7 @@ class VolumeInfo {
 		if($this->core->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			foreach($this->core->drives as $drive){
 				if($this->search_volumes($data, "$drive:", $with_config) == 0){
-					$items = $this->core->get_folders_ex("$drive:");
+					$items = $this->core->get_folders("$drive:", false, false);
 					foreach($items as $item){
 						$this->search_volumes($data, $this->core->get_path($item), $with_config);
 					}
@@ -48,7 +57,7 @@ class VolumeInfo {
 		if(!is_null($this->search_folders)){
 			foreach($this->search_folders as $search_folder){
 				if(!file_exists($search_folder)) continue;
-				foreach($this->core->get_folders_ex($search_folder) as $drive){
+				foreach($this->core->get_folders($search_folder, false, false) as $drive){
 					$this->search_volumes($data, $drive, $with_config);
 				}
 			}

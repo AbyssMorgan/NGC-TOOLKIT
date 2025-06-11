@@ -1,4 +1,5 @@
 <?php
+
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
@@ -101,29 +102,29 @@ class FaceDetector {
 	}
 
 	private function compute_ii(GdImage $canvas, int $image_width, int $image_height) : array {
-		$ii_w = $image_width+1;
-		$ii_h = $image_height+1;
+		$ii_w = $image_width + 1;
+		$ii_h = $image_height + 1;
 		$ii = [];
 		$ii2 = [];
 		for($i = 0; $i < $ii_w; $i++){
 			$ii[$i] = 0;
 			$ii2[$i] = 0;
 		}
-		for($i = 1; $i < $ii_h-1; $i++){
-			$ii[$i*$ii_w] = 0;
-			$ii2[$i*$ii_w] = 0;
+		for($i = 1; $i < $ii_h - 1; $i++){
+			$ii[$i * $ii_w] = 0;
+			$ii2[$i * $ii_w] = 0;
 			$rowsum = 0;
 			$rowsum2 = 0;
-			for($j = 1; $j < $ii_w-1; $j++){
+			for($j = 1; $j < $ii_w - 1; $j++){
 				$rgb = imagecolorat($canvas, $j, $i);
 				$red = ($rgb >> 16) & 0xFF;
 				$green = ($rgb >> 8) & 0xFF;
 				$blue = $rgb & 0xFF;
-				$grey = (int)(0.2989*$red + 0.587*$green + 0.114*$blue);
+				$grey = (int)(0.2989 * $red + 0.587 * $green + 0.114 * $blue);
 				$rowsum += $grey;
-				$rowsum2 += $grey*$grey;
-				$ii_above = ($i-1)*$ii_w + $j;
-				$ii_this = $i*$ii_w + $j;
+				$rowsum2 += $grey * $grey;
+				$ii_above = ($i - 1) * $ii_w + $j;
+				$ii_this = $i * $ii_w + $j;
 				$ii[$ii_this] = $ii[$ii_above] + $rowsum;
 				$ii2[$ii_this] = $ii2[$ii_above] + $rowsum2;
 			}
@@ -132,19 +133,19 @@ class FaceDetector {
 	}
 
 	private function do_detect_greedy_big_to_small(array $ii, array $ii2, int $width, int $height) : ?array {
-		$s_w = $width/20.0;
-		$s_h = $height/20.0;
+		$s_w = $width / 20.0;
+		$s_h = $height / 20.0;
 		$start_scale = $s_h < $s_w ? $s_h : $s_w;
 		$scale_update = 1 / 1.2;
 		for($scale = $start_scale; $scale > 1; $scale *= $scale_update){
-			$w = (int)(20*$scale);
+			$w = (int)(20 * $scale);
 			$endx = $width - $w - 1;
 			$endy = $height - $w - 1;
 			$step = (int)(max($scale, 2));
-			$inv_area = 1 / ($w*$w);
+			$inv_area = 1 / ($w * $w);
 			for($y = 0; $y < $endy; $y += $step){
 				for($x = 0; $x < $endx; $x += $step){
-					$passed = $this->detect_on_sub_image($x, $y, $scale, $ii, $ii2, $w, $width+1, $inv_area);
+					$passed = $this->detect_on_sub_image($x, $y, $scale, $ii, $ii2, $w, $width + 1, $inv_area);
 					if($passed){
 						return ['x' => $x, 'y' => $y, 'w' => $w];
 					}
@@ -155,8 +156,8 @@ class FaceDetector {
 	}
 
 	private function detect_on_sub_image(int $x, int $y, float $scale, array $ii, array $ii2, int $w, int $iiw, float $inv_area) : bool {
-		$mean = ($ii[($y+$w)*$iiw + $x + $w] + $ii[$y*$iiw+$x] - $ii[($y+$w)*$iiw+$x] - $ii[$y*$iiw+$x+$w])*$inv_area;
-		$vnorm = ($ii2[($y+$w)*$iiw + $x + $w] + $ii2[$y*$iiw+$x] - $ii2[($y+$w)*$iiw+$x] - $ii2[$y*$iiw+$x+$w])*$inv_area - ($mean*$mean);
+		$mean = ($ii[($y + $w) * $iiw + $x + $w] + $ii[$y * $iiw + $x] - $ii[($y + $w) * $iiw + $x] - $ii[$y * $iiw + $x + $w]) * $inv_area;
+		$vnorm = ($ii2[($y + $w) * $iiw + $x + $w] + $ii2[$y * $iiw + $x] - $ii2[($y + $w) * $iiw + $x] - $ii2[$y * $iiw + $x + $w]) * $inv_area - ($mean * $mean);
 		$vnorm = $vnorm > 1 ? sqrt($vnorm) : 1;
 		$count_data = count($this->detection_data);
 		for($i_stage = 0; $i_stage < $count_data; $i_stage++){
@@ -178,15 +179,15 @@ class FaceDetector {
 					$rect_sum = 0;
 					$count_rects = count($current_node[1]);
 					for($i_rect = 0; $i_rect < $count_rects; $i_rect++){
-						$rx = (int)(($current_node[1][$i_rect][0]*$scale)+$x);
-						$ry = (int)(($current_node[1][$i_rect][1]*$scale)+$y);
-						$rw = (int)($current_node[1][$i_rect][2]*$scale);
-						$rh = (int)($current_node[1][$i_rect][3]*$scale);
-						$rect_sum += (($ii[($ry+$rh)*$iiw + $rx + $rw] + $ii[$ry*$iiw+$rx] - $ii[($ry+$rh)*$iiw+$rx] - $ii[$ry*$iiw+$rx+$rw])*$current_node[1][$i_rect][4]);
+						$rx = (int)(($current_node[1][$i_rect][0] * $scale) + $x);
+						$ry = (int)(($current_node[1][$i_rect][1] * $scale) + $y);
+						$rw = (int)($current_node[1][$i_rect][2] * $scale);
+						$rh = (int)($current_node[1][$i_rect][3] * $scale);
+						$rect_sum += (($ii[($ry + $rh) * $iiw + $rx + $rw] + $ii[$ry * $iiw + $rx] - $ii[($ry + $rh) * $iiw + $rx] - $ii[$ry * $iiw + $rx + $rw]) * $current_node[1][$i_rect][4]);
 					}
 					$rect_sum *= $inv_area;
 					$current_node = null;
-					if($rect_sum >= $node_thresh*$vnorm){
+					if($rect_sum >= $node_thresh * $vnorm){
 						if($rightidx == -1){
 							$tree_sum = $rightval;
 						} else {

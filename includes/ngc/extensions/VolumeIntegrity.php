@@ -1,11 +1,20 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
 namespace NGC\Extensions;
 
+use Script;
+use Toolkit;
 use PDO;
 use Exception;
 use PDOException;
@@ -14,12 +23,12 @@ class VolumeIntegrity {
 
 	private string $database;
 	private string $disk;
-	private object $core;
+	private Toolkit|Script $core;
 	private ?PDO $db;
 	private array $data;
 	private int $allocation;
 
-	public function __construct(object $core, string $database, string $disk, int $allocation = 0){
+	public function __construct(Toolkit|Script $core, string $database, string $disk, int $allocation = 0){
 		$this->core = $core;
 		$this->database = $database;
 		$this->disk = $disk;

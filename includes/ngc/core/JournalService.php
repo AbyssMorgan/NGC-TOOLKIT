@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -10,17 +17,18 @@ class JournalService {
 
 	protected ?string $path;
 	protected BitFunctions $bits;
-
+	protected int $permissions;
 	public const FILE_HEADER_DATA = 'ADM-JOURNAL';
 
-	public function __construct(?string $path = null){
+	public function __construct(?string $path = null, int $permissions = 0755){
 		$this->path = $path;
+		$this->permissions = $permissions;
 		$this->bits = new BitFunctions(32);
 	}
 
 	protected function create() : bool {
 		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, 0755, true);
+		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
 		$fp = fopen($this->path, "w");
 		if(!$fp) return false;
 		fwrite($fp, self::FILE_HEADER_DATA."\1");

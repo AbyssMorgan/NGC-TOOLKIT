@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -12,19 +19,21 @@ class Logs {
 	private bool $timestamp;
 	private bool $hold_open;
 	private string $date_format;
+	private int $permissions;
 	private $file;
 
-	public function __construct(string $path, bool $timestamp = true, bool $hold_open = false, string $date_format = 'Y-m-d H:i:s'){
+	public function __construct(string $path, bool $timestamp = true, bool $hold_open = false, string $date_format = 'Y-m-d H:i:s', int $permissions = 0755){
 		$this->path = $path;
 		$this->timestamp = $timestamp;
 		$this->hold_open = $hold_open;
 		$this->date_format = $date_format;
+		$this->permissions = $permissions;
 		$this->file = false;
 	}
 
 	protected function create() : bool {
 		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, 0755, true);
+		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		fwrite($file, "");

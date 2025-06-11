@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -182,7 +191,7 @@ class FileSorter {
 				$items++;
 				if(!file_exists($file)) continue 1;
 				$size = filesize($file);
-				$multiplier = floor(($size-1) / $interval);
+				$multiplier = floor(($size - 1) / $interval);
 				if($size == 0) $multiplier = 0;
 				$end = $this->core->format_bytes(intval($interval * ($multiplier + 1)));
 				if($prefix){

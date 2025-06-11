@@ -1,11 +1,21 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
 namespace NGC\Extensions;
 
+use Script;
+use Toolkit;
+use finfo;
 use GdImage;
 use Imagick;
 use Exception;
@@ -13,11 +23,12 @@ use NGC\Core\IniFile;
 
 class MediaFunctions {
 
-	private object $core;
+	private Toolkit|Script $core;
 	private ?IniFile $mime_types = null;
+	private ?finfo $file_info = null;
 
 	public array $vr_tags = ['_LR_180', '_FISHEYE190', '_MKX200', '_MKX220', '_VRCA220', '_TB_180', '_360'];
-	public array $extensions_images = ['bmp', 'dpx', 'exr', 'gif', 'jpeg', 'jpg', 'jpe', 'pam', 'pbm', 'pcx', 'pgm', 'png', 'ppm', 'sgi', 'tga', 'tif', 'tiff', 'webp', 'xwd'];
+	public array $extensions_images = ['bmp', 'dpx', 'exr', 'gif', 'jpeg', 'jpg', 'jpe', 'pam', 'pbm', 'pcx', 'pgm', 'png', 'ppm', 'sgi', 'tga', 'tif', 'tiff', 'webp', 'xwd', 'jfif'];
 	public array $extensions_video = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'rm', 'rmvb', 'vob', 'asf', 'f4v', 'divx', 'dv', 'mts', 'yuv', 'mxf', 'nut', 'h264', 'hevc', 'av1', 'prores', 'mpv', 'nsv', 'amv', 'drc', 'm1v', 'm2v', 'roq'];
 	public array $extensions_audio = ['aac', 'ac3', 'amr', 'ape', 'dts', 'eac3', 'flac', 'm4a', 'mlp', 'mp2', 'mp3', 'ogg', 'opus', 'ra', 'thd', 'tta', 'vqf', 'wav', 'wma', 'wv'];
 	public array $extensions_subtitle = ['srt', 'ass', 'ssa', 'vtt', 'sub', 'mpl2', 'jss', 'smi', 'rt', 'txt'];
@@ -104,34 +115,100 @@ class MediaFunctions {
 	public const MEDIA_ORIENTATION_VERTICAL = 1;
 	public const MEDIA_ORIENTATION_SQUARE = 2;
 
-	public function __construct(object $core){
+	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
+		$this->file_info = finfo_open(FILEINFO_MIME_TYPE, $this->core->get_resource("magic.mgc"));
 	}
 
-	public function get_image_from_path(string $path): GdImage|bool|null {
-		if(!file_exists($path)) return null;
-		$mime = mime_content_type($path);
-		if($this->is_image_animated($path)) return null;
-		switch($mime){
-			case 'image/bmp': return @imagecreatefrombmp($path);
-			case 'image/avif': return @imagecreatefromavif($path);
-			case 'image/gd2': return @imagecreatefromgd2($path);
-			case 'image/gd': return @imagecreatefromgd($path);
-			case 'image/gif': return @imagecreatefromgif($path);
-			case 'image/jpeg': return @imagecreatefromjpeg($path);
-			case 'image/png': return @imagecreatefrompng($path);
-			case 'image/x-tga': return @imagecreatefromtga($path);
-			case 'image/vnd.wap.wbmp': return @imagecreatefromwbmp($path);
-			case 'image/webp': return @imagecreatefromwebp($path);
-			case 'image/x-xbitmap': return @imagecreatefromxbm($path);
-			case 'image/x-xpixmap': return @imagecreatefromxpm($path);
+	public function __destruct(){
+		finfo_close($this->file_info);
+		$this->file_info = null;
+	}
+
+	public function get_mime_type(string $path) : string|false {
+		if(!file_exists($path)) return false;
+		try {
+			$mime_type = @finfo_file($this->file_info, $path);
 		}
-		return null;
+		catch(Exception $e){
+			return false;
+		}
+		return is_string($mime_type) ? mb_strtolower($mime_type) : false;
+	}
+
+	public function get_string_mime_type(string $content) : string|false {
+		try {
+			$mime_type = @finfo_buffer($this->file_info, $content);
+		}
+		catch(Exception $e){
+			return false;
+		}
+		return is_string($mime_type) ? mb_strtolower($mime_type) : false;
+	}
+
+	public function get_image_from_path(string $path) : GdImage|null {
+		if(!file_exists($path)) return null;
+		$mime = $this->get_mime_type($path);
+		if($mime === false) return null;
+		if($this->is_image_animated($path)) return null;
+		$image = null;
+		switch($mime){
+			case 'image/bmp':{
+				$image = @imagecreatefrombmp($path);
+				break;
+			}
+			case 'image/avif': {
+				$image = @imagecreatefromavif($path);
+				break;
+			}
+			case 'image/gd2': {
+				$image = @imagecreatefromgd2($path);
+				break;
+			}
+			case 'image/gd': {
+				$image = @imagecreatefromgd($path);
+				break;
+			}
+			case 'image/gif': {
+				$image = @imagecreatefromgif($path);
+				break;
+			}
+			case 'image/jpeg': {
+				$image = @imagecreatefromjpeg($path);
+				break;
+			}
+			case 'image/png': {
+				$image = @imagecreatefrompng($path);
+				break;
+			}
+			case 'image/x-tga': {
+				$image = @imagecreatefromtga($path);
+				break;
+			}
+			case 'image/vnd.wap.wbmp': {
+				$image = @imagecreatefromwbmp($path);
+				break;
+			}
+			case 'image/webp': {
+				$image = @imagecreatefromwebp($path);
+				break;
+			}
+			case 'image/x-xbitmap': {
+				$image = @imagecreatefromxbm($path);
+				break;
+			}
+			case 'image/x-xpixmap': {
+				$image = @imagecreatefromxpm($path);
+				break;
+			}
+		}
+		if($image === false) return null;
+		return $image;
 	}
 
 	public function get_image_resolution(string $path) : string {
 		$image = $this->get_image_from_path($path);
-		if(!$image){
+		if(is_null($image)){
 			try {
 				@$image = new Imagick($path);
 				$w = @$image->getImageWidth();
@@ -151,16 +228,17 @@ class MediaFunctions {
 
 	public function is_image_animated(string $path) : bool {
 		if(!file_exists($path)) return false;
-		switch(mime_content_type($path)){
+		switch($this->get_mime_type($path)){
 			case 'image/gif': {
-				if(!($fp = @fopen($path, 'rb'))) return false;
-				$count = 0;
-				while(!feof($fp) && $count < 2){
-					$chunk = fread($fp, 1024 * 100);
-					$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
+				try {
+					$image = new Imagick($path);
+					$images_number = $image->getNumberImages();
+					$image->clear();
+					return $images_number > 1;
 				}
-				fclose($fp);
-				return $count > 1;
+				catch(Exception $e){
+					return false;
+				}
 			}
 			case 'image/webp': {
 				if(!($fp = @fopen($path, 'rb'))) return false;
@@ -176,27 +254,6 @@ class MediaFunctions {
 			}
 			default: return false;
 		}
-	}
-
-	/**
-	 * @deprecated Use is_image_animated
-	 */
-	public function is_gif_animated(string $path) : bool {
-		return $this->is_image_animated($path);
-	}
-
-	/**
-	 * @deprecated Use is_image_animated
-	 */
-	public function is_apng_animated(string $path) : bool {
-		return $this->is_image_animated($path);
-	}
-
-	/**
-	 * @deprecated Use is_image_animated
-	 */
-	public function is_webp_animated(string $path) : bool {
-		return $this->is_image_animated($path);
 	}
 
 	public function ffprobe_get_resolution(string $path) : string {
@@ -218,8 +275,8 @@ class MediaFunctions {
 
 	public function get_extension_by_mime_type(string $path) : string|false {
 		if(!file_exists($path)) return false;
-		$mime_type = mime_content_type($path);
-		if(!$mime_type) return false;
+		$mime_type = $this->get_mime_type($path);
+		if($mime_type === false) return false;
 		return $this->mime_type_to_extension($mime_type);
 	}
 
@@ -422,7 +479,7 @@ class MediaFunctions {
 	}
 
 	public function calculate_aspect_ratio(int $width, int $height) : string {
-		$gcd = function($a, $b) use (&$gcd) : mixed {
+		$gcd = function(int $a, int $b) use (&$gcd) : int {
 			return ($b == 0) ? $a : $gcd($b, $a % $b);
 		};
 		$divisor = $gcd($width, $height);
@@ -482,11 +539,11 @@ class MediaFunctions {
 					$width = intval($stream['width']);
 					$height = intval($stream['height']);
 					$meta['video_resolution'] = "{$stream['width']}x{$stream['height']}";
-					$is_vr = $this->core->media->is_vr_video($path);
-					$is_ar = $this->core->media->is_ar_video($path);
-					$meta['video_quality'] = $this->core->media->get_media_quality($width, $height, $is_vr || $is_ar);
-					$orientation = $this->core->media->get_media_orientation($width, $height);
-					$meta['video_orientation'] = $this->core->media->get_media_orientation_name($orientation);
+					$is_vr = $this->is_vr_video($path);
+					$is_ar = $this->is_ar_video($path);
+					$meta['video_quality'] = $this->get_media_quality($width, $height, $is_vr || $is_ar);
+					$orientation = $this->get_media_orientation($width, $height);
+					$meta['video_orientation'] = $this->get_media_orientation_name($orientation);
 					eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $stream['r_frame_rate'])).';');
 					$meta['video_fps'] = round($fps, 4);
 					$meta['video_codec'] = $stream['codec_name'] ?? null;
@@ -510,7 +567,7 @@ class MediaFunctions {
 	public function mime_type_to_extension(string $mime_type) : string|false {
 		if($mime_type == 'application/octet-stream') return false;
 		if(is_null($this->mime_types)){
-			$this->mime_types = new IniFile($this->core->get_path("{$this->core->path}/includes/data/MimeTypes.ini"));
+			$this->mime_types = new IniFile($this->core->get_resource("MimeTypes.ini"));
 		}
 		return $this->mime_types->get($mime_type, false);
 	}
@@ -534,6 +591,43 @@ class MediaFunctions {
 		return $h * 3600 + $m * 60 + $s + $ms / 1000;
 	}
 
+	public function get_files_mime_type(string $path, ?array $include_mime_types = null, ?array $exclude_mime_types = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
+		if(!file_exists($path) || !is_readable($path)) return [];
+		if(!$case_sensitive && !is_null($name_filters)){
+			$name_filters = $this->core->array_to_lower($name_filters);
+		}
+		$data = [];
+		$this->scan_dir_safe_mime_type($path, $data, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
+		asort($data, SORT_STRING);
+		return $data;
+	}
+
+	private function scan_dir_safe_mime_type(string $dir, array &$data, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : void {
+		$items = @scandir($dir);
+		if($items === false) return;
+		foreach($items as $item){
+			if($item === '.' || $item === '..') continue;
+			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
+			if(is_dir($full_path)){
+				if(!$recursive) continue;
+				if(!is_readable($full_path)) continue;
+				$this->scan_dir_safe_mime_type($full_path, $data, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
+				continue;
+			}
+			if(!is_file($full_path) || !is_readable($full_path)) continue;
+			$mime_type = $this->get_mime_type($full_path);
+			if($mime_type === false) continue;
+			if(!is_null($include_mime_types) && !in_array($mime_type, $include_mime_types)) continue;
+			if(!is_null($exclude_mime_types) && in_array($mime_type, $exclude_mime_types)) continue;
+			$basename = basename($full_path);
+			if(!is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+				if(!$this->core->filter($check_name, $name_filters)) continue;
+			}
+			$full_path = realpath($full_path);
+			if($full_path !== false) $data[] = $full_path;
+		}
+	}
 }
 
 ?>

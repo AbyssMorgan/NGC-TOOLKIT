@@ -1,16 +1,26 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
 namespace NGC\Extensions;
 
+use Script;
+use Toolkit;
+
 class SubtitlesValidator {
 
-	private object $core;
+	private Toolkit|Script $core;
 
-	public function __construct(object $core){
+	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
 	}
 
@@ -27,7 +37,7 @@ class SubtitlesValidator {
 					$errors[] = "Line $line_number: invalid timecode format: \"$line\"";
 					continue;
 				}
-				list(, $h1, $mi1, $s1, $ms1, $h2, $mi2, $s2, $ms2) = $m;
+				[$_, $h1, $mi1, $s1, $ms1, $h2, $mi2, $s2, $ms2] = $m;
 				$parts = [
 					['h' => $h1, 'mi' => $mi1, 's' => $s1, 'ms' => $ms1, 'pos' => 'start', 'ln' => $line_number],
 					['h' => $h2, 'mi' => $mi2, 's' => $s2, 'ms' => $ms2, 'pos' => 'end', 'ln' => $line_number],
@@ -67,7 +77,7 @@ class SubtitlesValidator {
 					$this->core->seconds_to_time($timestamps[$i + 1]['end'], true, false, true)
 				);
 			}
-			if($timestamps[$i]['start'] > $timestamps[$i + 1]['start']) {
+			if($timestamps[$i]['start'] > $timestamps[$i + 1]['start']){
 				$errors[] = sprintf(
 					"Subtitle timing out of order: line %d starts after line %d",
 					$timestamps[$i]['line'],
@@ -90,7 +100,7 @@ class SubtitlesValidator {
 		if($nea){
 			array_push($errors->global, "File \"$path_a\" not exists");
 			return $errors;
-		} else if($neb){
+		} elseif($neb){
 			array_push($errors->global, "File \"$path_b\" not exists");
 			return $errors;
 		}

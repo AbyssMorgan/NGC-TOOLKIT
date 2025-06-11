@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Services;
@@ -20,6 +29,7 @@ class DataBaseBackup {
 	private string $header;
 	private string $footer;
 	private string $date;
+	private int $permissions;
 	private array $types_no_quotes = [
 		'bigint',
 		'double',
@@ -32,10 +42,11 @@ class DataBaseBackup {
 		'year',
 	];
 
-	public function __construct(?string $path = null, int $query_limit = 50000, int $insert_limit = 100, string $date_format = "Y-m-d_His"){
+	public function __construct(?string $path = null, int $query_limit = 50000, int $insert_limit = 100, string $date_format = "Y-m-d_His", int $permissions = 0755){
 		$this->date = date($date_format);
 		$this->query_limit = $query_limit;
 		$this->insert_limit = $insert_limit;
+		$this->permissions = $permissions;
 		if(!is_null($path)) $this->path = $path;
 		$this->header = base64_decode("U0VUIFNRTF9NT0RFID0gIk5PX0FVVE9fVkFMVUVfT05fWkVSTyI7ClNUQVJUIFRSQU5TQUNUSU9OOwpTRVQgdGltZV96b25lID0gIiswMDowMCI7CgovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX0NMSUVOVD1AQENIQVJBQ1RFUl9TRVRfQ0xJRU5UICovOwovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFM9QEBDSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBAT0xEX0NPTExBVElPTl9DT05ORUNUSU9OPUBAQ09MTEFUSU9OX0NPTk5FQ1RJT04gKi87Ci8qITQwMTAxIFNFVCBOQU1FUyB1dGY4bWI0ICovOw==");
 		$this->footer = base64_decode("Q09NTUlUOwoKLyohNDAxMDEgU0VUIENIQVJBQ1RFUl9TRVRfQ0xJRU5UPUBPTERfQ0hBUkFDVEVSX1NFVF9DTElFTlQgKi87Ci8qITQwMTAxIFNFVCBDSEFSQUNURVJfU0VUX1JFU1VMVFM9QE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBDT0xMQVRJT05fQ09OTkVDVElPTj1AT0xEX0NPTExBVElPTl9DT05ORUNUSU9OICovOw==");
@@ -284,7 +295,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_table_structure(string $table) : array {
-		if(!file_exists($this->get_output("structure"))) mkdir($this->get_output("structure"), 0755, true);
+		if(!file_exists($this->get_output("structure"))) mkdir($this->get_output("structure"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("structure").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
@@ -305,7 +316,7 @@ class DataBaseBackup {
 		}
 		fclose($file);
 		if(!empty($creation['alters'])){
-			if(!file_exists($this->get_output("alters"))) mkdir($this->get_output("alters"), 0755, true);
+			if(!file_exists($this->get_output("alters"))) mkdir($this->get_output("alters"), $this->permissions, true);
 			$file_path = $this->get_output("alters").DIRECTORY_SEPARATOR."$table.sql";
 			if(file_exists($file_path)) unlink($file_path);
 			$file = fopen($file_path, "a");
@@ -335,7 +346,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_table_data(string $table) : array {
-		if(!file_exists($this->get_output("data"))) mkdir($this->get_output("data"), 0755, true);
+		if(!file_exists($this->get_output("data"))) mkdir($this->get_output("data"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("data").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
@@ -519,7 +530,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_view(string $table) : array {
-		if(!file_exists($this->get_output("views"))) mkdir($this->get_output("views"), 0755, true);
+		if(!file_exists($this->get_output("views"))) mkdir($this->get_output("views"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("views").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
@@ -559,7 +570,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_function(string $table) : array {
-		if(!file_exists($this->get_output("functions"))) mkdir($this->get_output("functions"), 0755, true);
+		if(!file_exists($this->get_output("functions"))) mkdir($this->get_output("functions"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("functions").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
@@ -599,7 +610,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_procedure(string $table) : array {
-		if(!file_exists($this->get_output("procedures"))) mkdir($this->get_output("procedures"), 0755, true);
+		if(!file_exists($this->get_output("procedures"))) mkdir($this->get_output("procedures"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("procedures").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
@@ -639,7 +650,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_event(string $table) : array {
-		if(!file_exists($this->get_output("events"))) mkdir($this->get_output("events"), 0755, true);
+		if(!file_exists($this->get_output("events"))) mkdir($this->get_output("events"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("events").DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);
@@ -679,7 +690,7 @@ class DataBaseBackup {
 	}
 
 	public function backup_trigger(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."triggers")) mkdir($this->path.DIRECTORY_SEPARATOR."triggers", 0755, true);
+		if(!file_exists($this->path.DIRECTORY_SEPARATOR."triggers")) mkdir($this->path.DIRECTORY_SEPARATOR."triggers", $this->permissions, true);
 		$errors = [];
 		$file_path = $this->path.DIRECTORY_SEPARATOR."triggers".DIRECTORY_SEPARATOR."$table.sql";
 		if(file_exists($file_path)) unlink($file_path);

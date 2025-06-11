@@ -1,4 +1,4 @@
-@AppType NGC_SCRIPT 2.6.0
+@AppType NGC_SCRIPT 2.6.1
 <?php
 	$this->core->title("My script");
 

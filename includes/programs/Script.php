@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 use NGC\Core\Core;
@@ -15,7 +24,7 @@ class Script extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.6.0";
+	public string $version = "2.6.1";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 	public string $script;
@@ -23,6 +32,7 @@ class Script extends Core {
 	public function __construct(array $arguments){
 		parent::__construct($arguments);
 		$this->require_utilities();
+		$this->set_resources_folder($this->get_path("$this->path/includes/data"));
 		if($this->abort) return;
 		$config_default = new IniFile($this->get_path("$this->path/includes/config/default.ini"), true);
 		switch($this->get_system_type()){

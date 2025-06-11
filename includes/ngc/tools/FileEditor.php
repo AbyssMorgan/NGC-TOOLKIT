@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -425,16 +434,16 @@ class FileEditor {
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
-			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/LanguageReplacement.ini"));
+			$converter->import_replacement($this->core->get_resource("LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->import_pin_yin($this->core->get_path("{$this->core->path}/includes/data/PinYin.ini"));
+			$converter->import_pin_yin($this->core->get_resource("PinYin.ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Hiragama.ini"));
+			$converter->import_replacement($this->core->get_resource("Hiragama.ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Katakana.ini"));
+			$converter->import_replacement($this->core->get_resource("Katakana.ini"));
 		}
 		$this->core->clear();
 

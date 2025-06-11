@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -29,7 +38,6 @@ class Settings {
 			' 4 - Open program folder',
 			' 5 - Check for updates',
 			' 6 - Restore default settings',
-			' 7 - Install .ngcs script support (Windows)',
 		]);
 	}
 
@@ -43,7 +51,7 @@ class Settings {
 			case '4': return $this->tool_open_program_folder();
 			case '5': return $this->tool_check_for_updates();
 			case '6': return $this->tool_restore_default_settings();
-			case '7': return $this->tool_install_toolkit_script();
+			case 'dev': return $this->tool_install_toolkit_script();
 		}
 		return false;
 	}
@@ -128,8 +136,8 @@ class Settings {
 		if($response['code'] == 200){
 			$ver_current = explode(".", $this->core->version);
 			$ver_repo = explode(".", $response['data']);
-			$ver_current = intval($ver_current[0])*10000 + intval($ver_current[1])*100 + intval($ver_current[2]);
-			$ver_repo = intval($ver_repo[0])*10000 + intval($ver_repo[1])*100 + intval($ver_repo[2]);
+			$ver_current = intval($ver_current[0]) * 10000 + intval($ver_current[1]) * 100 + intval($ver_current[2]);
+			$ver_repo = intval($ver_repo[0]) * 10000 + intval($ver_repo[1]) * 100 + intval($ver_repo[2]);
 			$version = strval($response['data']);
 			return ($ver_repo > $ver_current);
 		}
@@ -138,13 +146,10 @@ class Settings {
 	}
 
 	public function tool_install_toolkit_script() : bool {
+		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS) return $this->core->windows_only();
 		$this->core->clear();
 		$program_path = realpath($this->core->path);
-		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS){
-			$this->core->echo(" This feature is available only on windows operating system.");
-			$this->core->echo(" Use command: /usr/bin/php8.4 \"$program_path/includes/script.php\" <path> [...]");
-			$this->core->pause(" Press any key to back to menu");
-		} elseif(!$this->core->is_admin()){
+		if(!$this->core->is_admin()){
 			$this->core->echo(" You must run {$this->core->app_name} as administrator to use this feature");
 			$this->core->pause(" Press any key to back to menu");
 		} else {

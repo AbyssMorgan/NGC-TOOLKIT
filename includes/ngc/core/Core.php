@@ -1,16 +1,20 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
 namespace NGC\Core;
 
 use IntlTimeZone;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
 use FilesystemIterator;
-use DirectoryIterator;
 
 define('SYSTEM_TYPE_UNKNOWN', 0);
 define('SYSTEM_TYPE_WINDOWS', 1);
@@ -19,14 +23,10 @@ define('SYSTEM_TYPE_MACOS', 3);
 
 class Core {
 
-	public int $core_version = 16;
-
 	public IniFile $config;
-
 	public Logs $log_event;
 	public Logs $log_error;
 	public Logs $log_data;
-
 	public string $app_name = "";
 	public string $version = "0.0.0";
 	public ?string $command = null;
@@ -48,6 +48,7 @@ class Core {
 	public array $drives = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 	public string $device_null;
 	public string $utf8_bom = "\xEF\xBB\xBF";
+	public string $resources_folder;
 
 	public array $console_color_map = [
 		'0' => ['30', '40'],
@@ -81,6 +82,16 @@ class Core {
 		} else {
 			$this->device_null = '/dev/null';
 		}
+	}
+
+	public function set_resources_folder(string $path) : bool {
+		if(!file_exists($path)) return false;
+		$this->resources_folder = $path;
+		return true;
+	}
+
+	public function get_resource(string $name) : string {
+		return $this->get_path("$this->resources_folder/$name");
 	}
 
 	public function require_utilities() : void {
@@ -128,6 +139,7 @@ class Core {
 	}
 
 	public function select_action(?string $trigger_action = null) : bool {
+		if(is_null($this->tool)) return false;
 		do {
 			$this->clear();
 			$this->title("$this->app_name v$this->version > $this->tool_name");
@@ -198,7 +210,7 @@ class Core {
 			system('clear');
 		}
 		if(!empty($this->logo)){
-			$this->echo("$this->logo");
+			$this->echo($this->logo);
 		} else {
 			$this->echo();
 		}
@@ -206,7 +218,7 @@ class Core {
 
 	public function get_version_number(string $version) : int {
 		$ver = explode(".", $version);
-		return 10000 * intval($ver[0]) + 100*intval($ver[1]) + intval($ver[2]);
+		return 10000 * intval($ver[0]) + 100 * intval($ver[1]) + intval($ver[2]);
 	}
 
 	public function print_help(array $help) : void {
@@ -321,15 +333,15 @@ class Core {
 		$parts = explode(':', $time);
 		$count = count($parts);
 		if($count == 4){
-			list($days, $hours, $minutes, $seconds) = $parts;
+			[$days, $hours, $minutes, $seconds] = $parts;
 			return $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds;
 		}
 		if($count == 3){
-			list($hours, $minutes, $seconds) = $parts;
+			[$hours, $minutes, $seconds] = $parts;
 			return $hours * 3600 + $minutes * 60 + $seconds;
 		}
 		if($count == 2){
-			list($minutes, $seconds) = $parts;
+			[$minutes, $seconds] = $parts;
 			return $minutes * 60 + $seconds;
 		}
 		return 0;
@@ -345,23 +357,40 @@ class Core {
 		return true;
 	}
 
-	public function get_files(string $path, ?array $extensions = null, ?array $except = null, ?array $filters = null, bool $case_sensitive = false) : array {
-		if(!file_exists($path)) return [];
-		if(!$case_sensitive && !is_null($filters)) $filters = $this->array_to_lower($filters);
+	public function get_files(string $path, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
+		if(!file_exists($path) || !is_readable($path)) return [];
+		if(!$case_sensitive && !is_null($name_filters)){
+			$name_filters = $this->array_to_lower($name_filters);
+		}
 		$data = [];
-		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::SKIP_DOTS));
+		$this->scan_dir_safe_extension($path, $data, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
+		asort($data, SORT_STRING);
+		return array_values($data);
+	}
+
+	public function get_folders(string $path, bool $with_parent = false, bool $recursive = true) : array {
+		if(!file_exists($path) || !is_dir($path)) return [];
+		$data = [];
+		if($with_parent){
+			$data[] = realpath($path);
+		}
+		if(!is_readable($path)) return $data;
+		$files = scandir($path);
+		if($files === false) return $data;
 		foreach($files as $file){
-			if($file->isDir() || $file->isLink()) continue;
-			$ext = mb_strtolower($file->getExtension());
-			if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
-			if(!is_null($except) && in_array($ext, $except)) continue;
-			if(!is_null($filters) && !$this->filter($file->getBasename(), $filters)) continue;
-			$fp = $file->getRealPath();
-			if(!$fp) continue;
-			array_push($data, $fp);
+			if($file === '.' || $file === '..'){
+				continue;
+			}
+			$full_path = $path.DIRECTORY_SEPARATOR.$file;
+			if(is_dir($full_path) && !is_link($full_path)){
+				$data[] = realpath($full_path);
+				if($recursive){
+					$data = array_merge($data, $this->get_folders($full_path, false, $recursive));
+				}
+			}
 		}
 		asort($data, SORT_STRING);
-		return $data;
+		return array_values($data);
 	}
 
 	public function filter(string $search, array $filters, bool $case_sensitive = false) : bool {
@@ -374,57 +403,18 @@ class Core {
 		return false;
 	}
 
-	public function get_folders(string $path, bool $with_parrent = false) : array {
-		if(!file_exists($path)) return [];
-		$data = [];
-		$files = new DirectoryIterator($path);
-		if($with_parrent) array_push($data, $path);
-		foreach($files as $file){
-			if($file->isDir() && !$file->isDot()){
-				$data = array_merge($data, $this->get_folders($file->getRealPath(), true));
-			}
-		}
-		asort($data, SORT_STRING);
-		return $data;
-	}
-
-	public function get_files_ex(string $path, ?array $extensions = null, ?array $except = null, ?array $filters = null, bool $case_sensitive = false) : array {
-		if(!file_exists($path)) return [];
-		if(!$case_sensitive && !is_null($filters)) $filters = $this->array_to_lower($filters);
-		$data = [];
-		$files = scandir($path);
-		foreach($files as $file){
-			if($file == '..' || $file == '.' || is_dir("$path/$file") || is_link("$path/$file")) continue;
-			$ext = $this->get_extension($file);
-			if(!is_null($extensions) && !in_array($ext, $extensions)) continue;
-			if(!is_null($except) && in_array($ext, $except)) continue;
-			if(!is_null($filters) && !$this->filter(pathinfo($file, PATHINFO_BASENAME), $filters)) continue;
-			array_push($data, $this->get_path("$path/$file"));
-		}
-		asort($data, SORT_STRING);
-		return $data;
-	}
-
-	public function get_folders_ex(string $path) : array {
-		if(!file_exists($path)) return [];
-		$data = [];
-		$files = scandir($path);
-		foreach($files as $file){
-			$full_path = $this->get_path("$path/$file");
-			if($file != '..' && $file != '.' && is_dir($full_path) && !is_link($full_path)){
-				array_push($data, $full_path);
-			}
-		}
-		asort($data, SORT_STRING);
-		return $data;
+	/**
+	 * @deprecated Use get_files with recursive = false
+	 */
+	public function get_files_ex(string $path, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false) : array {
+		return $this->get_files($path, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, false);
 	}
 
 	/**
-	 * @deprecated Use close
+	 * @deprecated Use get_folders with recursive = false
 	 */
-	public function exit(int $seconds = 10, bool $open_log = false) : void {
-		$this->open_logs($open_log, false);
-		if($seconds > 0) $this->timeout($seconds);
+	public function get_folders_ex(string $path) : array {
+		return $this->get_folders($path, false, false);
 	}
 
 	public function close(bool $open_log = false) : void {
@@ -455,20 +445,6 @@ class Core {
 		if($init) $this->init_logs();
 	}
 
-	/**
-	 * @deprecated Use sleep + close
-	 */
-	public function timeout(int $seconds) : void {
-		$this->title("$this->app_name v$this->version > Exit $seconds seconds");
-		if($seconds > 0){
-			sleep(1);
-			$seconds--;
-			$this->timeout($seconds);
-		} else {
-			exit(0);
-		}
-	}
-
 	public function write_log(string|array $data) : void {
 		if($this->config->get('LOG_EVENT', true) && $this->toggle_log_event){
 			$this->log_event->write($data);
@@ -488,10 +464,10 @@ class Core {
 	public function rrmdir(string $dir, bool $log = true) : bool {
 		if(!file_exists($dir)) return false;
 		if(is_dir($dir)){
-			$objects = scandir($dir);
-			foreach($objects as $object){
-				if($object == "." || $object == "..") continue;
-				$subdir = $this->get_path("$dir/$object");
+			$items = scandir($dir);
+			foreach($items as $item){
+				if($item == "." || $item == "..") continue;
+				$subdir = $this->get_path("$dir/$item");
 				if(is_dir($subdir) && !is_link($subdir)){
 					$this->rrmdir($subdir, $log);
 				} else {
@@ -538,9 +514,9 @@ class Core {
 		}
 	}
 
-	public function mkdir(string $path, bool $log = true) : bool {
+	public function mkdir(string $path, bool $log = true, int $permissions = 0755) : bool {
 		if(file_exists($path) && is_dir($path)) return true;
-		if(@mkdir($path, 0755, true)){
+		if(@mkdir($path, $permissions, true)){
 			if($log) $this->write_log("MKDIR \"$path\"");
 			return true;
 		} else {
@@ -653,8 +629,8 @@ class Core {
 		return true;
 	}
 
-	public function delete_files(string $path, ?array $extensions = null, ?array $except = null) : void {
-		$files = $this->get_files($path, $extensions, $except);
+	public function delete_files(string $path, ?array $include_extensions = null, ?array $exclude_extensions = null) : void {
+		$files = $this->get_files($path, $include_extensions, $exclude_extensions);
 		foreach($files as $file){
 			$this->delete($file);
 		}
@@ -773,13 +749,6 @@ class Core {
 		return explode(" ", $line);
 	}
 
-	/**
-	 * @deprecated Use get_input(?string $message = null, false)
-	 */
-	public function get_input_no_trim(?string $message = null) : string {
-		return readline($message);
-	}
-
 	public function pause(?string $message = null) : void {
 		if(!is_null($message)) echo $message;
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
@@ -787,13 +756,6 @@ class Core {
 		} else {
 			$this->get_input();
 		}
-	}
-
-	/**
-	 * @deprecated Use parse_input_path
-	 */
-	public function get_input_folders(string $string, bool $unique = true) : array {
-		return $this->parse_input_path($string, $unique);
 	}
 
 	public function echo(string $string = '', ?string $color_code = null) : void {
@@ -841,9 +803,9 @@ class Core {
 		} elseif(is_object($var)){
 			$class = get_class($var);
 			if(empty($var)){
-				$output .= "{$prefix}($class) {}\n";
+				$output .= "{$prefix}($class){}\n";
 			} else {
-				$output .= "{$prefix}($class) {\n";
+				$output .= "{$prefix}($class){\n";
 				foreach(get_object_vars($var) as $key => $value){
 					if(!is_numeric($key)) $key = "'$key'";
 					$output .= "$prefix\t$key => ".ltrim($this->get_print($value, $indent + 1, $add_space));
@@ -939,13 +901,6 @@ class Core {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * @deprecated Use is_valid_path
-	 */
-	public function is_valid_device(string $path) : bool {
-		return $this->is_valid_path($path);
 	}
 
 	public function get_path(string $path) : string {
@@ -1104,13 +1059,6 @@ class Core {
 		return false;
 	}
 
-	/**
-	 * @deprecated Use get_input_folder
-	 */
-	public function configure_path(string $title) : string|false {
-		return $this->get_input_folder(" $title path: ", true);
-	}
-
 	public function windows_only() : bool {
 		$this->echo(" This tool is only available on windows operating system");
 		$this->pause(" Press any key to back to menu");
@@ -1201,6 +1149,32 @@ class Core {
 		}
 		if(!$unique) return $folders;
 		return array_unique($folders);
+	}
+
+	private function scan_dir_safe_extension(string $dir, array &$data, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive) : void {
+		$items = @scandir($dir);
+		if($items === false) return;
+		foreach($items as $item){
+			if($item === '.' || $item === '..') continue;
+			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
+			if(is_dir($full_path)){
+				if(!$recursive) continue;
+				if(!is_readable($full_path)) continue;
+				$this->scan_dir_safe_extension($full_path, $data, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
+				continue;
+			}
+			if(!is_file($full_path) || !is_readable($full_path)) continue;
+			$ext = mb_strtolower(pathinfo($full_path, PATHINFO_EXTENSION));
+			if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
+			if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
+			$basename = basename($full_path);
+			if(!is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+				if(!$this->filter($check_name, $name_filters)) continue;
+			}
+			$full_path = realpath($full_path);
+			if($full_path !== false) $data[] = $full_path;
+		}
 	}
 
 }

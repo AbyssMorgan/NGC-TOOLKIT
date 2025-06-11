@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Services;
@@ -58,7 +67,7 @@ class StringConverter {
 		$string = iconv('UTF-8', 'GBK//TRANSLIT', $string);
 		for($i = 0; $i < strlen($string); $i++){
 			if(ord($string[$i]) > 128){
-				$char = $this->asc2_to_pin_yin(ord($string[$i]) + ord($string[$i+1]) * 256);
+				$char = $this->asc2_to_pin_yin(ord($string[$i]) + ord($string[$i + 1]) * 256);
 				if(!is_null($char)){
 					$pinyin .= $char;
 				} else {

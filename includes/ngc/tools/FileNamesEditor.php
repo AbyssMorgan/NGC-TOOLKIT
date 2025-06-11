@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -568,15 +577,15 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->print_help([
 			' Flags (type in one line, default BC):',
-			' B   - Basic replacement',
-			' C   - Basic remove',
-			' L   - Replace language characters',
-			' P   - Capitalize properly',
-			' 0   - Chinese to PinYin',
-			' 1   - Hiragama to Romaji',
-			' 2   - Katakana to Romaji',
-			' +   - To upper case',
-			' -   - To lower case',
+			' B - Basic replacement',
+			' C - Basic remove',
+			' L - Replace language characters',
+			' P - Capitalize properly',
+			' 0 - Chinese to PinYin',
+			' 1 - Hiragama to Romaji',
+			' 2 - Katakana to Romaji',
+			' + - To upper case',
+			' - - To lower case',
 		]);
 
 		$line = strtoupper($this->core->get_input(" Flags: "));
@@ -596,16 +605,16 @@ class FileNamesEditor {
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
-			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/LanguageReplacement.ini"));
+			$converter->import_replacement($this->core->get_resource("LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->import_pin_yin($this->core->get_path("{$this->core->path}/includes/data/PinYin.ini"));
+			$converter->import_pin_yin($this->core->get_resource("PinYin.ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Hiragama.ini"));
+			$converter->import_replacement($this->core->get_resource("Hiragama.ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->import_replacement($this->core->get_path("{$this->core->path}/includes/data/Katakana.ini"));
+			$converter->import_replacement($this->core->get_resource("Katakana.ini"));
 		}
 		$this->core->clear();
 
@@ -651,7 +660,7 @@ class FileNamesEditor {
 					$escaped_name = mb_strtolower($escaped_name);
 				} elseif($flags->CapitalizeProperly){
 					$escaped_name = ucwords(mb_strtolower($escaped_name));
-					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function($matches) : string {
+					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function(array $matches) : string {
 						return $matches[1].mb_strtoupper($matches[2]);
 					}, $escaped_name);
 				}
@@ -1040,7 +1049,7 @@ class FileNamesEditor {
 			if(!$quantity) return false;
 
 			for($i = 0; $i < $quantity; $i++){
-				$keywords[$i] = $this->core->get_input(" Keyword ".($i+1).": ", false);
+				$keywords[$i] = $this->core->get_input(" Keyword ".($i + 1).": ", false);
 			}
 		} elseif($params['mode'] == '1'){
 			set_keyword_file:

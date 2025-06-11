@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -206,7 +215,7 @@ class MediaTools {
 
 		$errors = 0;
 
-		$detector = new FaceDetector($this->core->get_path("{$this->core->path}/includes/data/FaceDetector.dat"));
+		$detector = new FaceDetector($this->core->get_resource("FaceDetector.dat"));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -543,7 +552,8 @@ class MediaTools {
 				$extension_current = $this->core->get_extension($file);
 				$extension_detected = $this->core->media->get_extension_by_mime_type($file);
 				if(!$extension_detected){
-					$this->core->write_error("FAILED DETECT TYPE \"$file\"");
+					$mime_type = $this->core->media->get_mime_type($file);
+					$this->core->write_error("FAILED DETECT EXTENSION \"$file\" MIME TYPE: $mime_type");
 					$errors++;
 					continue 1;
 				}

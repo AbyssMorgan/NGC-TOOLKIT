@@ -1,5 +1,5 @@
 #define MyAppName "NGC-TOOLKIT"
-#define MyAppVersion "2.6.0"
+#define MyAppVersion "2.6.1"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "Toolkit.cmd"
@@ -48,3 +48,25 @@ Name: "{userdesktop}\{#MyAppName}"; Filename: "{cmd}"; Parameters: "/c ""{app}\b
 
 [Run]
 Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Registry]
+Root: HKCR; Subkey: ".ngcs"; ValueType: string; ValueName: ""; ValueData: "NGC.SCRIPT"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "NGC.SCRIPT"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} Script"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "NGC.SCRIPT\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\NGC-TOOLKIT.ico"""
+Root: HKCR; Subkey: "NGC.SCRIPT\shell"; Flags: uninsdeletekeyifempty
+Root: HKCR; Subkey: "NGC.SCRIPT\shell\open"; Flags: uninsdeletekeyifempty
+Root: HKCR; Subkey: "NGC.SCRIPT\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\Script.cmd"" ""%1"" %*"
+
+[Code]
+procedure DeleteOldFiles;
+begin
+  DelTree(ExpandConstant('{app}\includes'), True, True, True);
+  DelTree(ExpandConstant('{app}\vendor'), True, True, True);
+  DelTree(ExpandConstant('{app}\bin'), True, True, True);
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssInstall then
+    DeleteOldFiles;
+end;

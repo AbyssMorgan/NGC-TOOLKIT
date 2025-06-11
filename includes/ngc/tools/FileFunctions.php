@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -81,10 +90,11 @@ class FileFunctions {
 		$except_extensions = explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!file_exists($folder)) continue;
-			$extension = $this->core->get_extension($folder);
 			if(is_file($folder)){
-				$this->core->get_hash_from_idx($folder, $keys, true);
-				$this->core->set_folder_done($folder);
+				if($this->core->get_extension($folder) == 'idx'){
+					$this->core->get_hash_from_idx($folder, $keys, true);
+					$this->core->set_folder_done($folder);
+				}
 				continue;
 			}
 			$files = $this->core->get_files($folder, null, $except_extensions);
@@ -534,10 +544,10 @@ class FileFunctions {
 		$this->core->clear();
 		$this->core->print_help([
 			' Checksum algorithm:',
-			' 0  - md5 (default)',
-			' 1  - sha256',
-			' 2  - crc32',
-			' 3  - whirlpool',
+			' 0 - md5 (default)',
+			' 1 - sha256',
+			' 2 - crc32',
+			' 3 - whirlpool',
 		]);
 
 		$line = $this->core->get_input(" Algorithm: ");

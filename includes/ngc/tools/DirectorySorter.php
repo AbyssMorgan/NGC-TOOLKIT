@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
+
 declare(strict_types=1);
 
 namespace NGC\Tools;
@@ -45,11 +54,11 @@ class DirectorySorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			$files = $this->core->get_folders_ex($folder);
+			$files = $this->core->get_folders($folder, false, false);
 			foreach($files as $file){
 				if(!file_exists($file)) continue 1;
 				$quantity = count($this->core->get_files($file));
-				$multiplier = floor(($quantity-1) / $interval);
+				$multiplier = floor(($quantity - 1) / $interval);
 				if($quantity == 0) $multiplier = 0;
 				$end = intval($interval * ($multiplier + 1));
 				$new_name = $this->core->get_path("$folder/$end/".pathinfo($file, PATHINFO_BASENAME));

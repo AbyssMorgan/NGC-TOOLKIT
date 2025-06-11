@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -12,9 +19,9 @@ class AppBuffer {
 
 	protected string $path;
 
-	public function __construct(string $path){
+	public function __construct(string $path, int $permissions = 0755){
 		$this->path = $path;
-		if(!file_exists($this->path)) mkdir($this->path, 0755, true);
+		if(!file_exists($this->path)) mkdir($this->path, $permissions, true);
 	}
 
 	public function get_path() : string {
@@ -26,7 +33,7 @@ class AppBuffer {
 		return $this->path.DIRECTORY_SEPARATOR."$key.json";
 	}
 
-	public function get(string $key, int|bool|string|array|float|null $default = null) : mixed {
+	public function get(string $key, int|bool|string|array|float|null $default = null) : int|bool|string|array|float|null {
 		$file = $this->get_file($key);
 		if(!file_exists($file)) return $default;
 		$buffer = json_decode(file_get_contents($file), true);
@@ -34,7 +41,7 @@ class AppBuffer {
 		if($buffer['expire'] != -1 && time() > $buffer['expire']) return $default;
 		switch(strtolower($buffer['type'])){
 			case 'integer': return (int)$buffer['value'];
-			case 'boolean': return ($buffer['value'] == 'true');
+			case 'boolean': return $buffer['value'] == 'true';
 			case 'string': return $buffer['value'];
 			case 'array': return json_decode(base64_decode($buffer['value']), true);
 			case 'float': (float)$buffer['value'];
@@ -81,6 +88,7 @@ class AppBuffer {
 	public function clear_expired() : void {
 		$files = scandir($this->path);
 		foreach($files as $file){
+			if($file == '..' || $file == '.') continue;
 			$buffer = json_decode(file_get_contents($this->path.DIRECTORY_SEPARATOR.$file), true);
 			if($buffer['expire'] != -1 && time() > $buffer['expire']){
 				$this->delete($this->path.DIRECTORY_SEPARATOR.$file);

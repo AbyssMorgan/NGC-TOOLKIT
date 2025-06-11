@@ -1,6 +1,13 @@
 <?php
 
-/* NGC-TOOLKIT v2.6.0 */
+/**
+ * NGC-TOOLKIT v2.6.1 – Component
+ *
+ * © 2025 Abyss Morgan
+ *
+ * This component is free to use in both non-commercial and commercial projects.
+ * No attribution required, but appreciated.
+ */
 
 declare(strict_types=1);
 
@@ -132,7 +139,7 @@ class BitFunctions {
 		$int1 = (int)($value >> 24) & 0xFF;
 		$int2 = (int)($value >> 16) & 0xFF;
 		$int3 = (int)($value >> 8) & 0xFF;
-		$int4 = (int)($value) & 0xFF;
+		$int4 = (int)$value & 0xFF;
 	}
 
 	public function merge_value(int $int1, int $int2, int $int3, int $int4) : int {
@@ -177,8 +184,8 @@ class BitFunctions {
 		$this->max_bits = 64;
 		$this->from_int($fraction);
 		$e = 1.0;
-		for($i = 1; $i <= 52; $i++) $e += ($this->get_bit(52-$i) ? 1 : 0) * pow(2.0, -$i);
-		return pow(-1.0, $sign) * $e * pow(2.0, ($exponent-1023));
+		for($i = 1; $i <= 52; $i++) $e += ($this->get_bit(52 - $i) ? 1 : 0) * pow(2.0, -$i);
+		return pow(-1.0, $sign) * $e * pow(2.0, ($exponent - 1023));
 	}
 
 }

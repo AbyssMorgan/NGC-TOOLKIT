@@ -636,7 +636,7 @@ class FtpClient implements Countable {
 		$path = '';
 		foreach($list as $item){
 			$len = strlen($item);
-			if(!$len || ($item[$len-1] == '.' && $item[$len-2] == ' ' || $item[$len-1] == '.' && $item[$len-2] == '.' && $item[$len-3] == ' ')) continue;
+			if(!$len || ($item[$len - 1] == '.' && $item[$len - 2] == ' ' || $item[$len - 1] == '.' && $item[$len - 2] == '.' && $item[$len - 3] == ' ')) continue;
 			$chunks = preg_split("/\s+/", $item);
 			if(!isset($chunks[8]) || strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 			$path = "$directory/{$chunks[8]}";
@@ -677,7 +677,7 @@ class FtpClient implements Countable {
 			if(isset($chunks[8]) && ($chunks[8] == '.' || $chunks[8] == '..')) continue;
 			if(count($chunks) === 1){
 				$len = strlen($chunks[0]);
-				if($len && $chunks[0][$len-1] == ':'){
+				if($len && $chunks[0][$len - 1] == ':'){
 					$path = substr($chunks[0], 0, -1);
 				}
 				continue;

@@ -1,3 +1,7 @@
+v2.6.1:
+- Implement .ngcs support in instalation
+- Implement magic.mgc for better mime type detection
+
 v2.6.0:
 - Changed menu order and actions keywords
 - Changed rules for tools: File Sorter / Directory Sorter / Media Sorter
