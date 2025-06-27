@@ -3,7 +3,7 @@
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
-$finder = Finder::create()->in(__DIR__)->name('*.php')->name('*.ngcs')->exclude('vendor');
+$finder = Finder::create()->in(__DIR__)->name('*.php')->name('*.ngcs');
 
 $config = [
 	'blank_line_after_opening_tag' => true,
