@@ -1,5 +1,5 @@
 #define MyAppName "NGC-TOOLKIT"
-#define MyAppVersion "2.6.1"
+#define MyAppVersion "2.7.0"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "Toolkit.cmd"
@@ -36,12 +36,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#SourcePath}\includes\*"; DestDir: "{app}\includes"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#SourcePath}\vendor\*"; DestDir: "{app}\vendor"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#SourcePath}\bin\*.cmd"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#SourcePath}\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\NGC-TOOLKIT.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}\Changelog.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourcePath}\composer.json"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{cmd}"; Parameters: "/c ""{app}\bin\{#MyAppExeName}"""; WorkingDir: "{app}"; IconFilename: "{app}\NGC-TOOLKIT.ico"; Tasks: desktopicon

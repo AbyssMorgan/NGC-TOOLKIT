@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -173,7 +173,7 @@ class MySQLTools {
 		$db['host'] = $this->core->get_input(" DB Host: ");
 		if($db['host'] == '#') return false;
 		$db['port'] = $this->core->get_input_integer(" DB Port (Default 3306): ", 0, 65353);
-		if(!$db['port']) return false;
+		if($db['port'] === false) return false;
 		$db['name'] = $this->core->get_input(" DB Name (Type * for none): ");
 		if($db['name'] == '#') return false;
 		$db['user'] = $this->core->get_input(" DB User: ");
@@ -316,6 +316,7 @@ class MySQLTools {
 		}
 		$callback = $ini->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
+		$request->set_http_version($ini->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!$this->core->is_valid_path($path)){
 			$this->core->echo(" Output device \"$path\" is not available");
@@ -558,6 +559,7 @@ class MySQLTools {
 		}
 		$callback = $ini_source->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
+		$request->set_http_version($ini_source->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!is_null($callback)){
 			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
@@ -844,6 +846,7 @@ class MySQLTools {
 		}
 		$callback = $ini->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
+		$request->set_http_version($ini->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!$this->core->is_valid_path($path)){
 			$this->core->echo(" Output device \"$path\" is not available");
@@ -1240,6 +1243,7 @@ class MySQLTools {
 		}
 		$callback = $ini->get('BACKUP_CURL_CALLBACK');
 		$request = new Request();
+		$request->set_http_version($ini->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!$this->core->is_valid_path($path)){
 			$this->core->echo(" Output device \"$path\" is not available");

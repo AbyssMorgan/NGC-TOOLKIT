@@ -27,7 +27,7 @@
 			$this->core->delete($zip_name_b);
 
 			$this->core->echo(" Compress \"$zip_name_a\"");
-			$this->core->exec("7z", "a -mx0 -ttar -- \"$zip_name_a\" \"includes\" \"bin\*.sh\" \"composer.json\" \"Changelog.txt\" \"LICENSE\"");
+			$this->core->exec("7z", "a -mx0 -ttar -- \"$zip_name_a\" \"includes\" \"bin\*.sh\" \"Changelog.txt\" \"LICENSE\"");
 
 			$this->core->echo(" Compress \"$zip_name_b\"");
 			$this->core->exec("7z", "a -mx9 -tgzip -- \"$zip_name_b\" \"$zip_name_a\"");

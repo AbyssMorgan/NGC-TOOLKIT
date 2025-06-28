@@ -15,6 +15,7 @@ ngc/services/GuardDriver.php
 ngc/services/FaceDetector.php
 ngc/services/DataBaseBackup.php
 ngc/services/StringConverter.php
+ngc/dictionaries/MediaDictionary.php
 ngc/extensions/MediaFunctions.php
 ngc/extensions/SubtitlesValidator.php
 ngc/extensions/AppStorage.php

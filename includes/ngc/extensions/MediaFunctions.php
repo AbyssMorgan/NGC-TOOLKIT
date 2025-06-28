@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -20,111 +20,58 @@ use GdImage;
 use Imagick;
 use Exception;
 use NGC\Core\IniFile;
+use NGC\Dictionaries\MediaDictionary;
 
+/**
+ * This class provides a set of functions for handling various media-related operations,
+ * including MIME type detection, image manipulation, video analysis, and more.
+ */
 class MediaFunctions {
 
+	use MediaDictionary;
+
+	/**
+	 * The core toolkit or script instance.
+	 * @var Toolkit|Script
+	 */
 	private Toolkit|Script $core;
+
+	/**
+	 * Mime types data cache
+	 * @var IniFile|null
+	 */
 	private ?IniFile $mime_types = null;
+
+	/**
+	 * File info data cache
+	 * @var finfo|null
+	 */
 	private ?finfo $file_info = null;
 
-	public array $vr_tags = ['_LR_180', '_FISHEYE190', '_MKX200', '_MKX220', '_VRCA220', '_TB_180', '_360'];
-	public array $extensions_images = ['bmp', 'dpx', 'exr', 'gif', 'jpeg', 'jpg', 'jpe', 'pam', 'pbm', 'pcx', 'pgm', 'png', 'ppm', 'sgi', 'tga', 'tif', 'tiff', 'webp', 'xwd', 'jfif'];
-	public array $extensions_video = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'rm', 'rmvb', 'vob', 'asf', 'f4v', 'divx', 'dv', 'mts', 'yuv', 'mxf', 'nut', 'h264', 'hevc', 'av1', 'prores', 'mpv', 'nsv', 'amv', 'drc', 'm1v', 'm2v', 'roq'];
-	public array $extensions_audio = ['aac', 'ac3', 'amr', 'ape', 'dts', 'eac3', 'flac', 'm4a', 'mlp', 'mp2', 'mp3', 'ogg', 'opus', 'ra', 'thd', 'tta', 'vqf', 'wav', 'wma', 'wv'];
-	public array $extensions_subtitle = ['srt', 'ass', 'ssa', 'vtt', 'sub', 'mpl2', 'jss', 'smi', 'rt', 'txt'];
-	public array $extensions_media_container = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv', 'mpeg', 'mpg', 'm4v', 'ts', 'm2ts', '3gp', '3g2', 'ogv', 'vob', 'asf', 'f4v', 'mxf', 'nut', 'rm', 'rmvb', 'drc', 'nsv', 'amv', 'mks', 'mka'];
-
-	public array $codec_extensions_video = [
-		'h264' => 'h264',
-		'hevc' => 'h265',
-		'mpeg2video' => 'm2v',
-		'mpeg1video' => 'm1v',
-		'vp8' => 'ivf',
-		'vp9' => 'ivf',
-		'av1' => 'ivf',
-		'prores' => 'mov',
-		'dvvideo' => 'dv',
-		'mjpeg' => 'mjpeg',
-		'png' => 'png',
-		'gif' => 'gif',
-		'ffv1' => 'nut',
-		'theora' => 'ogv',
-		'vc1' => 'vc1',
-		'msmpeg4v2' => 'avi',
-		'msmpeg4v3' => 'avi',
-		'huffyuv' => 'avi',
-		'snow' => 'nut',
-	];
-
-	public array $codec_extensions_audio = [
-		'aac' => 'aac',
-		'mp3' => 'mp3',
-		'ac3' => 'ac3',
-		'eac3' => 'eac3',
-		'mp2' => 'mp2',
-		'vorbis' => 'ogg',
-		'opus' => 'opus',
-		'amr_nb' => 'amr',
-		'amr_wb' => 'amr',
-		'flac' => 'flac',
-		'alac' => 'm4a',
-		'pcm_s16le' => 'wav',
-		'pcm_s24le' => 'wav',
-		'pcm_s32le' => 'wav',
-		'pcm_u8' => 'wav',
-		'pcm_mulaw' => 'wav',
-		'pcm_alaw' => 'wav',
-		'ape' => 'ape',
-		'tta' => 'tta',
-		'wavpack' => 'wv',
-		'mlp' => 'mlp',
-		'dts' => 'dts',
-		'dts_hd' => 'dts',
-		'truehd' => 'thd',
-		'ra' => 'ra',
-		'wma' => 'wma',
-		'vqf' => 'vqf',
-		'adpcm_ima_wav' => 'wav',
-	];
-
-	public array $codec_extensions_subtitle = [
-		'subrip' => 'srt',
-		'ass' => 'ass',
-		'ssa' => 'ssa',
-		'mov_text' => 'srt',
-		'webvtt' => 'vtt',
-		'microdvd' => 'sub',
-		'mpl2' => 'mpl2',
-		'jacosub' => 'jss',
-		'sami' => 'smi',
-		'realtext' => 'rt',
-		'subviewer' => 'sub',
-		'subviewer1' => 'sub',
-		'vplayer' => 'txt',
-	];
-
-	public array $vr_quality_map = [
-		7680 => '8K',
-		5760 => '6K',
-		3840 => '4K',
-		1920 => '2K',
-		1600 => 'FullHD',
-	];
-
-	public const MEDIA_ORIENTATION_HORIZONTAL = 0;
-	public const MEDIA_ORIENTATION_VERTICAL = 1;
-	public const MEDIA_ORIENTATION_SQUARE = 2;
-
+	/**
+	 * Constructor for MediaFunctions.
+	 * Initializes the core toolkit/script and opens the fileinfo resource for MIME type detection.
+	 * @param Toolkit|Script $core The core Toolkit or Script instance.
+	 */
 	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
 		$this->file_info = finfo_open(FILEINFO_MIME_TYPE, $this->core->get_resource("magic.mgc"));
 	}
 
+	/**
+	 * Destructor for MediaFunctions.
+	 * Closes the fileinfo resource.
+	 */
 	public function __destruct(){
 		finfo_close($this->file_info);
 		$this->file_info = null;
 	}
 
+	/**
+	 * Retrieves the MIME type of a file from its path.
+	 * @param string $path The path to the file.
+	 * @return string|false The MIME type of the file, or false if the file does not exist or an error occurs.
+	 */
 	public function get_mime_type(string $path) : string|false {
 		if(!file_exists($path)) return false;
 		try {
@@ -136,6 +83,11 @@ class MediaFunctions {
 		return is_string($mime_type) ? mb_strtolower($mime_type) : false;
 	}
 
+	/**
+	 * Retrieves the MIME type from a string of content.
+	 * @param string $content The string content.
+	 * @return string|false The MIME type of the content, or false if an error occurs.
+	 */
 	public function get_string_mime_type(string $content) : string|false {
 		try {
 			$mime_type = @finfo_buffer($this->file_info, $content);
@@ -146,6 +98,12 @@ class MediaFunctions {
 		return is_string($mime_type) ? mb_strtolower($mime_type) : false;
 	}
 
+	/**
+	 * Creates a GD image resource from a given file path.
+	 * Supports various image formats. Animated images are not supported and will return null.
+	 * @param string $path The path to the image file.
+	 * @return GdImage|null A GdImage object on success, or null if the file does not exist, is not a supported image type, or is animated.
+	 */
 	public function get_image_from_path(string $path) : GdImage|null {
 		if(!file_exists($path)) return null;
 		$mime = $this->get_mime_type($path);
@@ -206,6 +164,12 @@ class MediaFunctions {
 		return $image;
 	}
 
+	/**
+	 * Retrieves the resolution of an image or video file.
+	 * Attempts to use GD, then ImageMagick, and finally ffprobe if necessary.
+	 * @param string $path The path to the image or video file.
+	 * @return string The resolution in "WxH" format (e.g., "1920x1080"), or "0x0" if resolution cannot be determined.
+	 */
 	public function get_image_resolution(string $path) : string {
 		$image = $this->get_image_from_path($path);
 		if(is_null($image)){
@@ -226,6 +190,12 @@ class MediaFunctions {
 		return "{$w}x{$h}";
 	}
 
+	/**
+	 * Checks if an image file is animated.
+	 * Supports GIF, WebP, and APNG formats.
+	 * @param string $path The path to the image file.
+	 * @return bool True if the image is animated, false otherwise or if the file does not exist.
+	 */
 	public function is_image_animated(string $path) : bool {
 		if(!file_exists($path)) return false;
 		switch($this->get_mime_type($path)){
@@ -256,12 +226,22 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Retrieves the resolution of a media file using ffprobe.
+	 * @param string $path The path to the media file.
+	 * @return string The resolution in "WxH" format (e.g., "1920x1080"), or "0x0" if resolution cannot be determined.
+	 */
 	public function ffprobe_get_resolution(string $path) : string {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>{$this->core->device_null}", $output);
 		return rtrim($output[0] ?? '0x0', 'x');
 	}
 
+	/**
+	 * Retrieves the languages of audio streams in a video file using ffprobe.
+	 * @param string $path The path to the video file.
+	 * @return array<int, string> An array of language codes found in the audio streams.
+	 */
 	public function get_video_languages(string $path) : array {
 		$output = [];
 		$this->core->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> {$this->core->device_null}", $output);
@@ -273,6 +253,11 @@ class MediaFunctions {
 		return $data;
 	}
 
+	/**
+	 * Retrieves the file extension based on the MIME type of a file.
+	 * @param string $path The path to the file.
+	 * @return string|false The file extension (e.g., 'jpg', 'mp4'), or false if the file does not exist or MIME type cannot be determined.
+	 */
 	public function get_extension_by_mime_type(string $path) : string|false {
 		if(!file_exists($path)) return false;
 		$mime_type = $this->get_mime_type($path);
@@ -280,6 +265,16 @@ class MediaFunctions {
 		return $this->mime_type_to_extension($mime_type);
 	}
 
+	/**
+	 * Generates a video thumbnail using 'mtn' (Motion Thumbnail) and converts it to WebP.
+	 * Requires 'mtn' to be installed on non-Windows systems.
+	 * @param string $path The path to the video file.
+	 * @param string $output The output directory for the thumbnail.
+	 * @param int $w The width of each thumbnail in the grid.
+	 * @param int $r The number of rows in the thumbnail grid.
+	 * @param int $c The number of columns in the thumbnail grid.
+	 * @return bool True on success, false on failure (e.g., mtn not found, input file not found, output file not created).
+	 */
 	public function get_video_thumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
 		$out = [];
 		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS && !file_exists("/usr/bin/mtn")) return false;
@@ -298,6 +293,12 @@ class MediaFunctions {
 		return file_exists($output_file);
 	}
 
+	/**
+	 * Determines the orientation of media based on its width and height.
+	 * @param int $width The width of the media.
+	 * @param int $height The height of the media.
+	 * @return int One of the MEDIA_ORIENTATION constants (HORIZONTAL, VERTICAL, SQUARE).
+	 */
 	public function get_media_orientation(int $width, int $height) : int {
 		if($width > $height){
 			return self::MEDIA_ORIENTATION_HORIZONTAL;
@@ -308,15 +309,23 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Returns the human-readable name for a given media orientation.
+	 * @param int $orientation The media orientation constant.
+	 * @return string The name of the orientation (e.g., 'Horizontal', 'Vertical', 'Square'), or 'Unknown'.
+	 */
 	public function get_media_orientation_name(int $orientation) : string {
-		switch($orientation){
-			case self::MEDIA_ORIENTATION_HORIZONTAL: return 'Horizontal';
-			case self::MEDIA_ORIENTATION_VERTICAL: return 'Vertical';
-			case self::MEDIA_ORIENTATION_SQUARE: return 'Square';
-		}
-		return 'Unknown';
+		return $this->media_orientation_name[$orientation] ?? 'Unknown';
 	}
 
+	/**
+	 * Determines the quality (height-based resolution) of a media file.
+	 * For VR media, it returns the minimum of width and height.
+	 * @param int $width The width of the media.
+	 * @param int $height The height of the media.
+	 * @param bool $is_vr Optional. True if the media is VR, false otherwise. Defaults to false.
+	 * @return int The quality value (e.g., 1080 for FullHD, 2160 for 4K).
+	 */
 	public function get_media_quality(int $width, int $height, bool $is_vr = false) : int {
 		$w = max($width, $height);
 		$h = min($width, $height);
@@ -350,6 +359,11 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Retrieves the number of colors in an image.
+	 * @param string $path The path to the image file.
+	 * @return int|null The number of colors, -1 if the file does not exist, or null if the image is invalid.
+	 */
 	public function get_image_color_count(string $path) : ?int {
 		if(!file_exists($path)) return -1;
 		try {
@@ -364,6 +378,11 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Categorizes the number of colors into predefined groups.
+	 * @param int $colors The number of colors in an image.
+	 * @return string A string representing the color group (e.g., '000000 - 001000').
+	 */
 	public function get_image_color_group(int $colors) : string {
 		if($colors > 500000){
 			return '500001 - 999999';
@@ -394,6 +413,14 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Formats an episode number with leading zeros based on desired digits and a maximum value.
+	 * The episode number will loop around if it exceeds the maximum.
+	 * @param int $episode The current episode number.
+	 * @param int $digits The desired number of digits for the formatted episode.
+	 * @param int $max The maximum value for the episode number before it loops.
+	 * @return string The formatted episode number.
+	 */
 	public function format_episode(int $episode, int $digits, int $max) : string {
 		$episode = $episode % $max;
 		if($episode < 0) $episode += $max;
@@ -401,22 +428,39 @@ class MediaFunctions {
 		return str_repeat("0", $digits - strlen($ep)).$ep;
 	}
 
+	/**
+	 * Checks if a video file is a VR video based on its filename.
+	 * It iterates through predefined VR tags to identify VR content.
+	 * @param string $path The path to the video file.
+	 * @return bool True if the video is identified as VR, false otherwise.
+	 */
 	public function is_vr_video(string $path) : bool {
 		$name = mb_strtoupper(pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
-			if(str_contains("$name#", "$tag#")) return true;
+			if(str_ends_with($name, $tag)) return true;
 		}
 		return false;
 	}
 
+	/**
+	 * Checks if a video file is an AR (Augmented Reality) video based on its filename.
+	 * It checks for VR tags appended with '_ALPHA'.
+	 * @param string $path The path to the video file.
+	 * @return bool True if the video is identified as AR, false otherwise.
+	 */
 	public function is_ar_video(string $path) : bool {
 		$name = mb_strtoupper(pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
-			if(str_contains("$name#", "{$tag}_ALPHA#")) return true;
+			if(str_ends_with("$name", "{$tag}_ALPHA")) return true;
 		}
 		return false;
 	}
 
+	/**
+	 * Retrieves the VR quality string (e.g., '4K', '8K') based on the width of the video.
+	 * @param int $width The width of the VR video.
+	 * @return string|null The VR quality string, or null if no matching quality is found.
+	 */
 	public function get_vr_quality_string(int $width) : ?string {
 		foreach($this->vr_quality_map as $min_width => $label){
 			if($width >= $min_width){
@@ -426,6 +470,11 @@ class MediaFunctions {
 		return null;
 	}
 
+	/**
+	 * Determines the VR screen type and stereo mode based on the video filename.
+	 * @param string $name The filename of the video.
+	 * @return array{screen_type: string, stereo_mode: string, alpha: bool} An associative array containing 'screen_type', 'stereo_mode', and 'alpha' (boolean for AR).
+	 */
 	public function get_vr_mode(string $name) : array {
 		if(str_contains($name, '_LR_180')){
 			$screen_type = "dome";
@@ -456,6 +505,11 @@ class MediaFunctions {
 		];
 	}
 
+	/**
+	 * Returns a human-readable string for a VR screen type.
+	 * @param string $screen_type The VR screen type (e.g., 'dome', '360').
+	 * @return string The human-readable screen type (e.g., 'Dome 180°', '360°'), or 'Unknown'.
+	 */
 	public function vr_screen_type(string $screen_type) : string {
 		switch($screen_type){
 			case "dome": return "Dome 180°";
@@ -469,6 +523,11 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Returns a human-readable string for a VR stereo mode.
+	 * @param string $stereo_mode The VR stereo mode (e.g., 'sbs', 'tb', 'off').
+	 * @return string The human-readable stereo mode (e.g., 'Side-by-Side (SBS)', 'Top-Bottom (TB)'), or 'Unknown'.
+	 */
 	public function vr_stereo_mode(string $stereo_mode) : string {
 		switch($stereo_mode){
 			case "sbs": return "Side-by-Side (SBS)";
@@ -478,6 +537,12 @@ class MediaFunctions {
 		}
 	}
 
+	/**
+	 * Calculates the aspect ratio of media given its width and height.
+	 * @param int $width The width of the media.
+	 * @param int $height The height of the media.
+	 * @return string The aspect ratio in "width:height" format (e.g., "16:9", "4:3").
+	 */
 	public function calculate_aspect_ratio(int $width, int $height) : string {
 		$gcd = function(int $a, int $b) use (&$gcd) : int {
 			return ($b == 0) ? $a : $gcd($b, $a % $b);
@@ -488,6 +553,11 @@ class MediaFunctions {
 		return "$aspectRatioWidth:$aspectRatioHeight";
 	}
 
+	/**
+	 * Returns a human-readable string for the number of audio channels.
+	 * @param int $channels The number of audio channels.
+	 * @return string The human-readable channel string (e.g., 'Stereo', '5.1', '7.1', 'Mono', 'None', 'Unknown', or 'Xch (Multi)').
+	 */
 	public function get_audio_channels_string(int $channels) : string {
 		if($channels > 8) return "{$channels}ch (Multi)";
 		switch($channels){
@@ -501,6 +571,11 @@ class MediaFunctions {
 		return 'Unknown';
 	}
 
+	/**
+	 * Retrieves detailed media information using ffprobe and returns it as a decoded JSON array.
+	 * @param string $path The path to the media file.
+	 * @return array<string, mixed> An associative array containing media format and stream information.
+	 */
 	public function get_media_info(string $path) : array {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>{$this->core->device_null}", $output);
@@ -508,6 +583,27 @@ class MediaFunctions {
 		return $info;
 	}
 
+	/**
+	 * Retrieves simplified media information for a given file path.
+	 * @param string $path The path to the media file.
+	 * @return object|false An object containing simplified media metadata, or false if the file does not exist.
+	 * @property string|null $video_resolution Resolution of the video (e.g., "1920x1080").
+	 * @property int $video_quality Quality of the video (e.g., 1080 for FullHD).
+	 * @property string $video_duration Human-readable duration of the video.
+	 * @property int $video_duration_seconds Duration of the video in seconds.
+	 * @property float|null $video_fps Frames per second of the video.
+	 * @property int $video_bitrate Bitrate of the video.
+	 * @property string|null $video_codec Codec name of the video stream.
+	 * @property string|null $video_aspect_ratio Aspect ratio of the video (e.g., "16:9").
+	 * @property string|null $video_orientation Orientation of the video ('Horizontal', 'Vertical', 'Square').
+	 * @property string $audio_codec Codec name of the audio stream.
+	 * @property int $audio_bitrate Bitrate of the audio.
+	 * @property int $audio_channels Number of audio channels.
+	 * @property int $file_size Size of the file in bytes.
+	 * @property string $file_size_human Human-readable file size.
+	 * @property string $file_creation_time Creation time of the file (Y-m-d H:i:s).
+	 * @property string $file_modification_time Modification time of the file (Y-m-d H:i:s).
+	 */
 	public function get_media_info_simple(string $path) : object|false {
 		if(!file_exists($path)) return false;
 		$media_info = $this->get_media_info($path);
@@ -564,6 +660,12 @@ class MediaFunctions {
 		return (object)$meta;
 	}
 
+	/**
+	 * Converts a MIME type string to its corresponding file extension.
+	 * Uses an INI file resource for the mapping.
+	 * @param string $mime_type The MIME type string (e.g., 'image/jpeg').
+	 * @return string|false The file extension (e.g., 'jpg'), or false if the MIME type is 'application/octet-stream' or no mapping is found.
+	 */
 	public function mime_type_to_extension(string $mime_type) : string|false {
 		if($mime_type == 'application/octet-stream') return false;
 		if(is_null($this->mime_types)){
@@ -572,25 +674,58 @@ class MediaFunctions {
 		return $this->mime_types->get($mime_type, false);
 	}
 
+	/**
+	 * Retrieves the common file extension for a given subtitle codec name.
+	 * @param string $codec_name The subtitle codec name (e.g., 'subrip', 'ass').
+	 * @return string|null The file extension (e.g., 'srt', 'ass'), or null if not found.
+	 */
 	public function get_subtitle_extension(string $codec_name) : ?string {
 		$codec_name = strtolower($codec_name);
 		return $this->codec_extensions_subtitle[$codec_name] ?? null;
 	}
 
+	/**
+	 * Retrieves the common file extension for a given audio codec name.
+	 * @param string $codec_name The audio codec name (e.g., 'aac', 'mp3').
+	 * @return string|null The file extension (e.g., 'aac', 'mp3'), or null if not found.
+	 */
 	public function get_audio_extension(string $codec_name) : ?string {
 		$codec_name = strtolower($codec_name);
 		return $this->codec_extensions_audio[$codec_name] ?? null;
 	}
 
+	/**
+	 * Retrieves the common file extension for a given video codec name.
+	 * @param string $codec_name The video codec name (e.g., 'h264', 'hevc').
+	 * @return string|null The file extension (e.g., 'h264', 'h265'), or null if not found.
+	 */
 	public function get_video_extension(string $codec_name) : ?string {
 		$codec_name = strtolower($codec_name);
 		return $this->codec_extensions_video[$codec_name] ?? null;
 	}
 
+	/**
+	 * Converts a timecode (hours, minutes, seconds, milliseconds) into total seconds.
+	 * @param int $h Hours.
+	 * @param int $m Minutes.
+	 * @param int $s Seconds.
+	 * @param int $ms Milliseconds.
+	 * @return float The total duration in seconds.
+	 */
 	public function timecode_to_seconds(int $h, int $m, int $s, int $ms) : float {
 		return $h * 3600 + $m * 60 + $s + $ms / 1000;
 	}
 
+	/**
+	 * Scans a directory for files matching specified MIME types and name filters.
+	 * @param string $path The directory path to scan.
+	 * @param array<int, string>|null $include_mime_types Optional. An array of MIME types to include. If null, all MIME types are included.
+	 * @param array<int, string>|null $exclude_mime_types Optional. An array of MIME types to exclude. If null, no MIME types are excluded.
+	 * @param array<int, string>|null $name_filters Optional. An array of name filters (wildcards allowed, e.g., '*.jpg').
+	 * @param bool $case_sensitive Optional. True for case-sensitive name filtering, false otherwise. Defaults to false.
+	 * @param bool $recursive Optional. True to scan directories recursively, false for shallow scan. Defaults to true.
+	 * @return array<int, string> An array of full paths to the matching files, sorted alphabetically.
+	 */
 	public function get_files_mime_type(string $path, ?array $include_mime_types = null, ?array $exclude_mime_types = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
 		if(!file_exists($path) || !is_readable($path)) return [];
 		if(!$case_sensitive && !is_null($name_filters)){
@@ -602,6 +737,18 @@ class MediaFunctions {
 		return $data;
 	}
 
+	/**
+	 * Recursively scans a directory for files, applying MIME type and name filters.
+	 * This is a private helper method for get_files_mime_type.
+	 * @param string $dir The current directory to scan.
+	 * @param array<int, string> &$data The array to populate with matching file paths.
+	 * @param array<int, string>|null $include_mime_types MIME types to include.
+	 * @param array<int, string>|null $exclude_mime_types MIME types to exclude.
+	 * @param array<int, string>|null $name_filters Name filters to apply.
+	 * @param bool $case_sensitive True for case-sensitive name filtering.
+	 * @param bool $recursive True to scan recursively.
+	 * @return void
+	 */
 	private function scan_dir_safe_mime_type(string $dir, array &$data, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : void {
 		$items = @scandir($dir);
 		if($items === false) return;
@@ -628,6 +775,7 @@ class MediaFunctions {
 			if($full_path !== false) $data[] = $full_path;
 		}
 	}
+
 }
 
 ?>

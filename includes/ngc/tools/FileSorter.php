@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -33,6 +33,7 @@ class FileSorter {
 			' 1 - Sort by extension',
 			' 2 - Sort by size',
 			' 3 - Sort by name prefix',
+			' 4 - Sort by mime type',
 		]);
 	}
 
@@ -43,6 +44,7 @@ class FileSorter {
 			case '1': return $this->tool_sort_files_extension();
 			case '2': return $this->tool_sort_files_size();
 			case '3': return $this->tool_sort_files_name_prefix();
+			case '4': return $this->tool_sort_mime_type();
 		}
 		return false;
 	}
@@ -170,7 +172,7 @@ class FileSorter {
 		$this->core->set_subtool("Sort by size");
 
 		$interval = $this->core->get_input_bytes_size(" Size: ");
-		if(!$interval) return false;
+		if($interval === false) return false;
 
 		$prefix = $this->core->get_confirm(" Add numeric prefix for better sort folders (Y/N): ");
 
@@ -274,7 +276,46 @@ class FileSorter {
 						$errors++;
 					}
 				} else {
-					$this->core->write_error("Failed get prefix \"$file\"");
+					$this->core->write_error("FAILED GET PREFIX \"$file\"");
+					$errors++;
+				}
+				$this->core->progress($items, $total);
+				$this->core->set_errors($errors);
+			}
+			$this->core->progress($items, $total);
+			unset($files);
+			$this->core->set_folder_done($folder);
+		}
+
+		$this->core->open_logs(true);
+		$this->core->pause(" Operation done, press any key to back to menu");
+		return false;
+	}
+
+	public function tool_sort_mime_type() : bool {
+		$this->core->clear();
+		$this->core->set_subtool("Sort by mime type");
+
+		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		if($folders === false) return false;
+
+		$errors = 0;
+		$this->core->set_errors($errors);
+		foreach($folders as $folder){
+			if(!file_exists($folder)) continue;
+			$files = $this->core->get_files($folder);
+			$items = 0;
+			$total = count($files);
+			foreach($files as $file){
+				$items++;
+				if(!file_exists($file)) continue 1;
+				$mime_type = $this->core->media->get_mime_type($file);
+				if($mime_type === false){
+					$this->core->write_error("FAILED GET MIME TYPE \"$file\"");
+					$errors++;
+					continue 1;
+				}
+				if(!$this->core->move($file, $this->core->put_folder_to_path($file, str_replace("/", "_", $mime_type)))){
 					$errors++;
 				}
 				$this->core->progress($items, $total);

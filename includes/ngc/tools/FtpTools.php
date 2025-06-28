@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -133,7 +133,7 @@ class FtpTools {
 		$auth['host'] = $this->core->get_input(" FTP Host: ");
 		if($auth['host'] == '#') return false;
 		$auth['port'] = $this->core->get_input_integer(" FTP Port (Default 21): ", 0, 65353);
-		if(!$auth['port']) return false;
+		if($auth['port'] === false) return false;
 		$auth['ssl'] = $this->core->get_confirm(" FTP SSL (Y/N): ");
 
 		try {
@@ -241,7 +241,7 @@ class FtpTools {
 		$this->core->set_subtool("Get file list");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
-		if(!$ftp) return false;
+		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
@@ -321,7 +321,7 @@ class FtpTools {
 		$this->core->set_subtool("Download files");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
-		if(!$ftp) return false;
+		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
@@ -397,7 +397,7 @@ class FtpTools {
 		$this->core->set_subtool("Upload files");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
-		if(!$ftp) return false;
+		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
@@ -493,7 +493,7 @@ class FtpTools {
 		$this->core->set_subtool("Delete files");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
-		if(!$ftp) return false;
+		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
@@ -559,7 +559,7 @@ class FtpTools {
 		$this->core->set_subtool("Delete empty folders");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
-		if(!$ftp) return false;
+		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
@@ -609,7 +609,7 @@ class FtpTools {
 		$this->core->set_subtool("Delete structure");
 
 		$ftp = $this->setup_ftp(" Label / ID: ");
-		if(!$ftp) return false;
+		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
@@ -678,7 +678,7 @@ class FtpTools {
 		$this->core->set_subtool("Copy files from FTP to FTP");
 
 		$ftp_source = $this->setup_ftp(" Source label / ID: ");
-		if(!$ftp_source) return false;
+		if($ftp_source === false) return false;
 
 		$ftp_destination = $this->setup_ftp(" Destination label / ID: ", false);
 		if(!$ftp_destination){

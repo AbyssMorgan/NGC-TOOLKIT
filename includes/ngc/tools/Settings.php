@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -132,6 +132,7 @@ class Settings {
 
 	public function check_for_updates(string &$version) : bool {
 		$request = new Request(false);
+		$request->set_http_version(CURL_HTTP_VERSION_2);
 		$response = $request->get("https://raw.githubusercontent.com/AbyssMorgan/NGC-TOOLKIT/master/version");
 		if($response['code'] == 200){
 			$ver_current = explode(".", $this->core->version);

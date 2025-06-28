@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -243,7 +243,7 @@ class FileFunctions {
 		$this->core->set_subtool("Random file generator");
 
 		$write_buffer = $this->core->get_write_buffer();
-		if(!$write_buffer) return false;
+		if($write_buffer === false) return false;
 
 		set_mode:
 		$this->core->clear();
@@ -264,11 +264,11 @@ class FileFunctions {
 		if(!in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
 
 		$bytes = $this->core->get_input_bytes_size(" Size: ");
-		if(!$bytes) return false;
+		if($bytes === false) return false;
 
 		if(in_array($params['mode'], ['1', '2'])){
 			$quantity = $this->core->get_input_integer(" Quantity: ");
-			if(!$quantity) return false;
+			if($quantity === false) return false;
 		} else {
 			$quantity = 1;
 		}
@@ -362,7 +362,7 @@ class FileFunctions {
 		$this->core->set_subtool("Overwrite folders content");
 
 		$write_buffer = $this->core->get_write_buffer();
-		if(!$write_buffer) return false;
+		if($write_buffer === false) return false;
 
 		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;

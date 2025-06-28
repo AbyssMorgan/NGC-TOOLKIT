@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -16,16 +16,42 @@ namespace NGC\Extensions;
 use Script;
 use Toolkit;
 
+/**
+ * Class responsible for running .ngcs scripts
+ */
 class Console {
 
+	/**
+	 * The core toolkit or script instance.
+	 * @var Toolkit|Script
+	 */
 	private Toolkit|Script $core;
+
+	/**
+	 * Path of script that execute
+	 * @var string
+	 */
 	public string $script;
+
+	/**
+	 * Path of script directory
+	 * @var string
+	 */
 	public string $path;
 
+	/**
+	 * Constructor for the Console class.
+	 * @param \Toolkit|\Script $core
+	 */
 	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
 	}
 
+	/**
+	 * Execute .ngcs script file
+	 * @param string $path The path to the .ngcs file.
+	 * @return bool
+	 */
 	public function execute(string $path) : bool {
 		$this->core->title($path);
 		$this->core->clear();

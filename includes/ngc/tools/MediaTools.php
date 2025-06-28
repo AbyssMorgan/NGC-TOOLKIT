@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -92,12 +92,12 @@ class MediaTools {
 		$files_video = [];
 		$files_audio = [];
 
-		$files = $this->core->get_files($video, $this->core->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
+		$files = $this->core->get_files($video, $this->core->media->extensions_video);
 		foreach($files as $file){
 			$files_video[pathinfo($file, PATHINFO_FILENAME)] = $file;
 		}
 
-		$files = $this->core->get_files($audio, $this->core->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
+		$files = $this->core->get_files($audio, $this->core->media->extensions_audio);
 		foreach($files as $file){
 			$files_audio[pathinfo($file, PATHINFO_FILENAME)] = $file;
 		}
@@ -158,7 +158,7 @@ class MediaTools {
 		$this->core->set_errors($errors);
 
 		$lang = $this->core->config->get('SUBTITLES_LANGUAGE');
-		$files = $this->core->get_files($input, $this->core->mkvmerge->get('MKV_MERGE_SUPPORTED_FILES'), ['srt']);
+		$files = $this->core->get_files($input, $this->core->media->extensions_video);
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){
@@ -208,14 +208,14 @@ class MediaTools {
 		}
 
 		$size = $this->core->get_input_integer(" Width (0 - no resize): ", 0);
-		if(!$size) return false;
+		if($size === false) return false;
 
 		$variants = explode(" ", $this->core->config->get('AVATAR_GENERATOR_VARIANTS'));
 		$files = $this->core->get_files($input, $this->core->media->extensions_images);
 
 		$errors = 0;
 
-		$detector = new FaceDetector($this->core->get_resource("FaceDetector.dat"));
+		$detector = new FaceDetector(gzuncompress($this->core->get_resource("FaceDetector.zz")));
 		$items = 0;
 		$total = count($files);
 		foreach($files as $file){

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -13,10 +13,8 @@ declare(strict_types=1);
 
 use NGC\Core\Core;
 use NGC\Core\IniFile;
-
 use NGC\Extensions\AppStorage;
 use NGC\Extensions\MediaFunctions;
-
 use NGC\Tools\AdmFileConverter;
 use NGC\Tools\CheckFileIntegrity;
 use NGC\Tools\DirectoryFunctions;
@@ -34,11 +32,10 @@ use NGC\Tools\Settings;
 
 class Toolkit extends Core {
 
-	public IniFile $mkvmerge;
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.6.1";
+	public string $version = "2.7.0";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 
@@ -94,7 +91,6 @@ class Toolkit extends Core {
 		if(!file_exists($path_config_ftp)) mkdir($path_config_ftp);
 
 		$this->config = new IniFile($path_config_toolkit, true);
-		$this->mkvmerge = new IniFile($this->get_path("$this->path/includes/config/mkvmerge.ini"), true);
 		$this->storage = new AppStorage($this);
 		$this->media = new MediaFunctions($this);
 

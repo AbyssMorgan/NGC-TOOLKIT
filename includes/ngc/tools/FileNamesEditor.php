@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -608,13 +608,13 @@ class FileNamesEditor {
 			$converter->import_replacement($this->core->get_resource("LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->import_pin_yin($this->core->get_resource("PinYin.ini"));
+			$converter->import_pin_yin($this->core->get_resource("PinYin.gz-ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->import_replacement($this->core->get_resource("Hiragama.ini"));
+			$converter->import_replacement($this->core->get_resource("Hiragama.gz-ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->import_replacement($this->core->get_resource("Katakana.ini"));
+			$converter->import_replacement($this->core->get_resource("Katakana.gz-ini"));
 		}
 		$this->core->clear();
 
@@ -1046,7 +1046,7 @@ class FileNamesEditor {
 			$this->core->echo(" Put numbers how much keywords you want remove");
 
 			$quantity = $this->core->get_input_integer(" Quantity: ");
-			if(!$quantity) return false;
+			if($quantity === false) return false;
 
 			for($i = 0; $i < $quantity; $i++){
 				$keywords[$i] = $this->core->get_input(" Keyword ".($i + 1).": ", false);

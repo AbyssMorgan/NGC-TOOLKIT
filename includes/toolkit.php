@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -42,8 +42,6 @@ function get_includes_list(string $path) : array {
 	return $data;
 }
 
-require __DIR__.'/../vendor/autoload.php';
-
 $includes_path = __DIR__;
 
 $includes = array_merge(get_includes_list("$includes_path/includes.lst"), get_includes_list("$includes_path/tools.lst"));
@@ -55,4 +53,5 @@ require_once "$includes_path/programs/Toolkit.php";
 
 $toolkit = new Toolkit($argv);
 if(!$toolkit->abort) $toolkit->execute();
+
 ?>

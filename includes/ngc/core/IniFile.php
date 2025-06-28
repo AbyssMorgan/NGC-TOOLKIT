@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -15,23 +15,79 @@ namespace NGC\Core;
 
 use Exception;
 
+/**
+ * A class for reading, writing, and managing INI files.
+ */
 class IniFile {
 
+	/**
+	 * The path to the INI file.
+	 * @var string|null
+	 */
 	protected ?string $path = null;
+
+	/**
+	 * The current data loaded from the INI file.
+	 * @var array
+	 */
 	protected array $data = [];
+
+	/**
+	 * The original data loaded from the INI file (before any modifications).
+	 * @var array
+	 */
 	protected array $original = [];
+
+	/**
+	 * Indicates whether the INI file is valid and successfully loaded.
+	 * @var bool
+	 */
 	protected bool $valid = false;
+
+	/**
+	 * Indicates whether the data should be sorted when saving.
+	 * @var bool
+	 */
 	protected bool $sort = false;
+
+	/**
+	 * Indicates whether the INI file content is compressed.
+	 * @var bool
+	 */
 	protected bool $compressed = false;
+
+	/**
+	 * An optional encoder object for encryption/decryption.
+	 * @var object|null
+	 */
 	protected ?object $encoder = null;
+
+	/**
+	 * The permissions for creating new directories.
+	 * @var int
+	 */
 	protected int $permissions = 0755;
 
+	/**
+	 * IniFile constructor.
+	 *
+	 * @param string|null $path The path to the INI file.
+	 * @param bool $sort Whether to sort the data when saving.
+	 * @param bool $compressed Whether the INI file content is compressed.
+	 * @param object|null $encoder An optional encoder object with encrypt, decrypt, and get_header methods.
+	 * @param int $permissions The permissions for creating new directories.
+	 */
 	public function __construct(?string $path = null, bool $sort = false, bool $compressed = false, ?object $encoder = null, int $permissions = 0755){
 		if(!is_null($path)){
 			$this->open($path, $sort, $compressed, $encoder, $permissions);
 		}
 	}
 
+	/**
+	 * Creates the INI file and its parent directories if they don't exist.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
 	protected function create() : bool {
 		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
 		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
@@ -42,6 +98,16 @@ class IniFile {
 		return file_exists($this->path);
 	}
 
+	/**
+	 * Opens and reads the INI file.
+	 *
+	 * @param string $path The path to the INI file.
+	 * @param bool $sort Whether to sort the data when saving.
+	 * @param bool $compressed Whether the INI file content is compressed.
+	 * @param object|null $encoder An optional encoder object with encrypt, decrypt, and get_header methods.
+	 * @param int $permissions The permissions for creating new directories.
+	 * @return bool True on success, false on failure.
+	 */
 	public function open(string $path, bool $sort = false, bool $compressed = false, ?object $encoder = null, int $permissions = 0755) : bool {
 		$this->path = $path;
 		$this->sort = $sort;
@@ -56,6 +122,11 @@ class IniFile {
 		return $this->valid;
 	}
 
+	/**
+	 * Closes the INI file, clearing its internal state.
+	 *
+	 * @return void
+	 */
 	public function close() : void {
 		$this->valid = false;
 		$this->path = null;
@@ -64,6 +135,11 @@ class IniFile {
 		$this->compressed = false;
 	}
 
+	/**
+	 * Reads the content of the INI file and populates the internal data array.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
 	public function read() : bool {
 		if(!file_exists($this->path)){
 			if(!$this->create()) return false;
@@ -103,6 +179,15 @@ class IniFile {
 		return true;
 	}
 
+	/**
+	 * Parses a single line from the INI file.
+	 *
+	 * @param string $line The line to parse.
+	 * @param string $key The extracted key (passed by reference).
+	 * @param int|bool|string|array|float|null $data The extracted data (passed by reference).
+	 * @param bool $escape Whether to remove newline characters and BOM.
+	 * @return bool True if the line was successfully parsed, false otherwise.
+	 */
 	public function parse_line(string $line, &$key, int|bool|string|array|float|null &$data, bool $escape = true) : bool {
 		if($escape) $line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
 		if(strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
@@ -139,10 +224,21 @@ class IniFile {
 		return true;
 	}
 
+	/**
+	 * Checks if any data in the INI file has been changed compared to the original loaded data.
+	 *
+	 * @return bool True if changes exist, false otherwise.
+	 */
 	public function is_changed() : bool {
 		return (json_encode($this->get_original_all()) != json_encode($this->get_all()));
 	}
 
+	/**
+	 * Checks if a specific value has been changed compared to its original loaded value.
+	 *
+	 * @param string $key The key of the value to check.
+	 * @return bool True if the value has changed, false otherwise.
+	 */
 	public function is_value_changed(string $key) : bool {
 		$value = $this->get($key);
 		$original = $this->get_original($key);
@@ -154,29 +250,63 @@ class IniFile {
 		}
 	}
 
+	/**
+	 * Returns all original data loaded from the INI file.
+	 *
+	 * @return array The original data.
+	 */
 	public function get_original_all() : array {
 		return $this->original;
 	}
 
+	/**
+	 * Returns all current data.
+	 *
+	 * @return array The current data.
+	 */
 	public function get_all() : array {
 		return $this->data;
 	}
 
+	/**
+	 * Returns all data sorted by key.
+	 *
+	 * @return array The sorted data.
+	 */
 	public function get_sorted() : array {
 		$data = $this->data;
 		ksort($data);
 		return $data;
 	}
 
+	/**
+	 * Sorts the internal data array by key.
+	 *
+	 * @return void
+	 */
 	public function sort() : void {
 		ksort($this->data);
 	}
 
+	/**
+	 * Sets all data in the INI file.
+	 *
+	 * @param array $data The data to set.
+	 * @param bool $save Whether to save the changes immediately.
+	 * @return void
+	 */
 	public function set_all(array $data, bool $save = false) : void {
 		$this->data = $data;
 		if($save) $this->save();
 	}
 
+	/**
+	 * Updates the INI file with new data, merging with existing data.
+	 *
+	 * @param array $data The data to update.
+	 * @param bool $save Whether to save the changes immediately.
+	 * @return void
+	 */
 	public function update(array $data, bool $save = false) : void {
 		foreach($data as $key => $value){
 			$this->set($key, $value);
@@ -184,22 +314,57 @@ class IniFile {
 		if($save) $this->save();
 	}
 
+	/**
+	 * Retrieves a value from the INI file by its key.
+	 *
+	 * @param string $key The key of the value to retrieve.
+	 * @param int|bool|string|array|float|null $default The default value to return if the key does not exist.
+	 * @return int|bool|string|array|float|null The retrieved value or the default value.
+	 */
 	public function get(string $key, int|bool|string|array|float|null $default = null) : int|bool|string|array|float|null {
 		return $this->data[$key] ?? $default;
 	}
 
+	/**
+	 * Retrieves a value from the INI file as a string.
+	 *
+	 * @param string $key The key of the value to retrieve.
+	 * @param int|bool|string|array|float|null $default The default value to return if the key does not exist.
+	 * @return string The retrieved value as a string.
+	 */
 	public function get_string(string $key, int|bool|string|array|float|null $default = null) : string {
 		return strval($this->data[$key] ?? $default);
 	}
 
+	/**
+	 * Retrieves the original value from the INI file by its key (before any modifications).
+	 *
+	 * @param string $key The key of the value to retrieve.
+	 * @param int|bool|string|array|float|null $default The default value to return if the key does not exist.
+	 * @return int|bool|string|array|float|null The retrieved original value or the default value.
+	 */
 	public function get_original(string $key, int|bool|string|array|float|null $default = null) : int|bool|string|array|float|null {
 		return $this->original[$key] ?? $default;
 	}
 
+	/**
+	 * Sets a value in the INI file.
+	 *
+	 * @param string $key The key to set.
+	 * @param int|bool|string|array|float|null $value The value to set.
+	 * @return void
+	 */
 	public function set(string $key, int|bool|string|array|float|null $value) : void {
 		$this->data[$key] = $this->clean_value($value);
 	}
 
+	/**
+	 * Cleans and normalizes a value before setting it.
+	 * Converts string "true" to boolean true, and string "false" to boolean false.
+	 *
+	 * @param int|bool|string|array|float|null $value The value to clean.
+	 * @return int|bool|string|array|float|null The cleaned value.
+	 */
 	public function clean_value(int|bool|string|array|float|null $value) : int|bool|string|array|float|null {
 		if(gettype($value) == 'string'){
 			$lvalue = mb_strtolower($value);
@@ -212,11 +377,24 @@ class IniFile {
 		return $value;
 	}
 
+	/**
+	 * Renames a key in the INI file.
+	 *
+	 * @param string $key1 The old key name.
+	 * @param string $key2 The new key name.
+	 * @return void
+	 */
 	public function rename(string $key1, string $key2) : void {
 		$this->set($key2, $this->get($key1));
 		$this->unset($key1);
 	}
 
+	/**
+	 * Unsets (removes) one or more keys from the INI file.
+	 *
+	 * @param string|array $keys The key or an array of keys to unset.
+	 * @return void
+	 */
 	public function unset(string|array $keys) : void {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
@@ -226,6 +404,13 @@ class IniFile {
 		}
 	}
 
+	/**
+	 * Resets the value of one or more keys to a specified default value (or null if not provided).
+	 *
+	 * @param string|array $keys The key or an array of keys to reset.
+	 * @param int|bool|string|array|float|null $value The value to reset to. Defaults to null.
+	 * @return void
+	 */
 	public function reset(string|array $keys, int|bool|string|array|float|null $value = null) : void {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
@@ -235,10 +420,16 @@ class IniFile {
 		}
 	}
 
+	/**
+	 * Saves the current data to the INI file.
+	 *
+	 * @param bool $as_output Whether to return the content as a string instead of saving to file.
+	 * @return string|bool The content as a string if $as_output is true, otherwise true on success or false on failure.
+	 */
 	public function save(bool $as_output = false) : string|bool {
 		if(!$this->is_valid() && !$as_output) return false;
 		if($this->sort) ksort($this->data);
-		$content = "\xEF\xBB\xBF";
+		$content = "\xEF\xBB\xBF"; // BOM for UTF-8
 		foreach($this->data as $key => $value){
 			if(is_numeric($value)){
 				$content .= "$key=$value\r\n";
@@ -276,26 +467,58 @@ class IniFile {
 		return true;
 	}
 
+	/**
+	 * Returns the current INI file content as a string.
+	 *
+	 * @return string|bool The content as a string, or false on failure.
+	 */
 	public function get_output() : string|bool {
 		return $this->save(true);
 	}
 
+	/**
+	 * Checks if the INI file is currently valid (successfully opened and read).
+	 *
+	 * @return bool True if valid, false otherwise.
+	 */
 	public function is_valid() : bool {
 		return $this->valid;
 	}
 
+	/**
+	 * Toggles the sorting behavior when saving the INI file.
+	 *
+	 * @param bool $sort True to enable sorting, false to disable.
+	 * @return void
+	 */
 	public function toggle_sort(bool $sort) : void {
 		$this->sort = $sort;
 	}
 
+	/**
+	 * Returns an array of all keys in the INI file.
+	 *
+	 * @return array An array of keys.
+	 */
 	public function keys() : array {
 		return array_keys($this->data);
 	}
 
+	/**
+	 * Checks if a specific key exists in the INI file.
+	 *
+	 * @param string $key The key to check.
+	 * @return bool True if the key exists, false otherwise.
+	 */
 	public function is_set(string $key) : bool {
 		return array_key_exists($key, $this->data);
 	}
 
+	/**
+	 * Returns the size of the INI file in bytes.
+	 *
+	 * @return int The file size, or 0 if the file is not valid or doesn't exist.
+	 */
 	public function get_size() : int {
 		if(!$this->is_valid()) return 0;
 		$size = filesize($this->path);
@@ -303,15 +526,33 @@ class IniFile {
 		return $size;
 	}
 
+	/**
+	 * Returns the last modification date of the INI file.
+	 *
+	 * @return string The modification date in "Y-m-d H:i:s" format, or '0000-00-00 00:00:00' if not valid.
+	 */
 	public function get_modification_date() : string {
 		if(!$this->is_valid()) return '0000-00-00 00:00:00';
 		return date("Y-m-d H:i:s", filemtime($this->path));
 	}
 
+	/**
+	 * Converts the INI file data to a JSON string.
+	 *
+	 * @return string|false The JSON string, or false on failure.
+	 */
 	public function to_json() : string|false {
 		return json_encode($this->data);
 	}
 
+	/**
+	 * Loads data into the INI file from a JSON string.
+	 *
+	 * @param string $json The JSON string.
+	 * @param bool $merge Whether to merge with existing data or overwrite.
+	 * @param bool $save Whether to save the changes immediately.
+	 * @return void
+	 */
 	public function from_json(string $json, bool $merge = false, bool $save = false) : void {
 		if($merge){
 			$this->update(json_decode($json, true), $save);
@@ -320,6 +561,14 @@ class IniFile {
 		}
 	}
 
+	/**
+	 * Loads data into the INI file from an associative array.
+	 *
+	 * @param array $assoc The associative array.
+	 * @param bool $merge Whether to merge with existing data or overwrite.
+	 * @param bool $save Whether to save the changes immediately.
+	 * @return void
+	 */
 	public function from_assoc(array $assoc, bool $merge = false, bool $save = false) : void {
 		if(!$merge) $this->data = [];
 		foreach($assoc as $key => $value){
@@ -328,6 +577,12 @@ class IniFile {
 		if($save) $this->save();
 	}
 
+	/**
+	 * Searches for keys containing a specific substring.
+	 *
+	 * @param string $search The substring to search for.
+	 * @return array An array of keys that contain the search string.
+	 */
 	public function search(string $search) : array {
 		$results = [];
 		$keys = $this->keys();
@@ -339,28 +594,49 @@ class IniFile {
 		return $results;
 	}
 
+	/**
+	 * Searches for keys that start with a specific prefix.
+	 *
+	 * @param string $search The prefix to search for.
+	 * @return array An array of keys that start with the search string.
+	 */
 	public function search_prefix(string $search) : array {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos("#$key", "#$search") !== false){
+			if(str_starts_with($key, $search) !== false){
 				array_push($results, $key);
 			}
 		}
 		return $results;
 	}
 
+	/**
+	 * Searches for keys that end with a specific suffix.
+	 *
+	 * @param string $search The suffix to search for.
+	 * @return array An array of keys that end with the search string.
+	 */
 	public function search_suffix(string $search) : array {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos($key.'#', $search.'#') !== false){
+			if(str_ends_with($key, $search) !== false){
 				array_push($results, $key);
 			}
 		}
 		return $results;
 	}
 
+	/**
+	 * Sets a value if it's different from the default, otherwise unsets the key.
+	 * This is useful for saving only changed values.
+	 *
+	 * @param string $key The key to set or unset.
+	 * @param int|bool|string|array|float|null $value The value to set.
+	 * @param int|bool|string|array|float|null $default The default value to compare against.
+	 * @return void
+	 */
 	public function set_changed(string $key, int|bool|string|array|float|null $value, int|bool|string|array|float|null $default = null) : void {
 		if($this->clean_value($value) != $default){
 			$this->set($key, $value);
@@ -369,6 +645,12 @@ class IniFile {
 		}
 	}
 
+	/**
+	 * Returns an associative array containing only the specified keys and their values.
+	 *
+	 * @param string|array $keys The key or an array of keys to include.
+	 * @return array An associative array of the selected keys and their values.
+	 */
 	public function only(string|array $keys) : array {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
@@ -378,6 +660,12 @@ class IniFile {
 		return $data;
 	}
 
+	/**
+	 * Returns an associative array containing all keys and their values except for the specified ones.
+	 *
+	 * @param string|array $keys The key or an array of keys to exclude.
+	 * @return array An associative array of all keys and their values except the excluded ones.
+	 */
 	public function all_except(string|array $keys) : array {
 		if(gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
@@ -387,10 +675,27 @@ class IniFile {
 		return $data;
 	}
 
+	/**
+	 * Extracts a value from the INI file based on a path-like key and sets it into a nested array structure.
+	 *
+	 * @param array $data The array to populate with the nested value (passed by reference).
+	 * @param string $key The key from the INI file (can contain delimiters for nested structure).
+	 * @param string $delimiter The delimiter used in the key to represent nesting.
+	 * @return void
+	 */
 	public function extract_path(array &$data, string $key, string $delimiter = '/') : void {
 		$this->set_nested_array_value($data, $key, $this->get($key), $delimiter);
 	}
 
+	/**
+	 * Sets a value in a nested array structure based on a path and delimiter.
+	 *
+	 * @param array $array The array to modify (passed by reference).
+	 * @param string $path The path to the desired element in the array (e.g., "level1/level2/key").
+	 * @param mixed $value The value to set.
+	 * @param string $delimiter The delimiter used in the path to represent nesting.
+	 * @return void
+	 */
 	public function set_nested_array_value(array &$array, string $path, array $value, string $delimiter = '/') : void {
 		$pathParts = explode($delimiter, $path);
 		$current = &$array;

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -172,7 +172,7 @@ class MediaSorter {
 		$this->core->set_subtool("Sort by duration");
 
 		$interval = $this->core->get_input_time_interval(" Interval: ");
-		if(!$interval) return false;
+		if($interval === false) return false;
 
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
@@ -293,7 +293,7 @@ class MediaSorter {
 					$image = new Imagick($file);
 				}
 				catch(Exception $e){
-					$this->core->write_error("Failed open image \"$file\" ".$e->getMessage());
+					$this->core->write_error("FAILED OPEN IMAGE \"$file\" ".$e->getMessage());
 					$errors++;
 					$this->core->set_errors($errors);
 					continue 1;

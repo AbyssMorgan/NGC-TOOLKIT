@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -16,14 +16,39 @@ namespace NGC\Extensions;
 use Script;
 use Toolkit;
 
+/**
+ * SubtitlesValidator class for validating and comparing SRT subtitle files.
+ */
 class SubtitlesValidator {
 
+	/**
+	 * The core toolkit or script instance.
+	 * @var Toolkit|Script
+	 */
 	private Toolkit|Script $core;
 
+	/**
+	 * Constructor for the SubtitlesValidator.
+	 *
+	 * @param Toolkit|Script $core The core toolkit or script instance.
+	 */
 	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
 	}
 
+	/**
+	 * Validates an SRT subtitle file for common errors.
+	 *
+	 * Checks for:
+	 * - File existence.
+	 * - Valid timecode format (HH:MM:SS,ms).
+	 * - Timecode values within valid ranges (hours >= 0, minutes 0-59, seconds 0-59, milliseconds 0-999).
+	 * - Overlapping subtitles.
+	 * - Out-of-order subtitle timings.
+	 *
+	 * @param string $path The path to the SRT file.
+	 * @return array|false An array of error messages, or false if the file does not exist.
+	 */
 	public function srt_validate(string $path) : array|false {
 		if(!file_exists($path)) return false;
 		$file_content = file($path, FILE_IGNORE_NEW_LINES);
@@ -88,6 +113,18 @@ class SubtitlesValidator {
 		return $errors;
 	}
 
+	/**
+	 * Compares two SRT subtitle files and identifies missing subtitle blocks.
+	 *
+	 * Comparison is based on the timecode range (start --> end) and the text content.
+	 *
+	 * @param string $path_a The path to the first SRT file.
+	 * @param string $path_b The path to the second SRT file.
+	 * @return object|false An object containing arrays of missing subtitles in each file and global errors, or false if both files do not exist.
+	 * The returned object has properties: 'global', 'file_a', 'file_b'.
+	 * 'file_a' will contain errors for subtitles missing in file_b but present in file_a.
+	 * 'file_b' will contain errors for subtitles missing in file_a but present in file_b.
+	 */
 	public function srt_compare(string $path_a, string $path_b) : object|false {
 		$errors = (object)[
 			'global' => [],
@@ -150,6 +187,20 @@ class SubtitlesValidator {
 		return $errors;
 	}
 
+	/**
+	 * Extracts subtitle blocks from an SRT file.
+	 *
+	 * Each subtitle block is parsed into an associative array containing:
+	 * - 'index': The subtitle index number.
+	 * - 'start': The start timecode string (HH:MM:SS,ms).
+	 * - 'end': The end timecode string (HH:MM:SS,ms).
+	 * - 'start_seconds': The start time in total seconds.
+	 * - 'end_seconds': The end time in total seconds.
+	 * - 'text': The subtitle text.
+	 *
+	 * @param string $path The path to the SRT file.
+	 * @return array|false An array of subtitle blocks, or false if the file does not exist.
+	 */
 	public function srt_extract(string $path) : array|false {
 		if(!file_exists($path)) return false;
 		$content = file_get_contents($path);

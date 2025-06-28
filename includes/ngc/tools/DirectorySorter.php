@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -46,7 +46,7 @@ class DirectorySorter {
 		$this->core->set_subtool("Sort by items quantity");
 
 		$interval = $this->core->get_input_integer(" Quantity interval: ");
-		if(!$interval) return false;
+		if($interval === false) return false;
 
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;

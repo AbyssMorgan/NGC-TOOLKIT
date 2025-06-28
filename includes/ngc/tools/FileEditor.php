@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -259,7 +259,7 @@ class FileEditor {
 		$this->core->set_subtool("Split file by lines count");
 
 		$lines_limit = $this->core->get_input_integer(" Lines limit: ");
-		if(!$lines_limit) return false;
+		if($lines_limit === false) return false;
 
 		set_input:
 		$file = $this->core->get_input_file(" File: ", true);
@@ -322,7 +322,7 @@ class FileEditor {
 		$this->core->set_subtool("Split file by size");
 
 		$bytes = $this->core->get_input_bytes_size(" Size: ");
-		if(!$bytes) return false;
+		if($bytes === false) return false;
 
 		set_input:
 		$file = $this->core->get_input_file(" File: ", true);
@@ -437,13 +437,13 @@ class FileEditor {
 			$converter->import_replacement($this->core->get_resource("LanguageReplacement.ini"));
 		}
 		if($flags->ChineseToPinYin){
-			$converter->import_pin_yin($this->core->get_resource("PinYin.ini"));
+			$converter->import_pin_yin($this->core->get_resource("PinYin.gz-ini"));
 		}
 		if($flags->HiragamaToRomaji){
-			$converter->import_replacement($this->core->get_resource("Hiragama.ini"));
+			$converter->import_replacement($this->core->get_resource("Hiragama.gz-ini"));
 		}
 		if($flags->KatakanaToRomaji){
-			$converter->import_replacement($this->core->get_resource("Katakana.ini"));
+			$converter->import_replacement($this->core->get_resource("Katakana.gz-ini"));
 		}
 		$this->core->clear();
 

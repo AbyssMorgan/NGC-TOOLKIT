@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.6.1 – Component
+ * NGC-TOOLKIT v2.7.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -56,8 +56,6 @@ function get_includes_list(string $path) : array {
 	return $data;
 }
 
-require __DIR__.'/../vendor/autoload.php';
-
 $includes_path = __DIR__;
 
 $includes = get_includes_list("$includes_path/includes.lst");
@@ -70,4 +68,5 @@ require_once "$includes_path/programs/Script.php";
 
 $script = new Script($argv);
 $script->execute();
+
 ?>

@@ -5,7 +5,8 @@
 	"editor.insertSpaces": false,
 	"php.stubs": [
 		"*",
-		"imagick"
+		"imagick",
+		"opcache"
 	],
 	"php.version": "8.4",
 	"php.problems.exclude": {
