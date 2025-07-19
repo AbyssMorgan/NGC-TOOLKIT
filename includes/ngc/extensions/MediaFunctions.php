@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -548,9 +548,9 @@ class MediaFunctions {
 			return ($b == 0) ? $a : $gcd($b, $a % $b);
 		};
 		$divisor = $gcd($width, $height);
-		$aspectRatioWidth = $width / $divisor;
-		$aspectRatioHeight = $height / $divisor;
-		return "$aspectRatioWidth:$aspectRatioHeight";
+		$aspect_ratio_width = $width / $divisor;
+		$aspect_ratio_height = $height / $divisor;
+		return "$aspect_ratio_width:$aspect_ratio_height";
 	}
 
 	/**
@@ -719,15 +719,16 @@ class MediaFunctions {
 	/**
 	 * Scans a directory for files matching specified MIME types and name filters.
 	 * @param string $path The directory path to scan.
-	 * @param array<int, string>|null $include_mime_types Optional. An array of MIME types to include. If null, all MIME types are included.
-	 * @param array<int, string>|null $exclude_mime_types Optional. An array of MIME types to exclude. If null, no MIME types are excluded.
-	 * @param array<int, string>|null $name_filters Optional. An array of name filters (wildcards allowed, e.g., '*.jpg').
+	 * @param array<string>|null $include_mime_types Optional. An array of MIME types to include. If null, all MIME types are included.
+	 * @param array<string>|null $exclude_mime_types Optional. An array of MIME types to exclude. If null, no MIME types are excluded.
+	 * @param array<string>|null $name_filters Optional. An array of name filters (wildcards allowed, e.g., '*.jpg').
 	 * @param bool $case_sensitive Optional. True for case-sensitive name filtering, false otherwise. Defaults to false.
 	 * @param bool $recursive Optional. True to scan directories recursively, false for shallow scan. Defaults to true.
 	 * @return array<int, string> An array of full paths to the matching files, sorted alphabetically.
+	 * @deprecated Due to performance use process_files_mime_type
 	 */
 	public function get_files_mime_type(string $path, ?array $include_mime_types = null, ?array $exclude_mime_types = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
-		if(!file_exists($path) || !is_readable($path)) return [];
+		if(!file_exists($path)) return [];
 		if(!$case_sensitive && !is_null($name_filters)){
 			$name_filters = $this->core->array_to_lower($name_filters);
 		}
@@ -738,42 +739,117 @@ class MediaFunctions {
 	}
 
 	/**
+	 * Do operations on a list of files from a given path, matching specified MIME types and name filters
+	 *
+	 * @param string|array $path The directory/direcories path to scan.
+	 * @param callable $callback Callback called for every found files function(string $file, string $mime_type)
+	 * @param array<string>|null $include_mime_types Optional. An array of MIME types to include. If null, all MIME types are included.
+	 * @param array<string>|null $exclude_mime_types Optional. An array of MIME types to exclude. If null, no MIME types are excluded.
+	 * @param ?array $name_filters An array of strings to filter file names by (case-sensitive or insensitive). Null for no name filter.
+	 * @param bool $case_sensitive Whether name filtering should be case-sensitive.
+	 * @param bool $recursive Whether to scan subdirectories recursively.
+	 * @return int Count total processed files.
+	 */
+	public function process_files_mime_type(string|array $path, callable $callback, ?array $include_mime_types = null, ?array $exclude_mime_types = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : int {
+		if(gettype($path) == 'string'){
+			$paths = [$path];
+		} else {
+			$paths = $path;
+		}
+		if(!$case_sensitive && !is_null($name_filters)){
+			$name_filters = $this->core->array_to_lower($name_filters);
+		}
+		$counter = 0;
+		foreach($paths as $path){
+			if(!file_exists($path)) continue;
+			$this->scan_dir_safe_extension_process_files($path, $callback, $counter, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
+		}
+		return $counter;
+	}
+
+	/**
 	 * Recursively scans a directory for files, applying MIME type and name filters.
 	 * This is a private helper method for get_files_mime_type.
 	 * @param string $dir The current directory to scan.
-	 * @param array<int, string> &$data The array to populate with matching file paths.
-	 * @param array<int, string>|null $include_mime_types MIME types to include.
-	 * @param array<int, string>|null $exclude_mime_types MIME types to exclude.
-	 * @param array<int, string>|null $name_filters Name filters to apply.
+	 * @param array<string> &$data The array to populate with matching file paths.
+	 * @param array<string>|null $include_mime_types MIME types to include.
+	 * @param array<string>|null $exclude_mime_types MIME types to exclude.
+	 * @param array<string>|null $name_filters Name filters to apply.
 	 * @param bool $case_sensitive True for case-sensitive name filtering.
 	 * @param bool $recursive True to scan recursively.
-	 * @return void
+	 * @return bool True if an action was successfully performed, false otherwise.
 	 */
-	private function scan_dir_safe_mime_type(string $dir, array &$data, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : void {
-		$items = @scandir($dir);
-		if($items === false) return;
+	public function scan_dir_safe_mime_type(string $dir, array &$data, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
+		try {
+			$items = @scandir($dir);
+		}
+		catch(Exception $e){
+			return false;
+		}
+		if($items === false) return false;
 		foreach($items as $item){
 			if($item === '.' || $item === '..') continue;
 			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
 			if(is_dir($full_path)){
 				if(!$recursive) continue;
-				if(!is_readable($full_path)) continue;
 				$this->scan_dir_safe_mime_type($full_path, $data, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
 				continue;
 			}
-			if(!is_file($full_path) || !is_readable($full_path)) continue;
 			$mime_type = $this->get_mime_type($full_path);
 			if($mime_type === false) continue;
 			if(!is_null($include_mime_types) && !in_array($mime_type, $include_mime_types)) continue;
 			if(!is_null($exclude_mime_types) && in_array($mime_type, $exclude_mime_types)) continue;
-			$basename = basename($full_path);
+			$basename = pathinfo($full_path, PATHINFO_BASENAME);
 			if(!is_null($name_filters)){
 				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
 				if(!$this->core->filter($check_name, $name_filters)) continue;
 			}
-			$full_path = realpath($full_path);
-			if($full_path !== false) $data[] = $full_path;
+			$data[] = $full_path;
 		}
+		return true;
+	}
+
+	/**
+	 * Recursively scans a directory for files, applying MIME type and name filters.
+	 *
+	 * @param string $dir The directory to scan.
+	 * @param callable $callback Callback called for every found files function(string $file, string $mime_type)
+	 * @param array<string>|null $include_mime_types MIME types to include.
+	 * @param array<string>|null $exclude_mime_types MIME types to exclude.
+	 * @param ?array $name_filters An array of strings to filter file names by.
+	 * @param bool $case_sensitive Whether name filtering should be case-sensitive.
+	 * @param bool $recursive Whether to scan subdirectories recursively.
+	 * @return bool True if an action was successfully performed, false otherwise.
+	 */
+	public function scan_dir_safe_extension_process_files(string $dir, callable $callback, int &$counter, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
+		try {
+			$items = @scandir($dir);
+		}
+		catch(Exception $e){
+			return false;
+		}
+		if($items === false) return false;
+		foreach($items as $item){
+			if($item === '.' || $item === '..') continue;
+			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
+			if(is_dir($full_path)){
+				if(!$recursive) continue;
+				$this->scan_dir_safe_extension_process_files($full_path, $callback, $counter, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
+				continue;
+			}
+			$mime_type = $this->get_mime_type($full_path);
+			if($mime_type === false) continue;
+			if(!is_null($include_mime_types) && !in_array($mime_type, $include_mime_types)) continue;
+			if(!is_null($exclude_mime_types) && in_array($mime_type, $exclude_mime_types)) continue;
+			$basename = pathinfo($full_path, PATHINFO_BASENAME);
+			if(!is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+				if(!$this->core->filter($check_name, $name_filters)) continue;
+			}
+			$counter++;
+			$callback($full_path, $mime_type);
+		}
+		return true;
 	}
 
 }

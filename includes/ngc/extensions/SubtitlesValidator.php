@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -210,9 +210,9 @@ class SubtitlesValidator {
 			$lines = preg_split("/\R/", trim($block));
 			if(count($lines) < 3) continue;
 			$index = (int)array_shift($lines);
-			$timestampLine = array_shift($lines);
+			$timestamp_line = array_shift($lines);
 			$pattern = '/^(\d{2}):(\d{2}):(\d{2}),(\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2}),(\d{3})$/';
-			if(!preg_match($pattern, $timestampLine, $m)) continue;
+			if(!preg_match($pattern, $timestamp_line, $m)) continue;
 			$start = $this->core->media->timecode_to_seconds((int)$m[1], (int)$m[2], (int)$m[3], (int)$m[4]);
 			$end = $this->core->media->timecode_to_seconds((int)$m[5], (int)$m[6], (int)$m[7], (int)$m[8]);
 			$text = implode("\n", $lines);

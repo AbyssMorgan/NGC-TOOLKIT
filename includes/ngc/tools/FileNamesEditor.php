@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -467,18 +467,21 @@ class FileNamesEditor {
 				if(!file_exists($file)) continue 1;
 				$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)));
 				$file_name = str_replace(['[', ']'], '', $file_name);
-				if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = $mathes[0];
-				} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = $mathes[0];
-				} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
-					$escaped_name = $mathes[0];
-				} elseif(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-					if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
-					if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
-					$escaped_name = $mathes[1].$mathes[2];
-				} elseif(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-					$escaped_name = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
+				$pattern_multi_episodes = "/(S|SP)([0-9]{1,2})E([0-9]{1,3})(?:-E?([0-9]{1,3}))?/";
+				$pattern_single_episode = "/(S|SP)([0-9]{1,2})E([0-9]{1,3})/";
+				if(preg_match($pattern_multi_episodes, $file_name, $matches)){
+					$season = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+					$episode_start = str_pad($matches[3], 2, '0', STR_PAD_LEFT);
+					if(!empty($matches[4])){
+						$episode_end = str_pad($matches[4], 2, '0', STR_PAD_LEFT);
+						$escaped_name = $matches[1].$season.'E'.$episode_start.'-E'.$episode_end;
+					} else {
+						$escaped_name = $matches[1].$season.'E'.$episode_start;
+					}
+				} elseif(preg_match($pattern_single_episode, $file_name, $matches)){
+					$season = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+					$episode = str_pad($matches[3], 2, '0', STR_PAD_LEFT);
+					$escaped_name = $matches[1].$season.'E'.$episode;
 				} else {
 					$escaped_name = '';
 					$this->core->write_error("FAILED GET SERIES ID \"$file\"");
@@ -662,6 +665,9 @@ class FileNamesEditor {
 					$escaped_name = ucwords(mb_strtolower($escaped_name));
 					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function(array $matches) : string {
 						return $matches[1].mb_strtoupper($matches[2]);
+					}, $escaped_name);
+					$escaped_name = preg_replace_callback('/([\(\[])([a-z])/', function(array $matches) : string {
+						return $matches[1] . mb_strtoupper($matches[2]);
 					}, $escaped_name);
 				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -826,7 +826,7 @@ class MediaTools {
 
 		$map = [];
 		foreach($files_b as $file){
-			$map[basename($file)] = $file;
+			$map[pathinfo($file, PATHINFO_BASENAME)] = $file;
 		}
 
 		$errors = 0;
@@ -835,7 +835,7 @@ class MediaTools {
 		$total = count($files_a);
 		foreach($files_a as $file){
 			$items++;
-			$fname = basename($file);
+			$fname = pathinfo($file, PATHINFO_BASENAME);
 			if(!isset($map[$fname])){
 				$this->core->write_error("File \"$fname\" not found in folder B");
 				$errors++;

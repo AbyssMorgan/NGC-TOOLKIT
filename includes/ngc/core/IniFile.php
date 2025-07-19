@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -697,9 +697,9 @@ class IniFile {
 	 * @return void
 	 */
 	public function set_nested_array_value(array &$array, string $path, array $value, string $delimiter = '/') : void {
-		$pathParts = explode($delimiter, $path);
+		$path_parts = explode($delimiter, $path);
 		$current = &$array;
-		foreach($pathParts as $key) $current = &$current[$key];
+		foreach($path_parts as $key) $current = &$current[$key];
 		$current = $value;
 	}
 

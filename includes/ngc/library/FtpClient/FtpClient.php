@@ -190,13 +190,13 @@ class FtpClient implements Countable {
 	 * Returns the last modified time of the given file.
 	 * Return -1 on error
 	 *
-	 * @param string $remoteFile
+	 * @param string $remote_file
 	 * @param string|null $format
 	 *
 	 * @return int
 	 */
-	public function modified_time(string $remoteFile, ?string $format = null) : string|int {
-		$time = $this->ftp->mdtm($remoteFile);
+	public function modified_time(string $remote_file, ?string $format = null) : string|int {
+		$time = $this->ftp->mdtm($remote_file);
 		if($time !== -1 && $format !== null){
 			return date($format, $time);
 		}
@@ -371,9 +371,9 @@ class FtpClient implements Countable {
 		if($path == '.' || $path == '..') return false;
 		try {
 			if(@$this->ftp->delete($path) || ($this->is_dir($path) && $this->rmdir($path, $recursive))) return true;
-			$newPath = preg_replace('/[^A-Za-z0-9\/]/', '', $path);
-			if($this->rename($path, $newPath)){
-				if(@$this->ftp->delete($newPath) || ($this->is_dir($newPath) && $this->rmdir($newPath, $recursive))){
+			$new_path = preg_replace('/[^A-Za-z0-9\/]/', '', $path);
+			if($this->rename($path, $new_path)){
+				if(@$this->ftp->delete($new_path) || ($this->is_dir($new_path) && $this->rmdir($new_path, $recursive))){
 					return true;
 				}
 			}
@@ -526,7 +526,7 @@ class FtpClient implements Countable {
 	 * @throws FtpException When the transfer fails
 	 */
 	public function put_from_path(string $local_file) : static {
-		$remote_file = basename($local_file);
+		$remote_file = pathinfo($local_file, PATHINFO_BASENAME);
 		$handle = fopen($local_file, 'r');
 		if(!$handle) throw new FtpException('Unable to open local file "'.$local_file.'"');
 		if($this->ftp->fput($remote_file, $handle, FTP_BINARY)){
@@ -622,8 +622,8 @@ class FtpClient implements Countable {
 				if(!isset($chunks[8]) || strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 				$path = "$directory/{$chunks[8]}";
 				if(isset($chunks[9])){
-					$nbChunks = count($chunks);
-					for($i = 9; $i < $nbChunks; $i++){
+					$nb_chunks = count($chunks);
+					for($i = 9; $i < $nb_chunks; $i++){
 						$path .= ' '.$chunks[$i];
 					}
 				}
@@ -642,8 +642,8 @@ class FtpClient implements Countable {
 			if(!isset($chunks[8]) || strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 			$path = "$directory/{$chunks[8]}";
 			if(isset($chunks[9])){
-				$nbChunks = count($chunks);
-				for($i = 9; $i < $nbChunks; $i++){
+				$nb_chunks = count($chunks);
+				for($i = 9; $i < $nb_chunks; $i++){
 					$path .= ' '.$chunks[$i];
 				}
 			}
@@ -683,7 +683,7 @@ class FtpClient implements Countable {
 				}
 				continue;
 			}
-			$nameSlices = array_slice($chunks, 8, 1);
+			$name_slices = array_slice($chunks, 8, 1);
 			$item = [
 				'permissions' => $chunks[0],
 				'number' => $chunks[1],
@@ -693,7 +693,7 @@ class FtpClient implements Countable {
 				'month' => $chunks[5],
 				'day' => $chunks[6],
 				'time' => $chunks[7],
-				'name' => implode(' ', $nameSlices),
+				'name' => implode(' ', $name_slices),
 				'type' => $this->raw_to_type($chunks[0]),
 			];
 			if($item['type'] == 'link' && isset($chunks[10])){

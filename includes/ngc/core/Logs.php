@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -83,7 +83,7 @@ class Logs {
 		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
-		fwrite($file, "");
+		fwrite($file, "\xEF\xBB\xBF");
 		fclose($file);
 		return file_exists($this->path);
 	}

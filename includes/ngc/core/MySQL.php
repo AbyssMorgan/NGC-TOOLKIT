@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -21,7 +21,7 @@ use BadMethodCallException;
 /**
  * A wrapper class for PDO to simplify database interactions.
  * @method PDOStatement prepare(string $query, array $options = [])
- * @method PDOStatement query(string $query, ?int $fetchMode = null, mixed ...$fetchModeArgs)
+ * @method PDOStatement query(string $query, ?int $fetch_mode = null, mixed ...$fetch_mode_args)
  * @method int exec(string $statement)
  * @method string lastInsertId(?string $name = null)
  * @method bool beginTransaction()
@@ -44,18 +44,10 @@ class MySQL {
 	public ?PDO $db;
 
 	/**
-	 * Flag to enable or disable debug mode.
-	 * @var bool
-	 */
-	private bool $debug = false;
-
-	/**
 	 * MySQL constructor.
-	 *
-	 * @param bool $debug If true, debug messages will be echoed.
 	 */
-	public function __construct(bool $debug = false){
-		$this->debug = $debug;
+	public function __construct(){
+		
 	}
 
 	/**
@@ -101,15 +93,6 @@ class MySQL {
 	}
 
 	/**
-	 * Toggles the debug mode.
-	 *
-	 * @param bool $toggle If true, debug messages will be echoed.
-	 */
-	public function toggle_debug(bool $toggle) : void {
-		$this->debug = $toggle;
-	}
-
-	/**
 	 * Disconnects from the database by setting the PDO instance to null.
 	 */
 	public function disconnect() : void {
@@ -148,19 +131,6 @@ class MySQL {
 		$string = strval($string) ?? '';
 		if(empty($string)) return '';
 		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
-	}
-
-	/**
-	 * Executes an SQL query.
-	 *
-	 * @param string $query The SQL query string.
-	 * @param int|null $fetchMode The fetch mode for the PDOStatement.
-	 * @return PDOStatement|false The PDOStatement object on success, or false on failure.
-	 */
-	public function query(string $query, ?int $fetchMode = null) : PDOStatement|false {
-		if(empty($query)) return false;
-		if($this->debug) echo " [MySQL] $query\r\n";
-		return $this->db->query($query, $fetchMode);
 	}
 
 	/**

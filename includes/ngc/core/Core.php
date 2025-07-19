@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.0 – Component
+ * NGC-TOOLKIT v2.7.1 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace NGC\Core;
 
+use Exception;
 use IntlTimeZone;
 use FilesystemIterator;
 
@@ -667,7 +668,7 @@ class Core {
 	 * @return array An array of full paths to the found files.
 	 */
 	public function get_files(string $path, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
-		if(!file_exists($path) || !is_readable($path)) return [];
+		if(!file_exists($path)) return [];
 		if(!$case_sensitive && !is_null($name_filters)){
 			$name_filters = $this->array_to_lower($name_filters);
 		}
@@ -675,6 +676,35 @@ class Core {
 		$this->scan_dir_safe_extension($path, $data, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
 		asort($data, SORT_STRING);
 		return array_values($data);
+	}
+
+	/**
+	 * Do operations on a list of files from a given path, with optional filtering.
+	 *
+	 * @param string|array $path The directory/direcories path to scan.
+	 * @param callable $callback Callback called for every found files function(string $file)
+	 * @param ?array $include_extensions An array of extensions to include (e.g., ['jpg', 'png']). Null for all.
+	 * @param ?array $exclude_extensions An array of extensions to exclude. Null for none.
+	 * @param ?array $name_filters An array of strings to filter file names by (case-sensitive or insensitive). Null for no name filter.
+	 * @param bool $case_sensitive Whether name filtering should be case-sensitive.
+	 * @param bool $recursive Whether to scan subdirectories recursively.
+	 * @return int Count total processed files.
+	 */
+	public function process_files(string|array $path, callable $callback, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : int {
+		if(gettype($path) == 'string'){
+			$paths = [$path];
+		} else {
+			$paths = $path;
+		}
+		if(!$case_sensitive && !is_null($name_filters)){
+			$name_filters = $this->array_to_lower($name_filters);
+		}
+		$counter = 0;
+		foreach($paths as $path){
+			if(!file_exists($path)) continue;
+			$this->scan_dir_safe_extension_process_files($path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
+		}
+		return $counter;
 	}
 
 	/**
@@ -689,10 +719,14 @@ class Core {
 		if(!file_exists($path) || !is_dir($path)) return [];
 		$data = [];
 		if($with_parent){
-			$data[] = realpath($path);
+			$data[] = $path;
 		}
-		if(!is_readable($path)) return $data;
-		$files = scandir($path);
+		try {
+			$files = @scandir($path);
+		}
+		catch(Exception $e){
+			return [];
+		}
 		if($files === false) return $data;
 		foreach($files as $file){
 			if($file === '.' || $file === '..'){
@@ -700,7 +734,7 @@ class Core {
 			}
 			$full_path = $path.DIRECTORY_SEPARATOR.$file;
 			if(is_dir($full_path) && !is_link($full_path)){
-				$data[] = realpath($full_path);
+				$data[] = $full_path;
 				if($recursive){
 					$data = array_merge($data, $this->get_folders($full_path, false, $recursive));
 				}
@@ -933,7 +967,6 @@ class Core {
 	 */
 	public function move(string $from, string $to, bool $log = true) : bool {
 		if(!file_exists($from)) return false;
-		if($from == $to) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
@@ -985,7 +1018,7 @@ class Core {
 	 */
 	public function copy(string $from, string $to, bool $log = true) : bool {
 		if(!file_exists($from)) return false;
-		if($from == $to) return true;
+		if($this->same_path($from, $to)) return true;
 		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXIST");
 			return false;
@@ -1004,7 +1037,7 @@ class Core {
 	}
 
 	/**
-	 * Asynchronously copies a file from one location to another using a buffer.
+	 * Copies a file from one location to another using a buffer and file allocation.
 	 *
 	 * @param string $from The source file path.
 	 * @param string $to The destination file path.
@@ -1013,10 +1046,10 @@ class Core {
 	 */
 	public function acopy(string $from, string $to, bool $log = true) : bool {
 		if(!file_exists($from)) return false;
-		if($from === $to) return true;
+		if($this->same_path($from, $to)) return true;
 		$write_buffer = $this->get_write_buffer();
 		if(!$write_buffer) return false;
-		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) !== pathinfo($to, PATHINFO_DIRNAME)){
+		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXISTS");
 			return false;
 		}
@@ -1042,6 +1075,66 @@ class Core {
 		touch($to, $modification_date);
 		if($log) $this->write_log("COPY \"$from\" \"$to\"");
 		return true;
+	}
+
+	/**
+	 * Copies a file from one location to another using a buffer, file allocation and destination comparsion for reduce writing in SSD drives.
+	 *
+	 * @param string $from The source file path.
+	 * @param string $to The destination file path.
+	 * @param int $block_size Block size for read/write operations
+	 * @param bool $log Whether to log the operation.
+	 * @return bool True on success, false on failure.
+	 */
+	public function acopy_ssd(string $from, string $to, int $block_size = 4096, bool $log = true) : bool {
+		if(!file_exists($from)) return false;
+		if(!file_exists($to)) return $this->acopy($from, $to, $log);
+		if($this->same_path($from, $to)) return true;
+		$dir = pathinfo($to, PATHINFO_DIRNAME);
+		if(!file_exists($dir)) $this->mkdir($dir);
+		$modification_date = filemtime($from);
+		$filesize = filesize($from);
+		$source = fopen($from, 'rb');
+		$destination = fopen($to, 'r+b');
+		if(!$source || !$destination){
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
+			return false;
+		}
+		if(function_exists('ftruncate')){
+			ftruncate($destination, $filesize);
+		}
+		$offset = 0;
+		while(!feof($source)){
+			fseek($destination, $offset);
+			$data_source = fread($source, $block_size);
+			$data_destination = fread($destination, $block_size);
+			$hash_source = hash('md5', $data_source);			
+			$hash_destination = hash('md5', $data_destination);
+			if($hash_source !== $hash_destination){
+				fseek($destination, $offset);
+				fwrite($destination, $data_source);
+			}
+			$offset += $block_size;
+		}
+		fclose($source);
+		fclose($destination);
+		touch($to, $modification_date);
+		if($log) $this->write_log("COPY \"$from\" \"$to\"");
+		return true;
+	}
+
+	/**
+	 * Compare two path are identical
+	 * @param string $from The source file path.
+	 * @param string $to The destination file path.
+	 * @return bool True when path are identical, false if not.
+	 */
+	public function same_path(string $from, string $to) : bool {
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			if(mb_strtolower($from) == mb_strtolower($to)) return true;
+		}
+		if($from == $to) return true;
+		return false;
 	}
 
 	/**
@@ -1590,7 +1683,6 @@ class Core {
 	 */
 	public function get_input_bytes_size(string $name) : int|false {
 		set_size:
-		$this->clear();
 		$this->print_help([
 			' Type integer and unit separate by space, example: 1 GiB',
 			' Size units: B, KiB, MiB, GiB, TiB',
@@ -1615,7 +1707,6 @@ class Core {
 	 */
 	public function get_input_time_interval(string $name) : int|false {
 		set_interval:
-		$this->clear();
 		$this->print_help([
 			' Type integer and unit separate by space, example: 30 sec',
 			' Interval units: sec, min, hour, day',
@@ -1681,27 +1772,38 @@ class Core {
 	 * Moves a file or folder to the system's trash/recycle bin.
 	 *
 	 * @param string $path The path to the file or folder to trash.
+	 * @param ?string $trash_folder The path to the trash folder
 	 * @return bool True on success, false on failure.
 	 */
-	public function trash(string $path) : bool {
+	public function trash(string $path, ?string $trash_folder = null) : bool {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			if(substr($path, 1, 1) == ':'){
-				$new_name = $this->get_path(substr($path, 0, 2)."/.Deleted/".substr($path, 3));
+				$relative_path = substr($path, 3);
+				if(is_null($trash_folder)){
+					$new_name = $this->get_path(substr($path, 0, 2)."/.Deleted/$relative_path");
+				} else {
+					$new_name = $this->get_path("$trash_folder/$relative_path");
+				}
 				if(file_exists($new_name) && !$this->delete($new_name)) return false;
 				return $this->move($path, $new_name);
 			} elseif(substr($path, 0, 2) == "\\\\"){
 				$device = substr($path, 2);
 				if(str_contains($device, "\\")){
-					$new_name = $this->get_path($device."/.Deleted/".str_replace("\\\\$device", "", $path));
+					$relative_path = str_replace("\\\\$device", "", $path);
+					if(is_null($trash_folder)){
+						$new_name = $this->get_path("$device/.Deleted/$relative_path");
+					} else {
+						$new_name = $this->get_path("$trash_folder/$relative_path");
+					}
 					if(file_exists($new_name) && !$this->delete($new_name)) return false;
 					return $this->move($path, $new_name);
 				}
 			}
 		} else {
 			$output = [];
-			$returnVar = 0;
-			exec("gio trash ".escapeshellarg($path), $output, $returnVar);
-			return ($returnVar === 0);
+			$return_var = 0;
+			exec("gio trash ".escapeshellarg($path), $output, $return_var);
+			return $return_var === 0;
 		}
 		$this->write_error("FAILED TRASH \"$path\"");
 		return false;
@@ -1873,6 +1975,43 @@ class Core {
 	}
 
 	/**
+	 * Checks if a given path matches any of the provided wildcard filters.
+	 *
+	 * This method supports two types of wildcard filters:
+	 * 1. **Global filters:** These patterns can include directory separators (`/`) or start with an asterisk (`*`).
+	 * They are matched against the entire normalized path.
+	 * 2. **Filename-only filters:** These patterns do not contain directory separators and do not start with an asterisk.
+	 * They are matched only against the filename part of the path.
+	 *
+	 * Both types of filters support `*` (matches zero or more characters) and `?` (matches exactly one character)
+	 * wildcards. The matching is case-insensitive.
+	 *
+	 * @param string $path The path to check. Backslashes (`\`) are converted to forward slashes (`/`) for normalization.
+	 * @param array<string> $wildcard_filters An array of wildcard patterns to match against the path.
+	 * @return bool True if the path matches any of the wildcard filters, false otherwise.
+	 */
+	public function matches_path_wildcard_filters(string $path, array $wildcard_filters) : bool {
+		$normalized_path = str_replace('\\', '/', $path);
+		foreach($wildcard_filters as $pattern){
+			$normalized_pattern = str_replace('\\', '/', $pattern);
+			$is_global = str_starts_with($normalized_pattern, '*') || str_contains($normalized_pattern, '/');
+			$regex = preg_quote($normalized_pattern, '#');
+			$regex = str_replace(['\*', '\?'], ['.*', '.'], $regex);
+			if($is_global){
+				if(preg_match("#^{$regex}$#i", $normalized_path)){
+					return true;
+				}
+			} else {
+				$file_name = basename($normalized_path);
+				if(preg_match("#^{$regex}$#i", $file_name)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Recursively scans a directory for files, applying include/exclude extension filters and name filters.
 	 *
 	 * @param string $dir The directory to scan.
@@ -1882,31 +2021,77 @@ class Core {
 	 * @param ?array $name_filters An array of strings to filter file names by.
 	 * @param bool $case_sensitive Whether name filtering should be case-sensitive.
 	 * @param bool $recursive Whether to scan subdirectories recursively.
+	 * @return bool True if an action was successfully performed, false otherwise.
 	 */
-	private function scan_dir_safe_extension(string $dir, array &$data, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive) : void {
-		$items = @scandir($dir);
-		if($items === false) return;
+	public function scan_dir_safe_extension(string $dir, array &$data, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
+		try {
+			$items = @scandir($dir);
+		}
+		catch(Exception $e){
+			return false;
+		}
+		if($items === false) return false;
 		foreach($items as $item){
 			if($item === '.' || $item === '..') continue;
 			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
 			if(is_dir($full_path)){
 				if(!$recursive) continue;
-				if(!is_readable($full_path)) continue;
 				$this->scan_dir_safe_extension($full_path, $data, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
 				continue;
 			}
-			if(!is_file($full_path) || !is_readable($full_path)) continue;
 			$ext = mb_strtolower(pathinfo($full_path, PATHINFO_EXTENSION));
 			if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
 			if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
-			$basename = basename($full_path);
+			$basename = pathinfo($full_path, PATHINFO_BASENAME);
 			if(!is_null($name_filters)){
 				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
 				if(!$this->filter($check_name, $name_filters)) continue;
 			}
-			$full_path = realpath($full_path);
-			if($full_path !== false) $data[] = $full_path;
+			$data[] = $full_path;
 		}
+		return true;
+	}
+
+	/**
+	 * Recursively scans a directory for files, applying include/exclude extension filters and name filters.
+	 *
+	 * @param string $dir The directory to scan.
+	 * @param callable $callback Callback called for every found files function(string $file)
+	 * @param ?array $include_extensions An array of extensions to include.
+	 * @param ?array $exclude_extensions An array of extensions to exclude.
+	 * @param ?array $name_filters An array of strings to filter file names by.
+	 * @param bool $case_sensitive Whether name filtering should be case-sensitive.
+	 * @param bool $recursive Whether to scan subdirectories recursively.
+	 * @return bool True if an action was successfully performed, false otherwise.
+	 */
+	public function scan_dir_safe_extension_process_files(string $dir, callable $callback, int &$counter, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
+		try {
+			$items = @scandir($dir);
+		}
+		catch(Exception $e){
+			return false;
+		}
+		if($items === false) return false;
+		foreach($items as $item){
+			if($item === '.' || $item === '..') continue;
+			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
+			if(is_dir($full_path)){
+				if(!$recursive) continue;
+				$this->scan_dir_safe_extension_process_files($full_path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
+				continue;
+			}
+			$ext = mb_strtolower(pathinfo($full_path, PATHINFO_EXTENSION));
+			if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
+			if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
+			$basename = pathinfo($full_path, PATHINFO_BASENAME);
+			if(!is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+				if(!$this->filter($check_name, $name_filters)) continue;
+			}
+			$counter++;
+			$callback($full_path);
+		}
+		return true;
 	}
 
 }
