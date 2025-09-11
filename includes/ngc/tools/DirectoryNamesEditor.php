@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -189,7 +189,7 @@ class DirectoryNamesEditor {
 						return $matches[1].mb_strtoupper($matches[2]);
 					}, $escaped_name);
 					$escaped_name = preg_replace_callback('/([\(\[])([a-z])/', function(array $matches) : string {
-						return $matches[1] . mb_strtoupper($matches[2]);
+						return $matches[1].mb_strtoupper($matches[2]);
 					}, $escaped_name);
 				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -82,7 +82,7 @@ class BitFunctions {
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
 	public function get_bit(int $bitid) : bool {
-		return $this->get_bit_Value($this->original, $bitid);
+		return $this->get_bit_value($this->original, $bitid);
 	}
 
 	/**
@@ -92,7 +92,7 @@ class BitFunctions {
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
 	public function set_bit(int $bitid, bool $state) : void {
-		$this->set_bit_Value($this->original, $bitid, $state);
+		$this->set_bit_value($this->original, $bitid, $state);
 	}
 
 	/**

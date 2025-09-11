@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -15,7 +15,6 @@ namespace NGC\Core;
 
 use PDO;
 use PDOException;
-use PDOStatement;
 use BadMethodCallException;
 
 /**

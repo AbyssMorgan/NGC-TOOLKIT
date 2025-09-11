@@ -1,3 +1,6 @@
+v2.7.2:
+- Fixes
+
 v2.7.1:
 - Minor fixes in Core functions for list files
 - Minor improvements in Core functions

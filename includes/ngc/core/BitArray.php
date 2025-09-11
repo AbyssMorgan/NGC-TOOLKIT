@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -96,7 +96,7 @@ class BitArray {
 	 */
 	public function get_config(int $id) : bool {
 		$address = $this->get_config_address($id);
-		return $this->bits->get_bit_Value($this->original[$address] ?? 0, $this->get_config_bit($id));
+		return $this->bits->get_bit_value($this->original[$address] ?? 0, $this->get_config_bit($id));
 	}
 
 	/**
@@ -108,7 +108,7 @@ class BitArray {
 	public function set_config(int $id, bool $state) : void {
 		$address = $this->get_config_address($id);
 		if(!isset($this->original[$address])) $this->original[$address] = 0;
-		$this->bits->set_bit_Value($this->original[$address], $this->get_config_bit($id), $state);
+		$this->bits->set_bit_value($this->original[$address], $this->get_config_bit($id), $state);
 	}
 
 	/**

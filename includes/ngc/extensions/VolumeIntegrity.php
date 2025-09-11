@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -18,6 +18,7 @@ use Toolkit;
 use PDO;
 use Exception;
 use PDOException;
+use NGC\Core\IniFile;
 
 /**
  * Manages the integrity and metadata of media items stored within a SQLite database,
@@ -79,12 +80,29 @@ class VolumeIntegrity {
 	 */
 	protected string $table_data;
 
-
 	/**
 	 * An internal cache to store the existence status of tables.
 	 * @var array
 	 */
 	protected array $tables = [];
+	
+	/**
+	 * The id of the volume.
+	 * @var string
+	 */
+	protected ?string $volume_id;
+
+	/**
+	 * The name of the volume.
+	 * @var string
+	 */
+	protected ?string $volume_name;
+
+	/**
+	 * The group of the volume.
+	 * @var string
+	 */
+	protected ?string $volume_group;
 
 	/**
 	 * Constructor for VolumeIntegrity.
@@ -104,6 +122,9 @@ class VolumeIntegrity {
 		$this->table_config = 'ngc_config';
 		$this->table_data = 'ngc_items';
 		$this->connect();
+		$this->volume_id = $this->get_value('VOLUME_ID', null);
+		$this->volume_name = $this->get_value('VOLUME_NAME', null);
+		$this->volume_group = $this->get_value('VOLUME_GROUP', null);
 	}
 
 	/**
@@ -382,6 +403,7 @@ class VolumeIntegrity {
 	 * @return bool True if the rename operation was successful, false otherwise.
 	 */
 	public function rename(string $path_input, string $path_output) : bool {
+		if(is_null($this->db)) return false;
 		$stmt = $this->db->prepare("UPDATE `$this->table_data` SET `path` = :path_output WHERE `path` = :path_input");
 		$stmt->bindValue(':path_input', $path_input);
 		$stmt->bindValue(':path_output', $path_output);
@@ -489,7 +511,8 @@ class VolumeIntegrity {
 	 * @param bool $migrate If true, `migrate()` will be called before checking the version. Defaults to true.
 	 * @return int The version number of the table, or 0 if not found.
 	 */
-	public function get_version(string $table, bool $migrate = true): int {
+	public function get_version(string $table, bool $migrate = true) : int {
+		if(is_null($this->db)) return -1;
 		if($migrate) $this->migrate();
 		if(!$this->table_exists($table)) return 0;
 		$stmt = $this->db->prepare("SELECT `version` FROM `$this->table_version` WHERE `table_name` = :table");
@@ -504,8 +527,10 @@ class VolumeIntegrity {
 	 *
 	 * @param string $table The name of the table whose version is to be set.
 	 * @param int $version The new version number.
+	 * @return bool True if operation was successful, false otherwise.
 	 */
-	public function set_version(string $table, int $version) : void {
+	public function set_version(string $table, int $version) : bool {
+		if(is_null($this->db)) return false;
 		if($version == 1){
 			$insert = $this->db->prepare("INSERT INTO `$this->table_version` (`table_name`, `version`) VALUES (:table, :version)");
 			$insert->execute([':table' => $table, ':version' => $version]);
@@ -513,6 +538,7 @@ class VolumeIntegrity {
 			$update = $this->db->prepare("UPDATE `$this->table_version` SET `version` = :version WHERE `table_name` = :table");
 			$update->execute([':version' => $version, ':table' => $table]);
 		}
+		return true;
 	}
 
 	/**
@@ -522,8 +548,9 @@ class VolumeIntegrity {
 	 * @param string|null $default The default value to return if the configuration name is not found. Defaults to null.
 	 * @return string|null The retrieved configuration value, or the default value if not found.
 	 */
-	public function get_value(string $name, ?string $default = null): ?string {
-		$stmt = $this->db->prepare("SELECT `value` FROM `$this->table_version` WHERE `name` = :name LIMIT 1");
+	public function get_value(string $name, ?string $default = null) : ?string {
+		if(is_null($this->db)) return null;
+		$stmt = $this->db->prepare("SELECT `value` FROM `$this->table_config` WHERE `name` = :name LIMIT 1");
 		$stmt->bindValue(':name', $name, PDO::PARAM_STR);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_OBJ);
@@ -537,8 +564,10 @@ class VolumeIntegrity {
 	 *
 	 * @param string $name The name of the configuration setting.
 	 * @param string $value The value to set for the configuration setting.
+	 * @return bool True if operation was successful, false otherwise.
 	 */
-	public function set_value(string $name, string $value) : void {
+	public function set_value(string $name, string $value) : bool {
+		if(is_null($this->db)) return false;
 		$value = $this->escape($value);
 		if(is_null($this->get_value($name))){
 			$insert = $this->db->prepare("INSERT INTO `$this->table_config` (`name`, `value`) VALUES (:name, :value)");
@@ -547,6 +576,63 @@ class VolumeIntegrity {
 			$update = $this->db->prepare("UPDATE `$this->table_config` SET `value` = :value WHERE `name` = :name");
 			$update->execute([':name' => $name, ':value' => $value]);
 		}
+		return true;
+	}
+
+	/**
+	 * Get volume id
+	 * @return string|null The volume id or null if not set.
+	 */
+	public function get_volume_id() : ?string {
+		return $this->volume_id;
+	}
+
+	/**
+	 * Get volume name
+	 * @return string|null The volume name or null if not set.
+	 */
+	public function get_volume_name() : ?string {
+		return $this->volume_name;
+	}
+
+	/**
+	 * Get volume group
+	 * @return string|null The volume group or null if not set.
+	 */
+	public function get_volume_group() : ?string {
+		return $this->volume_group;
+	}
+
+	/**
+	 * Auto update volume info in data base
+	 * @param IniFile $volume_info Volume information
+	 * @return bool True if operation was successful, false otherwise.
+	 */
+	public function update_volume_info(IniFile $volume_info) : bool {
+		if(is_null($this->db)) return false;
+		if($volume_info->get('volume_id') !== $this->volume_id){
+			$this->volume_id = $volume_info->get('volume_id');
+			$this->set_value('VOLUME_ID', $this->volume_id);
+		}
+		if($volume_info->get('name') !== $this->volume_name){
+			$this->volume_name = $volume_info->get('name');
+			$this->set_value('VOLUME_NAME', $this->volume_name);
+		}
+		if($volume_info->get('group_name') !== $this->volume_group){
+			$this->volume_group = $volume_info->get('group_name');
+			$this->set_value('VOLUME_GROUP', $this->volume_group);
+		}
+		return true;
+	}
+
+	/**
+	 * Get volume usage size in bytes
+	 * @return int Volume size in bytes
+	 */
+	public function get_volume_size() : int {
+		if(is_null($this->db)) return 0;
+		$result = $this->db->query("SELECT SUM(`size`) AS `size` FROM `$this->table_data`", PDO::FETCH_OBJ);
+		return $result->fetch()->size ?? 0;
 	}
 
 }

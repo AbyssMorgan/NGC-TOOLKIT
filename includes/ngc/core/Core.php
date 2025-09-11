@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -979,7 +979,7 @@ class Core {
 			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
-			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\"");
+			if($log) $this->write_error("FAILED MOVE \"$from\" \"$to\"");
 			return false;
 		}
 	}
@@ -1063,9 +1063,7 @@ class Core {
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
 			return false;
 		}
-		if(function_exists('ftruncate')){
-			ftruncate($destination, $filesize);
-		}
+		ftruncate($destination, $filesize);
 		while(!feof($source)){
 			$buffer = fread($source, $write_buffer);
 			fwrite($destination, $buffer);
@@ -1100,15 +1098,13 @@ class Core {
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
 			return false;
 		}
-		if(function_exists('ftruncate')){
-			ftruncate($destination, $filesize);
-		}
+		ftruncate($destination, $filesize);
 		$offset = 0;
 		while(!feof($source)){
 			fseek($destination, $offset);
 			$data_source = fread($source, $block_size);
 			$data_destination = fread($destination, $block_size);
-			$hash_source = hash('md5', $data_source);			
+			$hash_source = hash('md5', $data_source);
 			$hash_destination = hash('md5', $data_destination);
 			if($hash_source !== $hash_destination){
 				fseek($destination, $offset);

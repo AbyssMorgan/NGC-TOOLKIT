@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.1 – Component
+ * NGC-TOOLKIT v2.7.2 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -112,12 +112,9 @@ class Request {
 	 * It tests for HTTP/3, then HTTP/2, and falls back to HTTP/1.1 if neither is supported.
 	 *
 	 * @param string $url The URL to test the HTTP version against.
-	 * @return int The negotiated cURL HTTP version constant (CURL_HTTP_VERSION_3, CURL_HTTP_VERSION_2, or CURL_HTTP_VERSION_1_1).
+	 * @return int The negotiated cURL HTTP version constant (CURL_HTTP_VERSION_2, or CURL_HTTP_VERSION_1_1).
 	 */
 	public function negotiate_http_version(string $url) : int {
-		if(defined('CURL_HTTP_VERSION_3')){
-			if($this->test_http_version($url, CURL_HTTP_VERSION_3)) return CURL_HTTP_VERSION_3;
-		}
 		if($this->test_http_version($url, CURL_HTTP_VERSION_2)) return CURL_HTTP_VERSION_2;
 		return CURL_HTTP_VERSION_1_1;
 	}
@@ -130,9 +127,6 @@ class Request {
 	 */
 	public function set_http_version(int $version) : bool {
 		$versions = [CURL_HTTP_VERSION_1_0, CURL_HTTP_VERSION_1_1, CURL_HTTP_VERSION_2];
-		// if(defined('CURL_HTTP_VERSION_3')){
-		// 	array_push($versions, CURL_HTTP_VERSION_3, CURL_HTTP_VERSION_3ONLY);
-		// }
 		if(in_array($version, $versions)){
 			$this->set_option(CURLOPT_HTTP_VERSION, $version);
 			return true;
