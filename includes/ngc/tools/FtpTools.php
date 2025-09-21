@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.2 – Component
+ * NGC-TOOLKIT v2.7.3 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -67,7 +67,7 @@ class FtpTools {
 			case '8': return $this->tool_delete_empty_folders();
 			case '9': return $this->tool_delete_structure();
 			case '10': return $this->tool_copy_files_from_ftp_to_ftp();
-			case '11': return $this->tool_import_file_zilla_xml();
+			case '11': return $this->tool_import_filezilla_xml();
 		}
 		return false;
 	}
@@ -309,6 +309,9 @@ class FtpTools {
 		}
 		$this->core->echo(" Saved results into ".$csv->get_path());
 		$csv->close();
+
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
@@ -360,31 +363,27 @@ class FtpTools {
 			return false;
 		}
 
-		$errors = 0;
-
 		$this->core->clear();
-		$this->core->echo(" Get file list from \"$input\"");
-		$files = $remote->get_files($input, $extensions, null, $filters);
-		$total = count($files);
-		$items = 0;
-		$this->core->echo(" Download files to \"$output\"");
-		$this->core->progress($items, $total);
-		$this->core->set_errors($errors);
-		foreach($files as $file){
-			$items++;
-			$local_file = $this->core->get_path(str_replace($input, $output, $file));
+		$this->core->echo(" Download files \"$input\" => \"$output\"");
+		$remote->process_files($input, function(string $file, string $type) use ($ftp, $input, $output) : bool {
+			if($type == 'directory') return false;
+			$local_file = $this->core->get_path(str_ireplace($input, $output, $file));
 			$directory = pathinfo($local_file, PATHINFO_DIRNAME);
-			if(file_exists($local_file)) $this->core->delete($local_file);
-			if(!file_exists($directory)) $this->core->mkdir($directory);
-			if($ftp->get($local_file, $file, FTP_BINARY, 0)){
-				$this->core->write_log("DOWNLOAD \"$file\" AS \"$local_file\"");
-			} else {
-				$this->core->write_error("FAILED DOWNLOAD \"$file\" AS \"$local_file\"");
-				$errors++;
+			if(file_exists($local_file)){
+				$this->core->delete($local_file);
+			} elseif(!file_exists($directory)){
+				$this->core->mkdir($directory);
 			}
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
-		}
+			if($ftp->get($local_file, $file, FTP_BINARY, 0)){
+				$this->on_success("DOWNLOAD \"$file\" => \"$local_file\"");
+			} else {
+				$this->on_error("FAILED DOWNLOAD \"$file\" => \"$local_file\"");
+			}
+			return true;
+		}, $extensions, null, $filters);
+		
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
@@ -481,6 +480,9 @@ class FtpTools {
 			$this->core->progress($items, $total);
 			$this->core->set_errors($errors);
 		}
+
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
@@ -526,27 +528,20 @@ class FtpTools {
 			$filters = explode(" ", $line);
 		}
 
-		$errors = 0;
-
 		$this->core->clear();
-		$this->core->echo(" Get file list from \"$input\"");
-		$files = $remote->get_files($input, $extensions, null, $filters);
-		$total = count($files);
-		$items = 0;
 		$this->core->echo(" Delete files from \"$input\"");
-		$this->core->progress($items, $total);
-		$this->core->set_errors($errors);
-		foreach($files as $file){
-			$items++;
+		$remote->process_files($input, function(string $file, string $type) use ($ftp) : bool {
+			if($type == 'directory') return false;
 			if($ftp->delete($file)){
-				$this->core->write_log("DELETE \"$file\"");
+				$this->on_success("DELETE \"$file\"");
 			} else {
-				$this->core->write_error("FAILED DELETE \"$file\"");
-				$errors++;
+				$this->on_error("FAILED DELETE \"$file\"");
 			}
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
-		}
+			return true;
+		}, $extensions, null, $filters);
+
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
@@ -574,29 +569,22 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$errors = 0;
-
 		$this->core->clear();
 		$this->core->echo(" Get folders list from \"$input\"");
 		$files = array_reverse($remote->get_folders($input));
-		$total = count($files);
-		$items = 0;
 		$this->core->echo(" Delete empty folders from \"$input\"");
-		$this->core->progress($items, $total);
-		$this->core->set_errors($errors);
 		foreach($files as $file){
-			$items++;
 			if(!$remote->has_files($file)){
 				if($ftp->rmdir($file, false)){
-					$this->core->write_log("DELETE \"$file\"");
+					$this->on_success("DELETE \"$file\"");
 				} else {
-					$this->core->write_error("FAILED DELETE \"$file\"");
-					$errors++;
+					$this->on_error("FAILED DELETE \"$file\"");
 				}
 			}
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
 		}
+
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
@@ -624,48 +612,35 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$errors = 0;
-
+		$folders = [];
+		
 		$this->core->clear();
-		$this->core->echo(" Get file list from \"$input\"");
-		$files = $remote->get_files($input);
-		$total = count($files);
-		$items = 0;
 		$this->core->echo(" Delete files from \"$input\"");
-		$this->core->progress($items, $total);
-		$this->core->set_errors($errors);
-		foreach($files as $file){
-			$items++;
-			if($ftp->delete($file)){
-				$this->core->write_log("DELETE \"$file\"");
+		$remote->process_files($input, function(string $file, string $type) use ($ftp, $folders) : bool {
+			if($type == 'directory'){
+				$folders[] = $file;
 			} else {
-				$this->core->write_error("FAILED DELETE \"$file\"");
-				$errors++;
-			}
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
-		}
-
-		$this->core->echo(" Get folders list from \"$input\"");
-		$files = array_reverse($remote->get_folders($input));
-		$total = count($files);
-		$items = 0;
-		$this->core->echo(" Delete empty folders from \"$input\"");
-		$this->core->progress($items, $total);
-		$this->core->set_errors($errors);
-		foreach($files as $file){
-			$items++;
-			if(!$remote->has_files($file)){
-				if($ftp->rmdir($file, false)){
-					$this->core->write_log("DELETE \"$file\"");
+				if($ftp->delete($file)){
+					$this->on_success("DELETE \"$file\"");
 				} else {
-					$this->core->write_error("FAILED DELETE \"$file\"");
-					$errors++;
+					$this->on_error("FAILED DELETE \"$file\"");
 				}
 			}
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
+			return true;
+		});
+
+		$folders = array_reverse($folders);
+		$this->core->echo(" Delete folders from \"$input\"");
+		foreach($folders as $folder){
+			if($ftp->rmdir($folder, false)){
+				$this->on_success("DELETE \"$folder\"");
+			} else {
+				$this->on_error("FAILED DELETE \"$folder\"");
+			}
 		}
+		
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
@@ -733,72 +708,39 @@ class FtpTools {
 			$filters = explode(" ", $line);
 		}
 
-		$create_empty_folders = $this->core->get_confirm(" Create empty folders (Y/N): ");
-
-		$errors = 0;
-		$this->core->set_errors($errors);
-
-		$directories = [];
-		$this->core->clear();
-		$this->core->echo(" Get file list from \"$input\"");
+		$ftp_source->set_option(FTP_TIMEOUT_SEC, 3600);
 		$ftp_destination->set_option(FTP_TIMEOUT_SEC, 3600);
 
-		$files = $remote_source->get_files($input, $extensions, null, $filters);
-		if(!$create_empty_folders){
-			foreach($files as $file){
-				array_push($directories, str_ireplace($input, $output, pathinfo($file, PATHINFO_DIRNAME)));
-			}
-			$directories = array_unique($directories);
-		} else {
-			$folders = $remote_source->get_folders($input);
-			foreach($folders as $folder){
-				array_push($directories, str_ireplace($input, $output, $folder));
-			}
-		}
-
-		$total = count($directories);
-		$items = 0;
-		$this->core->echo(" Create folders in \"$output\"");
-		$this->core->progress($items, $total);
-		foreach($directories as $directory){
-			$items++;
-			if(!$remote_destination->folder_exists($directory)){
-				if($ftp_destination->mkdir($directory, true)){
-					$this->core->write_log("FTP MKDIR \"$directory\"");
+		$this->core->clear();
+		$this->core->echo(" Copy files \"$input\" => \"$output\"");
+		$remote_source->process_files($input, function(string $file, string $type) use ($input, $output, $ftp_source, $ftp_destination) : bool {
+			$new_name = str_ireplace($input, $output, $file);
+			if($type == 'directory'){
+				if($ftp_destination->mkdir($new_name)){
+					$this->on_success("FTP MKDIR \"$new_name\"");
 				} else {
-					$this->core->write_error("FAILED FTP MKDIR \"$directory\"");
-					$errors++;
-				}
-			}
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
-		}
-
-		$total = count($files);
-		$items = 0;
-		$this->core->echo(" Copy files to \"$output\"");
-		$this->core->progress($items, $total);
-		$this->core->set_errors($errors);
-		foreach($files as $file){
-			$items++;
-			$fp = fopen('php://memory', 'r+');
-			if($ftp_source->fget($fp, $file, FTP_BINARY)){
-				fseek($fp, 0);
-				$remote_file = str_ireplace($input, $output, $file);
-				if($ftp_destination->fput($remote_file, $fp, FTP_BINARY)){
-					$this->core->write_log("COPY \"$file\" \"$remote_file\"");
-				} else {
-					$this->core->write_error("FAILED UPLOAD \"$file\"");
-					$errors++;
+					$this->on_error("FAILED FTP MKDIR \"$new_name\"");
 				}
 			} else {
-				$this->core->write_error("FAILED DOWNLOAD \"$file\"");
-				$errors++;
+				$fp = fopen('php://memory', 'r+');
+				if($ftp_source->fget($fp, $file, FTP_BINARY)){
+					$this->on_success("DOWNLOAD \"$file\"");
+					fseek($fp, 0);
+					if($ftp_destination->fput($new_name, $fp, FTP_BINARY)){
+						$this->on_success("COPY \"$file\" => \"$new_name\"");
+					} else {
+						$this->on_error("FAILED COPY \"$file\" => \"$new_name\"");
+					}
+				} else {
+					$this->on_error("FAILED DOWNLOAD \"$file\"");
+				}
+				fclose($fp);
 			}
-			fclose($fp);
-			$this->core->progress($items, $total);
-			$this->core->set_errors($errors);
-		}
+			return true;
+		}, $extensions, null, $filters);
+
+		$this->core->echo();
+		$this->core->echo(" Disconnect from FTP");
 		$ftp_source->close();
 		$ftp_destination->close();
 
@@ -807,9 +749,9 @@ class FtpTools {
 		return false;
 	}
 
-	public function tool_import_file_zilla_xml() : bool {
+	public function tool_import_filezilla_xml() : bool {
 		$this->core->clear();
-		$this->core->set_subtool("Import file zilla XML");
+		$this->core->set_subtool("Import filezilla XML");
 
 		set_xml_file:
 		$input = $this->core->get_input_file(" XML file: ", true);
@@ -911,6 +853,16 @@ class FtpTools {
 		$ftp->pasv(true);
 
 		return $ftp;
+	}
+
+	private function on_success(string $message) : void {
+		$this->core->echo(" $message");
+		$this->core->write_log($message);
+	}
+
+	private function on_error(string $message) : void {
+		$this->core->echo(" $message");
+		$this->core->write_error($message);
 	}
 
 }

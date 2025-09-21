@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.2 – Component
+ * NGC-TOOLKIT v2.7.3 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -85,7 +85,7 @@ class StringConverter {
 	 * @return string The converted string.
 	 */
 	public function convert(string $string) : string {
-		return str_replace(array_keys($this->replace), $this->replace, $string);
+		return str_replace(array_keys($this->replace), array_values($this->replace), $string);
 	}
 
 	/**
@@ -95,7 +95,7 @@ class StringConverter {
 	 * @return string The cleaned string.
 	 */
 	public function clean(string $string) : string {
-		return str_replace(array_keys($this->removal), $this->removal, $string);
+		return str_replace(array_keys($this->removal), array_values($this->removal), $string);
 	}
 
 	/**

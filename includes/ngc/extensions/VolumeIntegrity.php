@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.2 – Component
+ * NGC-TOOLKIT v2.7.3 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -242,6 +242,11 @@ class VolumeIntegrity {
 		$data = [];
 		$items = $this->db->query("SELECT * FROM `$this->table_data`", PDO::FETCH_OBJ);
 		foreach($items as $item){
+			if(isset($data[$item->path])){
+				$this->core->echo(" Duplicate integrity for \"$item->path\", removed.");
+				$this->db->query("DELETE FROM `$this->table_data` WHERE `id` = $item->id");
+				continue;
+			}
 			$data[$item->path] = (object)[
 				'id' => $item->id,
 				'checksum' => $item->checksum,

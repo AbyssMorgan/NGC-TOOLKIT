@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.2 – Component
+ * NGC-TOOLKIT v2.7.3 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -153,7 +153,7 @@ class BitArray {
 		$this->original = [];
 		$address = 0;
 		for($offset = 0; $offset < $length; $offset += 4){
-			$this->original[$address] = $this->bits->merge_value(ord($binary[$offset] ?? 0), ord($binary[$offset + 1] ?? 0), ord($binary[$offset + 2] ?? 0), ord($binary[$offset + 3] ?? 0));
+			$this->original[$address] = $this->bits->merge_value(ord($binary[$offset] ?? "\0"), ord($binary[$offset + 1] ?? "\0"), ord($binary[$offset + 2] ?? "\0"), ord($binary[$offset + 3] ?? "\0"));
 			$address++;
 		}
 	}

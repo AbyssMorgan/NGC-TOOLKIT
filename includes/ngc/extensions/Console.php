@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.2 – Component
+ * NGC-TOOLKIT v2.7.3 – Component
  *
  * © 2025 Abyss Morgan
  *
