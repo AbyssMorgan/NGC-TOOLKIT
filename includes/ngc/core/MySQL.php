@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -113,9 +113,13 @@ class MySQL {
 	 * @return string|null The name of the current database, or null if not set or an error occurs.
 	 */
 	public function get_data_base() : ?string {
-		$sth = $this->query("SELECT DATABASE() AS `name`;");
-		$result = $sth->fetch(PDO::FETCH_OBJ);
-		return $result->name ?? null;
+		$stmt_select = $this->prepare("SELECT DATABASE() AS `name`");
+		$stmt_select->execute();
+		if($row = $stmt_select->fetch(PDO::FETCH_OBJ)){
+			return $row->name;
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -145,6 +149,43 @@ class MySQL {
 			$data .= " ".implode($separator, $result)."\r\n";
 		}
 		return $data;
+	}
+
+	/**
+	 * Gets all items from the query
+	 * @param string $query
+	 * @param mixed $params
+	 * @param int $mode
+	 * @return array
+	 */
+	public function get(string $query, ?array $params = null, int $mode = PDO::FETCH_OBJ) : array {
+		$stmt = $this->prepare($query);
+		$stmt->execute($params);
+		return $stmt->fetchAll($mode);
+	}
+
+	/**
+	 * Get first element from query
+	 * @param string $query
+	 * @param mixed $params
+	 * @param int $mode
+	 * @return mixed
+	 */
+	public function first(string $query, ?array $params = null, int $mode = PDO::FETCH_OBJ) : mixed {
+		$stmt = $this->prepare($query);
+		$stmt->execute($params);
+		return $stmt->fetch($mode);
+	}
+
+	/**
+	 * Executes a query with values
+	 * @param string $query
+	 * @param mixed $params
+	 * @return bool
+	 */
+	public function execute_query(string $query, ?array $params = null) : bool {
+		$stmt = $this->prepare($query);
+		return $stmt->execute($params);
 	}
 
 }

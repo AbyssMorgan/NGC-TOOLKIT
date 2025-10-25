@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -19,6 +19,7 @@ use finfo;
 use GdImage;
 use Imagick;
 use Exception;
+use ImagickKernel;
 use NGC\Core\IniFile;
 use NGC\Dictionaries\MediaDictionary;
 
@@ -172,22 +173,22 @@ class MediaFunctions {
 	 */
 	public function get_image_resolution(string $path) : string {
 		$image = $this->get_image_from_path($path);
-		if(is_null($image)){
-			try {
-				@$image = new Imagick($path);
-				$w = @$image->getImageWidth();
-				$h = @$image->getImageHeight();
-				@$image->clear();
-				return "{$w}x{$h}";
-			}
-			catch(Exception $e){
-				return $this->ffprobe_get_resolution($path);
-			}
+		if(!is_null($image)){
+			$w = imagesx($image);
+			$h = imagesy($image);
+			imagedestroy($image);
+			return "{$w}x{$h}";
 		}
-		$w = imagesx($image);
-		$h = imagesy($image);
-		imagedestroy($image);
-		return "{$w}x{$h}";
+		try {
+			@$image = new Imagick($path);
+			$w = @$image->getImageWidth();
+			$h = @$image->getImageHeight();
+			@$image->clear();
+			return "{$w}x{$h}";
+		}
+		catch(Exception $e){
+			return $this->ffprobe_get_resolution($path);
+		}
 	}
 
 	/**
@@ -198,7 +199,9 @@ class MediaFunctions {
 	 */
 	public function is_image_animated(string $path) : bool {
 		if(!file_exists($path)) return false;
-		switch($this->get_mime_type($path)){
+		$mime_type = $this->get_mime_type($path);
+		if(in_array($mime_type, $this->mime_types_video)) return true;
+		switch($mime_type){
 			case 'image/gif': {
 				try {
 					$image = new Imagick($path);
@@ -511,16 +514,7 @@ class MediaFunctions {
 	 * @return string The human-readable screen type (e.g., 'Dome 180°', '360°'), or 'Unknown'.
 	 */
 	public function vr_screen_type(string $screen_type) : string {
-		switch($screen_type){
-			case "dome": return "Dome 180°";
-			case "fisheye": return "Fisheye 190°";
-			case "mkx200": return "MKX 200°";
-			case "mkx220": return "MKX 220°";
-			case "180": return "180°";
-			case "360": return "360°";
-			case "flat": return "Flat";
-			default: return "Unknown";
-		}
+		return $this->vr_screen_types[$screen_type] ?? "Unknown";
 	}
 
 	/**
@@ -529,12 +523,7 @@ class MediaFunctions {
 	 * @return string The human-readable stereo mode (e.g., 'Side-by-Side (SBS)', 'Top-Bottom (TB)'), or 'Unknown'.
 	 */
 	public function vr_stereo_mode(string $stereo_mode) : string {
-		switch($stereo_mode){
-			case "sbs": return "Side-by-Side (SBS)";
-			case "tb": return "Top-Bottom (TB)";
-			case "off": return "No Stereo";
-			default: return "Unknown";
-		}
+		return $this->vr_stereo_modes[$stereo_mode] ?? "Unknown";
 	}
 
 	/**
@@ -850,6 +839,62 @@ class MediaFunctions {
 			$callback($full_path, $mime_type);
 		}
 		return true;
+	}
+
+	public function is_image_blurry(string $path, float $threshold = 10.0, int $max_size = 600) : bool {
+		if(!file_exists($path)) return false;
+		try {
+			$img = new Imagick($path);
+		}
+		catch(Exception $e){
+			return false;
+		}
+		$geometry = $img->getImageGeometry();
+		$w = $geometry['width'];
+		$h = $geometry['height'];
+		if(max($w, $h) > $max_size){
+			if($w >= $h){
+				$img->resizeImage($max_size, 0, Imagick::FILTER_LANCZOS, 1);
+			} else {
+				$img->resizeImage(0, $max_size, Imagick::FILTER_LANCZOS, 1);
+			}
+		}
+
+		$img->setImageColorspace(Imagick::COLORSPACE_GRAY);
+		$img->setImageType(Imagick::IMGTYPE_GRAYSCALE);
+
+		$laplaceMatrix = [
+			[0, -1, 0],
+			[-1, 4, -1],
+			[0, -1, 0],
+		];
+		$kernel = ImagickKernel::fromMatrix($laplaceMatrix);
+		$img->convolveImage($kernel);
+
+		$it = $img->getPixelIterator();
+		$sum = 0.0;
+		$sum_sq = 0.0;
+		$count = 0;
+
+		foreach($it as $row){
+			foreach($row as $pixel){
+				$color = $pixel->getColor();
+				$val = ($color['r'] + $color['g'] + $color['b']) / 3.0;
+				$sum += $val;
+				$sum_sq += $val * $val;
+				$count++;
+			}
+			$it->syncIterator();
+		}
+
+		if($count === 0) return true;
+
+		$mean = $sum / $count;
+		$variance = ($sum_sq / $count) - ($mean * $mean);
+
+		$img->destroy();
+
+		return $variance < $threshold;
 	}
 
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -27,44 +27,10 @@ class BitArray {
 	protected array $original = [];
 
 	/**
-	 * The number of bits stored in a single integer (e.g., 32 or 64).
-	 * @var int
-	 */
-	protected int $max_bits;
-
-	/**
-	 * An instance of the BitFunctions class for bitwise operations.
-	 * @var BitFunctions
-	 */
-	protected BitFunctions $bits;
-
-	/**
 	 * Constructor for the BitArray class.
-	 * Initializes a BitFunctions instance and sets the maximum bits per integer.
 	 */
 	public function __construct(){
-		$this->bits = new BitFunctions(32);
-		$this->max_bits = $this->bits->get_max_bits();
-	}
 
-	/**
-	 * Calculates the array address (index) where a given bit ID is stored.
-	 *
-	 * @param int $id The zero-based global ID of the bit.
-	 * @return int The integer index in the internal array.
-	 */
-	public function get_config_address(int $id) : int {
-		return (int)floor(intval($id) / $this->max_bits);
-	}
-
-	/**
-	 * Calculates the bit position within the integer at its corresponding array address.
-	 *
-	 * @param int $id The zero-based global ID of the bit.
-	 * @return int The zero-based bit position within the integer.
-	 */
-	public function get_config_bit(int $id) : int {
-		return (int)intval($id) % $this->max_bits;
 	}
 
 	/**
@@ -74,7 +40,7 @@ class BitArray {
 	 * @return int The required size of the internal integer array.
 	 */
 	public function get_config_size(int $max_items) : int {
-		return (int)floor(intval($max_items) / $this->max_bits) + 1;
+		return (int)floor($max_items / 32) + 1;
 	}
 
 	/**
@@ -84,7 +50,9 @@ class BitArray {
 	 */
 	public function get_config_used_size() : int {
 		$size = 0;
-		foreach($this->original as $key => $value) $size = max($size, $key);
+		foreach($this->original as $key => $value){
+			$size = max($size, $key);
+		}
 		return (int)($size + 1);
 	}
 
@@ -95,8 +63,7 @@ class BitArray {
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
 	public function get_config(int $id) : bool {
-		$address = $this->get_config_address($id);
-		return $this->bits->get_bit_value($this->original[$address] ?? 0, $this->get_config_bit($id));
+		return (bool)((($this->original[(int)floor($id / 32)] ?? 0) >> ($id % 32)) & 1);
 	}
 
 	/**
@@ -106,9 +73,9 @@ class BitArray {
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
 	public function set_config(int $id, bool $state) : void {
-		$address = $this->get_config_address($id);
-		if(!isset($this->original[$address])) $this->original[$address] = 0;
-		$this->bits->set_bit_value($this->original[$address], $this->get_config_bit($id), $state);
+		$address = (int)floor($id / 32);
+		$bit_id = $id % 32;
+		$this->original[$address] = (($this->original[$address] ?? 0) & ~(1 << $bit_id)) | ((int)$state << $bit_id);
 	}
 
 	/**
@@ -130,7 +97,7 @@ class BitArray {
 	public function from_assoc(array $assoc, array $keys) : void {
 		$this->original = [];
 		foreach($keys as $id => $key){
-			$this->set_config($id, ($assoc[$key] ?? false));
+			$this->set_config($id, $assoc[$key] ?? false);
 		}
 	}
 
@@ -153,7 +120,7 @@ class BitArray {
 		$this->original = [];
 		$address = 0;
 		for($offset = 0; $offset < $length; $offset += 4){
-			$this->original[$address] = $this->bits->merge_value(ord($binary[$offset] ?? "\0"), ord($binary[$offset + 1] ?? "\0"), ord($binary[$offset + 2] ?? "\0"), ord($binary[$offset + 3] ?? "\0"));
+			$this->original[$address] = (int)((ord($binary[$offset] ?? "\0") << 24) | (ord($binary[$offset + 1] ?? "\0") << 16) | (ord($binary[$offset + 2] ?? "\0") << 8) | ord($binary[$offset + 3] ?? "\0"));
 			$address++;
 		}
 	}
@@ -203,7 +170,7 @@ class BitArray {
 		$id = 0;
 		$max_address = $this->get_config_used_size();
 		for($address = 0; $address < $max_address; $address++){
-			for($bitid = 0; $bitid < $this->max_bits; $bitid++){
+			for($bit_id = 0; $bit_id < 32; $bit_id++){
 				if(isset($keys[$id])){
 					$data[$keys[$id]] = $this->get_config($id);
 				}
@@ -232,14 +199,10 @@ class BitArray {
 	public function to_binary(int &$length = 0) : string {
 		$data = '';
 		$length = 0;
-		$int1 = 0;
-		$int2 = 0;
-		$int3 = 0;
-		$int4 = 0;
 		$max_address = $this->get_config_used_size();
 		for($address = 0; $address < $max_address; $address++){
-			$this->bits->extract_value($this->original[$address] ?? 0, $int1, $int2, $int3, $int4);
-			$data .= chr($int1).chr($int2).chr($int3).chr($int4);
+			$value = $this->original[$address] ?? 0;
+			$data .= chr(($value >> 24) & 0xFF).chr(($value >> 16) & 0xFF).chr(($value >> 8) & 0xFF).chr($value & 0xFF);
 			$length += 4;
 		}
 		return $data;

@@ -79,7 +79,7 @@ class FaceDetector {
 			'x' => $this->face['x'] - ($nw - $sw) / 2.0,
 			'y' => $this->face['y'] - ($nw - $sw) / 2.0,
 			'width' => $nw,
-			'height' => $nw
+			'height' => $nw,
 		];
 	}
 
@@ -158,7 +158,7 @@ class FaceDetector {
 			'width' => $image_width,
 			'height' => $image_height,
 			'ii' => $iis['ii'],
-			'ii2' => $iis['ii2']
+			'ii2' => $iis['ii2'],
 		];
 	}
 

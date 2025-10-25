@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -77,7 +77,7 @@ class Migration extends MySQL {
 					`table_name` varchar(32) NOT NULL,
 					`version` int(11) NOT NULL DEFAULT 0,
 					PRIMARY KEY (`id`)
-				) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+				) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 			");
 			$this->tables[$this->table_version] = true;
 		}
@@ -90,10 +90,22 @@ class Migration extends MySQL {
 					`name` varchar(128) DEFAULT NULL,
 					`value` text DEFAULT NULL,
 					PRIMARY KEY (`id`)
-				) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+				) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 			");
 			$this->set_version($this->table_config, 1);
 			$this->tables[$this->table_config] = true;
+		}
+
+		$version = $this->get_version($this->table_config, false);
+		if($version < 2){
+			$this->query("ALTER TABLE `$this->table_config` ADD UNIQUE(`name`)");
+			$this->set_version($this->table_config, 2);
+		}
+
+		$version = $this->get_version($this->table_version, false);
+		if($version < 2){
+			$this->query("ALTER TABLE `$this->table_version` ADD UNIQUE(`table_name`)");
+			$this->set_version($this->table_version, 2);
 		}
 	}
 

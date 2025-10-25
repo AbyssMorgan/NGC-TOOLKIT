@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -183,6 +183,12 @@ class Core {
 	 * @var string
 	 */
 	public string $resources_folder;
+
+	/**
+	 * Abort flag.
+	 * @var bool
+	 */
+	public bool $abort = false;
 	
 	/**
 	 * Map of console color codes.

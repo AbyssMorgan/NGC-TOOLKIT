@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -376,12 +376,12 @@ class Request {
 				'code' => $info['http_code'] ?? 0,
 				'data' => [
 					'message' => $error ?: 'Unknown cURL error',
-				]
+				],
 			];
 		}
 		return [
 			'code' => $info['http_code'] ?? 0,
-			'data' => $this->json ? json_decode($response, true) : $response
+			'data' => $this->json ? json_decode($response, true) : $response,
 		];
 	}
 

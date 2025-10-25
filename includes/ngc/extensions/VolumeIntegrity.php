@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -265,7 +265,7 @@ class VolumeIntegrity {
 	 * @param string $path The full path to escape.
 	 * @return string The escaped path relative to the disk.
 	 */
-	private function container_escape(string $path) : string {
+	public function container_escape(string $path) : string {
 		return str_ireplace(["$this->disk\\", "$this->disk/", "\\"], ["", "", "/"], $path);
 	}
 
@@ -455,7 +455,10 @@ class VolumeIntegrity {
 			foreach($items as $item){
 				if($id != $item){
 					$update = $this->db->prepare("UPDATE `$this->table_data` SET `id` = :new_id WHERE `id` = :old_id");
-					$update->execute([':new_id' => $id, ':old_id' => $item]);
+					$update->execute([
+						':new_id' => $id,
+						':old_id' => $item,
+					]);
 				}
 				$id++;
 			}
@@ -538,10 +541,16 @@ class VolumeIntegrity {
 		if(is_null($this->db)) return false;
 		if($version == 1){
 			$insert = $this->db->prepare("INSERT INTO `$this->table_version` (`table_name`, `version`) VALUES (:table, :version)");
-			$insert->execute([':table' => $table, ':version' => $version]);
+			$insert->execute([
+				':table' => $table,
+				':version' => $version,
+			]);
 		} else {
 			$update = $this->db->prepare("UPDATE `$this->table_version` SET `version` = :version WHERE `table_name` = :table");
-			$update->execute([':version' => $version, ':table' => $table]);
+			$update->execute([
+				':version' => $version,
+				':table' => $table,
+			]);
 		}
 		return true;
 	}
@@ -576,10 +585,16 @@ class VolumeIntegrity {
 		$value = $this->escape($value);
 		if(is_null($this->get_value($name))){
 			$insert = $this->db->prepare("INSERT INTO `$this->table_config` (`name`, `value`) VALUES (:name, :value)");
-			$insert->execute([':name' => $name, ':value' => $value]);
+			$insert->execute([
+				':name' => $name,
+				':value' => $value,
+			]);
 		} else {
 			$update = $this->db->prepare("UPDATE `$this->table_config` SET `value` = :value WHERE `name` = :name");
-			$update->execute([':name' => $name, ':value' => $value]);
+			$update->execute([
+				':name' => $name,
+				':value' => $value,
+			]);
 		}
 		return true;
 	}

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -57,42 +57,42 @@ class BitFunctions {
 	 * Gets the boolean value of a specific bit within a given integer.
 	 *
 	 * @param int $value The integer to read the bit from.
-	 * @param int $bitid The zero-based index of the bit to retrieve (e.g., 0 for the least significant bit).
+	 * @param int $bit_id The zero-based index of the bit to retrieve (e.g., 0 for the least significant bit).
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
-	public function get_bit_value(int $value, int $bitid) : bool {
-		return (bool)(($value >> $bitid) & 0x01);
+	public function get_bit_value(int $value, int $bit_id) : bool {
+		return (bool)(($value >> $bit_id) & 1);
 	}
 
 	/**
 	 * Sets or unsets a specific bit within a given integer by reference.
 	 *
 	 * @param int $value The integer whose bit will be modified (passed by reference).
-	 * @param int $bitid The zero-based index of the bit to set or unset.
+	 * @param int $bit_id The zero-based index of the bit to set or unset.
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
-	public function set_bit_value(int &$value, int $bitid, bool $state) : void {
-		$value = ($value & ~(0x01 << $bitid)) | ((0x01 << $bitid) * ($state ? 1 : 0));
+	public function set_bit_value(int &$value, int $bit_id, bool $state) : void {
+		$value = ($value & ~(1 << $bit_id)) | ((int)$state << $bit_id);
 	}
 
 	/**
 	 * Gets the boolean value of a specific bit in the internal 'original' integer.
 	 *
-	 * @param int $bitid The zero-based index of the bit to retrieve.
+	 * @param int $bit_id The zero-based index of the bit to retrieve.
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
-	public function get_bit(int $bitid) : bool {
-		return $this->get_bit_value($this->original, $bitid);
+	public function get_bit(int $bit_id) : bool {
+		return $this->get_bit_value($this->original, $bit_id);
 	}
 
 	/**
 	 * Sets or unsets a specific bit in the internal 'original' integer.
 	 *
-	 * @param int $bitid The zero-based index of the bit to set or unset.
+	 * @param int $bit_id The zero-based index of the bit to set or unset.
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
-	public function set_bit(int $bitid, bool $state) : void {
-		$this->set_bit_value($this->original, $bitid, $state);
+	public function set_bit(int $bit_id, bool $state) : void {
+		$this->set_bit_value($this->original, $bit_id, $state);
 	}
 
 	/**
@@ -108,12 +108,12 @@ class BitFunctions {
 	 * Sets the internal 'original' integer based on a boolean array representing individual bits.
 	 * The array index corresponds to the bit ID.
 	 *
-	 * @param array $array An array of booleans, where array[bitid] determines the state of that bit.
+	 * @param array $array An array of booleans, where array[bit_id] determines the state of that bit.
 	 */
 	public function from_array(array $array) : void {
 		$this->original = 0;
-		for($bitid = 0; $bitid < $this->max_bits; $bitid++){
-			$this->set_bit($bitid, $array[$bitid] ?? false);
+		for($bit_id = 0; $bit_id < $this->max_bits; $bit_id++){
+			$this->set_bit($bit_id, $array[$bit_id] ?? false);
 		}
 	}
 
@@ -125,8 +125,8 @@ class BitFunctions {
 	 */
 	public function from_assoc(array $assoc, array $keys) : void {
 		$this->original = 0;
-		foreach($keys as $bitid => $key){
-			$this->set_bit($bitid, $assoc[$key] ?? false);
+		foreach($keys as $bit_id => $key){
+			$this->set_bit($bit_id, $assoc[$key] ?? false);
 		}
 	}
 
@@ -166,8 +166,8 @@ class BitFunctions {
 	 */
 	public function to_array() : array {
 		$data = [];
-		for($bitid = 0; $bitid < $this->max_bits; $bitid++){
-			$data[$bitid] = $this->get_bit($bitid);
+		for($bit_id = 0; $bit_id < $this->max_bits; $bit_id++){
+			$data[$bit_id] = $this->get_bit($bit_id);
 		}
 		return $data;
 	}
@@ -181,8 +181,8 @@ class BitFunctions {
 	 */
 	public function to_assoc(array $keys) : array {
 		$data = [];
-		for($bitid = 0; $bitid < $this->max_bits; $bitid++){
-			if(isset($keys[$bitid])) $data[$keys[$bitid]] = $this->get_bit($bitid);
+		for($bit_id = 0; $bit_id < $this->max_bits; $bit_id++){
+			if(isset($keys[$bit_id])) $data[$keys[$bit_id]] = $this->get_bit($bit_id);
 		}
 		return $data;
 	}
@@ -196,8 +196,8 @@ class BitFunctions {
 	 */
 	public function to_string(bool $full_string = false) : string {
 		$string = '';
-		for($bitid = 0; $bitid < $this->max_bits; $bitid++){
-			$string .= $this->get_bit($bitid) ? '1' : '0';
+		for($bit_id = 0; $bit_id < $this->max_bits; $bit_id++){
+			$string .= $this->get_bit($bit_id) ? '1' : '0';
 		}
 		$string = strrev($string);
 		if(!$full_string){
@@ -228,9 +228,7 @@ class BitFunctions {
 	 * @param bool $full_string Optional. Passed to to_string() to determine if the string should be full length.
 	 */
 	public function invert(bool $full_string = false) : void {
-		$binary = $this->to_string($full_string);
-		$inverted = strtr($binary, ['0' => '1', '1' => '0']);
-		$this->from_string($inverted);
+		$this->from_string(strtr($this->to_string($full_string), ['0' => '1', '1' => '0']));
 	}
 
 	/**
@@ -238,8 +236,7 @@ class BitFunctions {
 	 * It inverts all bits up to $max_bits.
 	 */
 	public function invert_full() : void {
-		$mask = (1 << $this->max_bits) - 1;
-		$this->original ^= $mask;
+		$this->original ^= (1 << $this->max_bits) - 1;
 	}
 
 	/**
@@ -275,10 +272,10 @@ class BitFunctions {
 	 * @param int|null $int4 Output parameter for the least significant 8 bits.
 	 */
 	public function extract_value(int $value, ?int &$int1, ?int &$int2, ?int &$int3, ?int &$int4) : void {
-		$int1 = (int)($value >> 24) & 0xFF;
-		$int2 = (int)($value >> 16) & 0xFF;
-		$int3 = (int)($value >> 8) & 0xFF;
-		$int4 = (int)$value & 0xFF;
+		$int1 = ($value >> 24) & 0xFF;
+		$int2 = ($value >> 16) & 0xFF;
+		$int3 = ($value >> 8) & 0xFF;
+		$int4 = $value & 0xFF;
 	}
 
 	/**
@@ -308,14 +305,14 @@ class BitFunctions {
 	 * @param int|null $int8 Output parameter for the least significant 8 bits.
 	 */
 	public function extract_value_64(int $value, ?int &$int1, ?int &$int2, ?int &$int3, ?int &$int4, ?int &$int5, ?int &$int6, ?int &$int7, ?int &$int8) : void {
-		$int1 = (int)($value >> 56) & 0xFF;
-		$int2 = (int)($value >> 48) & 0xFF;
-		$int3 = (int)($value >> 40) & 0xFF;
-		$int4 = (int)($value >> 32) & 0xFF;
-		$int5 = (int)($value >> 24) & 0xFF;
-		$int6 = (int)($value >> 16) & 0xFF;
-		$int7 = (int)($value >> 8) & 0xFF;
-		$int8 = (int)$value & 0xFF;
+		$int1 = ($value >> 56) & 0xFF;
+		$int2 = ($value >> 48) & 0xFF;
+		$int3 = ($value >> 40) & 0xFF;
+		$int4 = ($value >> 32) & 0xFF;
+		$int5 = ($value >> 24) & 0xFF;
+		$int6 = ($value >> 16) & 0xFF;
+		$int7 = ($value >> 8) & 0xFF;
+		$int8 = $value & 0xFF;
 	}
 
 	/**

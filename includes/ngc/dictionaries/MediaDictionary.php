@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -60,7 +60,7 @@ trait MediaDictionary {
 		'_MKX220',
 		'_VRCA220',
 		'_TB_180',
-		'_360'
+		'_360',
 	];
 
 	/**
@@ -100,7 +100,7 @@ trait MediaDictionary {
 		'webp',
 		'wmf',
 		'xpm',
-		'xwd'
+		'xwd',
 	];
 
 	/**
@@ -157,7 +157,7 @@ trait MediaDictionary {
 		'wmv',
 		'x264',
 		'x265',
-		'yuv'
+		'yuv',
 	];
 
 	/**
@@ -191,7 +191,7 @@ trait MediaDictionary {
 		'wav',
 		'weba',
 		'wma',
-		'wv'
+		'wv',
 	];
 
 	/**
@@ -213,7 +213,7 @@ trait MediaDictionary {
 		'txt',
 		'usf',
 		'vtt',
-		'webvtt'
+		'webvtt',
 	];
 	
 	/**
@@ -261,6 +261,7 @@ trait MediaDictionary {
 	 * @var array<int, string>
 	 */
 	public array $mime_types_images = [
+		'image/avif',
 		'image/bmp',
 		'image/gif',
 		'image/jpeg',
@@ -493,6 +494,30 @@ trait MediaDictionary {
 		3840 => '4K',
 		1920 => '2K',
 		1600 => 'FullHD',
+	];
+
+	/**
+	 * An associative array mapping VR screen types to their common names.
+	 * @var array<string, string>
+	 */
+	public array $vr_screen_types = [
+		'dome' => "Dome 180\u{00B0}",
+		'fisheye' => "Fisheye 190\u{00B0}",
+		'mkx200' => "MKX 200\u{00B0}",
+		'mkx220' => "MKX 220\u{00B0}",
+		'180' => "180\u{00B0}",
+		'360' => "360\u{00B0}",
+		'flat' => "Flat",
+	];
+
+	/**
+	 * An associative array mapping VR stereo modes to their common names.
+	 * @var array<string, string>
+	 */
+	public array $vr_stereo_modes = [
+		'sbs' => 'Side-by-Side (SBS)',
+		'tb' => 'Top-Bottom (TB)',
+		'off' => 'No Stereo',
 	];
 
 }

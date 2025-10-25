@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.3 – Component
+ * NGC-TOOLKIT v2.7.4 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -62,7 +62,7 @@ class MediaSorter {
 			' Modes:',
 			' 0 - Orientation + Quality',
 			' 1 - Orientation: Vertical / Horizontal / Square',
-			' 2 - Quality: 17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
+			' 2 - Quality: 34560p 17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
 		]);
 
 		$line = $this->core->get_input(" Mode: ");
