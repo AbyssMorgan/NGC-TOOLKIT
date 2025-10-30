@@ -76,7 +76,8 @@ class Migration extends MySQL {
 					`id` int(11) NOT NULL AUTO_INCREMENT,
 					`table_name` varchar(32) NOT NULL,
 					`version` int(11) NOT NULL DEFAULT 0,
-					PRIMARY KEY (`id`)
+					PRIMARY KEY (`id`),
+					UNIQUE(`table_name`)
 				) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 			");
 			$this->tables[$this->table_version] = true;
@@ -100,12 +101,6 @@ class Migration extends MySQL {
 		if($version < 2){
 			$this->query("ALTER TABLE `$this->table_config` ADD UNIQUE(`name`)");
 			$this->set_version($this->table_config, 2);
-		}
-
-		$version = $this->get_version($this->table_version, false);
-		if($version < 2){
-			$this->query("ALTER TABLE `$this->table_version` ADD UNIQUE(`table_name`)");
-			$this->set_version($this->table_version, 2);
 		}
 	}
 
