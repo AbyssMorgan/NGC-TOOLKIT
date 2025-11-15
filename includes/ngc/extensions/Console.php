@@ -56,8 +56,8 @@ class Console {
 		$this->core->title($path);
 		$this->core->clear();
 		$this->script = $path;
-		$this->path = pathinfo($path, PATHINFO_DIRNAME);
-		$content = file_get_contents($path);
+		$this->path = \pathinfo($path, PATHINFO_DIRNAME);
+		$content = \file_get_contents($path);
 		if(strpos($content, "@AppType NGC_SCRIPT") === false){
 			$this->core->echo();
 			$this->core->echo(" File \"$path\" is not a valid {$this->core->app_name} Script");

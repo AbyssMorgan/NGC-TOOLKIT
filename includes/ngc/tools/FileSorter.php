@@ -70,7 +70,7 @@ class FileSorter {
 		if($line == '#') return false;
 
 		$params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
 
 		set_separator:
 		$this->core->clear();
@@ -82,7 +82,7 @@ class FileSorter {
 		$separator = $this->core->get_input(" Separator: ");
 		if($separator == '#') return false;
 		$params['separator'] = strtolower($separator[0] ?? '?');
-		if(!in_array($params['separator'], ['.', '-', '_', '\\', '@'])) goto set_separator;
+		if(!\in_array($params['separator'], ['.', '-', '_', '\\', '@'])) goto set_separator;
 		if($params['separator'] == '\\') $params['separator'] = DIRECTORY_SEPARATOR;
 
 		$this->core->clear();
@@ -97,13 +97,13 @@ class FileSorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				if(!$this->core->move($file, $this->core->put_folder_to_path($file, str_replace("-", $params['separator'], $this->tool_sort_date_format_date($params['mode'], filemtime($file)))))){
 					$errors++;
 				}
@@ -130,13 +130,13 @@ class FileSorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				if(!$this->core->move($file, $this->core->put_folder_to_path($file, $this->core->get_extension($file)))){
 					$errors++;
 				}
@@ -191,13 +191,13 @@ class FileSorter {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$size = filesize($file);
 				$multiplier = floor(($size - 1) / $interval);
 				if($size == 0) $multiplier = 0;
-				$end = $this->core->format_bytes(intval($interval * ($multiplier + 1)));
+				$end = $this->core->format_bytes(\intval($interval * ($multiplier + 1)));
 				if($prefix){
-					$directory = sprintf("%06d", $multiplier)." $end";
+					$directory = \sprintf("%06d", $multiplier)." $end";
 				} else {
 					$directory = $end;
 				}
@@ -233,12 +233,12 @@ class FileSorter {
 		if($line == '#') return false;
 
 		$params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1'])) goto set_mode;
 
 		if($params['mode'] == '0'){
 			set_delimiter:
 			$delimiter = $this->core->get_input(" Delimiter: ");
-			if(strlen($delimiter) == 0) goto set_delimiter;
+			if(\strlen($delimiter) == 0) goto set_delimiter;
 		} elseif($params['mode'] == '1'){
 			$length = $this->core->get_input_integer(" Word length: ");
 		}
@@ -253,14 +253,14 @@ class FileSorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = pathinfo($file, PATHINFO_BASENAME);
+				if(!\file_exists($file)) continue 1;
+				$name = \pathinfo($file, PATHINFO_BASENAME);
 				if($params['mode'] == '0'){
 					$end = strpos($name, $delimiter);
 					if($end === false){
@@ -271,7 +271,7 @@ class FileSorter {
 				} elseif($params['mode'] == '1'){
 					$prefix = trim(substr($name, 0, $length));
 				}
-				if(!is_null($prefix)){
+				if(!\is_null($prefix)){
 					if(!$this->core->move($file, $this->core->put_folder_to_path($file, $prefix))){
 						$errors++;
 					}
@@ -302,13 +302,13 @@ class FileSorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$mime_type = $this->core->media->get_mime_type($file);
 				if($mime_type === false){
 					$this->core->write_error("FAILED GET MIME TYPE \"$file\"");

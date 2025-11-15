@@ -44,8 +44,8 @@ class AppStorage {
 	 * @return bool True if the MySQL configuration file exists, false otherwise.
 	 */
 	public function has_mysql(?string $label) : bool {
-		if(is_null($label)) return false;
-		return file_exists($this->core->get_path("{$this->core->app_data}/MySQL/$label.ini"));
+		if(\is_null($label)) return false;
+		return \file_exists($this->core->get_path("{$this->core->app_data}/MySQL/$label.ini"));
 	}
 
 	/**
@@ -65,8 +65,8 @@ class AppStorage {
 	 * @return bool True if the FTP configuration file exists, false otherwise.
 	 */
 	public function has_ftp(?string $label) : bool {
-		if(is_null($label)) return false;
-		return file_exists($this->core->get_path("{$this->core->app_data}/FTP/$label.ini"));
+		if(\is_null($label)) return false;
+		return \file_exists($this->core->get_path("{$this->core->app_data}/FTP/$label.ini"));
 	}
 
 	/**

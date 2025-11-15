@@ -15,7 +15,7 @@ class BuildLinux {
 	public function execute() : void {
 		$app_name = 'NGC-TOOLKIT';
 
-		$version = file_get_contents($this->core->get_path("$this->path/version"));
+		$version = \file_get_contents($this->core->get_path("$this->path/version"));
 
 		$this->core->title("$app_name Builder v$version");
 
@@ -34,7 +34,7 @@ class BuildLinux {
 
 		$this->core->delete($zip_name_a);
 
-		if(file_exists($zip_name_b)){
+		if(\file_exists($zip_name_b)){
 			$this->core->pause(" Operation done, press any key to back to menu");
 		} else {
 			$this->core->pause(" Failed compress files.");

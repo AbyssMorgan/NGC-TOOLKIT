@@ -98,21 +98,21 @@ class FileNamesEditor {
 		];
 
 		if($params['algo'] == '?') $params['algo'] = '0';
-		if(!in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
-		if(!in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6', '7'])) goto set_mode;
+		if(!\in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
 
 		$this->core->clear();
 
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
-		$algo = $this->core->get_hash_alghoritm(intval($params['algo']))['name'];
+		$algo = $this->core->get_hash_alghoritm(\intval($params['algo']))['name'];
 		$errors = 0;
 		$this->core->set_errors($errors);
 		$except_files = explode(";", $this->core->config->get('IGNORE_VALIDATE_FILES'));
 		$except_extensions = explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$file_id = 1;
 			$list = [];
 			$files = $this->core->get_files($folder, null, $except_extensions);
@@ -120,14 +120,14 @@ class FileNamesEditor {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				if(in_array(mb_strtolower(pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
+				if(!\file_exists($file)) continue 1;
+				if(\in_array(\mb_strtolower(\pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
 				$hash = strtoupper(hash_file($algo, $file, false));
 				$new_name = $this->tool_check_sum_get_pattern($params['mode'], $file, $hash, $file_id++);
 				if($params['list_only']){
 					array_push($list, $new_name);
 				} else {
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 						if($this->core->config->get('ACTION_AFTER_DUPLICATE') == 'DELETE'){
@@ -160,19 +160,19 @@ class FileNamesEditor {
 	}
 
 	public function tool_check_sum_get_pattern(string $mode, string $file, string $hash, int $file_id) : string {
-		$folder = pathinfo($file, PATHINFO_DIRNAME);
-		$foldername = pathinfo($folder, PATHINFO_FILENAME);
-		$name = pathinfo($file, PATHINFO_FILENAME);
+		$folder = \pathinfo($file, PATHINFO_DIRNAME);
+		$foldername = \pathinfo($folder, PATHINFO_FILENAME);
+		$name = \pathinfo($file, PATHINFO_FILENAME);
 		$extension = $this->core->get_extension($file);
 		switch($mode){
 			case '0': return $this->core->get_path("$folder/$hash.$extension");
 			case '1': return $this->core->get_path("$folder/$name $hash.$extension");
 			case '2': return $this->core->get_path("$folder/$foldername $hash.$extension");
-			case '3': return $this->core->get_path("$folder/$foldername ".sprintf("%04d", $file_id)." $hash.$extension");
+			case '3': return $this->core->get_path("$folder/$foldername ".\sprintf("%04d", $file_id)." $hash.$extension");
 			case '4': return $this->core->get_path("$folder/".date("Y-m-d", filemtime($file))." $hash.$extension");
-			case '5': return $this->core->get_path("$folder/".date("Y-m-d", filemtime($file))." ".sprintf("%04d", $file_id)." $hash.$extension");
-			case '6': return $this->core->get_path("$folder/".sprintf("%04d", $file_id)." $hash.$extension");
-			case '7': return $this->core->get_path("$folder/".sprintf("%06d", $file_id)." $hash.$extension");
+			case '5': return $this->core->get_path("$folder/".date("Y-m-d", filemtime($file))." ".\sprintf("%04d", $file_id)." $hash.$extension");
+			case '6': return $this->core->get_path("$folder/".\sprintf("%04d", $file_id)." $hash.$extension");
+			case '7': return $this->core->get_path("$folder/".\sprintf("%06d", $file_id)." $hash.$extension");
 		}
 		return '';
 	}
@@ -201,8 +201,8 @@ class FileNamesEditor {
 			'mode' => strtolower($line[1] ?? '?'),
 		];
 
-		if(!in_array($params['type'], ['s', 'g'])) goto set_mode;
-		if(!in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6'])) goto set_mode;
+		if(!\in_array($params['type'], ['s', 'g'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1', '2', '3', '4', '5', '6'])) goto set_mode;
 		switch($params['type']){
 			case 's': return $this->tool_number_action_single($params['mode']);
 			case 'g': return $this->tool_number_action_group($params['mode']);
@@ -211,27 +211,27 @@ class FileNamesEditor {
 	}
 
 	public function tool_number_get_prefix_id() : string {
-		return sprintf("%03d", random_int(0, 999));
+		return \sprintf("%03d", random_int(0, 999));
 	}
 
 	public function tool_number_get_pattern(string $mode, string $file, string $prefix, int $file_id, string $input, int $part_id) : ?string {
-		$folder = pathinfo($file, PATHINFO_DIRNAME);
-		$foldername = pathinfo($folder, PATHINFO_FILENAME);
+		$folder = \pathinfo($file, PATHINFO_DIRNAME);
+		$foldername = \pathinfo($folder, PATHINFO_FILENAME);
 		$extension = $this->core->get_extension($file);
 		switch($mode){
-			case '0': return $this->core->get_path("$folder/$prefix".sprintf("%06d", $file_id).".$extension");
-			case '1': return $this->core->get_path("$input/".sprintf("%03d", $part_id)."/$prefix".sprintf("%06d", $file_id).".$extension");
-			case '2': return $this->core->get_path("$input/$prefix".sprintf("%06d", $file_id).".$extension");
-			case '3': return $this->core->get_path("$folder/{$prefix}{$foldername}_".sprintf("%06d", $file_id).".$extension");
-			case '4': return $this->core->get_path("$folder/{$prefix}{$foldername}_".sprintf("%04d", $file_id).".$extension");
-			case '5': return $this->core->get_path("$folder/{$prefix}".sprintf("%06d", $file_id).".$extension");
-			case '6': return $this->core->get_path("$folder/".sprintf("%06d", $file_id).".$extension");
+			case '0': return $this->core->get_path("$folder/$prefix".\sprintf("%06d", $file_id).".$extension");
+			case '1': return $this->core->get_path("$input/".\sprintf("%03d", $part_id)."/$prefix".\sprintf("%06d", $file_id).".$extension");
+			case '2': return $this->core->get_path("$input/$prefix".\sprintf("%06d", $file_id).".$extension");
+			case '3': return $this->core->get_path("$folder/{$prefix}{$foldername}_".\sprintf("%06d", $file_id).".$extension");
+			case '4': return $this->core->get_path("$folder/{$prefix}{$foldername}_".\sprintf("%04d", $file_id).".$extension");
+			case '5': return $this->core->get_path("$folder/{$prefix}".\sprintf("%06d", $file_id).".$extension");
+			case '6': return $this->core->get_path("$folder/".\sprintf("%06d", $file_id).".$extension");
 		}
 		return null;
 	}
 
 	public function tool_number_action(string $mode, string $folder, int &$errors) : bool {
-		if(!file_exists($folder)) return false;
+		if(!\file_exists($folder)) return false;
 		$file_id = ($mode == 5) ? 999999 : 1;
 		$prefix_id = $this->tool_number_get_prefix_id();
 		$files = $this->core->get_files($folder, array_merge($this->core->media->extensions_images, $this->core->media->extensions_video));
@@ -239,20 +239,20 @@ class FileNamesEditor {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue;
+			if(!\file_exists($file)) continue;
 			$extension = $this->core->get_extension($file);
-			$part_id = (int) floor($file_id / intval($this->core->config->get('PART_SIZE'))) + 1;
+			$part_id = (int) floor($file_id / \intval($this->core->config->get('PART_SIZE'))) + 1;
 			if($mode == 1){
-				$prefix_id = sprintf("%03d", $part_id);
+				$prefix_id = \sprintf("%03d", $part_id);
 			}
-			if(in_array($extension, $this->core->media->extensions_images)){
+			if(\in_array($extension, $this->core->media->extensions_images)){
 				$prefix = $this->core->config->get('PREFIX_PHOTO')."_$prefix_id"."_";
 			} else {
 				$prefix = $this->core->config->get('PREFIX_VIDEO')."_$prefix_id"."_";
 			}
 			$new_name = $this->tool_number_get_pattern($mode, $file, $prefix, $file_id, $folder, $part_id);
-			$directory = pathinfo($new_name, PATHINFO_DIRNAME);
-			if(!file_exists($directory)){
+			$directory = \pathinfo($new_name, PATHINFO_DIRNAME);
+			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
 					$this->core->set_errors($errors);
@@ -264,7 +264,7 @@ class FileNamesEditor {
 			} else {
 				$file_id++;
 			}
-			if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+			if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 				$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 				$errors++;
 			} else {
@@ -307,12 +307,12 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
-			$subfolders = scandir($folder);
+			if(!\file_exists($folder)) continue;
+			$subfolders = \scandir($folder);
 			foreach($subfolders as $subfoolder){
 				if($subfoolder == '.' || $subfoolder == '..') continue;
 				$dir = $this->core->get_path("$folder/$subfoolder");
-				if(is_dir($dir)){
+				if(\is_dir($dir)){
 					$this->tool_number_action($mode, $dir, $errors);
 				}
 			}
@@ -352,38 +352,38 @@ class FileNamesEditor {
 
 		if($params['algo'] == '?') $params['algo'] = '0';
 
-		if(!in_array($params['mode'], ['0', '1', '2', '3', '4'])) goto set_mode;
-		if(!in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
-		$params['checksum'] = in_array($params['mode'], ['0', '3', '4']);
-		$params['resolution'] = in_array($params['mode'], ['1', '3', '4']);
-		$params['thumbnail'] = in_array($params['mode'], ['2', '3']);
+		if(!\in_array($params['mode'], ['0', '1', '2', '3', '4'])) goto set_mode;
+		if(!\in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
+		$params['checksum'] = \in_array($params['mode'], ['0', '3', '4']);
+		$params['resolution'] = \in_array($params['mode'], ['1', '3', '4']);
+		$params['thumbnail'] = \in_array($params['mode'], ['2', '3']);
 
 		$this->core->clear();
 
 		$folders = $this->core->get_input_multiple_folders(" Folders: ");
 		if($folders === false) return false;
 
-		$algo = $this->core->get_hash_alghoritm(intval($params['algo']))['name'];
+		$algo = $this->core->get_hash_alghoritm(\intval($params['algo']))['name'];
 		$errors = 0;
 		$this->core->set_errors($errors);
 		$extensions = array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio, $this->core->media->extensions_images);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$extension = $this->core->get_extension($file);
-				$name = pathinfo($file, PATHINFO_FILENAME);
-				$directory = pathinfo($file, PATHINFO_DIRNAME);
-				if($params['checksum'] && !file_exists("$file.$algo")){
+				$name = \pathinfo($file, PATHINFO_FILENAME);
+				$directory = \pathinfo($file, PATHINFO_DIRNAME);
+				if($params['checksum'] && !\file_exists("$file.$algo")){
 					$hash = strtoupper(hash_file($algo, $file, false));
 				} else {
 					$hash = null;
 				}
-				if($params['resolution'] && in_array($extension, $this->core->media->extensions_video) || in_array($extension, $this->core->media->extensions_images)){
+				if($params['resolution'] && \in_array($extension, $this->core->media->extensions_video) || \in_array($extension, $this->core->media->extensions_images)){
 					$resolution = $this->core->media->ffprobe_get_resolution($file);
 					if($resolution == '0x0'){
 						$this->core->write_error("FAILED GET MEDIA RESOLUTION \"$file\"");
@@ -394,7 +394,7 @@ class FileNamesEditor {
 						}
 					}
 				}
-				if($params['thumbnail'] && in_array($extension, $this->core->media->extensions_video)){
+				if($params['thumbnail'] && \in_array($extension, $this->core->media->extensions_video)){
 					$thumbnail = $this->core->media->get_video_thumbnail($file, $directory, $this->core->config->get('THUMBNAIL_WIDTH'), $this->core->config->get('THUMBNAIL_ROWS'), $this->core->config->get('THUMBNAIL_COLUMN'));
 					if($thumbnail){
 						$this->core->write_log("GENERATE THUMBNAIL \"$file.webp\"");
@@ -405,7 +405,7 @@ class FileNamesEditor {
 				}
 				$new_name = $this->core->get_path("$directory/$name.$extension");
 				$renamed = false;
-				if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -416,7 +416,7 @@ class FileNamesEditor {
 					}
 				}
 				if(isset($hash)){
-					if(file_put_contents("$new_name.$algo", $hash)){
+					if(\file_put_contents("$new_name.$algo", $hash)){
 						$this->core->write_log("CREATE \"$new_name.$algo\"");
 					} else {
 						$this->core->write_error("FAILED CREATE \"$new_name.$algo\"");
@@ -425,12 +425,12 @@ class FileNamesEditor {
 				} elseif($renamed){
 					$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
-						if(file_exists("$file.$a")){
+						if(\file_exists("$file.$a")){
 							if(!$this->core->move("$file.$a", "$new_name.$a")) $errors++;
 						}
-						$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
+						$name_old = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
 						$name_new = $this->core->get_path("$directory/$name.$a");
-						if(file_exists($name_old)){
+						if(\file_exists($name_old)){
 							if(!$this->core->move($name_old, $name_new)) $errors++;
 						}
 					}
@@ -458,14 +458,14 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio, $this->core->media->extensions_subtitle));
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)));
+				if(!\file_exists($file)) continue 1;
+				$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], \mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)));
 				$file_name = str_replace(['[', ']'], '', $file_name);
 				$pattern_multi_episodes = "/(S|SP)([0-9]{1,2})E([0-9]{1,3})(?:-E?([0-9]{1,3}))?/";
 				$pattern_single_episode = "/(S|SP)([0-9]{1,2})E([0-9]{1,3})/";
@@ -489,8 +489,8 @@ class FileNamesEditor {
 				}
 
 				if(!empty($escaped_name)){
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -532,14 +532,14 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$escaped_name = pathinfo($file, PATHINFO_FILENAME);
+				if(!\file_exists($file)) continue 1;
+				$escaped_name = \pathinfo($file, PATHINFO_FILENAME);
 				while(str_contains($escaped_name, '  ')){
 					$escaped_name = str_replace('  ', ' ', $escaped_name);
 				}
@@ -548,8 +548,8 @@ class FileNamesEditor {
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -640,14 +640,14 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions, null, $filters);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$escaped_name = pathinfo($file, PATHINFO_FILENAME);
+				if(!\file_exists($file)) continue 1;
+				$escaped_name = \pathinfo($file, PATHINFO_FILENAME);
 				if($flags->basic_replace || $flags->language_replace || $flags->HiragamaToRomaji || $flags->KatakanaToRomaji){
 					$escaped_name = $converter->convert($escaped_name);
 				}
@@ -660,14 +660,14 @@ class FileNamesEditor {
 				if($flags->UpperCase){
 					$escaped_name = ($escaped_name);
 				} elseif($flags->LowerCase){
-					$escaped_name = mb_strtolower($escaped_name);
+					$escaped_name = \mb_strtolower($escaped_name);
 				} elseif($flags->CapitalizeProperly){
-					$escaped_name = ucwords(mb_strtolower($escaped_name));
+					$escaped_name = ucwords(\mb_strtolower($escaped_name));
 					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function(array $matches) : string {
-						return $matches[1].mb_strtoupper($matches[2]);
+						return $matches[1].\mb_strtoupper($matches[2]);
 					}, $escaped_name);
 					$escaped_name = preg_replace_callback('/([\(\[])([a-z])/', function(array $matches) : string {
-						return $matches[1].mb_strtoupper($matches[2]);
+						return $matches[1].\mb_strtoupper($matches[2]);
 					}, $escaped_name);
 				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
@@ -675,8 +675,8 @@ class FileNamesEditor {
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -709,14 +709,14 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio, $this->core->media->extensions_subtitle));
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$file_name = pathinfo($file, PATHINFO_FILENAME);
+				if(!\file_exists($file)) continue 1;
+				$file_name = \pathinfo($file, PATHINFO_FILENAME);
 				$quality_tag = '';
 				$start = strrpos($file_name, '(');
 				if($start !== false){
@@ -741,8 +741,8 @@ class FileNamesEditor {
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name.".$this->core->get_extension($file));
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -783,7 +783,7 @@ class FileNamesEditor {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1'])) goto set_mode;
 		switch($params['mode']){
 			case '0': return $this->tool_series_episode_editor_action_season();
 			case '1': return $this->tool_series_episode_editor_action_episode();
@@ -810,14 +810,14 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$current_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if($current_season == '') goto set_season_current;
-		if(strlen($current_season) == 1) $current_season = "0$current_season";
+		if(\strlen($current_season) == 1) $current_season = "0$current_season";
 
 		set_season_new:
 		$line = $this->core->get_input(" New season: ");
 		if($line == '#') return false;
 		$new_season = substr(preg_replace('/\D/', '', $line), 0, 2);
 		if($new_season == '') goto set_season_new;
-		if(strlen($new_season) == 1) $new_season = "0$new_season";
+		if(\strlen($new_season) == 1) $new_season = "0$new_season";
 
 		$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 		$files = $this->core->get_files($input, array_merge($this->core->media->extensions_video, $follow_extensions));
@@ -828,16 +828,16 @@ class FileNamesEditor {
 		$this->core->set_errors($errors);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue;
-			$file_name = pathinfo($file, PATHINFO_FILENAME);
+			if(!\file_exists($file)) continue;
+			$file_name = \pathinfo($file, PATHINFO_FILENAME);
 			if(preg_match("/S[0-9]{2}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$serie_id = substr($file_name, 1, 2);
 				if($serie_id == $current_season){
-					$directory = pathinfo($file, PATHINFO_DIRNAME);
+					$directory = \pathinfo($file, PATHINFO_DIRNAME);
 					$extension = $this->core->get_extension($file);
 					$file_name = "S$new_season".substr($file_name, 3);
 					$new_name = $this->core->get_path("$directory/$file_name.$extension");
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -882,7 +882,7 @@ class FileNamesEditor {
 		$episode_start = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_start == '') goto set_start;
 		if($episode_start[0] == '0') $episode_start = substr($episode_start, 1);
-		$episode_start = intval($episode_start);
+		$episode_start = \intval($episode_start);
 
 		set_end:
 		$line = $this->core->get_input(" End: ");
@@ -890,44 +890,44 @@ class FileNamesEditor {
 		$episode_end = substr(preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_end == '') goto set_end;
 		if($episode_end[0] == '0') $episode_end = substr($episode_end, 1);
-		$episode_end = intval($episode_end);
+		$episode_end = \intval($episode_end);
 
 		$this->core->echo(" Choose step as integer (example 5 or -5)");
 		$line = $this->core->get_input(" Step: ");
 		if($line == '#') return false;
-		$episode_step = intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
+		$episode_step = \intval(substr(preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
 		$errors = 0;
 		$list = [];
 		$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 		$files = $this->core->get_files($input, array_merge($this->core->media->extensions_video, $follow_extensions));
 		foreach($files as $file){
-			if(!file_exists($file)) continue 1;
-			$file_name = pathinfo($file, PATHINFO_FILENAME);
+			if(!\file_exists($file)) continue 1;
+			$file_name = \pathinfo($file, PATHINFO_FILENAME);
 			$episode = null;
 			if(preg_match("/S[0-9]{2}E[0-9]{3}/", $file_name, $mathes) == 1){
 				$digits = 3;
 				$max = 999;
-				$episode = intval(ltrim(substr($file_name, 4, 3), "0"));
+				$episode = \intval(ltrim(substr($file_name, 4, 3), "0"));
 				$name = substr($file_name, 7);
 			} elseif(preg_match("/S[0-9]{2}E[0-9]{2}/", $file_name, $mathes) == 1){
 				$digits = 2;
 				$max = 99;
-				$episode = intval(ltrim(substr($file_name, 4, 2), "0"));
+				$episode = \intval(ltrim(substr($file_name, 4, 2), "0"));
 				$name = substr($file_name, 6);
 			} elseif(preg_match("/S[0-9]{2}E[0-9]{1}/", $file_name, $mathes) == 1){
 				$digits = 2;
 				$max = 99;
-				$episode = intval(substr($file_name, 4, 1));
+				$episode = \intval(substr($file_name, 4, 1));
 				$name = substr($file_name, 5);
 			}
-			if(is_null($episode)){
+			if(\is_null($episode)){
 				$this->core->write_error("FAILED GET EPISODE ID \"$file\"");
 				$errors++;
 			} else {
 				$season = substr($file_name, 0, 3);
 				if($episode <= $episode_end && $episode >= $episode_start){
-					$directory = pathinfo($file, PATHINFO_DIRNAME);
+					$directory = \pathinfo($file, PATHINFO_DIRNAME);
 					$extension = $this->core->get_extension($file);
 					$new_name = $this->core->get_path("$directory/$season"."E".$this->core->media->format_episode($episode + $episode_step, $digits, $max)."$name.$extension");
 					array_push($list, [
@@ -945,9 +945,9 @@ class FileNamesEditor {
 		$round = 0;
 		change_names:
 		foreach($list as $key => $item){
-			if(file_exists($item['output']) && $round == 0) continue;
+			if(\file_exists($item['output']) && $round == 0) continue;
 			$items++;
-			if(file_exists($item['output'])){
+			if(\file_exists($item['output'])){
 				$this->core->write_error("UNABLE CHANGE NAME \"{$item['input']}\" TO \"{$item['output']}\" FILE ALREADY EXIST");
 				$errors++;
 			} else {
@@ -990,15 +990,15 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$prefix".pathinfo($file, PATHINFO_FILENAME).$suffix.".".$this->core->get_extension($file));
-				if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				if(!\file_exists($file)) continue 1;
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$prefix".\pathinfo($file, PATHINFO_FILENAME).$suffix.".".$this->core->get_extension($file));
+				if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -1037,7 +1037,7 @@ class FileNamesEditor {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1'])) goto set_mode;
 
 		$this->core->clear();
 
@@ -1079,19 +1079,19 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = trim(str_replace($keywords, '', pathinfo($file, PATHINFO_FILENAME)));
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".$this->core->get_extension($file));
+				if(!\file_exists($file)) continue 1;
+				$name = trim(str_replace($keywords, '', \pathinfo($file, PATHINFO_FILENAME)));
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name.".$this->core->get_extension($file));
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} elseif(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				} elseif(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -1126,7 +1126,7 @@ class FileNamesEditor {
 		if($line == '#') return false;
 		$offset = preg_replace("/[^0-9\-]/", '', $line);
 		if($offset == '') goto set_offset;
-		$offset = intval($offset);
+		$offset = \intval($offset);
 
 		$this->core->print_help([
 			' Specify the string you want to inject the file name, may contain spaces',
@@ -1145,27 +1145,27 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = pathinfo($file, PATHINFO_FILENAME);
-				if(abs($offset) > strlen($name)){
+				if(!\file_exists($file)) continue 1;
+				$name = \pathinfo($file, PATHINFO_FILENAME);
+				if(abs($offset) > \strlen($name)){
 					$this->core->write_error("ILLEGAL OFFSET FOR FILE NAME \"$file\"");
 					$errors++;
 				} else {
 					if($offset > 0){
 						$name = substr($name, 0, $offset).$insert_string.substr($name, $offset);
 					} elseif($offset < 0){
-						$name = substr($name, 0, strlen($name) + $offset).$insert_string.substr($name, $offset);
+						$name = substr($name, 0, \strlen($name) + $offset).$insert_string.substr($name, $offset);
 					} else {
 						$name = $insert_string.$name;
 					}
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".$this->core->get_extension($file));
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name.".$this->core->get_extension($file));
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -1231,19 +1231,19 @@ class FileNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = trim(str_replace(array_keys($replacements), $replacements, pathinfo($file, PATHINFO_FILENAME)));
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.".$this->core->get_extension($file));
+				if(!\file_exists($file)) continue 1;
+				$name = trim(str_replace(array_keys($replacements), $replacements, \pathinfo($file, PATHINFO_FILENAME)));
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name.".$this->core->get_extension($file));
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} elseif(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				} elseif(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -1270,7 +1270,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
 		if($folders === false) return false;
 
-		$extension_old = mb_strtolower($this->core->get_input(" Extension old: "));
+		$extension_old = \mb_strtolower($this->core->get_input(" Extension old: "));
 		if($extension_old == '#') return false;
 
 		$extension_new = $this->core->get_input(" Extension new: ");
@@ -1282,14 +1282,14 @@ class FileNamesEditor {
 		$this->core->set_errors($errors);
 
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, [$extension_old]);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME));
+				if(!\file_exists($file)) continue 1;
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME));
 				if(!empty($extension_new)) $new_name .= ".$extension_new";
 				if(!$this->core->move($file, $new_name)){
 					$errors++;

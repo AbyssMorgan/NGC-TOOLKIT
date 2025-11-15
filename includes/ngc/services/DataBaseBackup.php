@@ -126,9 +126,9 @@ class DataBaseBackup {
 		$this->query_limit = $query_limit;
 		$this->insert_limit = $insert_limit;
 		$this->permissions = $permissions;
-		if(!is_null($path)) $this->path = $path;
-		$this->header = base64_decode("U0VUIFNRTF9NT0RFID0gIk5PX0FVVE9fVkFMVUVfT05fWkVSTyI7ClNUQVJUIFRSQU5TQUNUSU9OOwpTRVQgdGltZV96b25lID0gIiswMDowMCI7CgovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX0NMSUVOVD1AQENIQVJBQ1RFUl9TRVRfQ0xJRU5UICovOwovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFM9QEBDSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBAT0xEX0NPTExBVElPTl9DT05ORUNUSU9OPUBAQ09MTEFUSU9OX0NPTk5FQ1RJT04gKi87Ci8qITQwMTAxIFNFVCBOQU1FUyB1dGY4bWI0ICovOw==");
-		$this->footer = base64_decode("Q09NTUlUOwoKLyohNDAxMDEgU0VUIENIQVJBQ1RFUl9TRVRfQ0xJRU5UPUBPTERfQ0hBUkFDVEVSX1NFVF9DTElFTlQgKi87Ci8qITQwMTAxIFNFVCBDSEFSQUNURVJfU0VUX1JFU1VMVFM9QE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBDT0xMQVRJT05fQ09OTkVDVElPTj1AT0xEX0NPTExBVElPTl9DT05ORUNUSU9OICovOw==");
+		if(!\is_null($path)) $this->path = $path;
+		$this->header = \base64_decode("U0VUIFNRTF9NT0RFID0gIk5PX0FVVE9fVkFMVUVfT05fWkVSTyI7ClNUQVJUIFRSQU5TQUNUSU9OOwpTRVQgdGltZV96b25lID0gIiswMDowMCI7CgovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX0NMSUVOVD1AQENIQVJBQ1RFUl9TRVRfQ0xJRU5UICovOwovKiE0MDEwMSBTRVQgQE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFM9QEBDSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBAT0xEX0NPTExBVElPTl9DT05ORUNUSU9OPUBAQ09MTEFUSU9OX0NPTk5FQ1RJT04gKi87Ci8qITQwMTAxIFNFVCBOQU1FUyB1dGY4bWI0ICovOw==");
+		$this->footer = \base64_decode("Q09NTUlUOwoKLyohNDAxMDEgU0VUIENIQVJBQ1RFUl9TRVRfQ0xJRU5UPUBPTERfQ0hBUkFDVEVSX1NFVF9DTElFTlQgKi87Ci8qITQwMTAxIFNFVCBDSEFSQUNURVJfU0VUX1JFU1VMVFM9QE9MRF9DSEFSQUNURVJfU0VUX1JFU1VMVFMgKi87Ci8qITQwMTAxIFNFVCBDT0xMQVRJT05fQ09OTkVDVElPTj1AT0xEX0NPTExBVElPTl9DT05ORUNUSU9OICovOw==");
 		$this->alters = '';
 	}
 
@@ -158,7 +158,7 @@ class DataBaseBackup {
 	 */
 	public function get_output(?string $folder = null) : string {
 		$path = $this->path.DIRECTORY_SEPARATOR."{$this->database}_{$this->date}";
-		if(!is_null($folder)) $path .= DIRECTORY_SEPARATOR.$folder;
+		if(!\is_null($folder)) $path .= DIRECTORY_SEPARATOR.$folder;
 		return $path;
 	}
 
@@ -280,7 +280,7 @@ class DataBaseBackup {
 	 * @return string The escaped string.
 	 */
 	public function escape(mixed $string) : string {
-		$string = strval($string) ?? '';
+		$string = \strval($string ?? '');
 		if(empty($string)) return '';
 		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}
@@ -389,7 +389,7 @@ class DataBaseBackup {
 		$data = [];
 		$columns = $this->source->query("SELECT `COLUMN_NAME`, `DATA_TYPE` FROM INFORMATION_SCHEMA.COLUMNS WHERE `TABLE_SCHEMA` = '$this->database' AND `TABLE_NAME` = '$name'", PDO::FETCH_OBJ);
 		foreach($columns as $column){
-			$data[$column->COLUMN_NAME] = mb_strtolower($column->DATA_TYPE);
+			$data[$column->COLUMN_NAME] = \mb_strtolower($column->DATA_TYPE);
 		}
 		return $data;
 	}
@@ -586,10 +586,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_table_structure(string $table) : array {
-		if(!file_exists($this->get_output("structure"))) mkdir($this->get_output("structure"), $this->permissions, true);
+		if(!\file_exists($this->get_output("structure"))) \mkdir($this->get_output("structure"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("structure").DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
 			$creation = $this->get_table_creation($table);
@@ -607,9 +607,9 @@ class DataBaseBackup {
 		}
 		fclose($file);
 		if(!empty($creation['alters'])){
-			if(!file_exists($this->get_output("alters"))) mkdir($this->get_output("alters"), $this->permissions, true);
+			if(!\file_exists($this->get_output("alters"))) \mkdir($this->get_output("alters"), $this->permissions, true);
 			$file_path = $this->get_output("alters").DIRECTORY_SEPARATOR."$table.sql";
-			if(file_exists($file_path)) unlink($file_path);
+			if(\file_exists($file_path)) unlink($file_path);
 			$file = fopen($file_path, "a");
 			fwrite($file, $creation['alters']."\n\n");
 			fclose($file);
@@ -650,10 +650,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_table_data(string $table) : array {
-		if(!file_exists($this->get_output("data"))) mkdir($this->get_output("data"), $this->permissions, true);
+		if(!\file_exists($this->get_output("data"))) \mkdir($this->get_output("data"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("data").DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
 			$offset = 0;
@@ -669,7 +669,7 @@ class DataBaseBackup {
 			$count = $row->cnt;
 			if($count > 0){
 				do {
-					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
+					$percent = \sprintf("%.02f", ($offset / $count) * 100.0);
 					echo " Table data: `$this->database`.`$table` Progress: $percent %        \r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
@@ -681,18 +681,18 @@ class DataBaseBackup {
 						$values = [];
 						foreach($columns as $column => $type){
 							if($row->$column === '0'){
-								if(in_array($type, $this->types_no_quotes)){
+								if(\in_array($type, $this->types_no_quotes)){
 									$values[] = "0";
 								} else {
 									$values[] = "'0'";
 								}
-							} elseif(is_null($row->$column)){
+							} elseif(\is_null($row->$column)){
 								$values[] = "NULL";
 							} elseif($type == 'bit'){
 								if(empty($row->$column)){
 									$values[] = "b'0'";
 								} else {
-									$values[] = "b'".decbin(intval($row->$column))."'";
+									$values[] = "b'".decbin(\intval($row->$column))."'";
 								}
 							} elseif($type == 'blob' || $type == 'binary' || $type == 'longblob'){
 								if(empty($row->$column)){
@@ -701,7 +701,7 @@ class DataBaseBackup {
 									$values[] = "0x".bin2hex($row->$column);
 								}
 							} else {
-								if(in_array($type, $this->types_no_quotes)){
+								if(\in_array($type, $this->types_no_quotes)){
 									$values[] = $row->$column;
 								} else {
 									$values[] = "'".$this->escape($row->$column)."'";
@@ -766,7 +766,7 @@ class DataBaseBackup {
 			$count = $row->cnt;
 			if($count > 0){
 				do {
-					$percent = sprintf("%.02f", ($offset / $count) * 100.0);
+					$percent = \sprintf("%.02f", ($offset / $count) * 100.0);
 					echo " Table: `$this->database`.`$table` Progress: $percent %        \r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
@@ -777,18 +777,18 @@ class DataBaseBackup {
 						$values = [];
 						foreach($columns as $column => $type){
 							if($row->$column === '0'){
-								if(in_array($type, $this->types_no_quotes)){
+								if(\in_array($type, $this->types_no_quotes)){
 									$values[] = "0";
 								} else {
 									$values[] = "'0'";
 								}
-							} elseif(is_null($row->$column)){
+							} elseif(\is_null($row->$column)){
 								$values[] = "NULL";
 							} elseif($type == 'bit'){
 								if(empty($row->$column)){
 									$values[] = "b'0'";
 								} else {
-									$values[] = "b'".decbin(intval($row->$column))."'";
+									$values[] = "b'".decbin(\intval($row->$column))."'";
 								}
 							} elseif($type == 'blob' || $type == 'binary' || $type == 'longblob'){
 								if(empty($row->$column)){
@@ -797,7 +797,7 @@ class DataBaseBackup {
 									$values[] = "0x".bin2hex($row->$column);
 								}
 							} else {
-								if(in_array($type, $this->types_no_quotes)){
+								if(\in_array($type, $this->types_no_quotes)){
 									$values[] = $row->$column;
 								} else {
 									$values[] = "'".$this->escape($row->$column)."'";
@@ -847,10 +847,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_view(string $table) : array {
-		if(!file_exists($this->get_output("views"))) mkdir($this->get_output("views"), $this->permissions, true);
+		if(!\file_exists($this->get_output("views"))) \mkdir($this->get_output("views"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("views").DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		try {
 			fwrite($file, "-- やあ --\n\n");
@@ -899,10 +899,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_function(string $table) : array {
-		if(!file_exists($this->get_output("functions"))) mkdir($this->get_output("functions"), $this->permissions, true);
+		if(!\file_exists($this->get_output("functions"))) \mkdir($this->get_output("functions"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("functions").DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
@@ -951,10 +951,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_procedure(string $table) : array {
-		if(!file_exists($this->get_output("procedures"))) mkdir($this->get_output("procedures"), $this->permissions, true);
+		if(!\file_exists($this->get_output("procedures"))) \mkdir($this->get_output("procedures"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("procedures").DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
@@ -1003,10 +1003,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_event(string $table) : array {
-		if(!file_exists($this->get_output("events"))) mkdir($this->get_output("events"), $this->permissions, true);
+		if(!\file_exists($this->get_output("events"))) \mkdir($this->get_output("events"), $this->permissions, true);
 		$errors = [];
 		$file_path = $this->get_output("events").DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {
@@ -1055,10 +1055,10 @@ class DataBaseBackup {
 	 * @return array An array of errors encountered during the backup process.
 	 */
 	public function backup_trigger(string $table) : array {
-		if(!file_exists($this->path.DIRECTORY_SEPARATOR."triggers")) mkdir($this->path.DIRECTORY_SEPARATOR."triggers", $this->permissions, true);
+		if(!\file_exists($this->path.DIRECTORY_SEPARATOR."triggers")) \mkdir($this->path.DIRECTORY_SEPARATOR."triggers", $this->permissions, true);
 		$errors = [];
 		$file_path = $this->path.DIRECTORY_SEPARATOR."triggers".DIRECTORY_SEPARATOR."$table.sql";
-		if(file_exists($file_path)) unlink($file_path);
+		if(\file_exists($file_path)) unlink($file_path);
 		$file = fopen($file_path, "a");
 		fwrite($file, "-- やあ --\n\n");
 		try {

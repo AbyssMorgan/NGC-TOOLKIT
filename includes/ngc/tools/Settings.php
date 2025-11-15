@@ -137,9 +137,9 @@ class Settings {
 		if($response['code'] == 200){
 			$ver_current = explode(".", $this->core->version);
 			$ver_repo = explode(".", $response['data']);
-			$ver_current = intval($ver_current[0]) * 10000 + intval($ver_current[1]) * 100 + intval($ver_current[2]);
-			$ver_repo = intval($ver_repo[0]) * 10000 + intval($ver_repo[1]) * 100 + intval($ver_repo[2]);
-			$version = strval($response['data']);
+			$ver_current = \intval($ver_current[0]) * 10000 + \intval($ver_current[1]) * 100 + \intval($ver_current[2]);
+			$ver_repo = \intval($ver_repo[0]) * 10000 + \intval($ver_repo[1]) * 100 + \intval($ver_repo[2]);
+			$version = \strval($response['data']);
 			return ($ver_repo > $ver_current);
 		}
 		$this->core->echo(" Failed check for updates: {$response['code']}");

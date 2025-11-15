@@ -86,10 +86,10 @@ class MySQLTools {
 	public function get_select_label() : void {
 		$this->select_label = [];
 		$i = 0;
-		$files = scandir($this->path);
+		$files = \scandir($this->path);
 		foreach($files as $file){
 			if($file == '..' || $file == '.') continue;
-			$label = pathinfo($file, PATHINFO_FILENAME);
+			$label = \pathinfo($file, PATHINFO_FILENAME);
 			$this->select_label[$i] = $label;
 			$i++;
 		}
@@ -129,7 +129,7 @@ class MySQLTools {
 		if($database == '#') return false;
 		if(!isset($options[$database])) goto select_database;
 		$connection->query("USE ".$options[$database]);
-		if(!is_null($backup)) $backup->set_data_base($options[$database]);
+		if(!\is_null($backup)) $backup->set_data_base($options[$database]);
 		return true;
 	}
 
@@ -156,7 +156,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(file_exists($this->get_config_path($label))){
+		if(\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" already in use");
 			if(!$this->core->get_confirm(" Overwrite (Y/N): ")) goto set_label;
 		}
@@ -216,7 +216,7 @@ class MySQLTools {
 			'DB_USER' => $db['user'],
 			'DB_PASSWORD' => $db['password'],
 			'DB_NAME' => $db['name'],
-			'DB_PORT' => intval($db['port']),
+			'DB_PORT' => \intval($db['port']),
 			'FOLDER_DATE_FORMAT' => "Y-m-d_His",
 			'BACKUP_QUERY_LIMIT' => 50000,
 			'BACKUP_INSERT_LIMIT' => 100,
@@ -248,7 +248,7 @@ class MySQLTools {
 		}
 
 		$path = $this->get_config_path($label);
-		if(!file_exists($path)){
+		if(!\file_exists($path)){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -275,8 +275,8 @@ class MySQLTools {
 		foreach($files as $file){
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('DB_HOST')){
-				$label = pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".str_repeat(" ", 32 - strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+				$label = \pathinfo($file, PATHINFO_FILENAME);
+				$this->core->echo(" $label".str_repeat(" ", 32 - \strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 				$cnt++;
 			}
 		}
@@ -303,7 +303,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->get_config_path($label))){
+		if(!\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -323,7 +323,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!is_null($callback)){
+		if(!\is_null($callback)){
 			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
 				$callback = null;
 			}
@@ -336,7 +336,7 @@ class MySQLTools {
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($lock_tables);
 
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
@@ -349,7 +349,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Create backup for table $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			if($ini->get('BACKUP_TYPE_STRUCTURE')){
 				$errors_structure = $backup->backup_table_structure($item);
 			}
@@ -364,9 +364,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 			$this->core->set_progress_ex('Table', $progress, $total);
 		}
@@ -384,7 +384,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Create backup for view $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
 			$errors = $backup->backup_view($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -393,9 +393,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
 			}
 			$this->core->set_progress_ex('View', $progress, $total);
 		}
@@ -413,7 +413,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Create backup for function $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
 			$errors = $backup->backup_function($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -422,9 +422,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
 			}
 			$this->core->set_progress_ex('Function', $progress, $total);
 		}
@@ -442,7 +442,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Create backup for procedure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
 			$errors = $backup->backup_procedure($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -451,9 +451,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
 			}
 			$this->core->set_progress_ex('Procedure', $progress, $total);
 		}
@@ -471,7 +471,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Create backup for event $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
 			$errors = $backup->backup_event($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -480,9 +480,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
 			}
 			$this->core->set_progress_ex('Event', $progress, $total);
 		}
@@ -500,7 +500,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Create backup for trigger $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
 			$errors = $backup->backup_trigger($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -509,16 +509,16 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
 			}
 			$this->core->set_progress_ex('Trigger', $progress, $total);
 		}
 
 		$this->core->echo();
 		$this->core->write_log("Finish backup for \"$label\"");
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 
 		$output = $backup->get_output();
@@ -546,7 +546,7 @@ class MySQLTools {
 			goto set_label_source;
 		}
 
-		if(!file_exists($this->get_config_path($source))){
+		if(!\file_exists($this->get_config_path($source))){
 			$this->core->echo(" Source label \"$source\" not exists");
 			goto set_label_source;
 		}
@@ -561,7 +561,7 @@ class MySQLTools {
 		$request = new Request();
 		$request->set_http_version($ini_source->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
-		if(!is_null($callback)){
+		if(!\is_null($callback)){
 			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
 				$callback = null;
 			}
@@ -589,7 +589,7 @@ class MySQLTools {
 			goto set_label_destination;
 		}
 
-		if(!file_exists($this->get_config_path($destination))){
+		if(!\file_exists($this->get_config_path($destination))){
 			$this->core->echo(" Destination label \"$destination\" not exists");
 			goto set_label_destination;
 		}
@@ -624,7 +624,7 @@ class MySQLTools {
 		}
 
 		$this->core->echo(" Clone `$dbname_source` to `$dbname_destination`");
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 
 		$items = $backup->get_tables();
 		$progress = 0;
@@ -633,7 +633,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone table Structure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			$errors = $backup->clone_table_structure($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -642,9 +642,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 			$this->core->set_progress_ex('Table Structure', $progress, $total);
 		}
@@ -655,7 +655,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone table data $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			$errors = $backup->clone_table_data($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -664,9 +664,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 			$this->core->set_progress_ex('Table Data', $progress, $total);
 		}
@@ -684,7 +684,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone view $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
 			$errors = $backup->clone_view($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -693,9 +693,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
 			}
 			$this->core->set_progress_ex('View', $progress, $total);
 		}
@@ -713,7 +713,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone function $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
 			$errors = $backup->clone_function($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -722,9 +722,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
 			}
 			$this->core->set_progress_ex('Function', $progress, $total);
 		}
@@ -742,7 +742,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone procedure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
 			$errors = $backup->clone_procedure($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -751,9 +751,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
 			}
 			$this->core->set_progress_ex('Procedure', $progress, $total);
 		}
@@ -771,7 +771,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone event $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
 			$errors = $backup->clone_event($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -780,9 +780,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
 			}
 			$this->core->set_progress_ex('Event', $progress, $total);
 		}
@@ -800,7 +800,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$progress++;
 			$this->core->write_log("Clone trigger $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
 			$errors = $backup->clone_trigger($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -809,16 +809,16 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
 			}
 			$this->core->set_progress_ex('Trigger', $progress, $total);
 		}
 
 		$this->core->echo();
 		$this->core->write_log("Finish clone `$dbname_source` to `$dbname_destination`");
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_END'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 		$backup->disconnect_destination();
 
@@ -833,7 +833,7 @@ class MySQLTools {
 			return false;
 		}
 
-		if(!file_exists($this->get_config_path($label))){
+		if(!\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" not exists");
 			return false;
 		}
@@ -853,7 +853,7 @@ class MySQLTools {
 			return false;
 		}
 
-		if($ini->get('DB_NAME') == "*" && is_null($dbname)){
+		if($ini->get('DB_NAME') == "*" && \is_null($dbname)){
 			$this->core->echo(" No data base selected");
 			return false;
 		}
@@ -863,7 +863,7 @@ class MySQLTools {
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($ini->get('BACKUP_LOCK_TABLES'));
 
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))){
 			$this->core->echo(" Failed connect to database");
@@ -876,7 +876,7 @@ class MySQLTools {
 		$items = $backup->get_tables();
 		foreach($items as $item){
 			$this->core->write_log("Create backup for table $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "table:$item"], true);
 			if($ini->get('BACKUP_TYPE_STRUCTURE')){
 				$errors_structure = $backup->backup_table_structure($item);
 			}
@@ -891,9 +891,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "table:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "table:$item"], true);
 			}
 		}
 
@@ -906,7 +906,7 @@ class MySQLTools {
 		}
 		foreach($items as $item){
 			$this->core->write_log("Create backup for view $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "view:$item"], true);
 			$errors = $backup->backup_view($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -915,9 +915,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "view:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "view:$item"], true);
 			}
 		}
 
@@ -930,7 +930,7 @@ class MySQLTools {
 		}
 		foreach($items as $item){
 			$this->core->write_log("Create backup for function $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "function:$item"], true);
 			$errors = $backup->backup_function($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -939,9 +939,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "function:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "function:$item"], true);
 			}
 		}
 
@@ -954,7 +954,7 @@ class MySQLTools {
 		}
 		foreach($items as $item){
 			$this->core->write_log("Create backup for procedure $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "procedure:$item"], true);
 			$errors = $backup->backup_procedure($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -963,9 +963,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "procedure:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "procedure:$item"], true);
 			}
 		}
 
@@ -978,7 +978,7 @@ class MySQLTools {
 		}
 		foreach($items as $item){
 			$this->core->write_log("Create backup for event $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "event:$item"], true);
 			$errors = $backup->backup_event($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -987,9 +987,9 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "event:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "event:$item"], true);
 			}
 		}
 
@@ -1002,7 +1002,7 @@ class MySQLTools {
 		}
 		foreach($items as $item){
 			$this->core->write_log("Create backup for trigger $item");
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "trigger:$item"], true);
 			$errors = $backup->backup_trigger($item);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
@@ -1011,15 +1011,15 @@ class MySQLTools {
 				} else {
 					$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "trigger:$item", 'errors' => ['Error reporting is disabled']];
 				}
-				if(!is_null($callback)) $request->get($callback, $cdata, true);
+				if(!\is_null($callback)) $request->get($callback, $cdata, true);
 			} else {
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "trigger:$item"], true);
 			}
 		}
 
 		$this->core->echo();
 		$this->core->write_log("Finish backup for \"$label\"");
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 
 		$output = $backup->get_output();
@@ -1047,7 +1047,7 @@ class MySQLTools {
 		}
 
 		$path = $this->get_config_path($label);
-		if(!file_exists($path)){
+		if(!\file_exists($path)){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -1072,7 +1072,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->get_config_path($label))){
+		if(!\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -1103,7 +1103,7 @@ class MySQLTools {
 			query:
 			if($save_output) $this->core->write_data("");
 			$query = $this->core->get_input(" MySQL: ", false);
-			$lquery = mb_strtolower($query);
+			$lquery = \mb_strtolower($query);
 			if($lquery == '@exit'){
 				goto close_connection;
 			} elseif($lquery == '@clear'){
@@ -1192,7 +1192,7 @@ class MySQLTools {
 	}
 
 	public function compress(?string $callback, string $output, string $backup_path, Request $request) : void {
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
 		$this->core->echo(" Compressing backup");
 		$this->core->write_log("Compressing backup");
 		$sql = $this->core->get_path("$output/*");
@@ -1200,13 +1200,13 @@ class MySQLTools {
 		$at = $this->core->config->get('BACKUP_COMPRESS_TYPE');
 		$this->core->exec("7z", "a -mx$cl -t$at \"$output.7z\" \"$sql\"");
 		$this->core->echo();
-		if(file_exists("$output.7z")){
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
+		if(\file_exists("$output.7z")){
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
 			$this->core->echo(" Compress backup into \"$output.7z\" success");
 			$this->core->write_log("Compress backup into \"$output.7z\" success");
 			$this->core->rrmdir($output);
 		} else {
-			if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
+			if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
 			$this->core->echo(" Compress backup into \"$output.7z\" fail");
 			$this->core->write_log("Compress backup into \"$output.7z\" fail");
 		}
@@ -1215,7 +1215,7 @@ class MySQLTools {
 	public function backup_selected(string $type, bool $need_lock) : bool {
 		$ftype = explode(" ", $type);
 		$ftype = $ftype[0];
-		$stype = mb_strtolower($type);
+		$stype = \mb_strtolower($type);
 		$type = str_replace(" ", "", $type);
 		$this->core->clear();
 		$this->core->set_subtool("Backup selected ".$stype);
@@ -1230,7 +1230,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->get_config_path($label))){
+		if(!\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -1250,7 +1250,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!is_null($callback)){
+		if(!\is_null($callback)){
 			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
 				$callback = null;
 			}
@@ -1277,7 +1277,7 @@ class MySQLTools {
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($lock_tables);
 
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
@@ -1290,9 +1290,9 @@ class MySQLTools {
 		$this->core->set_progress_ex($type, $progress, $total);
 		foreach($items as $item){
 			$progress++;
-			if(in_array($item, $items_in_db)){
+			if(\in_array($item, $items_in_db)){
 				$this->core->write_log("Create backup for $stype $item");
-				if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "$stype:$item"], true);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_START', 'table' => "$stype:$item"], true);
 				$func = "backup".$type;
 				$errors = $backup->$func($item);
 				if(!empty($errors)){
@@ -1302,9 +1302,9 @@ class MySQLTools {
 					} else {
 						$cdata = ['maintenance' => true, 'state' => 'BACKUP_TABLE_ERROR', 'table' => "$stype:$item", 'errors' => ['Error reporting is disabled']];
 					}
-					if(!is_null($callback)) $request->get($callback, $cdata, true);
+					if(!\is_null($callback)) $request->get($callback, $cdata, true);
 				} else {
-					if(!is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "$stype:$item"], true);
+					if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "$stype:$item"], true);
 				}
 			} else {
 				$this->core->echo(" $type: $item not exists, skipping");
@@ -1314,7 +1314,7 @@ class MySQLTools {
 		}
 		$this->core->echo();
 		$this->core->write_log("Finish backup for \"$label\"");
-		if(!is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'BACKUP_END'], true);
 		$backup->disconnect();
 
 		$output = $backup->get_output();
@@ -1341,7 +1341,7 @@ class MySQLTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->get_config_path($label))){
+		if(!\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -1366,8 +1366,8 @@ class MySQLTools {
 
 		$items = $db->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
 		foreach($items as $item){
-			$data_size = $this->core->format_bytes(intval($item->DATA_LENGTH), 2, false);
-			$index_size = $this->core->format_bytes(intval($item->INDEX_LENGTH), 2, false);
+			$data_size = $this->core->format_bytes(\intval($item->DATA_LENGTH), 2, false);
+			$index_size = $this->core->format_bytes(\intval($item->INDEX_LENGTH), 2, false);
 			$this->core->write_data(str_replace("|", $separator, "$item->TABLE_NAME|$item->ENGINE|$item->TABLE_COLLATION|$item->TABLE_ROWS|$data_size|$item->DATA_LENGTH|$index_size|$item->INDEX_LENGTH|$item->ROW_FORMAT"));
 		}
 
@@ -1392,7 +1392,7 @@ class MySQLTools {
 			goto set_label_source;
 		}
 
-		if(!file_exists($this->get_config_path($source))){
+		if(!\file_exists($this->get_config_path($source))){
 			$this->core->echo(" Source label \"$source\" not exists");
 			goto set_label_source;
 		}
@@ -1412,7 +1412,7 @@ class MySQLTools {
 			goto set_label_destination;
 		}
 
-		if(!file_exists($this->get_config_path($destination))){
+		if(!\file_exists($this->get_config_path($destination))){
 			$this->core->echo(" Destination label \"$destination\" not exists");
 			goto set_label_destination;
 		}

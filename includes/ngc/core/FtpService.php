@@ -44,7 +44,7 @@ class FtpService {
 		$num = '';
 		for($p = 0; $p < 3; $p++){
 			$n = $map[$permission[$p]] + $map[$permission[$p + 1]] + $map[$permission[$p + 2]];
-			$num .= strval($n);
+			$num .= \strval($n);
 		}
 		return "0$num";
 	}
@@ -68,10 +68,10 @@ class FtpService {
 			if(substr($chunks[0], 0, 1) == 'd'){
 				$data = array_merge($data, $this->get_files("$path/{$chunks[8]}", $include_extensions, $exclude_extensions));
 			} else {
-				$ext = mb_strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
-				if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
-				if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
-				if(!is_null($name_filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $name_filters)) continue;
+				$ext = \mb_strtolower(\pathinfo($chunks[8], PATHINFO_EXTENSION));
+				if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
+				if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
+				if(!\is_null($name_filters) && !$this->filter(\pathinfo($chunks[8], PATHINFO_BASENAME), $name_filters)) continue;
 				array_push($data, "$path/{$chunks[8]}");
 			}
 		}
@@ -92,12 +92,12 @@ class FtpService {
 	 * @return int Count total processed files.
 	 */
 	public function process_files(string|array $path, callable $callback, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true, bool $with_folders = true) : int {
-		if(gettype($path) == 'string'){
+		if(\gettype($path) == 'string'){
 			$paths = [$path];
 		} else {
 			$paths = $path;
 		}
-		if(!$case_sensitive && !is_null($name_filters)){
+		if(!$case_sensitive && !\is_null($name_filters)){
 			$name_filters = $this->array_to_lower($name_filters);
 		}
 		$counter = 0;
@@ -139,12 +139,12 @@ class FtpService {
 				$this->scan_dir_safe_extension_process_files($full_path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive, $with_folders);
 				continue;
 			}
-			$ext = mb_strtolower(pathinfo($full_path, PATHINFO_EXTENSION));
-			if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
-			if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
-			$basename = pathinfo($full_path, PATHINFO_BASENAME);
-			if(!is_null($name_filters)){
-				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+			$ext = \mb_strtolower(\pathinfo($full_path, PATHINFO_EXTENSION));
+			if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
+			if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
+			$basename = \pathinfo($full_path, PATHINFO_BASENAME);
+			if(!\is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : \mb_strtolower($basename);
 				if(!$this->filter($check_name, $name_filters)) continue;
 			}
 			$counter++;
@@ -162,7 +162,7 @@ class FtpService {
 	public function array_to_lower(array $items) : array {
 		$data = [];
 		foreach($items as $item){
-			$data[] = mb_strtolower($item);
+			$data[] = \mb_strtolower($item);
 		}
 		return $data;
 	}
@@ -185,10 +185,10 @@ class FtpService {
 			if(substr($chunks[0], 0, 1) == 'd'){
 				$data = array_merge($data, $this->get_files_meta("$path/{$chunks[8]}", $include_extensions, $exclude_extensions));
 			} else {
-				$ext = mb_strtolower(pathinfo($chunks[8], PATHINFO_EXTENSION));
-				if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
-				if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
-				if(!is_null($name_filters) && !$this->filter(pathinfo($chunks[8], PATHINFO_BASENAME), $name_filters)) continue;
+				$ext = \mb_strtolower(\pathinfo($chunks[8], PATHINFO_EXTENSION));
+				if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
+				if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
+				if(!\is_null($name_filters) && !$this->filter(\pathinfo($chunks[8], PATHINFO_BASENAME), $name_filters)) continue;
 				array_push($data, [
 					'path' => "$path/{$chunks[8]}",
 					'directory' => $path,
@@ -261,7 +261,7 @@ class FtpService {
 	 * @return bool True if any filter is found in the search string, false otherwise.
 	 */
 	public function filter(string $search, array $filters, bool $case_sensitive = false) : bool {
-		if(!$case_sensitive) $search = mb_strtolower($search);
+		if(!$case_sensitive) $search = \mb_strtolower($search);
 		foreach($filters as $filter){
 			if(str_contains($search, $filter)){
 				return true;

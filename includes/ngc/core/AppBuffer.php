@@ -35,7 +35,7 @@ class AppBuffer {
 	 */
 	public function __construct(string $path, int $permissions = 0755){
 		$this->path = $path;
-		if(!file_exists($this->path)) mkdir($this->path, $permissions, true);
+		if(!\file_exists($this->path)) \mkdir($this->path, $permissions, true);
 	}
 
 	/**
@@ -55,7 +55,7 @@ class AppBuffer {
 	 * @return string The full path to the buffer file.
 	 */
 	public function get_file(string $key) : string {
-		$key = hash('sha256', $key);
+		$key = \hash('sha256', $key);
 		return $this->path.DIRECTORY_SEPARATOR."$key.json";
 	}
 
@@ -71,15 +71,15 @@ class AppBuffer {
 	 */
 	public function get(string $key, int|bool|string|array|float|null $default = null) : int|bool|string|array|float|null {
 		$file = $this->get_file($key);
-		if(!file_exists($file)) return $default;
-		$buffer = json_decode(file_get_contents($file), true);
+		if(!\file_exists($file)) return $default;
+		$buffer = \json_decode(\file_get_contents($file), true);
 		if(!isset($buffer['expire']) || !isset($buffer['type'])) return $default;
-		if($buffer['expire'] != -1 && time() > $buffer['expire']) return $default;
-		switch(strtolower($buffer['type'])){
+		if($buffer['expire'] != -1 && \time() > $buffer['expire']) return $default;
+		switch(\strtolower($buffer['type'])){
 			case 'integer': return (int)$buffer['value'];
 			case 'boolean': return $buffer['value'] == 'true';
 			case 'string': return $buffer['value'];
-			case 'array': return json_decode(base64_decode($buffer['value']), true);
+			case 'array': return \json_decode(\base64_decode($buffer['value']), true);
 			case 'float': (float)$buffer['value'];
 			case 'null': return null;
 		}
@@ -98,12 +98,12 @@ class AppBuffer {
 	 */
 	public function set(string $key, int|bool|string|array|float|null $value, int $expire = -1) : void {
 		$file = $this->get_file($key);
-		if($expire > 0) $expire = time() + $expire;
-		$type = strtolower(gettype($value));
+		if($expire > 0) $expire = \time() + $expire;
+		$type = \strtolower(\gettype($value));
 		switch($type){
 			case 'float':
 			case 'integer': {
-				$value = strval($value);
+				$value = \strval($value);
 				break;
 			}
 			case 'boolean': {
@@ -111,7 +111,7 @@ class AppBuffer {
 				break;
 			}
 			case 'array': {
-				$value = base64_encode(json_encode($value));
+				$value = \base64_encode(\json_encode($value));
 				break;
 			}
 			case 'null': {
@@ -119,7 +119,7 @@ class AppBuffer {
 				break;
 			}
 		}
-		file_put_contents($file, json_encode([
+		\file_put_contents($file, \json_encode([
 			'key' => $key,
 			'type' => $type,
 			'value' => $value,
@@ -141,11 +141,11 @@ class AppBuffer {
 	 * It iterates through all buffer files and deletes those that have passed their expiration time.
 	 */
 	public function clear_expired() : void {
-		$files = scandir($this->path);
+		$files = \scandir($this->path);
 		foreach($files as $file){
 			if($file == '..' || $file == '.') continue;
-			$buffer = json_decode(file_get_contents($this->path.DIRECTORY_SEPARATOR.$file), true);
-			if($buffer['expire'] != -1 && time() > $buffer['expire']){
+			$buffer = \json_decode(\file_get_contents($this->path.DIRECTORY_SEPARATOR.$file), true);
+			if($buffer['expire'] != -1 && \time() > $buffer['expire']){
 				$this->delete($this->path.DIRECTORY_SEPARATOR.$file);
 			}
 		}
@@ -156,7 +156,7 @@ class AppBuffer {
 	 * Deletes all files within the buffer directory.
 	 */
 	public function clear() : void {
-		$files = scandir($this->path);
+		$files = \scandir($this->path);
 		foreach($files as $file){
 			$this->delete($this->path.DIRECTORY_SEPARATOR.$file);
 		}

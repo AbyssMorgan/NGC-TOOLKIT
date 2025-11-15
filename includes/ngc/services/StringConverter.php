@@ -147,11 +147,11 @@ class StringConverter {
 	public function string_to_pin_yin(string $string) : string {
 		$string = preg_replace("/\s/is", "_", $string);
 		$pinyin = "";
-		$string = iconv('UTF-8', 'GBK//TRANSLIT', $string);
-		for($i = 0; $i < strlen($string); $i++){
-			if(ord($string[$i]) > 128){
-				$char = $this->asc2_to_pin_yin(ord($string[$i]) + ord($string[$i + 1]) * 256);
-				if(!is_null($char)){
+		$string = \iconv('UTF-8', 'GBK//TRANSLIT', $string);
+		for($i = 0; $i < \strlen($string); $i++){
+			if(\ord($string[$i]) > 128){
+				$char = $this->asc2_to_pin_yin(\ord($string[$i]) + \ord($string[$i + 1]) * 256);
+				if(!\is_null($char)){
 					$pinyin .= $char;
 				} else {
 					$pinyin .= $string[$i];

@@ -65,7 +65,7 @@ class AdmFileConverter {
 			'mode' => $line[0] ?? '?',
 		];
 
-		if(!in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
 
 		$this->core->clear();
 
@@ -89,7 +89,7 @@ class AdmFileConverter {
 			$output = $this->core->get_input_file(" Output (File): ", false, true);
 			if($output === false) return false;
 
-			if(file_exists($output)){
+			if(\file_exists($output)){
 				if(!$this->core->get_confirm(" Output file exists, overwrite (Y/N): ")) goto set_output;
 			}
 
@@ -126,11 +126,11 @@ class AdmFileConverter {
 		$output = $this->core->get_input_file(" Output (File): ", false, true);
 		if($output === false) return false;
 
-		if(file_exists($output)){
+		if(\file_exists($output)){
 			if(!$this->core->get_confirm(" Output file exists, overwrite (Y/N): ")) goto set_output;
 		}
 
-		file_put_contents($output, implode("\r\n", $journal->read()));
+		\file_put_contents($output, implode("\r\n", $journal->read()));
 
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;

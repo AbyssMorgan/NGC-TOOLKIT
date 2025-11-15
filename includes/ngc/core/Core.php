@@ -241,7 +241,7 @@ class Core {
 	 * @return bool True if the folder exists and was set, false otherwise.
 	 */
 	public function set_resources_folder(string $path) : bool {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$this->resources_folder = $path;
 		return true;
 	}
@@ -265,7 +265,7 @@ class Core {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$this->utilities_path = $this->get_path($this->get_variable("%PROGRAMFILES%")."/NGC-UTILITIES");
 			$utilities = false;
-			if(file_exists($this->utilities_path)){
+			if(\file_exists($this->utilities_path)){
 				$utilities_main = new IniFile($this->get_path("$this->utilities_path/main.ini"));
 				$utilities_imagick = new IniFile($this->get_path("$this->utilities_path/imagick.ini"));
 				$utilities_version = $utilities_main->get('APP_VERSION');
@@ -289,7 +289,7 @@ class Core {
 			];
 			$errors = 0;
 			foreach($programs as $program_name => $install_name){
-				if(!file_exists("/usr/bin/$program_name") && !file_exists("/opt/homebrew/bin/$program_name") && !file_exists("/usr/local/bin/$program_name")){
+				if(!\file_exists("/usr/bin/$program_name") && !\file_exists("/opt/homebrew/bin/$program_name") && !\file_exists("/usr/local/bin/$program_name")){
 					$this->echo("[ERROR] Required $program_name not found, please install $install_name");
 					$errors++;
 				}
@@ -312,11 +312,11 @@ class Core {
 	 * @return bool True if an action was successfully performed, false otherwise.
 	 */
 	public function select_action(?string $trigger_action = null) : bool {
-		if(is_null($this->tool)) return false;
+		if(\is_null($this->tool)) return false;
 		do {
 			$this->clear();
 			$this->title("$this->app_name v$this->version > $this->tool_name");
-			if(is_null($trigger_action)){
+			if(\is_null($trigger_action)){
 				$this->tool->help();
 				$line = $this->get_input(" Action: ");
 				if($line == '#') return false;
@@ -338,7 +338,7 @@ class Core {
 	public function setup_folders(array $folders) : void {
 		$this->folders_state = [];
 		foreach($folders as $folder){
-			$this->folders_state[$folder] = file_exists($folder) ? '' : '[NOT EXISTS]';
+			$this->folders_state[$folder] = \file_exists($folder) ? '' : '[NOT EXISTS]';
 			$this->write_log("Scan: $folder");
 		}
 		$this->print_folders_state();
@@ -350,7 +350,7 @@ class Core {
 	 * @param string $folder The path of the folder to mark as done.
 	 */
 	public function set_folder_done(string $folder) : void {
-		$this->folders_state[$folder] = file_exists($folder) ? '[DONE]' : '[NOT EXISTS]';
+		$this->folders_state[$folder] = \file_exists($folder) ? '[DONE]' : '[NOT EXISTS]';
 		$this->print_folders_state();
 	}
 
@@ -440,7 +440,7 @@ class Core {
 	 */
 	public function get_version_number(string $version) : int {
 		$ver = explode(".", $version);
-		return 10000 * intval($ver[0]) + 100 * intval($ver[1]) + intval($ver[2]);
+		return 10000 * \intval($ver[0]) + 100 * \intval($ver[1]) + \intval($ver[2]);
 	}
 
 	/**
@@ -461,7 +461,7 @@ class Core {
 	 */
 	public function progress(int|float $count, int|float $total) : void {
 		if($total > 0){
-			$percent = sprintf("%.02f", ($count / $total) * 100.0);
+			$percent = \sprintf("%.02f", ($count / $total) * 100.0);
 			$this->current_line(" Progress: $percent %");
 		}
 	}
@@ -485,7 +485,7 @@ class Core {
 	 */
 	public function progress_ex(string $label, int|float $count, int|float $total) : void {
 		if($total > 0){
-			$percent = sprintf("%.02f", ($count / $total) * 100.0);
+			$percent = \sprintf("%.02f", ($count / $total) * 100.0);
 			$this->current_line(" $label Progress: $percent %");
 		}
 	}
@@ -499,14 +499,14 @@ class Core {
 	 * @return int The number of lines read from the file.
 	 */
 	public function get_hash_from_idx(string $path, array &$keys, bool $progress) : int {
-		if(!file_exists($path)) return 0;
+		if(!\file_exists($path)) return 0;
 		$cnt = 0;
 		$size = filesize($path);
 		$fp = @fopen($path, "r");
 		if($fp){
 			while(($line = fgets($fp)) !== false){
 				$line = trim($line);
-				$hash = strtoupper(pathinfo(str_replace("\\", "/", $line), PATHINFO_FILENAME));
+				$hash = strtoupper(\pathinfo(str_replace("\\", "/", $line), PATHINFO_FILENAME));
 				$keys[$hash] = $line;
 				$cnt++;
 				if($progress) $this->progress(ftell($fp), $size);
@@ -527,9 +527,9 @@ class Core {
 	public function format_bytes(float|int $bytes, int $precision = 2, bool $dot = true) : string {
 		if($bytes > 0){
 			$i = floor(log($bytes) / log(1024));
-			$res = sprintf("%.{$precision}f", $bytes / pow(1024, $i)).' '.$this->units_bytes[$i];
+			$res = \sprintf("%.{$precision}f", $bytes / pow(1024, $i)).' '.$this->units_bytes[$i];
 		} else {
-			$res = sprintf("%.{$precision}f", 0).' B';
+			$res = \sprintf("%.{$precision}f", 0).' B';
 		}
 		if(!$dot) $res = str_replace(".", ",", $res);
 		return $res;
@@ -546,9 +546,9 @@ class Core {
 	public function format_bits(float|int $bits, int $precision = 2, bool $dot = true) : string {
 		if($bits > 0){
 			$i = floor(log($bits) / log(1000));
-			$res = sprintf("%.{$precision}f", $bits / pow(1000, $i)).' '.$this->units_bits[$i];
+			$res = \sprintf("%.{$precision}f", $bits / pow(1000, $i)).' '.$this->units_bits[$i];
 		} else {
-			$res = sprintf("%.{$precision}f", 0).' bit';
+			$res = \sprintf("%.{$precision}f", 0).' bit';
 		}
 		if(!$dot) $res = str_replace(".", ",", $res);
 		return $res;
@@ -564,7 +564,7 @@ class Core {
 	public function size_unit_to_bytes(int $value, string $unit) : int {
 		$index = array_search(strtolower($unit), $this->array_to_lower($this->units_bytes));
 		if($index === false) return -1;
-		return intval($value * pow(1024, $index));
+		return \intval($value * pow(1024, $index));
 	}
 
 	/**
@@ -575,7 +575,7 @@ class Core {
 	 * @return int The time in seconds.
 	 */
 	public function time_unit_to_seconds(int $value, string $unit) : int {
-		switch(strtolower($unit)){
+		switch(\strtolower($unit)){
 			case 'sec': return $value;
 			case 'min': return $value * 60;
 			case 'hour': return $value * 3600;
@@ -596,14 +596,14 @@ class Core {
 	public function seconds_to_time(float $seconds, bool $force_hours = false, bool $with_days = false, bool $with_ms = false) : string {
 		$output = "";
 		if($with_days){
-			$days = intval(floor($seconds / 86400));
+			$days = \intval(floor($seconds / 86400));
 			$seconds -= ($days * 86400);
 		} else {
 			$days = 0;
 		}
-		$h = intval(floor($seconds / 3600));
+		$h = \intval(floor($seconds / 3600));
 		$seconds -= $h * 3600;
-		$m = intval(floor($seconds / 60));
+		$m = \intval(floor($seconds / 60));
 		$seconds -= $m * 60;
 		$s = floor($seconds);
 		$seconds -= $s;
@@ -612,12 +612,12 @@ class Core {
 			$output = "$days:";
 		}
 		if($h > 0 || $force_hours){
-			$output .= sprintf("%02d:%02d:%02d", $h, $m, $s);
+			$output .= \sprintf("%02d:%02d:%02d", $h, $m, $s);
 		} else {
-			$output .= sprintf("%02d:%02d", $m, $s);
+			$output .= \sprintf("%02d:%02d", $m, $s);
 		}
 		if($with_ms){
-			$output .= sprintf(",%03d", $ms);
+			$output .= \sprintf(",%03d", $ms);
 		}
 		return $output;
 	}
@@ -653,8 +653,8 @@ class Core {
 	 * @return bool True if the folder is empty or does not exist, false otherwise.
 	 */
 	public function is_folder_empty(string $path) : bool {
-		if(!file_exists($path)) return true;
-		$files = scandir($path);
+		if(!\file_exists($path)) return true;
+		$files = \scandir($path);
 		foreach($files as $file){
 			if($file == "." || $file == "..") continue;
 			return false;
@@ -674,8 +674,8 @@ class Core {
 	 * @return array An array of full paths to the found files.
 	 */
 	public function get_files(string $path, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
-		if(!file_exists($path)) return [];
-		if(!$case_sensitive && !is_null($name_filters)){
+		if(!\file_exists($path)) return [];
+		if(!$case_sensitive && !\is_null($name_filters)){
 			$name_filters = $this->array_to_lower($name_filters);
 		}
 		$data = [];
@@ -696,19 +696,19 @@ class Core {
 	 * @param bool $recursive Whether to scan subdirectories recursively.
 	 * @return int Count total processed files.
 	 */
-	public function process_files(string|array $path, callable $callback, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : int {
-		if(gettype($path) == 'string'){
+	public function process_files(string|array $path, callable $callback, ?array $include_extensions = null, ?array $exclude_extensions = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true, bool $follow_symlinks = true) : int {
+		if(\gettype($path) == 'string'){
 			$paths = [$path];
 		} else {
 			$paths = $path;
 		}
-		if(!$case_sensitive && !is_null($name_filters)){
+		if(!$case_sensitive && !\is_null($name_filters)){
 			$name_filters = $this->array_to_lower($name_filters);
 		}
 		$counter = 0;
 		foreach($paths as $path){
-			if(!file_exists($path)) continue;
-			$this->scan_dir_safe_extension_process_files($path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
+			if(!\file_exists($path)) continue;
+			$this->scan_dir_safe_extension_process_files($path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive, $follow_symlinks);
 		}
 		return $counter;
 	}
@@ -722,13 +722,13 @@ class Core {
 	 * @return array An array of full paths to the found folders.
 	 */
 	public function get_folders(string $path, bool $with_parent = false, bool $recursive = true) : array {
-		if(!file_exists($path) || !is_dir($path)) return [];
+		if(!\file_exists($path) || !\is_dir($path)) return [];
 		$data = [];
 		if($with_parent){
 			$data[] = $path;
 		}
 		try {
-			$files = @scandir($path);
+			$files = @\scandir($path);
 		}
 		catch(Exception $e){
 			return [];
@@ -739,7 +739,7 @@ class Core {
 				continue;
 			}
 			$full_path = $path.DIRECTORY_SEPARATOR.$file;
-			if(is_dir($full_path) && !is_link($full_path)){
+			if(\is_dir($full_path) && !\is_link($full_path)){
 				$data[] = $full_path;
 				if($recursive){
 					$data = array_merge($data, $this->get_folders($full_path, false, $recursive));
@@ -759,7 +759,7 @@ class Core {
 	 * @return bool True if any filter is found in the search string, false otherwise.
 	 */
 	public function filter(string $search, array $filters, bool $case_sensitive = false) : bool {
-		if(!$case_sensitive) $search = mb_strtolower($search);
+		if(!$case_sensitive) $search = \mb_strtolower($search);
 		foreach($filters as $filter){
 			if(str_contains($search, $filter)){
 				return true;
@@ -798,13 +798,13 @@ class Core {
 		$this->log_event->close();
 		$this->log_error->close();
 		$this->log_data->close();
-		if($this->config->get('OPEN_LOG_EVENT', true) && $open_event && file_exists($this->log_event->get_path())){
+		if($this->config->get('OPEN_LOG_EVENT', true) && $open_event && \file_exists($this->log_event->get_path())){
 			$this->open_file($this->log_event->get_path());
 		}
-		if(file_exists($this->log_data->get_path())){
+		if(\file_exists($this->log_data->get_path())){
 			$this->open_file($this->log_data->get_path());
 		}
-		if(file_exists($this->log_error->get_path())){
+		if(\file_exists($this->log_error->get_path())){
 			$this->open_file($this->log_error->get_path());
 		}
 		if($init) $this->init_logs();
@@ -849,13 +849,13 @@ class Core {
 	 * @return bool True on success, false if the directory does not exist.
 	 */
 	public function rrmdir(string $dir, bool $log = true) : bool {
-		if(!file_exists($dir)) return false;
-		if(is_dir($dir)){
-			$items = scandir($dir);
+		if(!\file_exists($dir)) return false;
+		if(\is_dir($dir)){
+			$items = \scandir($dir);
 			foreach($items as $item){
 				if($item == "." || $item == "..") continue;
 				$subdir = $this->get_path("$dir/$item");
-				if(is_dir($subdir) && !is_link($subdir)){
+				if(\is_dir($subdir) && !\is_link($subdir)){
 					$this->rrmdir($subdir, $log);
 				} else {
 					$this->delete($subdir, $log);
@@ -874,7 +874,7 @@ class Core {
 	 * @return bool True on success, false on failure or if the directory does not exist/is not a directory.
 	 */
 	public function rmdir(string $path, bool $log = true) : bool {
-		if(!file_exists($path) || !is_dir($path)) return false;
+		if(!\file_exists($path) || !\is_dir($path)) return false;
 		if(@rmdir($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
@@ -892,16 +892,16 @@ class Core {
 	 * @return bool True if the starting path is removed (if it becomes empty), false otherwise.
 	 */
 	public function rmdir_empty(string $path, bool $log = true) : bool {
-		if(!file_exists($path) || !is_dir($path)) return false;
+		if(!\file_exists($path) || !\is_dir($path)) return false;
 		$files = array_reverse($this->get_folders($path, true));
 		foreach($files as $file){
-			if(!file_exists($file)) continue;
+			if(!\file_exists($file)) continue;
 			$count = iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
 			if($count == 0){
 				$this->rmdir($file, $log);
 			}
 		}
-		return !file_exists($path);
+		return !\file_exists($path);
 	}
 
 	/**
@@ -912,7 +912,7 @@ class Core {
 	 * @return bool True on success, false on failure or if the file does not exist/is a directory.
 	 */
 	public function delete(string $path, bool $log = true) : bool {
-		if(!file_exists($path) || is_dir($path)) return false;
+		if(!\file_exists($path) || \is_dir($path)) return false;
 		if(@unlink($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
@@ -931,8 +931,8 @@ class Core {
 	 * @return bool True on success, false on failure or if the directory already exists and is not a directory.
 	 */
 	public function mkdir(string $path, bool $log = true, int $permissions = 0755) : bool {
-		if(file_exists($path) && is_dir($path)) return true;
-		if(@mkdir($path, $permissions, true)){
+		if(\file_exists($path) && \is_dir($path)) return true;
+		if(@\mkdir($path, $permissions, true)){
 			if($log) $this->write_log("MKDIR \"$path\"");
 			return true;
 		} else {
@@ -949,12 +949,12 @@ class Core {
 	 * @return int|false The number of errors encountered, or false on input path error.
 	 */
 	public function clone_folder_structure(string $input, string $output) : int|false {
-		if(!file_exists($input) || !is_dir($input)) return false;
+		if(!\file_exists($input) || !\is_dir($input)) return false;
 		$errors = 0;
 		$folders = $this->get_folders($input);
 		foreach($folders as $folder){
 			$directory = str_ireplace($input, $output, $folder);
-			if(!file_exists($directory)){
+			if(!\file_exists($directory)){
 				if(!$this->mkdir($directory)){
 					$errors++;
 				}
@@ -972,13 +972,13 @@ class Core {
 	 * @return bool True on success, false on failure.
 	 */
 	public function move(string $from, string $to, bool $log = true) : bool {
-		if(!file_exists($from)) return false;
-		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
+		if(!\file_exists($from)) return false;
+		if(\file_exists($to) && \pathinfo($from, PATHINFO_DIRNAME) != \pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED RENAME \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
-		$dir = pathinfo($to, PATHINFO_DIRNAME);
-		if(!file_exists($dir)) $this->mkdir($dir);
+		$dir = \pathinfo($to, PATHINFO_DIRNAME);
+		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		if(@rename($from, $to)){
 			touch($to, $modification_date);
@@ -999,10 +999,10 @@ class Core {
 	 * @return bool True on success, false on failure.
 	 */
 	public function move_case(string $from, string $to, bool $log = true) : bool {
-		if(!file_exists($from)) return false;
+		if(!\file_exists($from)) return false;
 		if(strcmp($from, $to) == 0) return true;
-		$dir = pathinfo($to, PATHINFO_DIRNAME);
-		if(!file_exists($dir)) $this->mkdir($dir);
+		$dir = \pathinfo($to, PATHINFO_DIRNAME);
+		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		if(@rename($from, $to)){
 			touch($to, $modification_date);
@@ -1023,14 +1023,14 @@ class Core {
 	 * @return bool True on success, false on failure.
 	 */
 	public function copy(string $from, string $to, bool $log = true) : bool {
-		if(!file_exists($from)) return false;
+		if(!\file_exists($from)) return false;
 		if($this->same_path($from, $to)) return true;
-		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
+		if(\file_exists($to) && \pathinfo($from, PATHINFO_DIRNAME) != \pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXIST");
 			return false;
 		}
-		$dir = pathinfo($to, PATHINFO_DIRNAME);
-		if(!file_exists($dir)) $this->mkdir($dir);
+		$dir = \pathinfo($to, PATHINFO_DIRNAME);
+		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		if(@copy($from, $to)){
 			touch($to, $modification_date);
@@ -1051,16 +1051,16 @@ class Core {
 	 * @return bool True on success, false on failure.
 	 */
 	public function acopy(string $from, string $to, bool $log = true) : bool {
-		if(!file_exists($from)) return false;
+		if(!\file_exists($from)) return false;
 		if($this->same_path($from, $to)) return true;
 		$write_buffer = $this->get_write_buffer();
 		if(!$write_buffer) return false;
-		if(file_exists($to) && pathinfo($from, PATHINFO_DIRNAME) != pathinfo($to, PATHINFO_DIRNAME)){
+		if(\file_exists($to) && \pathinfo($from, PATHINFO_DIRNAME) != \pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXISTS");
 			return false;
 		}
-		$dir = pathinfo($to, PATHINFO_DIRNAME);
-		if(!file_exists($dir)) $this->mkdir($dir);
+		$dir = \pathinfo($to, PATHINFO_DIRNAME);
+		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		$filesize = filesize($from);
 		$source = fopen($from, 'rb');
@@ -1091,11 +1091,11 @@ class Core {
 	 * @return bool True on success, false on failure.
 	 */
 	public function acopy_ssd(string $from, string $to, int $block_size = 4096, bool $log = true) : bool {
-		if(!file_exists($from)) return false;
-		if(!file_exists($to)) return $this->acopy($from, $to, $log);
+		if(!\file_exists($from)) return false;
+		if(!\file_exists($to)) return $this->acopy($from, $to, $log);
 		if($this->same_path($from, $to)) return true;
-		$dir = pathinfo($to, PATHINFO_DIRNAME);
-		if(!file_exists($dir)) $this->mkdir($dir);
+		$dir = \pathinfo($to, PATHINFO_DIRNAME);
+		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		$filesize = filesize($from);
 		$source = fopen($from, 'rb');
@@ -1110,8 +1110,8 @@ class Core {
 			fseek($destination, $offset);
 			$data_source = fread($source, $block_size);
 			$data_destination = fread($destination, $block_size);
-			$hash_source = hash('md5', $data_source);
-			$hash_destination = hash('md5', $data_destination);
+			$hash_source = \hash('md5', $data_source);
+			$hash_destination = \hash('md5', $data_destination);
 			if($hash_source !== $hash_destination){
 				fseek($destination, $offset);
 				fwrite($destination, $data_source);
@@ -1133,7 +1133,7 @@ class Core {
 	 */
 	public function same_path(string $from, string $to) : bool {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			if(mb_strtolower($from) == mb_strtolower($to)) return true;
+			if(\mb_strtolower($from) == \mb_strtolower($to)) return true;
 		}
 		if($from == $to) return true;
 		return false;
@@ -1187,7 +1187,7 @@ class Core {
 	public function get_confirm(string $question) : bool {
 		ask_confirm:
 		$answer = strtoupper($this->get_input($question));
-		if(!in_array($answer, ['Y', 'N'])) goto ask_confirm;
+		if(!\in_array($answer, ['Y', 'N'])) goto ask_confirm;
 		return $answer == 'Y';
 	}
 
@@ -1224,7 +1224,7 @@ class Core {
 			$this->set_console_color(substr($color, 0, 1).substr($color, 0, 1));
 			$password = readline();
 			$this->set_console_color($color);
-			echo "\033[1A$message".str_repeat("*", strlen($password))."\r\n";
+			echo "\033[1A$message".str_repeat("*", \strlen($password))."\r\n";
 		} else {
 			system('stty -echo');
 			$password = fgets(STDIN);
@@ -1263,7 +1263,7 @@ class Core {
 		$folders = $this->parse_input_path($line);
 		if(!isset($folders[0])) goto set_path;
 		$path = $folders[0];
-		if(file_exists($path) && !is_dir($path)){
+		if(\file_exists($path) && !\is_dir($path)){
 			$this->echo(" Invalid folder path");
 			goto set_path;
 		}
@@ -1271,7 +1271,7 @@ class Core {
 			$this->echo(" Failed create folder");
 			goto set_path;
 		}
-		if(!file_exists($path)){
+		if(!\file_exists($path)){
 			$this->echo(" Folder not exists");
 			goto set_path;
 		}
@@ -1293,17 +1293,17 @@ class Core {
 		$files = $this->parse_input_path($line);
 		if(!isset($files[0])) goto set_path;
 		$path = $files[0];
-		if(file_exists($path) && is_dir($path)){
+		if(\file_exists($path) && \is_dir($path)){
 			$this->echo(" Invalid file path");
 			goto set_path;
 		}
-		if($required && !file_exists($path)){
+		if($required && !\file_exists($path)){
 			$this->echo(" Input file not exists");
 			goto set_path;
 		}
 		if($create_directory){
-			$directory = pathinfo($path, PATHINFO_DIRNAME);
-			if(!file_exists($directory) && !$this->mkdir($directory)){
+			$directory = \pathinfo($path, PATHINFO_DIRNAME);
+			if(!\file_exists($directory) && !$this->mkdir($directory)){
 				$this->echo(" Failed create destination directory \"$directory\"");
 				goto set_path;
 			}
@@ -1319,7 +1319,7 @@ class Core {
 	 * @return array|null|false An array of extensions, null if empty input, or false if the user cancels.
 	 */
 	public function get_input_extensions(string $title, ?string $help_message = " Empty for all, separate with spaces for multiple") : array|null|false {
-		if(!is_null($help_message)) $this->echo($help_message);
+		if(!\is_null($help_message)) $this->echo($help_message);
 		$line = $this->get_input($title);
 		if($line == '#') return false;
 		if(empty($line)) return null;
@@ -1332,7 +1332,7 @@ class Core {
 	 * @param ?string $message An optional message to display before pausing.
 	 */
 	public function pause(?string $message = null) : void {
-		if(!is_null($message)) echo $message;
+		if(!\is_null($message)) echo $message;
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			system("PAUSE > nul");
 		} else {
@@ -1347,9 +1347,9 @@ class Core {
 	 * @param ?string $color_code The color code (e.g., '0F' for black background, white foreground). Null for default.
 	 */
 	public function echo(string $string = '', ?string $color_code = null) : void {
-		if(!is_null($color_code)) $this->set_console_color($color_code);
+		if(!\is_null($color_code)) $this->set_console_color($color_code);
 		echo "$string\r\n";
-		if(!is_null($color_code)) $this->set_console_color("XX");
+		if(!\is_null($color_code)) $this->set_console_color("XX");
 	}
 
 	/**
@@ -1379,7 +1379,7 @@ class Core {
 	 * @param string $string The string to print.
 	 */
 	public function current_line(string $string = '') : void {
-		echo "$string".str_repeat(" ", (int)max(62 - strlen($string), 0))."\r";
+		echo "$string".str_repeat(" ", (int)max(62 - \strlen($string), 0))."\r";
 	}
 
 	/**
@@ -1428,7 +1428,7 @@ class Core {
 				$output .= "$prefix}\n";
 			}
 		} else {
-			$type = strtolower(gettype($var));
+			$type = strtolower(\gettype($var));
 			switch($type){
 				case 'integer': {
 					$type = 'int';
@@ -1466,10 +1466,10 @@ class Core {
 	 * @param string $params Additional parameters for the open command (Windows only, e.g., '/MIN').
 	 */
 	public function open_file(string $path, string $params = '/MIN') : void {
-		if(file_exists($path)){
+		if(\file_exists($path)){
 			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 				exec("START $params \"\" \"$path\"");
-			} elseif(!is_null($this->config->get('OPEN_FILE_BINARY'))){
+			} elseif(!\is_null($this->config->get('OPEN_FILE_BINARY'))){
 				exec($this->config->get('OPEN_FILE_BINARY')." \"$path\"");
 			} else {
 				$this->write_error("Failed open file OPEN_FILE_BINARY is not configured");
@@ -1486,7 +1486,7 @@ class Core {
 		if(str_contains($url, "https://") || str_contains($url, "http://")){
 			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 				exec("START \"\" \"$url\"");
-			} elseif(!is_null($this->config->get('OPEN_FILE_BINARY'))){
+			} elseif(!\is_null($this->config->get('OPEN_FILE_BINARY'))){
 				exec($this->config->get('OPEN_FILE_BINARY')." \"$url\"");
 			} else {
 				$this->write_error("Failed open url OPEN_FILE_BINARY is not configured");
@@ -1502,8 +1502,8 @@ class Core {
 	 */
 	public function get_file_attributes(string $path) : array {
 		$path = $this->get_path($path);
-		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !file_exists($path)) return ['R' => false, 'A' => false, 'S' => false, 'H' => false, 'I' => false];
-		$attributes = substr(shell_exec("attrib ".escapeshellarg($path)), 0, 21);
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !\file_exists($path)) return ['R' => false, 'A' => false, 'S' => false, 'H' => false, 'I' => false];
+		$attributes = substr(shell_exec("attrib \"$path\""), 0, 21);
 		return [
 			'R' => str_contains($attributes, "R"),
 			'A' => str_contains($attributes, "A"),
@@ -1525,14 +1525,16 @@ class Core {
 	 * @return bool True on success, false on failure or if not on Windows or file does not exist.
 	 */
 	public function set_file_attributes(string $path, ?bool $r = null, ?bool $a = null, ?bool $s = null, ?bool $h = null, ?bool $i = null) : bool {
-		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !file_exists($path)) return false;
+		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !\file_exists($path)) return false;
 		$attributes = '';
-		if(!is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
-		if(!is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
-		if(!is_null($s)) $attributes .= ($s ? '+' : '-').'S ';
-		if(!is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
-		if(!is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
-		shell_exec("attrib $attributes ".escapeshellarg($path));
+		$params = '';
+		if(!\is_null($r)) $attributes .= ($r ? '+' : '-').'R ';
+		if(!\is_null($a)) $attributes .= ($a ? '+' : '-').'A ';
+		if(!\is_null($s)) $attributes .= ($s ? '+' : '-').'S ';
+		if(!\is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
+		if(!\is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
+		if(\is_link($path)) $params .= '/L ';
+		shell_exec("attrib {$params}{$attributes} \"$path\"");
 		return true;
 	}
 
@@ -1544,14 +1546,14 @@ class Core {
 	 */
 	public function is_valid_path(string $path) : bool {
 		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) return true;
-		if(strlen($path) >= 2 && $path[1] === ':' && ctype_alpha($path[0])){
-			return file_exists(substr($path, 0, 3));
+		if(\strlen($path) >= 2 && $path[1] === ':' && \ctype_alpha($path[0])){
+			return \file_exists(substr($path, 0, 3));
 		} elseif(substr($path, 0, 2) == "\\\\"){
 			$device = substr($path, 2);
 			if(str_contains($device, "\\")){
 				$parts = explode("\\", $device);
 				if(count($parts) >= 2){
-					return is_dir("\\\\{$parts[0]}\\{$parts[1]}");
+					return \is_dir("\\\\{$parts[0]}\\{$parts[1]}");
 				}
 			}
 		}
@@ -1575,7 +1577,7 @@ class Core {
 	 * @return string The lowercase file extension.
 	 */
 	public function get_extension(string $path) : string {
-		return mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+		return \mb_strtolower(\pathinfo($path, PATHINFO_EXTENSION));
 	}
 
 	/**
@@ -1587,7 +1589,7 @@ class Core {
 	 * @return string The modified file path.
 	 */
 	public function put_folder_to_path(string $path, string $subfolder) : string {
-		return $this->get_path(pathinfo($path, PATHINFO_DIRNAME)."/$subfolder/".pathinfo($path, PATHINFO_BASENAME));
+		return $this->get_path(\pathinfo($path, PATHINFO_DIRNAME)."/$subfolder/".\pathinfo($path, PATHINFO_BASENAME));
 	}
 
 	/**
@@ -1645,7 +1647,7 @@ class Core {
 	 * @return bool True if the file is a text file, false otherwise or if it doesn't exist.
 	 */
 	public function is_text_file(string $path) : bool {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$finfo = finfo_open(FILEINFO_MIME);
 		return substr(finfo_file($finfo, $path), 0, 4) == 'text';
 	}
@@ -1661,7 +1663,7 @@ class Core {
 	 */
 	public function exec(string $program, string $command, ?array &$output = null, ?int &$result_code = null) : string|false {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			if(is_null($this->core_path)) return false;
+			if(\is_null($this->core_path)) return false;
 			$program = $this->get_path("$this->core_path/$program.exe");
 		}
 		return exec("\"$program\" $command", $output, $result_code);
@@ -1696,7 +1698,7 @@ class Core {
 		if(!isset($size[1])) goto set_size;
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
-		$bytes = $this->size_unit_to_bytes(intval($size[0]), $size[1]);
+		$bytes = $this->size_unit_to_bytes(\intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
 		return $bytes;
 	}
@@ -1720,7 +1722,7 @@ class Core {
 		if(!isset($size[1])) goto set_interval;
 		$size[0] = preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_interval;
-		$interval = $this->time_unit_to_seconds(intval($size[0]), $size[1]);
+		$interval = $this->time_unit_to_seconds(\intval($size[0]), $size[1]);
 		if($interval <= 0) goto set_interval;
 		return $interval;
 	}
@@ -1742,7 +1744,7 @@ class Core {
 			$this->echo(" Type valid integer number");
 			goto set_number;
 		}
-		$number = intval($line);
+		$number = \intval($line);
 		if($number < $min){
 			$this->echo(" Number must be have greater than or equal $min");
 			goto set_number;
@@ -1760,7 +1762,7 @@ class Core {
 	 */
 	public function get_write_buffer() : int|bool {
 		$size = explode(' ', $this->config->get('WRITE_BUFFER_SIZE'));
-		$write_buffer = $this->size_unit_to_bytes(intval($size[0]), $size[1] ?? '?');
+		$write_buffer = $this->size_unit_to_bytes(\intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->clear();
 			$write_buffer_size = $this->config->get('WRITE_BUFFER_SIZE');
@@ -1781,30 +1783,30 @@ class Core {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			if(substr($path, 1, 1) == ':'){
 				$relative_path = substr($path, 3);
-				if(is_null($trash_folder)){
-					$new_name = $this->get_path(substr($path, 0, 2)."/.Deleted/$relative_path");
+				if(\is_null($trash_folder)){
+					$new_name = $this->get_path(substr($path, 0, 2)."/.Trash/$relative_path");
 				} else {
 					$new_name = $this->get_path("$trash_folder/$relative_path");
 				}
-				if(file_exists($new_name) && !$this->delete($new_name)) return false;
+				if(\file_exists($new_name) && !$this->delete($new_name)) return false;
 				return $this->move($path, $new_name);
 			} elseif(substr($path, 0, 2) == "\\\\"){
 				$device = substr($path, 2);
 				if(str_contains($device, "\\")){
 					$relative_path = str_replace("\\\\$device", "", $path);
-					if(is_null($trash_folder)){
-						$new_name = $this->get_path("$device/.Deleted/$relative_path");
+					if(\is_null($trash_folder)){
+						$new_name = $this->get_path("$device/.Trash/$relative_path");
 					} else {
 						$new_name = $this->get_path("$trash_folder/$relative_path");
 					}
-					if(file_exists($new_name) && !$this->delete($new_name)) return false;
+					if(\file_exists($new_name) && !$this->delete($new_name)) return false;
 					return $this->move($path, $new_name);
 				}
 			}
 		} else {
 			$output = [];
 			$return_var = 0;
-			exec("gio trash ".escapeshellarg($path), $output, $return_var);
+			exec("gio trash ".\escapeshellarg($path), $output, $return_var);
 			return $return_var === 0;
 		}
 		$this->write_error("FAILED TRASH \"$path\"");
@@ -1830,7 +1832,7 @@ class Core {
 	 */
 	public function base64_length(string $string) : ?int {
 		$string = trim(str_replace(["\r", "\n"], "", $string));
-		$base64_length = strlen($string);
+		$base64_length = \strlen($string);
 		$padding_length = substr_count($string, '=');
 		$original_length = ($base64_length / 4) * 3 - $padding_length;
 		if($original_length != (int)$original_length) return null;
@@ -1854,7 +1856,7 @@ class Core {
 	 * @return string The cleaned and lowercase file extension.
 	 */
 	public function clean_file_extension(string $extension) : string {
-		return mb_strtolower(preg_replace("/\s/is", "", $extension));
+		return \mb_strtolower(preg_replace("/\s/is", "", $extension));
 	}
 
 	/**
@@ -1866,7 +1868,7 @@ class Core {
 	public function array_to_lower(array $items) : array {
 		$data = [];
 		foreach($items as $item){
-			$data[] = mb_strtolower($item);
+			$data[] = \mb_strtolower($item);
 		}
 		return $data;
 	}
@@ -1880,7 +1882,7 @@ class Core {
 	public function array_to_upper(array $items) : array {
 		$data = [];
 		foreach($items as $item){
-			$data[] = mb_strtoupper($item);
+			$data[] = \mb_strtoupper($item);
 		}
 		return $data;
 	}
@@ -1936,7 +1938,7 @@ class Core {
 	 */
 	public function convert_color_to_ansi(string $color_code) : string {
 		$code = strtoupper($color_code);
-		if(strlen($code) !== 2 || !isset($this->console_color_map[$code[0]]) || !isset($this->console_color_map[$code[1]])){
+		if(\strlen($code) !== 2 || !isset($this->console_color_map[$code[0]]) || !isset($this->console_color_map[$code[1]])){
 			return "\033[0m";
 		}
 		[$fg, $bg] = [$this->console_color_map[$code[1]][0], $this->console_color_map[$code[0]][1]];
@@ -2027,7 +2029,7 @@ class Core {
 	 */
 	public function scan_dir_safe_extension(string $dir, array &$data, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
 		try {
-			$items = @scandir($dir);
+			$items = @\scandir($dir);
 		}
 		catch(Exception $e){
 			return false;
@@ -2036,17 +2038,17 @@ class Core {
 		foreach($items as $item){
 			if($item === '.' || $item === '..') continue;
 			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
-			if(is_dir($full_path)){
+			if(\is_dir($full_path)){
 				if(!$recursive) continue;
 				$this->scan_dir_safe_extension($full_path, $data, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
 				continue;
 			}
-			$ext = mb_strtolower(pathinfo($full_path, PATHINFO_EXTENSION));
-			if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
-			if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
-			$basename = pathinfo($full_path, PATHINFO_BASENAME);
-			if(!is_null($name_filters)){
-				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+			$ext = \mb_strtolower(\pathinfo($full_path, PATHINFO_EXTENSION));
+			if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
+			if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
+			$basename = \pathinfo($full_path, PATHINFO_BASENAME);
+			if(!\is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : \mb_strtolower($basename);
 				if(!$this->filter($check_name, $name_filters)) continue;
 			}
 			$data[] = $full_path;
@@ -2066,9 +2068,9 @@ class Core {
 	 * @param bool $recursive Whether to scan subdirectories recursively.
 	 * @return bool True if an action was successfully performed, false otherwise.
 	 */
-	public function scan_dir_safe_extension_process_files(string $dir, callable $callback, int &$counter, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
+	public function scan_dir_safe_extension_process_files(string $dir, callable $callback, int &$counter, ?array $include_extensions, ?array $exclude_extensions, ?array $name_filters, bool $case_sensitive, bool $recursive, bool $follow_symlinks) : bool {
 		try {
-			$items = @scandir($dir);
+			$items = @\scandir($dir);
 		}
 		catch(Exception $e){
 			return false;
@@ -2077,17 +2079,18 @@ class Core {
 		foreach($items as $item){
 			if($item === '.' || $item === '..') continue;
 			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
-			if(is_dir($full_path)){
+			if(!$follow_symlinks && \is_link($full_path)) continue;
+			if(\is_dir($full_path)){
 				if(!$recursive) continue;
-				$this->scan_dir_safe_extension_process_files($full_path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
+				$this->scan_dir_safe_extension_process_files($full_path, $callback, $counter, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive, $follow_symlinks);
 				continue;
 			}
-			$ext = mb_strtolower(pathinfo($full_path, PATHINFO_EXTENSION));
-			if(!is_null($include_extensions) && !in_array($ext, $include_extensions)) continue;
-			if(!is_null($exclude_extensions) && in_array($ext, $exclude_extensions)) continue;
-			$basename = pathinfo($full_path, PATHINFO_BASENAME);
-			if(!is_null($name_filters)){
-				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+			$ext = \mb_strtolower(\pathinfo($full_path, PATHINFO_EXTENSION));
+			if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
+			if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
+			$basename = \pathinfo($full_path, PATHINFO_BASENAME);
+			if(!\is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : \mb_strtolower($basename);
 				if(!$this->filter($check_name, $name_filters)) continue;
 			}
 			$counter++;

@@ -79,13 +79,13 @@ class Logs {
 	 * @return bool True if the file and directory structure were successfully created or already exist, false otherwise.
 	 */
 	protected function create() : bool {
-		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
+		$folder = \pathinfo($this->path, PATHINFO_DIRNAME);
+		if(!\file_exists($folder)) \mkdir($folder, $this->permissions, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		fwrite($file, "\xEF\xBB\xBF");
 		fclose($file);
-		return file_exists($this->path);
+		return \file_exists($this->path);
 	}
 
 	/**
@@ -150,11 +150,11 @@ class Logs {
 	 * @return bool True on successful write, false on failure.
 	 */
 	public function write(string|array $content) : bool {
-		if(is_null($this->path)) return false;
-		if(!file_exists($this->path)){
+		if(\is_null($this->path)) return false;
+		if(!\file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		if(gettype($content) == "array") return $this->write_array($content);
+		if(\gettype($content) == "array") return $this->write_array($content);
 		return $this->write_string($content);
 	}
 

@@ -242,7 +242,7 @@ class FtpClient implements Countable {
 			throw new FtpException('Unable to list directory');
 		}
 		$result = [];
-		$dir_len = strlen($directory);
+		$dir_len = \strlen($directory);
 		if(false !== ($kdot = array_search('.', $files))){
 			unset($files[$kdot]);
 		}
@@ -454,7 +454,7 @@ class FtpClient implements Countable {
 	 * @return int
 	 */
 	public function count_items(string $directory = '.', ?string $type = null, bool $recursive = true) : int {
-		if(is_null($type)){
+		if(\is_null($type)){
 			$items = $this->nlist($directory, $recursive);
 		} else {
 			$items = $this->scan_dir($directory, $recursive);
@@ -526,7 +526,7 @@ class FtpClient implements Countable {
 	 * @throws FtpException When the transfer fails
 	 */
 	public function put_from_path(string $local_file) : static {
-		$remote_file = pathinfo($local_file, PATHINFO_BASENAME);
+		$remote_file = \pathinfo($local_file, PATHINFO_BASENAME);
 		$handle = fopen($local_file, 'r');
 		if(!$handle) throw new FtpException('Unable to open local file "'.$local_file.'"');
 		if($this->ftp->fput($remote_file, $handle, FTP_BINARY)){
@@ -548,7 +548,7 @@ class FtpClient implements Countable {
 		$d = dir($source_directory);
 		while($file = $d->read()){
 			if($file == '.' || $file == '..') continue;
-			if(is_dir("$source_directory/$file")){
+			if(\is_dir("$source_directory/$file")){
 				if(!$this->is_dir("$target_directory/$file")){
 					$this->ftp->mkdir("$target_directory/$file");
 				}
@@ -574,8 +574,8 @@ class FtpClient implements Countable {
 			if($this->ftp->chdir($source_directory) === false){
 				throw new FtpException("Unable to change directory: ".$source_directory);
 			}
-			if(!file_exists($target_directory)){
-				mkdir($target_directory, $permissions, true);
+			if(!\file_exists($target_directory)){
+				\mkdir($target_directory, $permissions, true);
 			}
 			chdir($target_directory);
 		}
@@ -619,7 +619,7 @@ class FtpClient implements Countable {
 		if(!$recursive){
 			foreach($list as $path => $item){
 				$chunks = preg_split("/\s+/", $item);
-				if(!isset($chunks[8]) || strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
+				if(!isset($chunks[8]) || \strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 				$path = "$directory/{$chunks[8]}";
 				if(isset($chunks[9])){
 					$nb_chunks = count($chunks);
@@ -636,10 +636,10 @@ class FtpClient implements Countable {
 		}
 		$path = '';
 		foreach($list as $item){
-			$len = strlen($item);
+			$len = \strlen($item);
 			if(!$len || ($item[$len - 1] == '.' && $item[$len - 2] == ' ' || $item[$len - 1] == '.' && $item[$len - 2] == '.' && $item[$len - 3] == ' ')) continue;
 			$chunks = preg_split("/\s+/", $item);
-			if(!isset($chunks[8]) || strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
+			if(!isset($chunks[8]) || \strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 			$path = "$directory/{$chunks[8]}";
 			if(isset($chunks[9])){
 				$nb_chunks = count($chunks);
@@ -677,7 +677,7 @@ class FtpClient implements Countable {
 			$chunks = preg_split("/\s+/", $child, 9);
 			if(isset($chunks[8]) && ($chunks[8] == '.' || $chunks[8] == '..')) continue;
 			if(count($chunks) === 1){
-				$len = strlen($chunks[0]);
+				$len = \strlen($chunks[0]);
 				if($len && $chunks[0][$len - 1] == ':'){
 					$path = substr($chunks[0], 0, -1);
 				}

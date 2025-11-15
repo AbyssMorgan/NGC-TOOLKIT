@@ -60,13 +60,13 @@ class JournalService {
 	 * @return bool True if the file was created successfully, false otherwise.
 	 */
 	protected function create() : bool {
-		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
+		$folder = \pathinfo($this->path, PATHINFO_DIRNAME);
+		if(!\file_exists($folder)) \mkdir($folder, $this->permissions, true);
 		$fp = fopen($this->path, "w");
 		if(!$fp) return false;
 		fwrite($fp, self::FILE_HEADER_DATA."\1");
 		fclose($fp);
-		return file_exists($this->path);
+		return \file_exists($this->path);
 	}
 
 	/**
@@ -76,7 +76,7 @@ class JournalService {
 	 * @return int The length of the data in bytes.
 	 */
 	protected function length(string $data) : int {
-		return strlen(bin2hex($data)) / 2;
+		return \strlen(bin2hex($data)) / 2;
 	}
 
 	/**
@@ -134,11 +134,11 @@ class JournalService {
 	 * @return bool True if the content was written successfully, false otherwise.
 	 */
 	public function write(string|array $content) : bool {
-		if(is_null($this->path)) return false;
-		if(!file_exists($this->path)){
+		if(\is_null($this->path)) return false;
+		if(!\file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		if(gettype($content) == "array") return $this->write_array($content);
+		if(\gettype($content) == "array") return $this->write_array($content);
 		return $this->write_string($content);
 	}
 
@@ -149,19 +149,19 @@ class JournalService {
 	 * @return array|null An array of strings (or decoded JSON objects) read from the file, or null if the file does not exist or an error occurs.
 	 */
 	public function read(bool $json = false) : ?array {
-		if(!file_exists($this->path)) return null;
+		if(!\file_exists($this->path)) return null;
 		$data = [];
 		$fp = fopen($this->path, "rb");
 		if(!$fp) return null;
 		$header = fread($fp, 11);
-		if(!in_array($header, [self::FILE_HEADER_DATA, 'EMU-JOURNAL'])) return null;
+		if(!\in_array($header, [self::FILE_HEADER_DATA, 'EMU-JOURNAL'])) return null;
 		fseek($fp, 12);
 		while(!feof($fp)){
 			$l = fread($fp, 4);
 			if(!isset($l[0])) break;
-			$length = $this->bits->merge_value(ord($l[0]), ord($l[1]), ord($l[2]), ord($l[3]));
+			$length = $this->bits->merge_value(\ord($l[0]), \ord($l[1]), \ord($l[2]), \ord($l[3]));
 			$string = gzuncompress(fread($fp, $length));
-			if($json) $string = json_decode($string, true);
+			if($json) $string = \json_decode($string, true);
 			array_push($data, $string);
 		}
 		fclose($fp);

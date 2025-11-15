@@ -50,7 +50,7 @@ class SubtitlesValidator {
 	 * @return array|false An array of error messages, or false if the file does not exist.
 	 */
 	public function srt_validate(string $path) : array|false {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$file_content = file($path, FILE_IGNORE_NEW_LINES);
 		$timestamps = [];
 		$errors = [];
@@ -92,7 +92,7 @@ class SubtitlesValidator {
 		}
 		for($i = 0; $i < count($timestamps) - 1; $i++){
 			if($timestamps[$i]['end'] > $timestamps[$i + 1]['start']){
-				$errors[] = sprintf(
+				$errors[] = \sprintf(
 					"Time in line %d (%s --> %s) overlaps with line %d (%s --> %s)",
 					$timestamps[$i]['line'],
 					$this->core->seconds_to_time($timestamps[$i]['start'], true, false, true),
@@ -103,7 +103,7 @@ class SubtitlesValidator {
 				);
 			}
 			if($timestamps[$i]['start'] > $timestamps[$i + 1]['start']){
-				$errors[] = sprintf(
+				$errors[] = \sprintf(
 					"Subtitle timing out of order: line %d starts after line %d",
 					$timestamps[$i]['line'],
 					$timestamps[$i + 1]['line']
@@ -131,8 +131,8 @@ class SubtitlesValidator {
 			'file_a' => [],
 			'file_b' => [],
 		];
-		$nea = !file_exists($path_a);
-		$neb = !file_exists($path_b);
+		$nea = !\file_exists($path_a);
+		$neb = !\file_exists($path_b);
 		if($nea && $neb) return false;
 		if($nea){
 			array_push($errors->global, "File \"$path_a\" not exists");
@@ -202,8 +202,8 @@ class SubtitlesValidator {
 	 * @return array|false An array of subtitle blocks, or false if the file does not exist.
 	 */
 	public function srt_extract(string $path) : array|false {
-		if(!file_exists($path)) return false;
-		$content = file_get_contents($path);
+		if(!\file_exists($path)) return false;
+		$content = \file_get_contents($path);
 		$blocks = preg_split("/\R{2,}/", $content);
 		$subtitles = [];
 		foreach($blocks as $block){

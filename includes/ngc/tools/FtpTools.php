@@ -75,10 +75,10 @@ class FtpTools {
 	public function get_select_label() : void {
 		$this->select_label = [];
 		$i = 0;
-		$files = scandir($this->path);
+		$files = \scandir($this->path);
 		foreach($files as $file){
 			if($file == '..' || $file == '.') continue;
-			$label = pathinfo($file, PATHINFO_FILENAME);
+			$label = \pathinfo($file, PATHINFO_FILENAME);
 			$this->select_label[$i] = $label;
 			$i++;
 		}
@@ -117,7 +117,7 @@ class FtpTools {
 			goto set_label;
 		}
 
-		if(file_exists($this->get_config_path($label))){
+		if(\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" already in use");
 			if(!$this->core->get_confirm(" Overwrite (Y/N): ")) goto set_label;
 		}
@@ -171,7 +171,7 @@ class FtpTools {
 			'FTP_USER' => $auth['user'],
 			'FTP_PASSWORD' => $auth['password'],
 			'FTP_SSL' => $auth['ssl'],
-			'FTP_PORT' => intval($auth['port']),
+			'FTP_PORT' => \intval($auth['port']),
 		], true);
 
 		$this->core->clear();
@@ -195,7 +195,7 @@ class FtpTools {
 		}
 
 		$path = $this->get_config_path($label);
-		if(!file_exists($path)){
+		if(!\file_exists($path)){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}
@@ -222,8 +222,8 @@ class FtpTools {
 		foreach($files as $file){
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('FTP_HOST')){
-				$label = pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".str_repeat(" ", 32 - strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
+				$label = \pathinfo($file, PATHINFO_FILENAME);
+				$this->core->echo(" $label".str_repeat(" ", 32 - \strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
 				$cnt++;
 			}
 		}
@@ -368,10 +368,10 @@ class FtpTools {
 		$remote->process_files($input, function(string $file, string $type) use ($ftp, $input, $output) : bool {
 			if($type == 'directory') return false;
 			$local_file = $this->core->get_path(str_ireplace($input, $output, $file));
-			$directory = pathinfo($local_file, PATHINFO_DIRNAME);
-			if(file_exists($local_file)){
+			$directory = \pathinfo($local_file, PATHINFO_DIRNAME);
+			if(\file_exists($local_file)){
 				$this->core->delete($local_file);
-			} elseif(!file_exists($directory)){
+			} elseif(!\file_exists($directory)){
 				$this->core->mkdir($directory);
 			}
 			if($ftp->get($local_file, $file, FTP_BINARY, 0)){
@@ -443,7 +443,7 @@ class FtpTools {
 		$this->core->echo(" Prepare directories");
 		$files = $this->core->get_files($input, $extensions, null, $filters);
 		foreach($files as $file){
-			array_push($directories, str_ireplace([$input, "\\"], [$output, "/"], pathinfo($file, PATHINFO_DIRNAME)));
+			array_push($directories, str_ireplace([$input, "\\"], [$output, "/"], \pathinfo($file, PATHINFO_DIRNAME)));
 		}
 		$directories = array_unique($directories);
 
@@ -757,7 +757,7 @@ class FtpTools {
 		$input = $this->core->get_input_file(" XML file: ", true);
 		if($input === false) return false;
 
-		$xml = file_get_contents($input);
+		$xml = \file_get_contents($input);
 
 		$xml = str_replace(["\r", "\n", "\t"], '', $xml);
 		$xml = preg_replace('/<Folder [^>]+>[^>]+>/', '<Folder><Server>', $xml);
@@ -768,9 +768,9 @@ class FtpTools {
 			goto set_xml_file;
 		}
 
-		$data = json_decode(json_encode($xml), true);
+		$data = \json_decode(\json_encode($xml), true);
 
-		if(isset($data['Server']) && gettype($data['Server']) == 'array'){
+		if(isset($data['Server']) && \gettype($data['Server']) == 'array'){
 			if(isset($data['Server']['Name'])) $data['Server'] = [$data['Server']];
 			foreach($data['Server'] as $key => $server){
 				if(!isset($server['Name'])){
@@ -798,15 +798,15 @@ class FtpTools {
 					continue;
 				}
 				$label = substr(preg_replace("/[^A-Za-z0-9_\-]/", '', str_replace(" ", "_", trim($server['Name']))), 0, 32);
-				if(strlen($label) < 3) substr($label."___", 0, 3);
+				if(\strlen($label) < 3) substr($label."___", 0, 3);
 				if($this->core->is_valid_label($label)){
 					$ini = $this->get_config($label);
 					$ini->update([
 						'FTP_HOST' => $server['Host'],
 						'FTP_USER' => $server['User'],
-						'FTP_PASSWORD' => base64_decode($server['Pass']),
+						'FTP_PASSWORD' => \base64_decode($server['Pass']),
 						'FTP_SSL' => false,
-						'FTP_PORT' => intval($server['Port']),
+						'FTP_PORT' => \intval($server['Port']),
 					], true);
 					$ini->close();
 					$this->core->echo(" Import {$server['Name']} as $label success");
@@ -832,7 +832,7 @@ class FtpTools {
 			goto set_label;
 		}
 
-		if(!file_exists($this->get_config_path($label))){
+		if(!\file_exists($this->get_config_path($label))){
 			$this->core->echo(" Label \"$label\" not exists");
 			goto set_label;
 		}

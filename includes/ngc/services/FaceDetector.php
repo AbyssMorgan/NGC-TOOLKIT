@@ -63,7 +63,7 @@ class FaceDetector {
 	 * @param string $detection_data The path to the serialized detection data file.
 	 */
 	public function __construct(string $detection_data){
-		$this->detection_data = unserialize(file_get_contents($detection_data));
+		$this->detection_data = unserialize(\file_get_contents($detection_data));
 	}
 
 	/**
@@ -129,7 +129,7 @@ class FaceDetector {
 			imagecopyresampled($this->reduced_canvas, $this->canvas, 0, 0, 0, 0, (int)($im_width / $ratio), (int)($im_height / $ratio), $im_width, $im_height);
 			$stats = $this->get_img_stats($this->reduced_canvas);
 			$this->face = $this->do_detect_greedy_big_to_small($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
-			if(!is_null($this->face)){
+			if(!\is_null($this->face)){
 				if($this->face['w'] > 0){
 					$this->face['x'] *= $ratio;
 					$this->face['y'] *= $ratio;
@@ -140,7 +140,7 @@ class FaceDetector {
 			$stats = $this->get_img_stats($this->canvas);
 			$this->face = $this->do_detect_greedy_big_to_small($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
 		}
-		if(is_null($this->face)) return false;
+		if(\is_null($this->face)) return false;
 		return $this->face['w'] > 0;
 	}
 

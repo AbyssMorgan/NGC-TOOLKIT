@@ -74,14 +74,14 @@ class MediaFunctions {
 	 * @return string|false The MIME type of the file, or false if the file does not exist or an error occurs.
 	 */
 	public function get_mime_type(string $path) : string|false {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		try {
 			$mime_type = @finfo_file($this->file_info, $path);
 		}
 		catch(Exception $e){
 			return false;
 		}
-		return is_string($mime_type) ? mb_strtolower($mime_type) : false;
+		return is_string($mime_type) ? \mb_strtolower($mime_type) : false;
 	}
 
 	/**
@@ -96,7 +96,7 @@ class MediaFunctions {
 		catch(Exception $e){
 			return false;
 		}
-		return is_string($mime_type) ? mb_strtolower($mime_type) : false;
+		return is_string($mime_type) ? \mb_strtolower($mime_type) : false;
 	}
 
 	/**
@@ -106,7 +106,7 @@ class MediaFunctions {
 	 * @return GdImage|null A GdImage object on success, or null if the file does not exist, is not a supported image type, or is animated.
 	 */
 	public function get_image_from_path(string $path) : GdImage|null {
-		if(!file_exists($path)) return null;
+		if(!\file_exists($path)) return null;
 		$mime = $this->get_mime_type($path);
 		if($mime === false) return null;
 		if($this->is_image_animated($path)) return null;
@@ -173,7 +173,7 @@ class MediaFunctions {
 	 */
 	public function get_image_resolution(string $path) : string {
 		$image = $this->get_image_from_path($path);
-		if(!is_null($image)){
+		if(!\is_null($image)){
 			$w = imagesx($image);
 			$h = imagesy($image);
 			imagedestroy($image);
@@ -198,9 +198,9 @@ class MediaFunctions {
 	 * @return bool True if the image is animated, false otherwise or if the file does not exist.
 	 */
 	public function is_image_animated(string $path) : bool {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$mime_type = $this->get_mime_type($path);
-		if(in_array($mime_type, $this->mime_types_video)) return true;
+		if(\in_array($mime_type, $this->mime_types_video)) return true;
 		switch($mime_type){
 			case 'image/gif': {
 				try {
@@ -262,7 +262,7 @@ class MediaFunctions {
 	 * @return string|false The file extension (e.g., 'jpg', 'mp4'), or false if the file does not exist or MIME type cannot be determined.
 	 */
 	public function get_extension_by_mime_type(string $path) : string|false {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$mime_type = $this->get_mime_type($path);
 		if($mime_type === false) return false;
 		return $this->mime_type_to_extension($mime_type);
@@ -280,20 +280,20 @@ class MediaFunctions {
 	 */
 	public function get_video_thumbnail(string $path, string $output, int $w, int $r, int $c) : bool {
 		$out = [];
-		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS && !file_exists("/usr/bin/mtn")) return false;
-		$input_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
-		$output_file = $this->core->get_path("$output/".pathinfo($path, PATHINFO_FILENAME).".webp");
-		if(file_exists($output_file)) return true;
-		if(!file_exists($input_file)){
+		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS && !\file_exists("/usr/bin/mtn")) return false;
+		$input_file = $this->core->get_path("$output/".\pathinfo($path, PATHINFO_FILENAME)."_s.jpg");
+		$output_file = $this->core->get_path("$output/".\pathinfo($path, PATHINFO_FILENAME).".webp");
+		if(\file_exists($output_file)) return true;
+		if(!\file_exists($input_file)){
 			$this->core->exec("mtn", "-w $w -r $r -c $c -P \"$path\" -O \"$output\" >{$this->core->device_null}"." 2>{$this->core->device_null}", $out);
-			if(!file_exists($input_file)) return false;
+			if(!\file_exists($input_file)) return false;
 		}
 		$image = new Imagick();
 		$image->readImage($input_file);
 		$image->writeImage($output_file);
 		$image->clear();
 		unlink($input_file);
-		return file_exists($output_file);
+		return \file_exists($output_file);
 	}
 
 	/**
@@ -368,7 +368,7 @@ class MediaFunctions {
 	 * @return int|null The number of colors, -1 if the file does not exist, or null if the image is invalid.
 	 */
 	public function get_image_color_count(string $path) : ?int {
-		if(!file_exists($path)) return -1;
+		if(!\file_exists($path)) return -1;
 		try {
 			$image = new Imagick($path);
 			if(!$image->valid()) return null;
@@ -427,8 +427,8 @@ class MediaFunctions {
 	public function format_episode(int $episode, int $digits, int $max) : string {
 		$episode = $episode % $max;
 		if($episode < 0) $episode += $max;
-		$ep = strval($episode);
-		return str_repeat("0", $digits - strlen($ep)).$ep;
+		$ep = \strval($episode);
+		return str_repeat("0", $digits - \strlen($ep)).$ep;
 	}
 
 	/**
@@ -438,7 +438,7 @@ class MediaFunctions {
 	 * @return bool True if the video is identified as VR, false otherwise.
 	 */
 	public function is_vr_video(string $path) : bool {
-		$name = mb_strtoupper(pathinfo($path, PATHINFO_FILENAME));
+		$name = \mb_strtoupper(\pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
 			if(str_ends_with($name, $tag)) return true;
 		}
@@ -452,7 +452,7 @@ class MediaFunctions {
 	 * @return bool True if the video is identified as AR, false otherwise.
 	 */
 	public function is_ar_video(string $path) : bool {
-		$name = mb_strtoupper(pathinfo($path, PATHINFO_FILENAME));
+		$name = \mb_strtoupper(\pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
 			if(str_ends_with("$name", "{$tag}_ALPHA")) return true;
 		}
@@ -568,7 +568,7 @@ class MediaFunctions {
 	public function get_media_info(string $path) : array {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>{$this->core->device_null}", $output);
-		$info = json_decode(implode('', $output), true);
+		$info = \json_decode(implode('', $output), true);
 		return $info;
 	}
 
@@ -594,9 +594,9 @@ class MediaFunctions {
 	 * @property string $file_modification_time Modification time of the file (Y-m-d H:i:s).
 	 */
 	public function get_media_info_simple(string $path) : object|false {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$media_info = $this->get_media_info($path);
-		$video_duration_seconds = intval(round(floatval($media_info['format']['duration'])));
+		$video_duration_seconds = \intval(round(\floatval($media_info['format']['duration'])));
 		$file_size = filesize($path);
 		$meta = [
 			'video_resolution' => null,
@@ -604,7 +604,7 @@ class MediaFunctions {
 			'video_duration' => $this->core->seconds_to_time($video_duration_seconds, true),
 			'video_duration_seconds' => $video_duration_seconds,
 			'video_fps' => null,
-			'video_bitrate' => intval($media_info['format']['bit_rate'] ?? 0),
+			'video_bitrate' => \intval($media_info['format']['bit_rate'] ?? 0),
 			'video_codec' => null,
 			'video_aspect_ratio' => null,
 			'video_orientation' => null,
@@ -621,8 +621,8 @@ class MediaFunctions {
 			switch($stream['codec_type']){
 				case 'video': {
 					if(($stream['disposition']['attached_pic'] ?? 0) == 1) continue 2;
-					$width = intval($stream['width']);
-					$height = intval($stream['height']);
+					$width = \intval($stream['width']);
+					$height = \intval($stream['height']);
 					$meta['video_resolution'] = "{$stream['width']}x{$stream['height']}";
 					$is_vr = $this->is_vr_video($path);
 					$is_ar = $this->is_ar_video($path);
@@ -640,7 +640,7 @@ class MediaFunctions {
 					$need_audio = false;
 					$meta['audio_codec'] = $stream['codec_name'] ?? null;
 					$meta['audio_bitrate'] = $stream['bit_rate'] ?? ($stream['tags']['BPS'] ?? null);
-					if(!is_null($meta['audio_bitrate'])) $meta['audio_bitrate'] = intval($meta['audio_bitrate']);
+					if(!\is_null($meta['audio_bitrate'])) $meta['audio_bitrate'] = \intval($meta['audio_bitrate']);
 					$meta['audio_channels'] = $stream['channels'];
 					break;
 				}
@@ -657,7 +657,7 @@ class MediaFunctions {
 	 */
 	public function mime_type_to_extension(string $mime_type) : string|false {
 		if($mime_type == 'application/octet-stream') return false;
-		if(is_null($this->mime_types)){
+		if(\is_null($this->mime_types)){
 			$this->mime_types = new IniFile($this->core->get_resource("MimeTypes.ini"));
 		}
 		return $this->mime_types->get($mime_type, false);
@@ -717,8 +717,8 @@ class MediaFunctions {
 	 * @deprecated Due to performance use process_files_mime_type
 	 */
 	public function get_files_mime_type(string $path, ?array $include_mime_types = null, ?array $exclude_mime_types = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : array {
-		if(!file_exists($path)) return [];
-		if(!$case_sensitive && !is_null($name_filters)){
+		if(!\file_exists($path)) return [];
+		if(!$case_sensitive && !\is_null($name_filters)){
 			$name_filters = $this->core->array_to_lower($name_filters);
 		}
 		$data = [];
@@ -740,17 +740,17 @@ class MediaFunctions {
 	 * @return int Count total processed files.
 	 */
 	public function process_files_mime_type(string|array $path, callable $callback, ?array $include_mime_types = null, ?array $exclude_mime_types = null, ?array $name_filters = null, bool $case_sensitive = false, bool $recursive = true) : int {
-		if(gettype($path) == 'string'){
+		if(\gettype($path) == 'string'){
 			$paths = [$path];
 		} else {
 			$paths = $path;
 		}
-		if(!$case_sensitive && !is_null($name_filters)){
+		if(!$case_sensitive && !\is_null($name_filters)){
 			$name_filters = $this->core->array_to_lower($name_filters);
 		}
 		$counter = 0;
 		foreach($paths as $path){
-			if(!file_exists($path)) continue;
+			if(!\file_exists($path)) continue;
 			$this->scan_dir_safe_extension_process_files($path, $callback, $counter, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
 		}
 		return $counter;
@@ -770,7 +770,7 @@ class MediaFunctions {
 	 */
 	public function scan_dir_safe_mime_type(string $dir, array &$data, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
 		try {
-			$items = @scandir($dir);
+			$items = @\scandir($dir);
 		}
 		catch(Exception $e){
 			return false;
@@ -779,18 +779,18 @@ class MediaFunctions {
 		foreach($items as $item){
 			if($item === '.' || $item === '..') continue;
 			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
-			if(is_dir($full_path)){
+			if(\is_dir($full_path)){
 				if(!$recursive) continue;
 				$this->scan_dir_safe_mime_type($full_path, $data, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
 				continue;
 			}
 			$mime_type = $this->get_mime_type($full_path);
 			if($mime_type === false) continue;
-			if(!is_null($include_mime_types) && !in_array($mime_type, $include_mime_types)) continue;
-			if(!is_null($exclude_mime_types) && in_array($mime_type, $exclude_mime_types)) continue;
-			$basename = pathinfo($full_path, PATHINFO_BASENAME);
-			if(!is_null($name_filters)){
-				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+			if(!\is_null($include_mime_types) && !\in_array($mime_type, $include_mime_types)) continue;
+			if(!\is_null($exclude_mime_types) && \in_array($mime_type, $exclude_mime_types)) continue;
+			$basename = \pathinfo($full_path, PATHINFO_BASENAME);
+			if(!\is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : \mb_strtolower($basename);
 				if(!$this->core->filter($check_name, $name_filters)) continue;
 			}
 			$data[] = $full_path;
@@ -812,7 +812,7 @@ class MediaFunctions {
 	 */
 	public function scan_dir_safe_extension_process_files(string $dir, callable $callback, int &$counter, ?array $include_mime_types, ?array $exclude_mime_types, ?array $name_filters, bool $case_sensitive, bool $recursive) : bool {
 		try {
-			$items = @scandir($dir);
+			$items = @\scandir($dir);
 		}
 		catch(Exception $e){
 			return false;
@@ -821,18 +821,18 @@ class MediaFunctions {
 		foreach($items as $item){
 			if($item === '.' || $item === '..') continue;
 			$full_path = $dir.DIRECTORY_SEPARATOR.$item;
-			if(is_dir($full_path)){
+			if(\is_dir($full_path)){
 				if(!$recursive) continue;
 				$this->scan_dir_safe_extension_process_files($full_path, $callback, $counter, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
 				continue;
 			}
 			$mime_type = $this->get_mime_type($full_path);
 			if($mime_type === false) continue;
-			if(!is_null($include_mime_types) && !in_array($mime_type, $include_mime_types)) continue;
-			if(!is_null($exclude_mime_types) && in_array($mime_type, $exclude_mime_types)) continue;
-			$basename = pathinfo($full_path, PATHINFO_BASENAME);
-			if(!is_null($name_filters)){
-				$check_name = $case_sensitive ? $basename : mb_strtolower($basename);
+			if(!\is_null($include_mime_types) && !\in_array($mime_type, $include_mime_types)) continue;
+			if(!\is_null($exclude_mime_types) && \in_array($mime_type, $exclude_mime_types)) continue;
+			$basename = \pathinfo($full_path, PATHINFO_BASENAME);
+			if(!\is_null($name_filters)){
+				$check_name = $case_sensitive ? $basename : \mb_strtolower($basename);
 				if(!$this->core->filter($check_name, $name_filters)) continue;
 			}
 			$counter++;
@@ -842,7 +842,7 @@ class MediaFunctions {
 	}
 
 	public function is_image_blurry(string $path, float $threshold = 10.0, int $max_size = 600) : bool {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		try {
 			$img = new Imagick($path);
 		}

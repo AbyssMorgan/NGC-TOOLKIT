@@ -67,14 +67,14 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$escaped_name = pathinfo($file, PATHINFO_BASENAME);
+				if(!\file_exists($file)) continue 1;
+				$escaped_name = \pathinfo($file, PATHINFO_BASENAME);
 				while(str_contains($escaped_name, '  ')){
 					$escaped_name = str_replace('  ', ' ', $escaped_name);
 				}
@@ -83,8 +83,8 @@ class DirectoryNamesEditor {
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name");
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name");
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -162,14 +162,14 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$escaped_name = pathinfo($file, PATHINFO_BASENAME);
+				if(!\file_exists($file)) continue 1;
+				$escaped_name = \pathinfo($file, PATHINFO_BASENAME);
 				if($flags->basic_replace || $flags->language_replace || $flags->HiragamaToRomaji || $flags->KatakanaToRomaji){
 					$escaped_name = $converter->convert($escaped_name);
 				}
@@ -180,16 +180,16 @@ class DirectoryNamesEditor {
 					$escaped_name = $converter->string_to_pin_yin($escaped_name);
 				}
 				if($flags->UpperCase){
-					$escaped_name = mb_strtoupper($escaped_name);
+					$escaped_name = \mb_strtoupper($escaped_name);
 				} elseif($flags->LowerCase){
-					$escaped_name = mb_strtolower($escaped_name);
+					$escaped_name = \mb_strtolower($escaped_name);
 				} elseif($flags->CapitalizeProperly){
-					$escaped_name = ucwords(mb_strtolower($escaped_name));
+					$escaped_name = ucwords(\mb_strtolower($escaped_name));
 					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function(array $matches) : string {
-						return $matches[1].mb_strtoupper($matches[2]);
+						return $matches[1].\mb_strtoupper($matches[2]);
 					}, $escaped_name);
 					$escaped_name = preg_replace_callback('/([\(\[])([a-z])/', function(array $matches) : string {
-						return $matches[1].mb_strtoupper($matches[2]);
+						return $matches[1].\mb_strtoupper($matches[2]);
 					}, $escaped_name);
 				}
 				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
@@ -197,8 +197,8 @@ class DirectoryNamesEditor {
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
 				} else {
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name");
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$escaped_name");
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -240,15 +240,15 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$prefix".pathinfo($file, PATHINFO_BASENAME).$suffix);
-				if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				if(!\file_exists($file)) continue 1;
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$prefix".\pathinfo($file, PATHINFO_BASENAME).$suffix);
+				if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -287,7 +287,7 @@ class DirectoryNamesEditor {
 			'mode' => $line[0] ?? '?',
 		];
 
-		if(!in_array($params['mode'], ['0', '1'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1'])) goto set_mode;
 
 		$this->core->clear();
 
@@ -326,19 +326,19 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = trim(str_replace($keywords, '', pathinfo($file, PATHINFO_BASENAME)));
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name");
+				if(!\file_exists($file)) continue 1;
+				$name = trim(str_replace($keywords, '', \pathinfo($file, PATHINFO_BASENAME)));
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} elseif(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				} elseif(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {
@@ -373,7 +373,7 @@ class DirectoryNamesEditor {
 		if($line == '#') return false;
 		$offset = preg_replace("/[^0-9\-]/", '', $line);
 		if($offset == '') goto set_offset;
-		$offset = intval($offset);
+		$offset = \intval($offset);
 
 		$this->core->print_help([
 			' Specify the string you want to inject the file name, may contain spaces',
@@ -388,27 +388,27 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = pathinfo($file, PATHINFO_BASENAME);
-				if(abs($offset) > strlen($name)){
+				if(!\file_exists($file)) continue 1;
+				$name = \pathinfo($file, PATHINFO_BASENAME);
+				if(abs($offset) > \strlen($name)){
 					$this->core->write_error("ILLEGAL OFFSET FOR FILE NAME \"$file\"");
 					$errors++;
 				} else {
 					if($offset > 0){
 						$name = substr($name, 0, $offset).$insert_string.substr($name, $offset);
 					} elseif($offset < 0){
-						$name = substr($name, 0, strlen($name) + $offset).$insert_string.substr($name, $offset);
+						$name = substr($name, 0, \strlen($name) + $offset).$insert_string.substr($name, $offset);
 					} else {
 						$name = $insert_string.$name;
 					}
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name");
-					if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
+					if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 						$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 						$errors++;
 					} else {
@@ -471,19 +471,19 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$name = trim(str_replace(array_keys($replacements), $replacements, pathinfo($file, PATHINFO_BASENAME)));
-				$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name");
+				if(!\file_exists($file)) continue 1;
+				$name = trim(str_replace(array_keys($replacements), $replacements, \pathinfo($file, PATHINFO_BASENAME)));
+				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
-				} elseif(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+				} elseif(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 					$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 					$errors++;
 				} else {

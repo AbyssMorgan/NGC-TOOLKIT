@@ -131,7 +131,7 @@ class MySQL {
 	 * @return string The escaped string.
 	 */
 	public function escape(mixed $string) : string {
-		$string = strval($string) ?? '';
+		$string = \strval($string ?? '');
 		if(empty($string)) return '';
 		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}

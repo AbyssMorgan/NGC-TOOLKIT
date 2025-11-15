@@ -194,7 +194,7 @@ class VolumeIntegrity {
 	 * @return bool True if the connection was successful, false otherwise.
 	 */
 	private function connect() : bool {
-		if(!file_exists($this->database)){
+		if(!\file_exists($this->database)){
 			if(!$this->create()) return false;
 		}
 		try {
@@ -226,7 +226,7 @@ class VolumeIntegrity {
 	 * @return bool True if the data was loaded successfully, false if the database is not connected.
 	 */
 	public function load() : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$this->data = $this->get_all();
 		return true;
 	}
@@ -238,7 +238,7 @@ class VolumeIntegrity {
 	 * Each item is an object with properties: id, checksum, size, modification_date, validation_date.
 	 */
 	public function get_all() : array|false {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$data = [];
 		$items = $this->db->query("SELECT * FROM `$this->table_data`", PDO::FETCH_OBJ);
 		foreach($items as $item){
@@ -256,6 +256,7 @@ class VolumeIntegrity {
 				'validation_date' => $item->validation_date,
 			];
 		}
+		ksort($data, SORT_STRING);
 		return $data;
 	}
 
@@ -277,7 +278,7 @@ class VolumeIntegrity {
 	 * @return bool True if the operation was successful, false if the database is not connected.
 	 */
 	public function set(string $path, array $values = []) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 
 		$path = $this->container_escape($path);
 
@@ -365,7 +366,7 @@ class VolumeIntegrity {
 	 * @return bool True if the operation was successful, false if the database is not connected.
 	 */
 	public function unset(string $path) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$path = $this->container_escape($path);
 		$query = $this->db->prepare("DELETE FROM `$this->table_data` WHERE `path` = :path");
 		$query->bindParam(':path', $path);
@@ -381,7 +382,7 @@ class VolumeIntegrity {
 	 * @return object|null An object containing the media item's data, or null if not found or database not connected.
 	 */
 	public function get(string $path) : ?object {
-		if(is_null($this->db)) return null;
+		if(\is_null($this->db)) return null;
 		$path = $this->container_escape($path);
 		if(isset($this->data[$path])) return (object)$this->data[$path];
 		$query = $this->db->prepare("SELECT * FROM `$this->table_data` WHERE `path` = :path");
@@ -408,7 +409,7 @@ class VolumeIntegrity {
 	 * @return bool True if the rename operation was successful, false otherwise.
 	 */
 	public function rename(string $path_input, string $path_output) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$stmt = $this->db->prepare("UPDATE `$this->table_data` SET `path` = :path_output WHERE `path` = :path_input");
 		$stmt->bindValue(':path_input', $path_input);
 		$stmt->bindValue(':path_output', $path_output);
@@ -423,7 +424,7 @@ class VolumeIntegrity {
 	 * @return bool True if operation was successful, false otherwise.
 	 */
 	public function cleanup(array $items, callable $callback) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$except = [];
 		foreach($items as $item){
 			$except[] = $this->container_escape($item);
@@ -444,7 +445,7 @@ class VolumeIntegrity {
 	 * @return bool True if defragmentation was successful, false if the database is not connected.
 	 */
 	public function defragment() : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$id = 1;
 		$offset = 0;
 		$this->db->beginTransaction();
@@ -505,7 +506,7 @@ class VolumeIntegrity {
 	 * @return string The escaped string.
 	 */
 	public function escape(mixed $string) : string {
-		$string = strval($string) ?? '';
+		$string = \strval($string ?? '');
 		if(empty($string)) return '';
 		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}
@@ -520,14 +521,14 @@ class VolumeIntegrity {
 	 * @return int The version number of the table, or 0 if not found.
 	 */
 	public function get_version(string $table, bool $migrate = true) : int {
-		if(is_null($this->db)) return -1;
+		if(\is_null($this->db)) return -1;
 		if($migrate) $this->migrate();
 		if(!$this->table_exists($table)) return 0;
 		$stmt = $this->db->prepare("SELECT `version` FROM `$this->table_version` WHERE `table_name` = :table");
 		$stmt->bindValue(':table', $table, PDO::PARAM_STR);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_OBJ);
-		return $row ? intval($row->version) : 0;
+		return $row ? \intval($row->version) : 0;
 	}
 
 	/**
@@ -538,7 +539,7 @@ class VolumeIntegrity {
 	 * @return bool True if operation was successful, false otherwise.
 	 */
 	public function set_version(string $table, int $version) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		if($version == 1){
 			$insert = $this->db->prepare("INSERT INTO `$this->table_version` (`table_name`, `version`) VALUES (:table, :version)");
 			$insert->execute([
@@ -563,7 +564,7 @@ class VolumeIntegrity {
 	 * @return string|null The retrieved configuration value, or the default value if not found.
 	 */
 	public function get_value(string $name, ?string $default = null) : ?string {
-		if(is_null($this->db)) return null;
+		if(\is_null($this->db)) return null;
 		$stmt = $this->db->prepare("SELECT `value` FROM `$this->table_config` WHERE `name` = :name LIMIT 1");
 		$stmt->bindValue(':name', $name, PDO::PARAM_STR);
 		$stmt->execute();
@@ -581,9 +582,9 @@ class VolumeIntegrity {
 	 * @return bool True if operation was successful, false otherwise.
 	 */
 	public function set_value(string $name, string $value) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		$value = $this->escape($value);
-		if(is_null($this->get_value($name))){
+		if(\is_null($this->get_value($name))){
 			$insert = $this->db->prepare("INSERT INTO `$this->table_config` (`name`, `value`) VALUES (:name, :value)");
 			$insert->execute([
 				':name' => $name,
@@ -629,7 +630,7 @@ class VolumeIntegrity {
 	 * @return bool True if operation was successful, false otherwise.
 	 */
 	public function update_volume_info(IniFile $volume_info) : bool {
-		if(is_null($this->db)) return false;
+		if(\is_null($this->db)) return false;
 		if($volume_info->get('volume_id') !== $this->volume_id){
 			$this->volume_id = $volume_info->get('volume_id');
 			$this->set_value('VOLUME_ID', $this->volume_id);
@@ -650,7 +651,7 @@ class VolumeIntegrity {
 	 * @return int Volume size in bytes
 	 */
 	public function get_volume_size() : int {
-		if(is_null($this->db)) return 0;
+		if(\is_null($this->db)) return 0;
 		$result = $this->db->query("SELECT SUM(`size`) AS `size` FROM `$this->table_data`", PDO::FETCH_OBJ);
 		return $result->fetch()->size ?? 0;
 	}

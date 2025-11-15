@@ -60,7 +60,7 @@ class GuardPattern {
 	 * @param array|string $folders A single folder path (string) or an array of folder paths.
 	 */
 	public function add_folders(array|string $folders) : void {
-		if(gettype($folders) == 'string') $folders = [$folders];
+		if(\gettype($folders) == 'string') $folders = [$folders];
 		$this->folders = array_unique(array_merge($this->folders, $folders));
 	}
 
@@ -70,7 +70,7 @@ class GuardPattern {
 	 * @param array|string $folders A single folder path (string) or an array of folder paths.
 	 */
 	public function set_folders(array|string $folders) : void {
-		if(gettype($folders) == 'string') $folders = [$folders];
+		if(\gettype($folders) == 'string') $folders = [$folders];
 		$this->folders = $folders;
 	}
 
@@ -90,7 +90,7 @@ class GuardPattern {
 	 * @param array|string $files A single file path (string) or an array of file paths.
 	 */
 	public function add_files(array|string $files) : void {
-		if(gettype($files) == 'string') $files = [$files];
+		if(\gettype($files) == 'string') $files = [$files];
 		$this->files = array_unique(array_merge($this->files, $files));
 	}
 
@@ -100,7 +100,7 @@ class GuardPattern {
 	 * @param array|string $files A single file path (string) or an array of file paths.
 	 */
 	public function set_files(array|string $files) : void {
-		if(gettype($files) == 'string') $files = [$files];
+		if(\gettype($files) == 'string') $files = [$files];
 		$this->files = $files;
 	}
 

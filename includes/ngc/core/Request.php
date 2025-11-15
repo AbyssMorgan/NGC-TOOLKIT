@@ -102,7 +102,7 @@ class Request {
 	 * @return bool True if the file exists and is a regular file, false otherwise.
 	 */
 	public function set_cacert(string $path) : bool {
-		if(!file_exists($path) || !is_file($path)) return false;
+		if(!\file_exists($path) || !is_file($path)) return false;
 		$this->cacert = $path;
 		return true;
 	}
@@ -127,7 +127,7 @@ class Request {
 	 */
 	public function set_http_version(int $version) : bool {
 		$versions = [CURL_HTTP_VERSION_1_0, CURL_HTTP_VERSION_1_1, CURL_HTTP_VERSION_2];
-		if(in_array($version, $versions)){
+		if(\in_array($version, $versions)){
 			$this->set_option(CURLOPT_HTTP_VERSION, $version);
 			return true;
 		}
@@ -151,7 +151,7 @@ class Request {
 	 */
 	public function toggle_cookie(bool $toggle, ?string $file = null) : void {
 		$this->cookies = $toggle;
-		if(!is_null($file)){
+		if(!\is_null($file)){
 			$this->cookie_file = $file;
 		} else {
 			$this->cookie_file = self::DEFAULT_COOKIE_FILE;
@@ -336,8 +336,8 @@ class Request {
 		$options[CURLOPT_CUSTOMREQUEST] = $method;
 		$params = '';
 		if(!empty($data)){
-			if(in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])){
-				$options[CURLOPT_POSTFIELDS] = $this->json ? json_encode($data) : urldecode(http_build_query($data));
+			if(\in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])){
+				$options[CURLOPT_POSTFIELDS] = $this->json ? \json_encode($data) : urldecode(http_build_query($data));
 			} elseif($method === 'GET'){
 				$params = '?'.urldecode(http_build_query($data));
 			}
@@ -350,9 +350,9 @@ class Request {
 				array_push($options[CURLOPT_HTTPHEADER], 'Accept: application/json');
 			}
 		} else {
-			if(in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])){
+			if(\in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])){
 				array_push($options[CURLOPT_HTTPHEADER], 'Content-Type: application/x-www-form-urlencoded');
-				array_push($options[CURLOPT_HTTPHEADER], 'Content-Length: '.strlen($options[CURLOPT_POSTFIELDS]));
+				array_push($options[CURLOPT_HTTPHEADER], 'Content-Length: '.\strlen($options[CURLOPT_POSTFIELDS]));
 			}
 		}
 		if($this->cookies){
@@ -362,7 +362,7 @@ class Request {
 		if(str_starts_with($url, 'https://')){
 			$options[CURLOPT_SSL_VERIFYHOST] = 2;
 			$options[CURLOPT_SSL_VERIFYPEER] = true;
-			if(!is_null($this->cacert) && file_exists($this->cacert)){
+			if(!\is_null($this->cacert) && \file_exists($this->cacert)){
 				$options[CURLOPT_CAINFO] = $this->cacert;
 			}
 		}
@@ -381,7 +381,7 @@ class Request {
 		}
 		return [
 			'code' => $info['http_code'] ?? 0,
-			'data' => $this->json ? json_decode($response, true) : $response,
+			'data' => $this->json ? \json_decode($response, true) : $response,
 		];
 	}
 

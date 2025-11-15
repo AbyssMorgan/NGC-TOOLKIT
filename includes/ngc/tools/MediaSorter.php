@@ -69,9 +69,9 @@ class MediaSorter {
 		if($line == '#') return false;
 
 		$params['mode'] = strtolower($line[0] ?? '?');
-		if(!in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
-		$params['resolution'] = in_array($params['mode'], ['0', '1']);
-		$params['quality'] = in_array($params['mode'], ['0', '2']);
+		if(!\in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
+		$params['resolution'] = \in_array($params['mode'], ['0', '1']);
+		$params['quality'] = \in_array($params['mode'], ['0', '2']);
 
 		$this->core->clear();
 
@@ -87,9 +87,9 @@ class MediaSorter {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$extension = $this->core->get_extension($file);
-				if(in_array($extension, $this->core->media->extensions_images)){
+				if(\in_array($extension, $this->core->media->extensions_images)){
 					$resolution = $this->core->media->get_image_resolution($file);
 				} else {
 					$resolution = $this->core->media->ffprobe_get_resolution($file);
@@ -103,8 +103,8 @@ class MediaSorter {
 				$size = explode("x", $resolution);
 				$is_vr = $this->core->media->is_vr_video($file);
 				$is_ar = $this->core->media->is_ar_video($file);
-				$quality = $this->core->media->get_media_quality(intval($size[0]), intval($size[1]), $is_vr || $is_ar)."p";
-				$orientation_name = $this->core->media->get_media_orientation_name($this->core->media->get_media_orientation(intval($size[0]), intval($size[1])));
+				$quality = $this->core->media->get_media_quality(\intval($size[0]), \intval($size[1]), $is_vr || $is_ar)."p";
+				$orientation_name = $this->core->media->get_media_orientation_name($this->core->media->get_media_orientation(\intval($size[0]), \intval($size[1])));
 				if($params['resolution'] && $params['quality']){
 					$directory = "$folder/$orientation_name/$quality";
 				} elseif($params['resolution']){
@@ -112,7 +112,7 @@ class MediaSorter {
 				} elseif($params['quality']){
 					$directory = "$folder/$quality";
 				}
-				if(!$this->core->move($file, $this->core->get_path("$directory/".pathinfo($file, PATHINFO_BASENAME)))){
+				if(!$this->core->move($file, $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_BASENAME)))){
 					$errors++;
 				}
 				$this->core->progress($items, $total);
@@ -138,15 +138,15 @@ class MediaSorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $this->core->media->extensions_images);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$colors = $this->core->media->get_image_color_count($file);
-				if(is_null($colors)){
+				if(\is_null($colors)){
 					$group = 'Unknown';
 				} else {
 					$group = $this->core->media->get_image_color_group($colors);
@@ -186,7 +186,7 @@ class MediaSorter {
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$meta = $this->core->media->get_media_info_simple($file);
 				if(!$meta){
 					$this->core->write_error("FAILED GET MEDIA INFO \"$file\"");
@@ -197,9 +197,9 @@ class MediaSorter {
 				if($multiplier == 0){
 					$start = '00_00';
 				} else {
-					$start = str_replace(":", "_", $this->core->seconds_to_time(intval($interval * $multiplier) + 1));
+					$start = str_replace(":", "_", $this->core->seconds_to_time(\intval($interval * $multiplier) + 1));
 				}
-				$end = str_replace(":", "_", $this->core->seconds_to_time(intval($interval * ($multiplier + 1))));
+				$end = str_replace(":", "_", $this->core->seconds_to_time(\intval($interval * ($multiplier + 1))));
 				$new_name = $this->core->put_folder_to_path($file, "$start - $end");
 				if($this->core->move($file, $new_name)){
 					$renamed = true;
@@ -208,14 +208,14 @@ class MediaSorter {
 					$errors++;
 				}
 				if($renamed){
-					$name = pathinfo($file, PATHINFO_FILENAME);
+					$name = \pathinfo($file, PATHINFO_FILENAME);
 					$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
-						if(file_exists("$file.$a")){
+						if(\file_exists("$file.$a")){
 							if(!$this->core->move("$file.$a", "$new_name.$a")) $errors++;
 						}
-						$name_old = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
-						if(file_exists($name_old)){
+						$name_old = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name.$a");
+						if(\file_exists($name_old)){
 							if(!$this->core->move($name_old, $this->core->put_folder_to_path($name_old, "$start - $end"))) $errors++;
 						}
 					}
@@ -244,13 +244,13 @@ class MediaSorter {
 		$this->core->set_errors($errors);
 
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, ['gif', 'webp', 'apng']);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				if($this->core->media->is_image_animated($file)){
 					$directory = "Animated";
 				} else {
@@ -282,13 +282,13 @@ class MediaSorter {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $this->core->media->extensions_images);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				try {
 					$image = new Imagick($file);
 				}
@@ -345,8 +345,8 @@ class MediaSorter {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue;
-			$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)));
+			if(!\file_exists($file)) continue;
+			$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], \mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)));
 			$file_name = str_replace([' ', '.', '[', ']'], ' ', $file_name);
 			$mathes = [];
 			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
@@ -356,8 +356,8 @@ class MediaSorter {
 			} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
 			} elseif(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-				if(strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
-				if(strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
+				if(\strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
+				if(\strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
 				$marker = $mathes[1].$mathes[2];
 			} elseif(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
 				$marker = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
@@ -365,12 +365,12 @@ class MediaSorter {
 				$marker = '';
 			}
 			if(!empty($marker)){
-				$end = strpos(mb_strtoupper(pathinfo($file, PATHINFO_FILENAME)), $marker);
+				$end = strpos(\mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)), $marker);
 				if($end === false){
 					$this->core->write_error("FAILED GET MARKER \"$file\"");
 					$errors++;
 				} else {
-					$folder_name = str_replace(['_', '.', "\u{00A0}"], ' ', substr(pathinfo($file, PATHINFO_FILENAME), 0, $end));
+					$folder_name = str_replace(['_', '.', "\u{00A0}"], ' ', substr(\pathinfo($file, PATHINFO_FILENAME), 0, $end));
 					$folder_name = str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $folder_name);
 					while(str_contains($folder_name, '  ')){
 						$folder_name = str_replace('  ', ' ', $folder_name);
@@ -381,7 +381,7 @@ class MediaSorter {
 						$errors++;
 					} else {
 						$new_name = $this->core->put_folder_to_path($file, $folder_name);
-						if(file_exists($new_name) && mb_strtoupper($new_name) != mb_strtoupper($file)){
+						if(\file_exists($new_name) && \mb_strtoupper($new_name) != \mb_strtoupper($file)){
 							$this->core->write_error("DUPLICATE \"$file\" AS \"$new_name\"");
 							$errors++;
 						} else {

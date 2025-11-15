@@ -69,7 +69,7 @@ class VolumeInfo {
 	 */
 	public function get_path_by_volume_id(string $volume_id) : ?string {
 		$info = $this->get_volume_info($volume_id);
-		if(is_null($info)) return null;
+		if(\is_null($info)) return null;
 		return $info->path;
 	}
 
@@ -91,9 +91,9 @@ class VolumeInfo {
 				}
 			}
 		}
-		if(!is_null($this->search_folders)){
+		if(!\is_null($this->search_folders)){
 			foreach($this->search_folders as $search_folder){
-				if(!file_exists($search_folder)) continue;
+				if(!\file_exists($search_folder)) continue;
 				foreach($this->core->get_folders($search_folder, false, false) as $drive){
 					$this->search_volumes($data, $drive, $with_config);
 				}
@@ -116,12 +116,13 @@ class VolumeInfo {
 	private function search_volumes(array &$data, string $path, bool $with_config) : int {
 		$count = 0;
 		$ini_file = $this->core->get_path("$path/.Volume/VolumeInfo.ini");
-		if(file_exists($ini_file)){
+		if(\file_exists($ini_file)){
 			$ini = new IniFile($ini_file);
 			$volume_id = $ini->get('volume_id');
 			$item = [
 				'path' => $path,
 				'name' => $ini->get('name'),
+				'group_name' => $ini->get('group_name'),
 			];
 			if($with_config) $item['config'] = $ini;
 			$data[$volume_id] = (object)$item;

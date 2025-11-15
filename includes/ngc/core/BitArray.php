@@ -107,7 +107,7 @@ class BitArray {
 	 * @param string $json The JSON string representing an array of integers.
 	 */
 	public function from_json(string $json) : void {
-		$this->from_array(json_decode($json, true));
+		$this->from_array(\json_decode($json, true));
 	}
 
 	/**
@@ -120,7 +120,7 @@ class BitArray {
 		$this->original = [];
 		$address = 0;
 		for($offset = 0; $offset < $length; $offset += 4){
-			$this->original[$address] = (int)((ord($binary[$offset] ?? "\0") << 24) | (ord($binary[$offset + 1] ?? "\0") << 16) | (ord($binary[$offset + 2] ?? "\0") << 8) | ord($binary[$offset + 3] ?? "\0"));
+			$this->original[$address] = (int)((\ord($binary[$offset] ?? "\0") << 24) | (\ord($binary[$offset + 1] ?? "\0") << 16) | (\ord($binary[$offset + 2] ?? "\0") << 8) | \ord($binary[$offset + 3] ?? "\0"));
 			$address++;
 		}
 	}
@@ -131,7 +131,7 @@ class BitArray {
 	 * @param string $hex The hexadecimal string.
 	 */
 	public function from_hex(string $hex) : void {
-		$this->from_binary(hex2bin($hex), strlen($hex) * 2);
+		$this->from_binary(hex2bin($hex), \strlen($hex) * 2);
 	}
 
 	/**
@@ -141,7 +141,7 @@ class BitArray {
 	 * @return bool True on success, false on failure (e.g., file not found or not readable).
 	 */
 	public function from_file(string $path) : bool {
-		if(!file_exists($path)) return false;
+		if(!\file_exists($path)) return false;
 		$file = fopen($path, "rb");
 		if(!$file) return false;
 		$length = filesize($path);
@@ -186,7 +186,7 @@ class BitArray {
 	 * @return string The JSON string representing the array of integers.
 	 */
 	public function to_json() : string {
-		return json_encode($this->to_array());
+		return \json_encode($this->to_array());
 	}
 
 	/**
@@ -224,9 +224,9 @@ class BitArray {
 	 * @return bool True on success, false on failure (e.g., file cannot be created or written).
 	 */
 	public function to_file(string $path) : bool {
-		if(file_exists($path)){
+		if(\file_exists($path)){
 			unlink($path);
-			if(file_exists($path)) return false;
+			if(\file_exists($path)) return false;
 		}
 		$file = fopen($path, "wb");
 		if(!$file) return false;

@@ -78,7 +78,7 @@ class IniFile {
 	 * @param int $permissions The permissions for creating new directories.
 	 */
 	public function __construct(?string $path = null, bool $sort = false, bool $compressed = false, ?object $encoder = null, int $permissions = 0755){
-		if(!is_null($path)){
+		if(!\is_null($path)){
 			$this->open($path, $sort, $compressed, $encoder, $permissions);
 		}
 	}
@@ -89,13 +89,13 @@ class IniFile {
 	 * @return bool True on success, false on failure.
 	 */
 	protected function create() : bool {
-		$folder = pathinfo($this->path, PATHINFO_DIRNAME);
-		if(!file_exists($folder)) mkdir($folder, $this->permissions, true);
+		$folder = \pathinfo($this->path, PATHINFO_DIRNAME);
+		if(!\file_exists($folder)) \mkdir($folder, $this->permissions, true);
 		$file = fopen($this->path, "w");
 		if(!$file) return false;
 		fwrite($file, "");
 		fclose($file);
-		return file_exists($this->path);
+		return \file_exists($this->path);
 	}
 
 	/**
@@ -113,7 +113,7 @@ class IniFile {
 		$this->sort = $sort;
 		$this->compressed = $compressed;
 		$this->permissions = $permissions;
-		if(!is_null($encoder)){
+		if(!\is_null($encoder)){
 			if(method_exists($encoder, 'encrypt') && method_exists($encoder, 'decrypt') && method_exists($encoder, 'get_header')){
 				$this->encoder = $encoder;
 			}
@@ -141,18 +141,18 @@ class IniFile {
 	 * @return bool True on success, false on failure.
 	 */
 	public function read() : bool {
-		if(!file_exists($this->path)){
+		if(!\file_exists($this->path)){
 			if(!$this->create()) return false;
 		}
-		$content = file_get_contents($this->path);
+		$content = \file_get_contents($this->path);
 		if($content === false) return false;
 		$this->data = [];
-		if(strlen($content) > 0){
-			if(!is_null($this->encoder)){
-				$header_length = strlen($this->encoder->get_header());
+		if(\strlen($content) > 0){
+			if(!\is_null($this->encoder)){
+				$header_length = \strlen($this->encoder->get_header());
 				if(substr($content, 0, $header_length) == $this->encoder->get_header()){
 					$content = $this->encoder->decrypt(substr($content, $header_length));
-					if(is_null($content)) return false;
+					if(\is_null($content)) return false;
 				}
 			}
 			if(substr($content, 0, 11) == 'ADM_GZ_INI:'){
@@ -190,7 +190,7 @@ class IniFile {
 	 */
 	public function parse_line(string $line, &$key, int|bool|string|array|float|null &$data, bool $escape = true) : bool {
 		if($escape) $line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
-		if(strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
+		if(\strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
 		$option = explode("=", $line, 2);
 		if(!empty(trim($option[0]))){
 			$key = trim($option[0]);
@@ -198,9 +198,9 @@ class IniFile {
 				$data = null;
 			} elseif(is_numeric($option[1])){
 				if(strpos($option[1], ".") !== false){
-					$data = floatval($option[1]);
+					$data = \floatval($option[1]);
 				} else {
-					$data = intval($option[1]);
+					$data = \intval($option[1]);
 				}
 			} elseif(empty($option[1])){
 				$data = "";
@@ -217,7 +217,7 @@ class IniFile {
 					$data = $option[1];
 				}
 				if(substr($data, 0, 5) == 'JSON:'){
-					$data = json_decode(base64_decode(substr($data, 5)), true);
+					$data = \json_decode(\base64_decode(substr($data, 5)), true);
 				}
 			}
 		}
@@ -230,7 +230,7 @@ class IniFile {
 	 * @return bool True if changes exist, false otherwise.
 	 */
 	public function is_changed() : bool {
-		return (json_encode($this->get_original_all()) != json_encode($this->get_all()));
+		return (\json_encode($this->get_original_all()) != \json_encode($this->get_all()));
 	}
 
 	/**
@@ -242,9 +242,9 @@ class IniFile {
 	public function is_value_changed(string $key) : bool {
 		$value = $this->get($key);
 		$original = $this->get_original($key);
-		if(gettype($value) != gettype($original)) return false;
-		if(gettype($value) == 'array'){
-			return json_encode($value) != json_encode($original);
+		if(\gettype($value) != \gettype($original)) return false;
+		if(\gettype($value) == 'array'){
+			return \json_encode($value) != \json_encode($original);
 		} else {
 			return $value != $original;
 		}
@@ -333,7 +333,7 @@ class IniFile {
 	 * @return string The retrieved value as a string.
 	 */
 	public function get_string(string $key, int|bool|string|array|float|null $default = null) : string {
-		return strval($this->data[$key] ?? $default);
+		return \strval($this->data[$key] ?? $default);
 	}
 
 	/**
@@ -366,8 +366,8 @@ class IniFile {
 	 * @return int|bool|string|array|float|null The cleaned value.
 	 */
 	public function clean_value(int|bool|string|array|float|null $value) : int|bool|string|array|float|null {
-		if(gettype($value) == 'string'){
-			$lvalue = mb_strtolower($value);
+		if(\gettype($value) == 'string'){
+			$lvalue = \mb_strtolower($value);
 			if($lvalue == 'true'){
 				return true;
 			} elseif($lvalue == 'false'){
@@ -396,7 +396,7 @@ class IniFile {
 	 * @return void
 	 */
 	public function unset(string|array $keys) : void {
-		if(gettype($keys) == 'string') $keys = [$keys];
+		if(\gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->is_set($key)){
 				unset($this->data[$key]);
@@ -412,7 +412,7 @@ class IniFile {
 	 * @return void
 	 */
 	public function reset(string|array $keys, int|bool|string|array|float|null $value = null) : void {
-		if(gettype($keys) == 'string') $keys = [$keys];
+		if(\gettype($keys) == 'string') $keys = [$keys];
 		foreach($keys as $key){
 			if($this->is_set($key)){
 				$this->set($key, $value);
@@ -433,7 +433,7 @@ class IniFile {
 		foreach($this->data as $key => $value){
 			if(is_numeric($value)){
 				$content .= "$key=$value\r\n";
-			} elseif(is_null($value)){
+			} elseif(\is_null($value)){
 				$content .= "$key=null\r\n";
 			} elseif(is_bool($value)){
 				$value = $value ? 'true' : 'false';
@@ -441,7 +441,7 @@ class IniFile {
 			} elseif(empty($value) && !is_array($value)){
 				$content .= "$key=\"\"\r\n";
 			} elseif(is_array($value)){
-				$value = "JSON:".base64_encode(json_encode($value));
+				$value = "JSON:".\base64_encode(\json_encode($value));
 				$content .= "$key=\"$value\"\r\n";
 			} else {
 				$value = addslashes($value);
@@ -450,15 +450,15 @@ class IniFile {
 		}
 		try {
 			if($this->compressed) $content = "ADM_GZ_INI:".gzcompress($content, 9);
-			if(!is_null($this->encoder)){
+			if(!\is_null($this->encoder)){
 				$content = $this->encoder->encrypt($content);
-				if(is_null($content)) return false;
+				if(\is_null($content)) return false;
 				$content = $this->encoder->get_header().$content;
 			}
 			if($as_output){
 				return $content;
 			} else {
-				file_put_contents($this->path, $content);
+				\file_put_contents($this->path, $content);
 			}
 		}
 		catch(Exception $e){
@@ -542,7 +542,7 @@ class IniFile {
 	 * @return string|false The JSON string, or false on failure.
 	 */
 	public function to_json() : string|false {
-		return json_encode($this->data);
+		return \json_encode($this->data);
 	}
 
 	/**
@@ -555,9 +555,9 @@ class IniFile {
 	 */
 	public function from_json(string $json, bool $merge = false, bool $save = false) : void {
 		if($merge){
-			$this->update(json_decode($json, true), $save);
+			$this->update(\json_decode($json, true), $save);
 		} else {
-			$this->set_all(json_decode($json, true), $save);
+			$this->set_all(\json_decode($json, true), $save);
 		}
 	}
 
@@ -652,7 +652,7 @@ class IniFile {
 	 * @return array An associative array of the selected keys and their values.
 	 */
 	public function only(string|array $keys) : array {
-		if(gettype($keys) == 'string') $keys = [$keys];
+		if(\gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
 		foreach($keys as $key){
 			$data[$key] = $this->get($key);
@@ -667,10 +667,10 @@ class IniFile {
 	 * @return array An associative array of all keys and their values except the excluded ones.
 	 */
 	public function all_except(string|array $keys) : array {
-		if(gettype($keys) == 'string') $keys = [$keys];
+		if(\gettype($keys) == 'string') $keys = [$keys];
 		$data = [];
 		foreach($this->keys() as $key){
-			if(!in_array($key, $keys)) $data[$key] = $this->get($key);
+			if(!\in_array($key, $keys)) $data[$key] = $this->get($key);
 		}
 		return $data;
 	}

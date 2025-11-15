@@ -94,19 +94,19 @@ class MediaTools {
 
 		$files = $this->core->get_files($video, $this->core->media->extensions_video);
 		foreach($files as $file){
-			$files_video[pathinfo($file, PATHINFO_FILENAME)] = $file;
+			$files_video[\pathinfo($file, PATHINFO_FILENAME)] = $file;
 		}
 
 		$files = $this->core->get_files($audio, $this->core->media->extensions_audio);
 		foreach($files as $file){
-			$files_audio[pathinfo($file, PATHINFO_FILENAME)] = $file;
+			$files_audio[\pathinfo($file, PATHINFO_FILENAME)] = $file;
 		}
 
 		$items = 0;
 		$total = count($files_video);
 		foreach($files_video as $key => $file){
 			$items++;
-			if(!file_exists($file)){
+			if(!\file_exists($file)){
 				$this->core->write_error("FILE NOT FOUND \"$file\"");
 				$errors++;
 			} elseif(!isset($files_audio[$key])){
@@ -115,12 +115,12 @@ class MediaTools {
 			} else {
 				$audio = $files_audio[$key];
 				$out = $this->core->get_path("$output/$key.mkv");
-				if(file_exists($out)){
+				if(\file_exists($out)){
 					$this->core->write_error("FILE ALREADY EXISTS \"$out\"");
 					$errors++;
 				} else {
 					$this->core->exec("mkvmerge", "-o \"$out\" --no-audio --no-subtitles \"$file\" --no-video \"$audio\"");
-					if(!file_exists($out)){
+					if(!\file_exists($out)){
 						$this->core->write_error("FAILED MERGE \"$file\" + \"$audio\" INTO \"$out\"");
 						$errors++;
 					} else {
@@ -163,18 +163,18 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue;
-			$srt = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".srt");
-			$out = $this->core->get_path("$output/".pathinfo($file, PATHINFO_BASENAME));
-			if(file_exists($out)){
+			if(!\file_exists($file)) continue;
+			$srt = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME).".srt");
+			$out = $this->core->get_path("$output/".\pathinfo($file, PATHINFO_BASENAME));
+			if(\file_exists($out)){
 				$this->core->write_error("FILE ALREADY EXISTS \"$out\"");
 				$errors++;
-			} elseif(!file_exists($srt)){
+			} elseif(!\file_exists($srt)){
 				$this->core->write_error("FILE NOT EXISTS \"$srt\"");
 				$errors++;
 			} else {
 				$this->core->exec("mkvmerge", "-o \"$out\" --default-track 0 --sub-charset 0:UTF-8 --language 0:$lang \"$srt\" \"$file\"");
-				if(!file_exists($out)){
+				if(!\file_exists($out)){
 					$this->core->write_error("FAILED MERGE \"$file\" + \"$srt\" INTO \"$out\"");
 					$errors++;
 				} else {
@@ -220,17 +220,17 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue;
-			$folder = pathinfo($file, PATHINFO_DIRNAME);
+			if(!\file_exists($file)) continue;
+			$folder = \pathinfo($file, PATHINFO_DIRNAME);
 			$directory = str_ireplace($input, $output, $folder);
-			if(!file_exists($directory)){
+			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
 				}
 			}
-			if(file_exists($directory)){
+			if(\file_exists($directory)){
 				$image = $this->core->media->get_image_from_path($file);
-				if(is_null($image)){
+				if(\is_null($image)){
 					$this->core->write_error("FAILED LOAD IMAGE \"$file\"");
 					$errors++;
 				} else {
@@ -240,8 +240,8 @@ class MediaTools {
 						$errors++;
 					} else {
 						foreach($variants as $variant){
-							$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."@$variant.".$this->core->get_extension($file));
-							if($detector->save_variant_image(floatval($variant), $file, $new_name, $size)){
+							$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."@$variant.".$this->core->get_extension($file));
+							if($detector->save_variant_image(\floatval($variant), $file, $new_name, $size)){
 								$this->core->write_log("WRITE VARIANT $variant FOR \"$file\"");
 							}
 						}
@@ -282,7 +282,7 @@ class MediaTools {
 
 		$ini_old = $this->core->get_path("$input/$file_name.ini");
 		$ini_new = $this->core->get_path("$output/$file_name.gz-ini");
-		if(file_exists($ini_old) && !file_exists($ini_new)){
+		if(\file_exists($ini_old) && !\file_exists($ini_new)){
 			$this->core->move($ini_old, $ini_new);
 		}
 		$cache = new IniFile($ini_new, true, true);
@@ -328,13 +328,13 @@ class MediaTools {
 		foreach($files as $file){
 			$items++;
 			$this->core->set_errors($errors);
-			if(!file_exists($file)) continue;
-			$key = hash('md5', str_ireplace($input, '', $file));
+			if(!\file_exists($file)) continue;
+			$key = \hash('md5', str_ireplace($input, '', $file));
 
 			$file_info = (object)[
 				'path' => str_replace("\\\\", "\\", addslashes($file)),
-				'directory' => str_replace("\\\\", "\\", addslashes(pathinfo(pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))),
-				'filename' => str_replace("\\\\", "\\", addslashes(pathinfo($file, PATHINFO_FILENAME))),
+				'directory' => str_replace("\\\\", "\\", addslashes(\pathinfo(\pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))),
+				'filename' => str_replace("\\\\", "\\", addslashes(\pathinfo($file, PATHINFO_FILENAME))),
 				'extension' => str_replace("\\\\", "\\", addslashes($this->core->get_extension($file))),
 			];
 
@@ -351,8 +351,8 @@ class MediaTools {
 				$meta = (object)$media_cache;
 			}
 
-			if(file_exists("$file.md5")){
-				$meta->checksum = file_get_contents("$file.md5");
+			if(\file_exists("$file.md5")){
+				$meta->checksum = \file_get_contents("$file.md5");
 			} elseif($generate_checksum){
 				$meta->checksum = strtoupper(hash_file('md5', $file));
 			} else {
@@ -428,7 +428,7 @@ class MediaTools {
 			'mode' => strtolower($line[0] ?? '?'),
 		];
 
-		if(!in_array($params['mode'], ['0', '1', '2', '3'])) goto set_mode;
+		if(!\in_array($params['mode'], ['0', '1', '2', '3'])) goto set_mode;
 		$this->core->clear();
 
 		$input = $this->core->get_input_folder(" Input (Folder): ");
@@ -451,28 +451,28 @@ class MediaTools {
 		foreach($files as $file){
 			$items++;
 			$this->core->set_errors($errors);
-			if(!file_exists($file)) continue;
-			if(!in_array($this->core->get_extension($file), $this->core->media->extensions_images)){
+			if(!\file_exists($file)) continue;
+			if(!\in_array($this->core->get_extension($file), $this->core->media->extensions_images)){
 				$this->core->write_error("FILE FORMAT NOT SUPORTED \"$file\"");
 				$errors++;
 				continue;
 			}
-			$folder = pathinfo($file, PATHINFO_DIRNAME);
+			$folder = \pathinfo($file, PATHINFO_DIRNAME);
 			$directory = str_ireplace($input, $output, $folder);
-			if(!file_exists($directory)){
+			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
 					continue;
 				}
 			}
-			$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME));
+			$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME));
 			$image = new Imagick($file);
 			if(!$image->valid()){
 				$this->core->write_error("FAILED READ IMAGE \"$file\" BY IMAGICK");
 				$errors++;
 				continue;
 			}
-			switch(intval($params['mode'])){
+			switch(\intval($params['mode'])){
 				case 0: {
 					$image->setImageFormat('webp');
 					if($image->getImageFormat() == 'PNG'){
@@ -501,7 +501,7 @@ class MediaTools {
 					break;
 				}
 			}
-			if(file_exists($new_name)){
+			if(\file_exists($new_name)){
 				$image->clear();
 				$this->core->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
@@ -514,7 +514,7 @@ class MediaTools {
 				$this->core->write_error($e->getMessage());
 			}
 			$image->clear();
-			if(!file_exists($new_name)){
+			if(!\file_exists($new_name)){
 				$this->core->write_error("FAILED SAVE FILE \"$new_name\"");
 				$errors++;
 				continue;
@@ -542,13 +542,13 @@ class MediaTools {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$extension_current = $this->core->get_extension($file);
 				$extension_detected = $this->core->media->get_extension_by_mime_type($file);
 				if(!$extension_detected){
@@ -558,7 +558,7 @@ class MediaTools {
 					continue 1;
 				}
 				if($extension_current != $extension_detected){
-					$new_name = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME).".".$extension_detected);
+					$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME).".".$extension_detected);
 					if(!$this->core->move($file, $new_name)){
 						$errors++;
 					}
@@ -599,7 +599,7 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue 1;
+			if(!\file_exists($file)) continue 1;
 			$media_info = $this->core->media->get_media_info($file);
 			foreach($media_info['streams'] as $stream){
 				if($stream['codec_type'] == 'video'){
@@ -608,17 +608,17 @@ class MediaTools {
 					$suffix = "-$index-$language";
 					$codec = strtolower($stream['codec_name'] ?? 'unknown');
 					$extension = $this->core->media->get_video_extension($codec);
-					if(is_null($extension)){
+					if(\is_null($extension)){
 						$this->core->write_error("UNSUPPORTED VIDEO CODEC \"$codec\" IN \"$file\"");
 						$errors++;
 					} else {
-						$directory = pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$directory = \pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
 						$this->core->mkdir($directory);
-						$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
-						if(!file_exists($new_name)){
+						$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						if(!\file_exists($new_name)){
 							$this->core->write_log("EXTRACT \"$new_name\"");
 							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy -f $extension \"$new_name\" 2>{$this->core->device_null}");
-							if(!file_exists($new_name)){
+							if(!\file_exists($new_name)){
 								$this->core->write_error("EXTRACT FAILED \"$new_name\"");
 								$errors++;
 							}
@@ -660,7 +660,7 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue 1;
+			if(!\file_exists($file)) continue 1;
 			$media_info = $this->core->media->get_media_info($file);
 			foreach($media_info['streams'] as $stream){
 				if($stream['codec_type'] == 'audio'){
@@ -671,17 +671,17 @@ class MediaTools {
 						$suffix .= "-commentary";
 					}
 					$extension = $this->core->media->get_audio_extension($stream['codec_name'] ?? 'aac');
-					if(is_null($extension)){
+					if(\is_null($extension)){
 						$this->core->write_error("UNSUPPORTED AUDIO CODEC \"{$stream['codec_name']}\" IN \"$file\"");
 						$errors++;
 					} else {
-						$directory = pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$directory = \pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
 						$this->core->mkdir($directory);
-						$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
-						if(!file_exists($new_name)){
+						$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						if(!\file_exists($new_name)){
 							$this->core->write_log("EXTRACT \"$new_name\"");
 							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy \"$new_name\" 2>{$this->core->device_null}");
-							if(!file_exists($new_name)){
+							if(!\file_exists($new_name)){
 								$this->core->write_error("EXTRACT FAILED \"$new_name\"");
 								$errors++;
 							}
@@ -723,7 +723,7 @@ class MediaTools {
 		$total = count($files);
 		foreach($files as $file){
 			$items++;
-			if(!file_exists($file)) continue 1;
+			if(!\file_exists($file)) continue 1;
 			$media_info = $this->core->media->get_media_info($file);
 			foreach($media_info['streams'] as $stream){
 				if($stream['codec_type'] == 'subtitle'){
@@ -734,17 +734,17 @@ class MediaTools {
 						$suffix .= "-forced";
 					}
 					$extension = $this->core->media->get_subtitle_extension($stream['codec_name'] ?? 'vtt');
-					if(is_null($extension)){
+					if(\is_null($extension)){
 						$this->core->write_error("UNSUPORTED SUBTITLES \"{$stream['codec_name']}\" IN \"$file\"");
 						$errors++;
 					} else {
-						$directory = pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$directory = \pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
 						$this->core->mkdir($directory);
-						$new_name = $this->core->get_path("$directory/".pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
-						if(!file_exists($new_name)){
+						$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
+						if(!\file_exists($new_name)){
 							$this->core->write_log("EXTRACT \"$new_name\"");
 							$this->core->exec("ffmpeg", "-i \"$file\" -map 0:$index -c copy \"$new_name\" 2>{$this->core->device_null}");
-							if(!file_exists($new_name)){
+							if(!\file_exists($new_name)){
 								$this->core->write_error("EXTRACT FAILED \"$new_name\"");
 								$errors++;
 							}
@@ -775,7 +775,7 @@ class MediaTools {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, ['srt']);
 			$items = 0;
 			$total = count($files);
@@ -826,7 +826,7 @@ class MediaTools {
 
 		$map = [];
 		foreach($files_b as $file){
-			$map[pathinfo($file, PATHINFO_BASENAME)] = $file;
+			$map[\pathinfo($file, PATHINFO_BASENAME)] = $file;
 		}
 
 		$errors = 0;
@@ -835,7 +835,7 @@ class MediaTools {
 		$total = count($files_a);
 		foreach($files_a as $file){
 			$items++;
-			$fname = pathinfo($file, PATHINFO_BASENAME);
+			$fname = \pathinfo($file, PATHINFO_BASENAME);
 			if(!isset($map[$fname])){
 				$this->core->write_error("File \"$fname\" not found in folder B");
 				$errors++;
@@ -880,7 +880,7 @@ class MediaTools {
 
 	private function translate_media_info(object &$meta) : void {
 		$vr_mode = $this->core->media->get_vr_mode($meta->name);
-		$meta->video_bitrate = is_null($meta->video_bitrate) ? 'N/A' : $this->core->format_bits($meta->video_bitrate, 2, false).'/s';
+		$meta->video_bitrate = \is_null($meta->video_bitrate) ? 'N/A' : $this->core->format_bits($meta->video_bitrate, 2, false).'/s';
 		$meta->video_quality = "{$meta->video_quality}p";
 		switch($meta->video_codec){
 			case 'h264': {
@@ -888,12 +888,12 @@ class MediaTools {
 				break;
 			}
 			default: {
-				$meta->video_codec = mb_strtoupper($meta->video_codec);
+				$meta->video_codec = \mb_strtoupper($meta->video_codec);
 				break;
 			}
 		}
-		$meta->audio_codec = $meta->audio_codec == 'none' ? 'None' : mb_strtoupper($meta->audio_codec);
-		if(is_null($meta->audio_bitrate)){
+		$meta->audio_codec = $meta->audio_codec == 'none' ? 'None' : \mb_strtoupper($meta->audio_codec);
+		if(\is_null($meta->audio_bitrate)){
 			$meta->audio_bitrate = 'N/A';
 		} elseif($meta->audio_bitrate == 0){
 			$meta->audio_bitrate = 'None';

@@ -146,7 +146,7 @@ class BitFunctions {
 	 * @param string $json The JSON string representing an array of boolean bit values.
 	 */
 	public function from_json(string $json) : void {
-		$this->from_array(json_decode($json ?? '[]', true) ?? []);
+		$this->from_array(\json_decode($json ?? '[]', true) ?? []);
 	}
 
 	/**
@@ -217,7 +217,7 @@ class BitFunctions {
 	 * @return string The JSON string representing an array of boolean bit values.
 	 */
 	public function to_json() : string {
-		return json_encode($this->to_array());
+		return \json_encode($this->to_array());
 	}
 
 	/**

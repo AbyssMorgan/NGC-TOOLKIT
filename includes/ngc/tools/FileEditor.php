@@ -99,20 +99,20 @@ class FileEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				try {
-					$content = file_get_contents($file);
+					$content = \file_get_contents($file);
 					$new_content = str_replace(array_keys($replacements), $replacements, $content);
 					$changed = $content != $new_content;
 					unset($content);
 					if($changed){
-						file_put_contents($file, $new_content);
+						\file_put_contents($file, $new_content);
 						$this->core->write_log("EDIT FILE \"$file\"");
 					}
 				}
@@ -163,20 +163,20 @@ class FileEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				try {
-					$content = file_get_contents($file);
+					$content = \file_get_contents($file);
 					$new_content = str_replace($keywords, '', $content);
 					$changed = ($content != $new_content);
 					unset($content);
 					if($changed){
-						file_put_contents($file, $new_content);
+						\file_put_contents($file, $new_content);
 						$this->core->write_log("EDIT FILE \"$file\"");
 					}
 				}
@@ -213,7 +213,7 @@ class FileEditor {
 		$duplicates = 0;
 
 		try {
-			$content = file_get_contents($file);
+			$content = \file_get_contents($file);
 			$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 			if(!empty($bom)){
 				$content = str_replace($bom, "", $content);
@@ -222,7 +222,7 @@ class FileEditor {
 			$data = [];
 			$lines = explode($eol, $content);
 			foreach($lines as $line){
-				if(in_array($line, $data)){
+				if(\in_array($line, $data)){
 					if(empty(trim($line))){
 						if($ignore_empty_lines){
 							array_push($data, $line);
@@ -241,7 +241,7 @@ class FileEditor {
 			$changed = ($content != $new_content);
 			unset($content);
 			if($changed){
-				file_put_contents($file, $new_content);
+				\file_put_contents($file, $new_content);
 				$this->core->echo(" Removed $duplicates lines in \"$file\"");
 			}
 		}
@@ -291,8 +291,8 @@ class FileEditor {
 					fclose($out);
 					$out = false;
 				}
-				$output_file = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".$this->core->get_extension($file));
-				if(file_exists($output_file)) $this->core->delete($output_file);
+				$output_file = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME)."_".\sprintf("%06d", $part_id).".".$this->core->get_extension($file));
+				if(\file_exists($output_file)) $this->core->delete($output_file);
 				$out = fopen($output_file, 'w');
 				if(!$out){
 					$this->core->write_error("FAILED OPEN FILE \"$output_file\"");
@@ -337,8 +337,8 @@ class FileEditor {
 		$part_id = 1;
 		while(!feof($fp)){
 			$buffer = fread($fp, $bytes);
-			$output_file = $this->core->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_FILENAME)."_".sprintf("%06d", $part_id).".".$this->core->get_extension($file));
-			if(file_exists($output_file)) $this->core->delete($output_file);
+			$output_file = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME)."_".\sprintf("%06d", $part_id).".".$this->core->get_extension($file));
+			if(\file_exists($output_file)) $this->core->delete($output_file);
 			$out = fopen($output_file, 'w');
 			if(!$out){
 				$this->core->write_error("FAILED OPEN FILE \"$output_file\"");
@@ -346,7 +346,7 @@ class FileEditor {
 			} else {
 				$this->core->write_log("CREATE FILE \"$output_file\"");
 			}
-			fwrite($out, $buffer, strlen(bin2hex($buffer)) / 2);
+			fwrite($out, $buffer, \strlen(bin2hex($buffer)) / 2);
 			fclose($out);
 			$part_id++;
 		}
@@ -370,7 +370,7 @@ class FileEditor {
 		}
 
 		try {
-			$content = file_get_contents($file);
+			$content = \file_get_contents($file);
 			$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 			if(!empty($bom)){
 				$content = str_replace($bom, "", $content);
@@ -381,7 +381,7 @@ class FileEditor {
 			$changed = ($content != $new_content);
 			unset($content);
 			if($changed){
-				file_put_contents($file, $new_content);
+				\file_put_contents($file, $new_content);
 				$this->core->echo(" Reversed file lines in \"$file\"");
 			}
 		}
@@ -466,14 +466,14 @@ class FileEditor {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions, null, $filters);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$content = file_get_contents($file);
+				if(!\file_exists($file)) continue 1;
+				$content = \file_get_contents($file);
 				$original = $content;
 				if($flags->basic_replace || $flags->language_replace || $flags->HiragamaToRomaji || $flags->KatakanaToRomaji){
 					$content = $converter->convert($content);
@@ -485,9 +485,9 @@ class FileEditor {
 					$content = $converter->string_to_pin_yin($content);
 				}
 				if($flags->UpperCase){
-					$content = mb_strtoupper($content);
+					$content = \mb_strtoupper($content);
 				} elseif($flags->LowerCase){
-					$content = mb_strtolower($content);
+					$content = \mb_strtolower($content);
 				}
 				if($flags->basic_replace){
 					$content = str_replace(',', ', ', $content);
@@ -511,7 +511,7 @@ class FileEditor {
 					$content = rtrim($content);
 				}
 				if($content != $original){
-					file_put_contents($file, $content);
+					\file_put_contents($file, $content);
 					$this->core->write_log("EDIT FILE \"$file\"");
 				}
 				$this->core->progress($items, $total);

@@ -58,13 +58,13 @@ class DirectoryFunctions {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = array_reverse($this->core->get_folders($folder));
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$count = iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
 				if($count == 0){
 					if(!$this->core->rmdir($file)){
@@ -93,15 +93,15 @@ class DirectoryFunctions {
 		if($folders === false) return false;
 
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
+				if(!\file_exists($file)) continue 1;
 				$ini = $this->core->get_path("$file/desktop.ini");
-				if(!file_exists($ini)) continue 1;
+				if(!\file_exists($ini)) continue 1;
 				$a = $this->core->get_file_attributes($file);
 				$this->core->set_file_attributes($file, true, $a['A'], $a['S'], $a['H']);
 				$a = $this->core->get_file_attributes($ini);
@@ -132,14 +132,14 @@ class DirectoryFunctions {
 		
 		$data = [];
 		foreach($folders as $folder){
-			if(!file_exists($folder)) continue;
+			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
 			$total = count($files);
 			foreach($files as $file){
 				$items++;
-				if(!file_exists($file)) continue 1;
-				$key = pathinfo($file, PATHINFO_DIRNAME);
+				if(!\file_exists($file)) continue 1;
+				$key = \pathinfo($file, PATHINFO_DIRNAME);
 				if(!isset($data[$key])) $data[$key] = 0;
 				$data[$key]++;
 				$this->core->progress($items, $total);
@@ -180,7 +180,7 @@ class DirectoryFunctions {
 		foreach($folders as $folder){
 			$items++;
 			$directory = str_ireplace($input, $output, $folder);
-			if(!file_exists($directory)){
+			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
 				}

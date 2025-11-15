@@ -119,7 +119,7 @@ class Migration extends MySQL {
 		$result = $this->query("SELECT `version` FROM `$this->table_version` WHERE `table_name` = '$table'", PDO::FETCH_OBJ);
 		if($result && $result->rowCount() == 1){
 			$row = $result->fetch();
-			return intval($row->version);
+			return \intval($row->version);
 		}
 		return 0;
 	}
@@ -164,7 +164,7 @@ class Migration extends MySQL {
 	 */
 	public function set_value(string $name, string $value) : void {
 		$value = $this->escape($value);
-		if(is_null($this->get_value($name))){
+		if(\is_null($this->get_value($name))){
 			$this->query("INSERT INTO `$this->table_config` SET `name` = '$name', `value` = '$value'");
 		} else {
 			$this->query("UPDATE `$this->table_config` SET `value` = '$value' WHERE `name` = '$name'");

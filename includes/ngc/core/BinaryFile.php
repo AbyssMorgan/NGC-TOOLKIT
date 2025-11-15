@@ -41,7 +41,7 @@ class BinaryFile {
 	 */
 	public function __construct(?string $path = null, ?int $allocate = null){
 		$this->path = $path;
-		if(!is_null($path)) $this->open($path, $allocate);
+		if(!\is_null($path)) $this->open($path, $allocate);
 	}
 
 	/**
@@ -55,19 +55,19 @@ class BinaryFile {
 	 * @return bool True on success, false on failure.
 	 */
 	public function create(string $path, ?int $allocate = null, int $permissions = 0755) : bool {
-		if(file_exists($path)) return false;
-		$folder = pathinfo($path, PATHINFO_DIRNAME);
-		if(!file_exists($folder) && !@mkdir($folder, $permissions, true)) return false;
+		if(\file_exists($path)) return false;
+		$folder = \pathinfo($path, PATHINFO_DIRNAME);
+		if(!\file_exists($folder) && !@\mkdir($folder, $permissions, true)) return false;
 		$file = @fopen($path, "wb");
 		if(!$file) return false;
-		if(!is_null($allocate) && $allocate > 0){
+		if(!\is_null($allocate) && $allocate > 0){
 			fseek($file, $allocate - 1);
 			fwrite($file, "\0");
 		} else {
 			fwrite($file, "");
 		}
 		fclose($file);
-		return file_exists($path);
+		return \file_exists($path);
 	}
 
 	/**
@@ -81,8 +81,8 @@ class BinaryFile {
 	 * @return bool True on success, false on failure.
 	 */
 	public function open(string $path, ?int $allocate = null, int $permissions = 0755) : bool {
-		if(!is_null($this->file)) return false;
-		if(!file_exists($path) && !$this->create($path, $allocate, $permissions)) return false;
+		if(!\is_null($this->file)) return false;
+		if(!\file_exists($path) && !$this->create($path, $allocate, $permissions)) return false;
 		$this->file = fopen($path, "r+b");
 		if(!$this->file) return false;
 		$this->path = $path;
@@ -95,7 +95,7 @@ class BinaryFile {
 	 * @return bool True on success, false if no file is open.
 	 */
 	public function close() : bool {
-		if(is_null($this->file)) return false;
+		if(\is_null($this->file)) return false;
 		fclose($this->file);
 		$this->file = null;
 		$this->path = null;
@@ -110,10 +110,10 @@ class BinaryFile {
 	 * @return string|false The read data as a string, or false on failure or if no file is open.
 	 */
 	public function read(int $offset = 0, ?int $length = null) : string|false {
-		if(is_null($this->file)) return false;
+		if(\is_null($this->file)) return false;
 		clearstatcache(true, $this->path);
 		fseek($this->file, $offset);
-		if(is_null($length)) $length = filesize($this->path) - $offset;
+		if(\is_null($length)) $length = filesize($this->path) - $offset;
 		if($length <= 0) return "";
 		return fread($this->file, $length);
 	}
@@ -127,7 +127,7 @@ class BinaryFile {
 	 * @return int|false The number of bytes written, or false on failure or if no file is open.
 	 */
 	public function write(string $data, int $offset = 0, ?int $length = null) : int|false {
-		if(is_null($this->file)) return false;
+		if(\is_null($this->file)) return false;
 		fseek($this->file, $offset);
 		return fwrite($this->file, $data, $length);
 	}
@@ -138,7 +138,7 @@ class BinaryFile {
 	 * @return int|false The size of the file in bytes, or false on failure or if no file is open.
 	 */
 	public function size() : int|false {
-		if(is_null($this->file)) return false;
+		if(\is_null($this->file)) return false;
 		return filesize($this->path);
 	}
 
@@ -149,7 +149,7 @@ class BinaryFile {
 	 * @return bool True on success, false on failure or if no file is open.
 	 */
 	public function truncate(int $size) : bool {
-		if(is_null($this->file)) return false;
+		if(\is_null($this->file)) return false;
 		return ftruncate($this->file, $size);
 	}
 
