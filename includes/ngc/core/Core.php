@@ -1063,20 +1063,34 @@ class Core {
 		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		$filesize = filesize($from);
-		$source = fopen($from, 'rb');
-		$destination = fopen($to, 'wb');
+		$source = @fopen($from, 'rb');
+		$destination = @fopen($to, 'wb');
 		if(!$source || !$destination){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
 			return false;
 		}
-		ftruncate($destination, $filesize);
-		while(!feof($source)){
-			$buffer = fread($source, $write_buffer);
-			fwrite($destination, $buffer);
+		try {
+			@ftruncate($destination, $filesize);
+			while(!feof($source)){
+				$buffer = @fread($source, $write_buffer);
+				if($buffer === false) throw new Exception("Failed read block");
+				$state = @fwrite($destination, $buffer);
+				if($state === false) throw new Exception("Failed write block");
+			}
+		}
+		catch(Exception $e){
+			fclose($source);
+			fclose($destination);
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" ".$e->getMessage());
+			return false;
 		}
 		fclose($source);
 		fclose($destination);
-		touch($to, $modification_date);
+		if(!file_exists($to)){
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (output not exists)");
+			return false;
+		}
+		@touch($to, $modification_date);
 		if($log) $this->write_log("COPY \"$from\" \"$to\"");
 		return true;
 	}
@@ -1098,29 +1112,40 @@ class Core {
 		if(!\file_exists($dir)) $this->mkdir($dir);
 		$modification_date = filemtime($from);
 		$filesize = filesize($from);
-		$source = fopen($from, 'rb');
-		$destination = fopen($to, 'r+b');
+		$source = @fopen($from, 'rb');
+		$destination = @fopen($to, 'r+b');
 		if(!$source || !$destination){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
 			return false;
 		}
-		ftruncate($destination, $filesize);
-		$offset = 0;
-		while(!feof($source)){
-			fseek($destination, $offset);
-			$data_source = fread($source, $block_size);
-			$data_destination = fread($destination, $block_size);
-			$hash_source = \hash('md5', $data_source);
-			$hash_destination = \hash('md5', $data_destination);
-			if($hash_source !== $hash_destination){
+		try {
+			@ftruncate($destination, $filesize);
+			$offset = 0;
+			while(!feof($source)){
 				fseek($destination, $offset);
-				fwrite($destination, $data_source);
+				$data_source = @fread($source, $block_size);
+				if($data_source === false) throw new Exception("Failed read block on source");
+				$data_destination = @fread($destination, $block_size);
+				if($data_destination === false) throw new Exception("Failed read block on destination");
+				$hash_source = \hash('md5', $data_source);
+				$hash_destination = \hash('md5', $data_destination);
+				if($hash_source !== $hash_destination){
+					fseek($destination, $offset);
+					$state = @fwrite($destination, $data_source);
+					if($state === false) throw new Exception("Failed write block");
+				}
+				$offset += $block_size;
 			}
-			$offset += $block_size;
+		}
+		catch(Exception $e){
+			fclose($source);
+			fclose($destination);
+			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" ".$e->getMessage());
+			return false;
 		}
 		fclose($source);
 		fclose($destination);
-		touch($to, $modification_date);
+		@touch($to, $modification_date);
 		if($log) $this->write_log("COPY \"$from\" \"$to\"");
 		return true;
 	}
@@ -2097,6 +2122,23 @@ class Core {
 			$callback($full_path);
 		}
 		return true;
+	}
+
+	/**
+	 * Create symlink for directory
+	 *
+	 * @param string $target_path The destination folder path
+	 * @param string $link_path The symlink path to create
+	 * @return bool
+	 */
+	public function create_directory_symlink(string $target_path, string $link_path) : bool {
+		if(\is_link($link_path) || \file_exists($link_path)) return true;
+		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
+			$cmd = \sprintf('cmd /c mklink /D %s %s', \escapeshellarg($link_path), \escapeshellarg($target_path));
+			exec($cmd, $output, $code);
+			return $code === 0;
+		}
+		return symlink($target_path, $link_path);
 	}
 
 }
