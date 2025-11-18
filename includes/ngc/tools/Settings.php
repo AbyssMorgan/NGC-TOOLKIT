@@ -135,8 +135,8 @@ class Settings {
 		$request->set_http_version(CURL_HTTP_VERSION_2);
 		$response = $request->get("https://raw.githubusercontent.com/AbyssMorgan/NGC-TOOLKIT/master/version");
 		if($response['code'] == 200){
-			$ver_current = explode(".", $this->core->version);
-			$ver_repo = explode(".", $response['data']);
+			$ver_current = \explode(".", $this->core->version);
+			$ver_repo = \explode(".", $response['data']);
 			$ver_current = \intval($ver_current[0]) * 10000 + \intval($ver_current[1]) * 100 + \intval($ver_current[2]);
 			$ver_repo = \intval($ver_repo[0]) * 10000 + \intval($ver_repo[1]) * 100 + \intval($ver_repo[2]);
 			$version = \strval($response['data']);
@@ -149,18 +149,18 @@ class Settings {
 	public function tool_install_toolkit_script() : bool {
 		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS) return $this->core->windows_only();
 		$this->core->clear();
-		$program_path = realpath($this->core->path);
+		$program_path = \realpath($this->core->path);
 		if(!$this->core->is_admin()){
 			$this->core->echo(" You must run {$this->core->app_name} as administrator to use this feature");
 			$this->core->pause(" Press any key to back to menu");
 		} else {
 			if($this->core->get_confirm(" Install .ngcs scripts support (Y/N): ")){
-				$this->core->echo(" ".exec('reg add HKEY_CLASSES_ROOT\.ngcs /ve /d "NGC.SCRIPT" /f'));
-				$this->core->echo(" ".exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT /ve /d "'.$this->core->app_name.' Script" /f'));
-				$this->core->echo(" ".exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\DefaultIcon /ve /d "\"'.$program_path.'\NGC-TOOLKIT.ico\"" /f'));
-				$this->core->echo(" ".exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell /f'));
-				$this->core->echo(" ".exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open /f'));
-				$this->core->echo(" ".exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open\command /ve /d "\"'.$program_path.'\bin\Script.cmd\" \"%1\" %*" /f'));
+				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\.ngcs /ve /d "NGC.SCRIPT" /f'));
+				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT /ve /d "'.$this->core->app_name.' Script" /f'));
+				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\DefaultIcon /ve /d "\"'.$program_path.'\NGC-TOOLKIT.ico\"" /f'));
+				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell /f'));
+				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open /f'));
+				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open\command /ve /d "\"'.$program_path.'\bin\Script.cmd\" \"%1\" %*" /f'));
 				$this->core->pause(" Operation done, press any key to back to menu");
 			} else {
 				$this->core->pause(" Operation aborted, press any key to back to menu");

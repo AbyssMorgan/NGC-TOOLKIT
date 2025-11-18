@@ -70,17 +70,17 @@ class FileEditor {
 		if($keywords_file === false) return false;
 
 		$replacements = [];
-		$fp = fopen($keywords_file, 'r');
+		$fp = \fopen($keywords_file, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
 		}
 		$i = 0;
 		$errors = 0;
-		while(($line = fgets($fp)) !== false){
+		while(($line = \fgets($fp)) !== false){
 			$i++;
-			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
-			if(empty(trim($line))) continue;
+			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+			if(empty(\trim($line))) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
@@ -89,7 +89,7 @@ class FileEditor {
 				$replacements[$replace[0]] = $replace[1];
 			}
 		}
-		fclose($fp);
+		\fclose($fp);
 
 		if($errors > 0){
 			if(!$this->core->get_confirm(" Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
@@ -102,13 +102,13 @@ class FileEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				try {
 					$content = \file_get_contents($file);
-					$new_content = str_replace(array_keys($replacements), $replacements, $content);
+					$new_content = \str_replace(\array_keys($replacements), $replacements, $content);
 					$changed = $content != $new_content;
 					unset($content);
 					if($changed){
@@ -147,17 +147,17 @@ class FileEditor {
 		if($keywords_file === false) return false;
 
 		$keywords = [];
-		$fp = fopen($keywords_file, 'r');
+		$fp = \fopen($keywords_file, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
 		}
-		while(($line = fgets($fp)) !== false){
-			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
-			if(empty(trim($line))) continue;
-			array_push($keywords, $line);
+		while(($line = \fgets($fp)) !== false){
+			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+			if(empty(\trim($line))) continue;
+			\array_push($keywords, $line);
 		}
-		fclose($fp);
+		\fclose($fp);
 
 		$this->core->setup_folders($folders);
 		$errors = 0;
@@ -166,13 +166,13 @@ class FileEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				try {
 					$content = \file_get_contents($file);
-					$new_content = str_replace($keywords, '', $content);
+					$new_content = \str_replace($keywords, '', $content);
 					$changed = ($content != $new_content);
 					unset($content);
 					if($changed){
@@ -216,16 +216,16 @@ class FileEditor {
 			$content = \file_get_contents($file);
 			$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 			if(!empty($bom)){
-				$content = str_replace($bom, "", $content);
+				$content = \str_replace($bom, "", $content);
 			}
 			$eol = $this->core->detect_eol($content);
 			$data = [];
-			$lines = explode($eol, $content);
+			$lines = \explode($eol, $content);
 			foreach($lines as $line){
 				if(\in_array($line, $data)){
-					if(empty(trim($line))){
+					if(empty(\trim($line))){
 						if($ignore_empty_lines){
-							array_push($data, $line);
+							\array_push($data, $line);
 						} else {
 							$duplicates++;
 						}
@@ -233,11 +233,11 @@ class FileEditor {
 						$duplicates++;
 					}
 				} else {
-					array_push($data, $line);
+					\array_push($data, $line);
 				}
 			}
 			unset($lines);
-			$new_content = $bom.implode($eol, $data);
+			$new_content = $bom.\implode($eol, $data);
 			$changed = ($content != $new_content);
 			unset($content);
 			if($changed){
@@ -269,14 +269,14 @@ class FileEditor {
 			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 
-		$fp = fopen($file, 'r');
+		$fp = \fopen($file, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open input file");
 			goto set_input;
 		}
 
-		$first_line = fgets($fp);
-		fseek($fp, 0);
+		$first_line = \fgets($fp);
+		\fseek($fp, 0);
 
 		$utf8_bom = $this->core->has_utf8_bom($first_line);
 		$eol = $this->core->detect_eol($first_line);
@@ -284,33 +284,33 @@ class FileEditor {
 		$count = 0;
 		$part_id = 1;
 		$out = false;
-		while(($line = fgets($fp)) !== false){
-			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+		while(($line = \fgets($fp)) !== false){
+			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
 			if($count % $lines_limit == 0){
 				if($out){
-					fclose($out);
+					\fclose($out);
 					$out = false;
 				}
 				$output_file = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME)."_".\sprintf("%06d", $part_id).".".$this->core->get_extension($file));
 				if(\file_exists($output_file)) $this->core->delete($output_file);
-				$out = fopen($output_file, 'w');
+				$out = \fopen($output_file, 'w');
 				if(!$out){
 					$this->core->write_error("FAILED OPEN FILE \"$output_file\"");
 					break;
 				} else {
 					$this->core->write_log("CREATE FILE \"$output_file\"");
 				}
-				if($utf8_bom) fwrite($out, $this->core->utf8_bom);
+				if($utf8_bom) \fwrite($out, $this->core->utf8_bom);
 				$part_id++;
 			}
-			fwrite($out, "{$line}{$eol}");
+			\fwrite($out, "{$line}{$eol}");
 			$count++;
 		}
 		if($out){
-			fclose($out);
+			\fclose($out);
 			$out = false;
 		}
-		fclose($fp);
+		\fclose($fp);
 
 		$this->core->open_logs(true);
 		$this->core->pause(" Operation done, press any key to back to menu");
@@ -328,29 +328,29 @@ class FileEditor {
 		$file = $this->core->get_input_file(" File: ", true);
 		if($file === false) return false;
 
-		$fp = fopen($file, 'r');
+		$fp = \fopen($file, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open input file");
 			goto set_input;
 		}
 
 		$part_id = 1;
-		while(!feof($fp)){
-			$buffer = fread($fp, $bytes);
+		while(!\feof($fp)){
+			$buffer = \fread($fp, $bytes);
 			$output_file = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_FILENAME)."_".\sprintf("%06d", $part_id).".".$this->core->get_extension($file));
 			if(\file_exists($output_file)) $this->core->delete($output_file);
-			$out = fopen($output_file, 'w');
+			$out = \fopen($output_file, 'w');
 			if(!$out){
 				$this->core->write_error("FAILED OPEN FILE \"$output_file\"");
 				break;
 			} else {
 				$this->core->write_log("CREATE FILE \"$output_file\"");
 			}
-			fwrite($out, $buffer, \strlen(bin2hex($buffer)) / 2);
-			fclose($out);
+			\fwrite($out, $buffer, \strlen(\bin2hex($buffer)) / 2);
+			\fclose($out);
 			$part_id++;
 		}
-		fclose($fp);
+		\fclose($fp);
 
 		$this->core->open_logs(true);
 		$this->core->pause(" Operation done, press any key to back to menu");
@@ -373,11 +373,11 @@ class FileEditor {
 			$content = \file_get_contents($file);
 			$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 			if(!empty($bom)){
-				$content = str_replace($bom, "", $content);
+				$content = \str_replace($bom, "", $content);
 			}
 			$eol = $this->core->detect_eol($content);
-			$lines = array_reverse(explode($eol, $content));
-			$new_content = $bom.implode($eol, $lines);
+			$lines = \array_reverse(\explode($eol, $content));
+			$new_content = $bom.\implode($eol, $lines);
 			$changed = ($content != $new_content);
 			unset($content);
 			if($changed){
@@ -415,22 +415,22 @@ class FileEditor {
 			' - - To lower case',
 		]);
 
-		$line = strtoupper($this->core->get_input(" Flags: "));
+		$line = \strtoupper($this->core->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
-		if(str_replace(['B', 'C', 'L', 'S', 'W', 'F', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
+		if(\str_replace(['B', 'C', 'L', 'S', 'W', 'F', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
-			'basic_replace' => str_contains($line, 'B'),
-			'basic_remove' => str_contains($line, 'C'),
-			'language_replace' => str_contains($line, 'L'),
-			'RemoveDoubleSpace' => str_contains($line, 'S'),
-			'RemoveWhitespaceEOL' => str_contains($line, 'W'),
-			'RemoveWhitespaceEOF' => str_contains($line, 'F'),
-			'ChineseToPinYin' => str_contains($line, '0'),
-			'HiragamaToRomaji' => str_contains($line, '1'),
-			'KatakanaToRomaji' => str_contains($line, '2'),
-			'UpperCase' => str_contains($line, '+'),
-			'LowerCase' => str_contains($line, '-'),
+			'basic_replace' => \str_contains($line, 'B'),
+			'basic_remove' => \str_contains($line, 'C'),
+			'language_replace' => \str_contains($line, 'L'),
+			'RemoveDoubleSpace' => \str_contains($line, 'S'),
+			'RemoveWhitespaceEOL' => \str_contains($line, 'W'),
+			'RemoveWhitespaceEOF' => \str_contains($line, 'F'),
+			'ChineseToPinYin' => \str_contains($line, '0'),
+			'HiragamaToRomaji' => \str_contains($line, '1'),
+			'KatakanaToRomaji' => \str_contains($line, '2'),
+			'UpperCase' => \str_contains($line, '+'),
+			'LowerCase' => \str_contains($line, '-'),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
@@ -459,7 +459,7 @@ class FileEditor {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		$this->core->setup_folders($folders);
@@ -469,7 +469,7 @@ class FileEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions, null, $filters);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -490,7 +490,7 @@ class FileEditor {
 					$content = \mb_strtolower($content);
 				}
 				if($flags->basic_replace){
-					$content = str_replace(',', ', ', $content);
+					$content = \str_replace(',', ', ', $content);
 				}
 				if($flags->RemoveDoubleSpace){
 					$content = $converter->remove_double_spaces($content);
@@ -498,17 +498,17 @@ class FileEditor {
 				if($flags->RemoveWhitespaceEOL){
 					$bom = $this->core->has_utf8_bom($content) ? $this->core->utf8_bom : "";
 					if(!empty($bom)){
-						$content = str_replace($bom, "", $content);
+						$content = \str_replace($bom, "", $content);
 					}
 					$eol = $this->core->detect_eol($content);
-					$lines = explode($eol, $content);
+					$lines = \explode($eol, $content);
 					foreach($lines as &$line){
-						$line = rtrim($line);
+						$line = \rtrim($line);
 					}
-					$content = $bom.implode($eol, $lines);
+					$content = $bom.\implode($eol, $lines);
 				}
 				if($flags->RemoveWhitespaceEOF){
-					$content = rtrim($content);
+					$content = \rtrim($content);
 				}
 				if($content != $original){
 					\file_put_contents($file, $content);

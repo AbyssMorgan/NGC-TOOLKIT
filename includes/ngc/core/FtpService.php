@@ -63,16 +63,16 @@ class FtpService {
 		$files = $this->ftp->rawlist($path);
 		if($files === false) return [];
 		foreach($files as $file){
-			$chunks = preg_split("/\s+/", $file);
+			$chunks = \preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
-			if(substr($chunks[0], 0, 1) == 'd'){
-				$data = array_merge($data, $this->get_files("$path/{$chunks[8]}", $include_extensions, $exclude_extensions));
+			if(\substr($chunks[0], 0, 1) == 'd'){
+				$data = \array_merge($data, $this->get_files("$path/{$chunks[8]}", $include_extensions, $exclude_extensions));
 			} else {
 				$ext = \mb_strtolower(\pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
 				if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
 				if(!\is_null($name_filters) && !$this->filter(\pathinfo($chunks[8], PATHINFO_BASENAME), $name_filters)) continue;
-				array_push($data, "$path/{$chunks[8]}");
+				\array_push($data, "$path/{$chunks[8]}");
 			}
 		}
 		return $data;
@@ -180,21 +180,21 @@ class FtpService {
 		$data = [];
 		$files = $this->ftp->rawlist($path);
 		foreach($files as $file){
-			$chunks = preg_split("/\s+/", $file);
+			$chunks = \preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
-			if(substr($chunks[0], 0, 1) == 'd'){
-				$data = array_merge($data, $this->get_files_meta("$path/{$chunks[8]}", $include_extensions, $exclude_extensions));
+			if(\substr($chunks[0], 0, 1) == 'd'){
+				$data = \array_merge($data, $this->get_files_meta("$path/{$chunks[8]}", $include_extensions, $exclude_extensions));
 			} else {
 				$ext = \mb_strtolower(\pathinfo($chunks[8], PATHINFO_EXTENSION));
 				if(!\is_null($include_extensions) && !\in_array($ext, $include_extensions)) continue;
 				if(!\is_null($exclude_extensions) && \in_array($ext, $exclude_extensions)) continue;
 				if(!\is_null($name_filters) && !$this->filter(\pathinfo($chunks[8], PATHINFO_BASENAME), $name_filters)) continue;
-				array_push($data, [
+				\array_push($data, [
 					'path' => "$path/{$chunks[8]}",
 					'directory' => $path,
 					'name' => $chunks[8],
-					'date' => date("Y-m-d H:i:s", $this->ftp->mdtm("$path/{$chunks[8]}")),
-					'permission' => $this->unix_permission(substr($chunks[0], 1)),
+					'date' => \date("Y-m-d H:i:s", $this->ftp->mdtm("$path/{$chunks[8]}")),
+					'permission' => $this->unix_permission(\substr($chunks[0], 1)),
 					'size' => $this->ftp->size("$path/{$chunks[8]}"),
 				]);
 			}
@@ -212,12 +212,12 @@ class FtpService {
 		$data = [];
 		$files = $this->ftp->rawlist($path);
 		if($files === false) return [];
-		array_push($data, $path);
+		\array_push($data, $path);
 		foreach($files as $file){
-			$chunks = preg_split("/\s+/", $file);
+			$chunks = \preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
-			if(substr($chunks[0], 0, 1) == 'd'){
-				$data = array_merge($data, $this->get_folders("$path/{$chunks[8]}"));
+			if(\substr($chunks[0], 0, 1) == 'd'){
+				$data = \array_merge($data, $this->get_folders("$path/{$chunks[8]}"));
 			}
 		}
 		return $data;
@@ -232,7 +232,7 @@ class FtpService {
 	public function has_files(string $path) : bool {
 		$files = $this->ftp->rawlist($path);
 		foreach($files as $file){
-			$chunks = preg_split("/\s+/", $file);
+			$chunks = \preg_split("/\s+/", $file);
 			if($chunks[8] == '.' || $chunks[8] == '..') continue;
 			return true;
 		}
@@ -263,7 +263,7 @@ class FtpService {
 	public function filter(string $search, array $filters, bool $case_sensitive = false) : bool {
 		if(!$case_sensitive) $search = \mb_strtolower($search);
 		foreach($filters as $filter){
-			if(str_contains($search, $filter)){
+			if(\str_contains($search, $filter)){
 				return true;
 			}
 		}

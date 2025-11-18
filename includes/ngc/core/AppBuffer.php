@@ -169,7 +169,7 @@ class AppBuffer {
 	 * @return bool True on success, false on failure.
 	 */
 	private function delete(string $path) : bool {
-		return @unlink($path);
+		return @\unlink($path);
 	}
 
 }

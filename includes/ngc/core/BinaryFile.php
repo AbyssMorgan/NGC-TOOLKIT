@@ -58,15 +58,15 @@ class BinaryFile {
 		if(\file_exists($path)) return false;
 		$folder = \pathinfo($path, PATHINFO_DIRNAME);
 		if(!\file_exists($folder) && !@\mkdir($folder, $permissions, true)) return false;
-		$file = @fopen($path, "wb");
+		$file = @\fopen($path, "wb");
 		if(!$file) return false;
 		if(!\is_null($allocate) && $allocate > 0){
-			fseek($file, $allocate - 1);
-			fwrite($file, "\0");
+			\fseek($file, $allocate - 1);
+			\fwrite($file, "\0");
 		} else {
-			fwrite($file, "");
+			\fwrite($file, "");
 		}
-		fclose($file);
+		\fclose($file);
 		return \file_exists($path);
 	}
 
@@ -83,7 +83,7 @@ class BinaryFile {
 	public function open(string $path, ?int $allocate = null, int $permissions = 0755) : bool {
 		if(!\is_null($this->file)) return false;
 		if(!\file_exists($path) && !$this->create($path, $allocate, $permissions)) return false;
-		$this->file = fopen($path, "r+b");
+		$this->file = \fopen($path, "r+b");
 		if(!$this->file) return false;
 		$this->path = $path;
 		return true;
@@ -96,7 +96,7 @@ class BinaryFile {
 	 */
 	public function close() : bool {
 		if(\is_null($this->file)) return false;
-		fclose($this->file);
+		\fclose($this->file);
 		$this->file = null;
 		$this->path = null;
 		return true;
@@ -111,11 +111,11 @@ class BinaryFile {
 	 */
 	public function read(int $offset = 0, ?int $length = null) : string|false {
 		if(\is_null($this->file)) return false;
-		clearstatcache(true, $this->path);
-		fseek($this->file, $offset);
-		if(\is_null($length)) $length = filesize($this->path) - $offset;
+		\clearstatcache(true, $this->path);
+		\fseek($this->file, $offset);
+		if(\is_null($length)) $length = \filesize($this->path) - $offset;
 		if($length <= 0) return "";
-		return fread($this->file, $length);
+		return \fread($this->file, $length);
 	}
 
 	/**
@@ -128,8 +128,8 @@ class BinaryFile {
 	 */
 	public function write(string $data, int $offset = 0, ?int $length = null) : int|false {
 		if(\is_null($this->file)) return false;
-		fseek($this->file, $offset);
-		return fwrite($this->file, $data, $length);
+		\fseek($this->file, $offset);
+		return \fwrite($this->file, $data, $length);
 	}
 
 	/**
@@ -139,7 +139,7 @@ class BinaryFile {
 	 */
 	public function size() : int|false {
 		if(\is_null($this->file)) return false;
-		return filesize($this->path);
+		return \filesize($this->path);
 	}
 
 	/**
@@ -150,7 +150,7 @@ class BinaryFile {
 	 */
 	public function truncate(int $size) : bool {
 		if(\is_null($this->file)) return false;
-		return ftruncate($this->file, $size);
+		return \ftruncate($this->file, $size);
 	}
 
 }

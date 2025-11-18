@@ -70,15 +70,15 @@ class DirectoryNamesEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				$escaped_name = \pathinfo($file, PATHINFO_BASENAME);
-				while(str_contains($escaped_name, '  ')){
-					$escaped_name = str_replace('  ', ' ', $escaped_name);
+				while(\str_contains($escaped_name, '  ')){
+					$escaped_name = \str_replace('  ', ' ', $escaped_name);
 				}
-				$escaped_name = trim(preg_replace('/[^A-Za-z0-9_\-.]/', '', str_replace(' ', '_', $escaped_name)), ' ');
+				$escaped_name = \trim(\preg_replace('/[^A-Za-z0-9_\-.]/', '', \str_replace(' ', '_', $escaped_name)), ' ');
 				if(empty($escaped_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
@@ -126,20 +126,20 @@ class DirectoryNamesEditor {
 			' - - To lower case',
 		]);
 
-		$line = strtoupper($this->core->get_input(" Flags: "));
+		$line = \strtoupper($this->core->get_input(" Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
-		if(str_replace(['B', 'C', 'L', 'P', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
+		if(\str_replace(['B', 'C', 'L', 'P', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
 		$flags = (object)[
-			'basic_replace' => str_contains($line, 'B'),
-			'basic_remove' => str_contains($line, 'C'),
-			'language_replace' => str_contains($line, 'L'),
-			'ChineseToPinYin' => str_contains($line, '0'),
-			'HiragamaToRomaji' => str_contains($line, '1'),
-			'KatakanaToRomaji' => str_contains($line, '2'),
-			'UpperCase' => str_contains($line, '+'),
-			'LowerCase' => str_contains($line, '-'),
-			'CapitalizeProperly' => str_contains($line, 'P'),
+			'basic_replace' => \str_contains($line, 'B'),
+			'basic_remove' => \str_contains($line, 'C'),
+			'language_replace' => \str_contains($line, 'L'),
+			'ChineseToPinYin' => \str_contains($line, '0'),
+			'HiragamaToRomaji' => \str_contains($line, '1'),
+			'KatakanaToRomaji' => \str_contains($line, '2'),
+			'UpperCase' => \str_contains($line, '+'),
+			'LowerCase' => \str_contains($line, '-'),
+			'CapitalizeProperly' => \str_contains($line, 'P'),
 		];
 		$converter = new StringConverter();
 		if($flags->language_replace){
@@ -165,7 +165,7 @@ class DirectoryNamesEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -184,15 +184,15 @@ class DirectoryNamesEditor {
 				} elseif($flags->LowerCase){
 					$escaped_name = \mb_strtolower($escaped_name);
 				} elseif($flags->CapitalizeProperly){
-					$escaped_name = ucwords(\mb_strtolower($escaped_name));
-					$escaped_name = preg_replace_callback('/(\d)([a-z])/', function(array $matches) : string {
+					$escaped_name = \ucwords(\mb_strtolower($escaped_name));
+					$escaped_name = \preg_replace_callback('/(\d)([a-z])/', function(array $matches) : string {
 						return $matches[1].\mb_strtoupper($matches[2]);
 					}, $escaped_name);
-					$escaped_name = preg_replace_callback('/([\(\[])([a-z])/', function(array $matches) : string {
+					$escaped_name = \preg_replace_callback('/([\(\[])([a-z])/', function(array $matches) : string {
 						return $matches[1].\mb_strtoupper($matches[2]);
 					}, $escaped_name);
 				}
-				$escaped_name = $converter->remove_double_spaces(str_replace(',', ', ', $escaped_name));
+				$escaped_name = $converter->remove_double_spaces(\str_replace(',', ', ', $escaped_name));
 				if(empty($escaped_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
@@ -230,11 +230,11 @@ class DirectoryNamesEditor {
 
 		$prefix = $this->core->get_input(" Prefix (may be empty): ", false);
 		if($prefix == '#') return false;
-		$prefix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
+		$prefix = \str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
 
 		$suffix = $this->core->get_input(" Suffix (may be empty): ", false);
 		if($suffix == '#') return false;
-		$suffix = str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
+		$suffix = \str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
 
 		$this->core->setup_folders($folders);
 		$errors = 0;
@@ -243,7 +243,7 @@ class DirectoryNamesEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -309,17 +309,17 @@ class DirectoryNamesEditor {
 			$input = $this->core->get_input_file(" Keywords file: ", true);
 			if($input === false) return false;
 
-			$fp = fopen($input, 'r');
+			$fp = \fopen($input, 'r');
 			if(!$fp){
 				$this->core->echo(" Failed open keywords file");
 				goto set_keyword_file;
 			}
-			while(($line = fgets($fp)) !== false){
-				$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
-				if(empty(trim($line))) continue;
-				array_push($keywords, $line);
+			while(($line = \fgets($fp)) !== false){
+				$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+				if(empty(\trim($line))) continue;
+				\array_push($keywords, $line);
 			}
-			fclose($fp);
+			\fclose($fp);
 		}
 
 		$this->core->setup_folders($folders);
@@ -329,11 +329,11 @@ class DirectoryNamesEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
-				$name = trim(str_replace($keywords, '', \pathinfo($file, PATHINFO_BASENAME)));
+				$name = \trim(\str_replace($keywords, '', \pathinfo($file, PATHINFO_BASENAME)));
 				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
@@ -371,7 +371,7 @@ class DirectoryNamesEditor {
 		]);
 		$line = $this->core->get_input(" Offset: ");
 		if($line == '#') return false;
-		$offset = preg_replace("/[^0-9\-]/", '', $line);
+		$offset = \preg_replace("/[^0-9\-]/", '', $line);
 		if($offset == '') goto set_offset;
 		$offset = \intval($offset);
 
@@ -391,19 +391,19 @@ class DirectoryNamesEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				$name = \pathinfo($file, PATHINFO_BASENAME);
-				if(abs($offset) > \strlen($name)){
+				if(\abs($offset) > \strlen($name)){
 					$this->core->write_error("ILLEGAL OFFSET FOR FILE NAME \"$file\"");
 					$errors++;
 				} else {
 					if($offset > 0){
-						$name = substr($name, 0, $offset).$insert_string.substr($name, $offset);
+						$name = \substr($name, 0, $offset).$insert_string.\substr($name, $offset);
 					} elseif($offset < 0){
-						$name = substr($name, 0, \strlen($name) + $offset).$insert_string.substr($name, $offset);
+						$name = \substr($name, 0, \strlen($name) + $offset).$insert_string.\substr($name, $offset);
 					} else {
 						$name = $insert_string.$name;
 					}
@@ -440,7 +440,7 @@ class DirectoryNamesEditor {
 		$input = $this->core->get_input_file(" Keywords file: ", true);
 		if($input === false) return false;
 
-		$fp = fopen($input, 'r');
+		$fp = \fopen($input, 'r');
 		if(!$fp){
 			$this->core->echo(" Failed open keywords file");
 			goto set_keyword_file;
@@ -449,10 +449,10 @@ class DirectoryNamesEditor {
 		$replacements = [];
 		$i = 0;
 		$errors = 0;
-		while(($line = fgets($fp)) !== false){
+		while(($line = \fgets($fp)) !== false){
 			$i++;
-			$line = str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
-			if(empty(trim($line))) continue;
+			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+			if(empty(\trim($line))) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
@@ -461,7 +461,7 @@ class DirectoryNamesEditor {
 				$replacements[$replace[0]] = $replace[1];
 			}
 		}
-		fclose($fp);
+		\fclose($fp);
 
 		if($errors > 0){
 			if(!$this->core->get_confirm(" Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
@@ -474,11 +474,11 @@ class DirectoryNamesEditor {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
-				$name = trim(str_replace(array_keys($replacements), $replacements, \pathinfo($file, PATHINFO_BASENAME)));
+				$name = \trim(\str_replace(\array_keys($replacements), $replacements, \pathinfo($file, PATHINFO_BASENAME)));
 				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");

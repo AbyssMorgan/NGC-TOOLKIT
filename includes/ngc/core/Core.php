@@ -17,10 +17,10 @@ use Exception;
 use IntlTimeZone;
 use FilesystemIterator;
 
-define('SYSTEM_TYPE_UNKNOWN', 0);
-define('SYSTEM_TYPE_WINDOWS', 1);
-define('SYSTEM_TYPE_LINUX', 2);
-define('SYSTEM_TYPE_MACOS', 3);
+\define('SYSTEM_TYPE_UNKNOWN', 0);
+\define('SYSTEM_TYPE_WINDOWS', 1);
+\define('SYSTEM_TYPE_LINUX', 2);
+\define('SYSTEM_TYPE_MACOS', 3);
 
 /**
  * The Core class provides a set of utility functions for CLI applications.
@@ -220,13 +220,13 @@ class Core {
 	 * @param array $arguments Command line arguments.
 	 */
 	public function __construct(array $arguments){
-		date_default_timezone_set(IntlTimeZone::createDefault()->getID());
-		mb_internal_encoding('UTF-8');
+		\date_default_timezone_set(IntlTimeZone::createDefault()->getID());
+		\mb_internal_encoding('UTF-8');
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
 		if(isset($arguments[1])) unset($arguments[1]);
-		$this->arguments = array_values($arguments);
-		$this->path = realpath($this->get_path(__DIR__."/../../.."));
+		$this->arguments = \array_values($arguments);
+		$this->path = \realpath($this->get_path(__DIR__."/../../.."));
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$this->device_null = 'nul';
 		} else {
@@ -294,7 +294,7 @@ class Core {
 					$errors++;
 				}
 			}
-			if(!extension_loaded('imagick')){
+			if(!\extension_loaded('imagick')){
 				$this->echo("[ERROR] Imagick is not installed");
 				$errors++;
 			}
@@ -421,9 +421,9 @@ class Core {
 	 */
 	public function clear() : void {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			popen('cls', 'w');
+			\popen('cls', 'w');
 		} else {
-			system('clear');
+			\system('clear');
 		}
 		if(!empty($this->logo)){
 			$this->echo($this->logo);
@@ -439,7 +439,7 @@ class Core {
 	 * @return int The integer representation of the version.
 	 */
 	public function get_version_number(string $version) : int {
-		$ver = explode(".", $version);
+		$ver = \explode(".", $version);
 		return 10000 * \intval($ver[0]) + 100 * \intval($ver[1]) + \intval($ver[2]);
 	}
 
@@ -449,7 +449,7 @@ class Core {
 	 * @param array $help An array of strings representing the help message.
 	 */
 	public function print_help(array $help) : void {
-		$this->echo(implode("\r\n", $help));
+		$this->echo(\implode("\r\n", $help));
 		$this->echo();
 	}
 
@@ -473,7 +473,7 @@ class Core {
 	 * @return bool True if the label is valid, false otherwise.
 	 */
 	public function is_valid_label(string $label) : bool {
-		return preg_match('/(?=[a-zA-Z0-9_\-. ]{3,48}$)/i', $label) == 1;
+		return \preg_match('/(?=[a-zA-Z0-9_\-. ]{3,48}$)/i', $label) == 1;
 	}
 
 	/**
@@ -501,17 +501,17 @@ class Core {
 	public function get_hash_from_idx(string $path, array &$keys, bool $progress) : int {
 		if(!\file_exists($path)) return 0;
 		$cnt = 0;
-		$size = filesize($path);
-		$fp = @fopen($path, "r");
+		$size = \filesize($path);
+		$fp = @\fopen($path, "r");
 		if($fp){
-			while(($line = fgets($fp)) !== false){
-				$line = trim($line);
-				$hash = strtoupper(\pathinfo(str_replace("\\", "/", $line), PATHINFO_FILENAME));
+			while(($line = \fgets($fp)) !== false){
+				$line = \trim($line);
+				$hash = \strtoupper(\pathinfo(\str_replace("\\", "/", $line), PATHINFO_FILENAME));
 				$keys[$hash] = $line;
 				$cnt++;
-				if($progress) $this->progress(ftell($fp), $size);
+				if($progress) $this->progress(\ftell($fp), $size);
 			}
-			fclose($fp);
+			\fclose($fp);
 		}
 		return $cnt;
 	}
@@ -526,12 +526,12 @@ class Core {
 	 */
 	public function format_bytes(float|int $bytes, int $precision = 2, bool $dot = true) : string {
 		if($bytes > 0){
-			$i = floor(log($bytes) / log(1024));
-			$res = \sprintf("%.{$precision}f", $bytes / pow(1024, $i)).' '.$this->units_bytes[$i];
+			$i = \floor(\log($bytes) / \log(1024));
+			$res = \sprintf("%.{$precision}f", $bytes / \pow(1024, $i)).' '.$this->units_bytes[$i];
 		} else {
 			$res = \sprintf("%.{$precision}f", 0).' B';
 		}
-		if(!$dot) $res = str_replace(".", ",", $res);
+		if(!$dot) $res = \str_replace(".", ",", $res);
 		return $res;
 	}
 
@@ -545,12 +545,12 @@ class Core {
 	 */
 	public function format_bits(float|int $bits, int $precision = 2, bool $dot = true) : string {
 		if($bits > 0){
-			$i = floor(log($bits) / log(1000));
-			$res = \sprintf("%.{$precision}f", $bits / pow(1000, $i)).' '.$this->units_bits[$i];
+			$i = \floor(\log($bits) / \log(1000));
+			$res = \sprintf("%.{$precision}f", $bits / \pow(1000, $i)).' '.$this->units_bits[$i];
 		} else {
 			$res = \sprintf("%.{$precision}f", 0).' bit';
 		}
-		if(!$dot) $res = str_replace(".", ",", $res);
+		if(!$dot) $res = \str_replace(".", ",", $res);
 		return $res;
 	}
 
@@ -562,9 +562,9 @@ class Core {
 	 * @return int The size in bytes, or -1 if the unit is invalid.
 	 */
 	public function size_unit_to_bytes(int $value, string $unit) : int {
-		$index = array_search(strtolower($unit), $this->array_to_lower($this->units_bytes));
+		$index = \array_search(\strtolower($unit), $this->array_to_lower($this->units_bytes));
 		if($index === false) return -1;
-		return \intval($value * pow(1024, $index));
+		return \intval($value * \pow(1024, $index));
 	}
 
 	/**
@@ -596,18 +596,18 @@ class Core {
 	public function seconds_to_time(float $seconds, bool $force_hours = false, bool $with_days = false, bool $with_ms = false) : string {
 		$output = "";
 		if($with_days){
-			$days = \intval(floor($seconds / 86400));
+			$days = \intval(\floor($seconds / 86400));
 			$seconds -= ($days * 86400);
 		} else {
 			$days = 0;
 		}
-		$h = \intval(floor($seconds / 3600));
+		$h = \intval(\floor($seconds / 3600));
 		$seconds -= $h * 3600;
-		$m = \intval(floor($seconds / 60));
+		$m = \intval(\floor($seconds / 60));
 		$seconds -= $m * 60;
-		$s = floor($seconds);
+		$s = \floor($seconds);
 		$seconds -= $s;
-		$ms = round($seconds * 1000);
+		$ms = \round($seconds * 1000);
 		if($days > 0){
 			$output = "$days:";
 		}
@@ -629,8 +629,8 @@ class Core {
 	 * @return int The total number of seconds.
 	 */
 	public function time_to_seconds(string $time) : int {
-		$parts = explode(':', $time);
-		$count = count($parts);
+		$parts = \explode(':', $time);
+		$count = \count($parts);
 		if($count == 4){
 			[$days, $hours, $minutes, $seconds] = $parts;
 			return $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds;
@@ -680,8 +680,8 @@ class Core {
 		}
 		$data = [];
 		$this->scan_dir_safe_extension($path, $data, $include_extensions, $exclude_extensions, $name_filters, $case_sensitive, $recursive);
-		asort($data, SORT_STRING);
-		return array_values($data);
+		\asort($data, SORT_STRING);
+		return \array_values($data);
 	}
 
 	/**
@@ -742,12 +742,12 @@ class Core {
 			if(\is_dir($full_path) && !\is_link($full_path)){
 				$data[] = $full_path;
 				if($recursive){
-					$data = array_merge($data, $this->get_folders($full_path, false, $recursive));
+					$data = \array_merge($data, $this->get_folders($full_path, false, $recursive));
 				}
 			}
 		}
-		asort($data, SORT_STRING);
-		return array_values($data);
+		\asort($data, SORT_STRING);
+		return \array_values($data);
 	}
 
 	/**
@@ -761,7 +761,7 @@ class Core {
 	public function filter(string $search, array $filters, bool $case_sensitive = false) : bool {
 		if(!$case_sensitive) $search = \mb_strtolower($search);
 		foreach($filters as $filter){
-			if(str_contains($search, $filter)){
+			if(\str_contains($search, $filter)){
 				return true;
 			}
 		}
@@ -782,7 +782,7 @@ class Core {
 	 * Initializes the log file objects (event, error, and data logs).
 	 */
 	public function init_logs() : void {
-		$timestamp = date("Y-m-d/Y-m-d His");
+		$timestamp = \date("Y-m-d/Y-m-d His");
 		$this->log_event = new Logs($this->get_path($this->config->get('LOG_FOLDER')."/$timestamp-Event.txt"), true, true);
 		$this->log_error = new Logs($this->get_path($this->config->get('LOG_FOLDER')."/$timestamp-Error.txt"), true, true);
 		$this->log_data = new Logs($this->get_path($this->config->get('DATA_FOLDER')."/$timestamp.txt"), false, true);
@@ -875,7 +875,7 @@ class Core {
 	 */
 	public function rmdir(string $path, bool $log = true) : bool {
 		if(!\file_exists($path) || !\is_dir($path)) return false;
-		if(@rmdir($path)){
+		if(@\rmdir($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
@@ -893,10 +893,10 @@ class Core {
 	 */
 	public function rmdir_empty(string $path, bool $log = true) : bool {
 		if(!\file_exists($path) || !\is_dir($path)) return false;
-		$files = array_reverse($this->get_folders($path, true));
+		$files = \array_reverse($this->get_folders($path, true));
 		foreach($files as $file){
 			if(!\file_exists($file)) continue;
-			$count = iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
+			$count = \iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
 			if($count == 0){
 				$this->rmdir($file, $log);
 			}
@@ -913,7 +913,7 @@ class Core {
 	 */
 	public function delete(string $path, bool $log = true) : bool {
 		if(!\file_exists($path) || \is_dir($path)) return false;
-		if(@unlink($path)){
+		if(@\unlink($path)){
 			if($log) $this->write_log("DELETE \"$path\"");
 			return true;
 		} else {
@@ -953,7 +953,7 @@ class Core {
 		$errors = 0;
 		$folders = $this->get_folders($input);
 		foreach($folders as $folder){
-			$directory = str_ireplace($input, $output, $folder);
+			$directory = \str_ireplace($input, $output, $folder);
 			if(!\file_exists($directory)){
 				if(!$this->mkdir($directory)){
 					$errors++;
@@ -979,9 +979,9 @@ class Core {
 		}
 		$dir = \pathinfo($to, PATHINFO_DIRNAME);
 		if(!\file_exists($dir)) $this->mkdir($dir);
-		$modification_date = filemtime($from);
-		if(@rename($from, $to)){
-			touch($to, $modification_date);
+		$modification_date = \filemtime($from);
+		if(@\rename($from, $to)){
+			\touch($to, $modification_date);
 			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -1000,12 +1000,12 @@ class Core {
 	 */
 	public function move_case(string $from, string $to, bool $log = true) : bool {
 		if(!\file_exists($from)) return false;
-		if(strcmp($from, $to) == 0) return true;
+		if(\strcmp($from, $to) == 0) return true;
 		$dir = \pathinfo($to, PATHINFO_DIRNAME);
 		if(!\file_exists($dir)) $this->mkdir($dir);
-		$modification_date = filemtime($from);
-		if(@rename($from, $to)){
-			touch($to, $modification_date);
+		$modification_date = \filemtime($from);
+		if(@\rename($from, $to)){
+			\touch($to, $modification_date);
 			if($log) $this->write_log("RENAME \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -1031,9 +1031,9 @@ class Core {
 		}
 		$dir = \pathinfo($to, PATHINFO_DIRNAME);
 		if(!\file_exists($dir)) $this->mkdir($dir);
-		$modification_date = filemtime($from);
-		if(@copy($from, $to)){
-			touch($to, $modification_date);
+		$modification_date = \filemtime($from);
+		if(@\copy($from, $to)){
+			\touch($to, $modification_date);
 			if($log) $this->write_log("COPY \"$from\" \"$to\"");
 			return true;
 		} else {
@@ -1061,36 +1061,36 @@ class Core {
 		}
 		$dir = \pathinfo($to, PATHINFO_DIRNAME);
 		if(!\file_exists($dir)) $this->mkdir($dir);
-		$modification_date = filemtime($from);
-		$filesize = filesize($from);
-		$source = @fopen($from, 'rb');
-		$destination = @fopen($to, 'wb');
+		$modification_date = \filemtime($from);
+		$filesize = \filesize($from);
+		$source = @\fopen($from, 'rb');
+		$destination = @\fopen($to, 'wb');
 		if(!$source || !$destination){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
 			return false;
 		}
 		try {
-			@ftruncate($destination, $filesize);
-			while(!feof($source)){
-				$buffer = @fread($source, $write_buffer);
+			@\ftruncate($destination, $filesize);
+			while(!\feof($source)){
+				$buffer = @\fread($source, $write_buffer);
 				if($buffer === false) throw new Exception("Failed read block");
-				$state = @fwrite($destination, $buffer);
+				$state = @\fwrite($destination, $buffer);
 				if($state === false) throw new Exception("Failed write block");
 			}
 		}
 		catch(Exception $e){
-			fclose($source);
-			fclose($destination);
+			\fclose($source);
+			\fclose($destination);
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" ".$e->getMessage());
 			return false;
 		}
-		fclose($source);
-		fclose($destination);
-		if(!file_exists($to)){
+		\fclose($source);
+		\fclose($destination);
+		if(!\file_exists($to)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (output not exists)");
 			return false;
 		}
-		@touch($to, $modification_date);
+		@\touch($to, $modification_date);
 		if($log) $this->write_log("COPY \"$from\" \"$to\"");
 		return true;
 	}
@@ -1110,42 +1110,42 @@ class Core {
 		if($this->same_path($from, $to)) return true;
 		$dir = \pathinfo($to, PATHINFO_DIRNAME);
 		if(!\file_exists($dir)) $this->mkdir($dir);
-		$modification_date = filemtime($from);
-		$filesize = filesize($from);
-		$source = @fopen($from, 'rb');
-		$destination = @fopen($to, 'r+b');
+		$modification_date = \filemtime($from);
+		$filesize = \filesize($from);
+		$source = @\fopen($from, 'rb');
+		$destination = @\fopen($to, 'r+b');
 		if(!$source || !$destination){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" (cannot open files)");
 			return false;
 		}
 		try {
-			@ftruncate($destination, $filesize);
+			@\ftruncate($destination, $filesize);
 			$offset = 0;
-			while(!feof($source)){
-				fseek($destination, $offset);
-				$data_source = @fread($source, $block_size);
+			while(!\feof($source)){
+				\fseek($destination, $offset);
+				$data_source = @\fread($source, $block_size);
 				if($data_source === false) throw new Exception("Failed read block on source");
-				$data_destination = @fread($destination, $block_size);
+				$data_destination = @\fread($destination, $block_size);
 				if($data_destination === false) throw new Exception("Failed read block on destination");
 				$hash_source = \hash('md5', $data_source);
 				$hash_destination = \hash('md5', $data_destination);
 				if($hash_source !== $hash_destination){
-					fseek($destination, $offset);
-					$state = @fwrite($destination, $data_source);
+					\fseek($destination, $offset);
+					$state = @\fwrite($destination, $data_source);
 					if($state === false) throw new Exception("Failed write block");
 				}
 				$offset += $block_size;
 			}
 		}
 		catch(Exception $e){
-			fclose($source);
-			fclose($destination);
+			\fclose($source);
+			\fclose($destination);
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" ".$e->getMessage());
 			return false;
 		}
-		fclose($source);
-		fclose($destination);
-		@touch($to, $modification_date);
+		\fclose($source);
+		\fclose($destination);
+		@\touch($to, $modification_date);
 		if($log) $this->write_log("COPY \"$from\" \"$to\"");
 		return true;
 	}
@@ -1185,7 +1185,7 @@ class Core {
 	 * @return string The escaped text.
 	 */
 	public function cmd_escape(string $text) : string {
-		return str_replace([">", "<"], ["^>", "^<"], $text);
+		return \str_replace([">", "<"], ["^>", "^<"], $text);
 	}
 
 	/**
@@ -1198,7 +1198,7 @@ class Core {
 			$title = $this->cmd_escape($title);
 			if($this->current_title != $title){
 				$this->current_title = $title;
-				system("TITLE $title");
+				\system("TITLE $title");
 			}
 		}
 	}
@@ -1211,7 +1211,7 @@ class Core {
 	 */
 	public function get_confirm(string $question) : bool {
 		ask_confirm:
-		$answer = strtoupper($this->get_input($question));
+		$answer = \strtoupper($this->get_input($question));
 		if(!\in_array($answer, ['Y', 'N'])) goto ask_confirm;
 		return $answer == 'Y';
 	}
@@ -1225,14 +1225,14 @@ class Core {
 	 * @return string The user's input.
 	 */
 	public function get_input(?string $message = null, bool $trim = true, bool $history = true) : string {
-		$line = readline($message);
+		$line = \readline($message);
 		if($line === false){
 			$this->write_error("Failed readline from prompt");
 			$this->close();
 			return '';
 		}
-		if($trim) $line = trim($line);
-		if($history) readline_add_history($line);
+		if($trim) $line = \trim($line);
+		if($history) \readline_add_history($line);
 		return $line;
 	}
 
@@ -1246,17 +1246,17 @@ class Core {
 		echo $message;
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$color = $this->config->get('COLOR');
-			$this->set_console_color(substr($color, 0, 1).substr($color, 0, 1));
-			$password = readline();
+			$this->set_console_color(\substr($color, 0, 1).\substr($color, 0, 1));
+			$password = \readline();
 			$this->set_console_color($color);
-			echo "\033[1A$message".str_repeat("*", \strlen($password))."\r\n";
+			echo "\033[1A$message".\str_repeat("*", \strlen($password))."\r\n";
 		} else {
-			system('stty -echo');
-			$password = fgets(STDIN);
-			system('stty echo');
+			\system('stty -echo');
+			$password = \fgets(STDIN);
+			\system('stty echo');
 			echo "\r\n";
 		}
-		return rtrim($password, "\r\n");
+		return \rtrim($password, "\r\n");
 	}
 
 	/**
@@ -1348,7 +1348,7 @@ class Core {
 		$line = $this->get_input($title);
 		if($line == '#') return false;
 		if(empty($line)) return null;
-		return explode(" ", $line);
+		return \explode(" ", $line);
 	}
 
 	/**
@@ -1359,7 +1359,7 @@ class Core {
 	public function pause(?string $message = null) : void {
 		if(!\is_null($message)) echo $message;
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			system("PAUSE > nul");
+			\system("PAUSE > nul");
 		} else {
 			$this->get_input();
 		}
@@ -1387,12 +1387,12 @@ class Core {
 	public function cecho(string $string = '') : void {
 		$output = '';
 		$offset = 0;
-		while(preg_match('/\{([0-9A-Fa-f]{2}|XX)\}/', $string, $match, PREG_OFFSET_CAPTURE, $offset)){
-			$output .= substr($string, $offset, (int)$match[0][1] - (int)$offset);
+		while(\preg_match('/\{([0-9A-Fa-f]{2}|XX)\}/', $string, $match, PREG_OFFSET_CAPTURE, $offset)){
+			$output .= \substr($string, $offset, (int)$match[0][1] - (int)$offset);
 			$output .= $this->convert_color_to_ansi($match[1][0]);
 			$offset = $match[0][1] + 4;
 		}
-		$output .= substr($string, $offset);
+		$output .= \substr($string, $offset);
 		echo "$output\r\n";
 		$this->set_console_color("XX");
 	}
@@ -1404,7 +1404,7 @@ class Core {
 	 * @param string $string The string to print.
 	 */
 	public function current_line(string $string = '') : void {
-		echo "$string".str_repeat(" ", (int)max(62 - \strlen($string), 0))."\r";
+		echo "$string".\str_repeat(" ", (int)\max(62 - \strlen($string), 0))."\r";
 	}
 
 	/**
@@ -1427,33 +1427,33 @@ class Core {
 	 */
 	public function get_print(mixed $var, int $indent = 0, bool $add_space = false) : string {
 		$output = '';
-		$prefix = str_repeat("\t", $indent);
+		$prefix = \str_repeat("\t", $indent);
 		if($add_space) $prefix = " $prefix";
-		if(is_array($var)){
+		if(\is_array($var)){
 			if(empty($var)){
 				$output .= "{$prefix}(array) []\n";
 			} else {
 				$output .= "{$prefix}(array) [\n";
 				foreach($var as $key => $value){
-					if(!is_numeric($key)) $key = "'$key'";
-					$output .= "$prefix\t$key => ".ltrim($this->get_print($value, $indent + 1, $add_space));
+					if(!\is_numeric($key)) $key = "'$key'";
+					$output .= "$prefix\t$key => ".\ltrim($this->get_print($value, $indent + 1, $add_space));
 				}
 				$output .= "$prefix]\n";
 			}
-		} elseif(is_object($var)){
-			$class = get_class($var);
+		} elseif(\is_object($var)){
+			$class = \get_class($var);
 			if(empty($var)){
 				$output .= "{$prefix}($class){}\n";
 			} else {
 				$output .= "{$prefix}($class){\n";
-				foreach(get_object_vars($var) as $key => $value){
-					if(!is_numeric($key)) $key = "'$key'";
-					$output .= "$prefix\t$key => ".ltrim($this->get_print($value, $indent + 1, $add_space));
+				foreach(\get_object_vars($var) as $key => $value){
+					if(!\is_numeric($key)) $key = "'$key'";
+					$output .= "$prefix\t$key => ".\ltrim($this->get_print($value, $indent + 1, $add_space));
 				}
 				$output .= "$prefix}\n";
 			}
 		} else {
-			$type = strtolower(\gettype($var));
+			$type = \strtolower(\gettype($var));
 			switch($type){
 				case 'integer': {
 					$type = 'int';
@@ -1465,9 +1465,9 @@ class Core {
 				}
 			}
 			if($indent > 0){
-				$output .= "$prefix\t($type) ".var_export($var, true)."\n";
+				$output .= "$prefix\t($type) ".\var_export($var, true)."\n";
 			} else {
-				$output .= "($type) ".var_export($var, true)."\n";
+				$output .= "($type) ".\var_export($var, true)."\n";
 			}
 		}
 		return $output;
@@ -1480,7 +1480,7 @@ class Core {
 	 * @return string The value of the environment variable, or an empty string if not found.
 	 */
 	public function get_variable(string $string) : string {
-		exec("echo $string", $var);
+		\exec("echo $string", $var);
 		return $var[0] ?? '';
 	}
 
@@ -1493,9 +1493,9 @@ class Core {
 	public function open_file(string $path, string $params = '/MIN') : void {
 		if(\file_exists($path)){
 			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-				exec("START $params \"\" \"$path\"");
+				\exec("START $params \"\" \"$path\"");
 			} elseif(!\is_null($this->config->get('OPEN_FILE_BINARY'))){
-				exec($this->config->get('OPEN_FILE_BINARY')." \"$path\"");
+				\exec($this->config->get('OPEN_FILE_BINARY')." \"$path\"");
 			} else {
 				$this->write_error("Failed open file OPEN_FILE_BINARY is not configured");
 			}
@@ -1508,11 +1508,11 @@ class Core {
 	 * @param string $url The URL to open.
 	 */
 	public function open_url(string $url) : void {
-		if(str_contains($url, "https://") || str_contains($url, "http://")){
+		if(\str_contains($url, "https://") || \str_contains($url, "http://")){
 			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-				exec("START \"\" \"$url\"");
+				\exec("START \"\" \"$url\"");
 			} elseif(!\is_null($this->config->get('OPEN_FILE_BINARY'))){
-				exec($this->config->get('OPEN_FILE_BINARY')." \"$url\"");
+				\exec($this->config->get('OPEN_FILE_BINARY')." \"$url\"");
 			} else {
 				$this->write_error("Failed open url OPEN_FILE_BINARY is not configured");
 			}
@@ -1528,13 +1528,13 @@ class Core {
 	public function get_file_attributes(string $path) : array {
 		$path = $this->get_path($path);
 		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS || !\file_exists($path)) return ['R' => false, 'A' => false, 'S' => false, 'H' => false, 'I' => false];
-		$attributes = substr(shell_exec("attrib \"$path\""), 0, 21);
+		$attributes = \substr(\shell_exec("attrib \"$path\""), 0, 21);
 		return [
-			'R' => str_contains($attributes, "R"),
-			'A' => str_contains($attributes, "A"),
-			'S' => str_contains($attributes, "S"),
-			'H' => str_contains($attributes, "H"),
-			'I' => str_contains($attributes, "I"),
+			'R' => \str_contains($attributes, "R"),
+			'A' => \str_contains($attributes, "A"),
+			'S' => \str_contains($attributes, "S"),
+			'H' => \str_contains($attributes, "H"),
+			'I' => \str_contains($attributes, "I"),
 		];
 	}
 
@@ -1559,7 +1559,7 @@ class Core {
 		if(!\is_null($h)) $attributes .= ($h ? '+' : '-').'H ';
 		if(!\is_null($i)) $attributes .= ($i ? '+' : '-').'I ';
 		if(\is_link($path)) $params .= '/L ';
-		shell_exec("attrib {$params}{$attributes} \"$path\"");
+		\shell_exec("attrib {$params}{$attributes} \"$path\"");
 		return true;
 	}
 
@@ -1572,12 +1572,12 @@ class Core {
 	public function is_valid_path(string $path) : bool {
 		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) return true;
 		if(\strlen($path) >= 2 && $path[1] === ':' && \ctype_alpha($path[0])){
-			return \file_exists(substr($path, 0, 3));
-		} elseif(substr($path, 0, 2) == "\\\\"){
-			$device = substr($path, 2);
-			if(str_contains($device, "\\")){
-				$parts = explode("\\", $device);
-				if(count($parts) >= 2){
+			return \file_exists(\substr($path, 0, 3));
+		} elseif(\substr($path, 0, 2) == "\\\\"){
+			$device = \substr($path, 2);
+			if(\str_contains($device, "\\")){
+				$parts = \explode("\\", $device);
+				if(\count($parts) >= 2){
 					return \is_dir("\\\\{$parts[0]}\\{$parts[1]}");
 				}
 			}
@@ -1592,7 +1592,7 @@ class Core {
 	 * @return string The converted path.
 	 */
 	public function get_path(string $path) : string {
-		return str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
+		return \str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $path);
 	}
 
 	/**
@@ -1626,7 +1626,7 @@ class Core {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			return $this->get_variable("%COMPUTERNAME%");
 		} else {
-			return shell_exec('hostname');
+			return \shell_exec('hostname');
 		}
 	}
 
@@ -1640,7 +1640,7 @@ class Core {
 		$output = '';
 		foreach($arguments as $argument){
 			$argument = $this->get_path($argument);
-			if(substr($argument, 0, 1) == '"'){
+			if(\substr($argument, 0, 1) == '"'){
 				$output .= " $argument";
 			} else {
 				$output .= " \"$argument\"";
@@ -1673,8 +1673,8 @@ class Core {
 	 */
 	public function is_text_file(string $path) : bool {
 		if(!\file_exists($path)) return false;
-		$finfo = finfo_open(FILEINFO_MIME);
-		return substr(finfo_file($finfo, $path), 0, 4) == 'text';
+		$finfo = \finfo_open(FILEINFO_MIME);
+		return \substr(\finfo_file($finfo, $path), 0, 4) == 'text';
 	}
 
 	/**
@@ -1691,7 +1691,7 @@ class Core {
 			if(\is_null($this->core_path)) return false;
 			$program = $this->get_path("$this->core_path/$program.exe");
 		}
-		return exec("\"$program\" $command", $output, $result_code);
+		return \exec("\"$program\" $command", $output, $result_code);
 	}
 
 	/**
@@ -1701,7 +1701,7 @@ class Core {
 	 */
 	public function is_admin() : bool {
 		if($this->get_system_type() != SYSTEM_TYPE_WINDOWS) return false;
-		return exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
+		return \exec('net session 1>NUL 2>NUL || (ECHO NO_ADMIN)') != 'NO_ADMIN';
 	}
 
 	/**
@@ -1719,9 +1719,9 @@ class Core {
 
 		$line = $this->get_input($name);
 		if($line == '#') return false;
-		$size = explode(' ', $line);
+		$size = \explode(' ', $line);
 		if(!isset($size[1])) goto set_size;
-		$size[0] = preg_replace('/\D/', '', $size[0]);
+		$size[0] = \preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_size;
 		$bytes = $this->size_unit_to_bytes(\intval($size[0]), $size[1]);
 		if($bytes <= 0) goto set_size;
@@ -1743,9 +1743,9 @@ class Core {
 
 		$line = $this->get_input($name);
 		if($line == '#') return false;
-		$size = explode(' ', $line);
+		$size = \explode(' ', $line);
 		if(!isset($size[1])) goto set_interval;
-		$size[0] = preg_replace('/\D/', '', $size[0]);
+		$size[0] = \preg_replace('/\D/', '', $size[0]);
 		if(empty($size[0])) goto set_interval;
 		$interval = $this->time_unit_to_seconds(\intval($size[0]), $size[1]);
 		if($interval <= 0) goto set_interval;
@@ -1764,7 +1764,7 @@ class Core {
 		set_number:
 		$line = $this->get_input($name);
 		if($line == '#') return false;
-		$line = preg_replace('/\D/', '', $line);
+		$line = \preg_replace('/\D/', '', $line);
 		if($line == ''){
 			$this->echo(" Type valid integer number");
 			goto set_number;
@@ -1786,7 +1786,7 @@ class Core {
 	 * @return int|bool The write buffer size in bytes, or false if the configuration value is invalid.
 	 */
 	public function get_write_buffer() : int|bool {
-		$size = explode(' ', $this->config->get('WRITE_BUFFER_SIZE'));
+		$size = \explode(' ', $this->config->get('WRITE_BUFFER_SIZE'));
 		$write_buffer = $this->size_unit_to_bytes(\intval($size[0]), $size[1] ?? '?');
 		if($write_buffer <= 0){
 			$this->clear();
@@ -1806,19 +1806,19 @@ class Core {
 	 */
 	public function trash(string $path, ?string $trash_folder = null) : bool {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			if(substr($path, 1, 1) == ':'){
-				$relative_path = substr($path, 3);
+			if(\substr($path, 1, 1) == ':'){
+				$relative_path = \substr($path, 3);
 				if(\is_null($trash_folder)){
-					$new_name = $this->get_path(substr($path, 0, 2)."/.Trash/$relative_path");
+					$new_name = $this->get_path(\substr($path, 0, 2)."/.Trash/$relative_path");
 				} else {
 					$new_name = $this->get_path("$trash_folder/$relative_path");
 				}
 				if(\file_exists($new_name) && !$this->delete($new_name)) return false;
 				return $this->move($path, $new_name);
-			} elseif(substr($path, 0, 2) == "\\\\"){
-				$device = substr($path, 2);
-				if(str_contains($device, "\\")){
-					$relative_path = str_replace("\\\\$device", "", $path);
+			} elseif(\substr($path, 0, 2) == "\\\\"){
+				$device = \substr($path, 2);
+				if(\str_contains($device, "\\")){
+					$relative_path = \str_replace("\\\\$device", "", $path);
 					if(\is_null($trash_folder)){
 						$new_name = $this->get_path("$device/.Trash/$relative_path");
 					} else {
@@ -1831,7 +1831,7 @@ class Core {
 		} else {
 			$output = [];
 			$return_var = 0;
-			exec("gio trash ".\escapeshellarg($path), $output, $return_var);
+			\exec("gio trash ".\escapeshellarg($path), $output, $return_var);
 			return $return_var === 0;
 		}
 		$this->write_error("FAILED TRASH \"$path\"");
@@ -1856,9 +1856,9 @@ class Core {
 	 * @return ?int The original length in bytes, or null if the string is not a valid base64 representation.
 	 */
 	public function base64_length(string $string) : ?int {
-		$string = trim(str_replace(["\r", "\n"], "", $string));
+		$string = \trim(\str_replace(["\r", "\n"], "", $string));
 		$base64_length = \strlen($string);
-		$padding_length = substr_count($string, '=');
+		$padding_length = \substr_count($string, '=');
 		$original_length = ($base64_length / 4) * 3 - $padding_length;
 		if($original_length != (int)$original_length) return null;
 		return $original_length;
@@ -1871,7 +1871,7 @@ class Core {
 	 * @return string The cleaned file name.
 	 */
 	public function clean_file_name(string $name) : string {
-		return str_replace(["\\", '/', ':', '*', '?', '"', '<', '>', '|'], '_', $name);
+		return \str_replace(["\\", '/', ':', '*', '?', '"', '<', '>', '|'], '_', $name);
 	}
 
 	/**
@@ -1881,7 +1881,7 @@ class Core {
 	 * @return string The cleaned and lowercase file extension.
 	 */
 	public function clean_file_extension(string $extension) : string {
-		return \mb_strtolower(preg_replace("/\s/is", "", $extension));
+		return \mb_strtolower(\preg_replace("/\s/is", "", $extension));
 	}
 
 	/**
@@ -1933,11 +1933,11 @@ class Core {
 	 * @return string The detected EOL sequence (e.g., "\r\n", "\n", "\r"), defaults to "\r\n".
 	 */
 	public function detect_eol(string $content) : string {
-		if(str_contains($content, "\r\n")){
+		if(\str_contains($content, "\r\n")){
 			return "\r\n";
-		} elseif(str_contains($content, "\n")){
+		} elseif(\str_contains($content, "\n")){
 			return "\n";
-		} elseif(str_contains($content, "\r")){
+		} elseif(\str_contains($content, "\r")){
 			return "\r";
 		} else {
 			return "\r\n";
@@ -1951,7 +1951,7 @@ class Core {
 	 * @return bool True if the content has a UTF-8 BOM, false otherwise.
 	 */
 	public function has_utf8_bom(string $content) : bool {
-		return str_contains($content, $this->utf8_bom);
+		return \str_contains($content, $this->utf8_bom);
 	}
 
 	/**
@@ -1962,7 +1962,7 @@ class Core {
 	 * @return string The ANSI escape code. Returns reset code if input is invalid.
 	 */
 	public function convert_color_to_ansi(string $color_code) : string {
-		$code = strtoupper($color_code);
+		$code = \strtoupper($color_code);
 		if(\strlen($code) !== 2 || !isset($this->console_color_map[$code[0]]) || !isset($this->console_color_map[$code[1]])){
 			return "\033[0m";
 		}
@@ -1979,7 +1979,7 @@ class Core {
 	 */
 	public function set_console_color(string $color_code) : bool {
 		if($color_code == "XX") $color_code = $this->config->get('COLOR');
-		if(!preg_match('/^[0-9A-Fa-f]{2}$/', $color_code)) return false;
+		if(!\preg_match('/^[0-9A-Fa-f]{2}$/', $color_code)) return false;
 		echo $this->convert_color_to_ansi($color_code);
 		return true;
 	}
@@ -1992,15 +1992,15 @@ class Core {
 	 * @return array An array of parsed and resolved paths.
 	 */
 	public function parse_input_path(string $string, bool $unique = true) : array {
-		$string = trim($string);
-		preg_match_all('/"([^"]+)"|\'([^\']+)\'|(\S+)/', $string, $matches);
+		$string = \trim($string);
+		\preg_match_all('/"([^"]+)"|\'([^\']+)\'|(\S+)/', $string, $matches);
 		$folders = [];
 		foreach($matches[0] as $match){
-			$match = trim($match, '"\'');
+			$match = \trim($match, '"\'');
 			$folders[] = $this->get_path($match);
 		}
 		if(!$unique) return $folders;
-		return array_unique($folders);
+		return \array_unique($folders);
 	}
 
 	/**
@@ -2020,19 +2020,19 @@ class Core {
 	 * @return bool True if the path matches any of the wildcard filters, false otherwise.
 	 */
 	public function matches_path_wildcard_filters(string $path, array $wildcard_filters) : bool {
-		$normalized_path = str_replace('\\', '/', $path);
+		$normalized_path = \str_replace('\\', '/', $path);
 		foreach($wildcard_filters as $pattern){
-			$normalized_pattern = str_replace('\\', '/', $pattern);
-			$is_global = str_starts_with($normalized_pattern, '*') || str_contains($normalized_pattern, '/');
-			$regex = preg_quote($normalized_pattern, '#');
-			$regex = str_replace(['\*', '\?'], ['.*', '.'], $regex);
+			$normalized_pattern = \str_replace('\\', '/', $pattern);
+			$is_global = \str_starts_with($normalized_pattern, '*') || \str_contains($normalized_pattern, '/');
+			$regex = \preg_quote($normalized_pattern, '#');
+			$regex = \str_replace(['\*', '\?'], ['.*', '.'], $regex);
 			if($is_global){
-				if(preg_match("#^{$regex}$#i", $normalized_path)){
+				if(\preg_match("#^{$regex}$#i", $normalized_path)){
 					return true;
 				}
 			} else {
-				$file_name = basename($normalized_path);
-				if(preg_match("#^{$regex}$#i", $file_name)){
+				$file_name = \basename($normalized_path);
+				if(\preg_match("#^{$regex}$#i", $file_name)){
 					return true;
 				}
 			}
@@ -2135,10 +2135,10 @@ class Core {
 		if(\is_link($link_path) || \file_exists($link_path)) return true;
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$cmd = \sprintf('cmd /c mklink /D %s %s', \escapeshellarg($link_path), \escapeshellarg($target_path));
-			exec($cmd, $output, $code);
+			\exec($cmd, $output, $code);
 			return $code === 0;
 		}
-		return symlink($target_path, $link_path);
+		return \symlink($target_path, $link_path);
 	}
 
 }

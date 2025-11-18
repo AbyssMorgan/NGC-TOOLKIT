@@ -82,7 +82,7 @@ class AdmFileConverter {
 		}
 
 		if($params['mode'] == '2'){
-			$this->core->write_data(print_r($ini->get_all(), true));
+			$this->core->write_data(\print_r($ini->get_all(), true));
 			$this->core->open_logs();
 		} else {
 			set_output:
@@ -130,7 +130,7 @@ class AdmFileConverter {
 			if(!$this->core->get_confirm(" Output file exists, overwrite (Y/N): ")) goto set_output;
 		}
 
-		\file_put_contents($output, implode("\r\n", $journal->read()));
+		\file_put_contents($output, \implode("\r\n", $journal->read()));
 
 		$this->core->pause(" Operation done, press any key to back to menu");
 		return false;

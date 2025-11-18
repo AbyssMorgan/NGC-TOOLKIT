@@ -136,7 +136,7 @@ class BitFunctions {
 	 * @param string $string The binary string (e.g., "10110").
 	 */
 	public function from_string(string $string) : void {
-		$this->original = (int)bindec($string);
+		$this->original = (int)\bindec($string);
 	}
 
 	/**
@@ -199,13 +199,13 @@ class BitFunctions {
 		for($bit_id = 0; $bit_id < $this->max_bits; $bit_id++){
 			$string .= $this->get_bit($bit_id) ? '1' : '0';
 		}
-		$string = strrev($string);
+		$string = \strrev($string);
 		if(!$full_string){
-			$pos = strpos($string, "1", 0);
+			$pos = \strpos($string, "1", 0);
 			if($pos === false){
 				return "0";
 			} else {
-				return substr($string, $pos);
+				return \substr($string, $pos);
 			}
 		}
 		return $string;
@@ -228,7 +228,7 @@ class BitFunctions {
 	 * @param bool $full_string Optional. Passed to to_string() to determine if the string should be full length.
 	 */
 	public function invert(bool $full_string = false) : void {
-		$this->from_string(strtr($this->to_string($full_string), ['0' => '1', '1' => '0']));
+		$this->from_string(\strtr($this->to_string($full_string), ['0' => '1', '1' => '0']));
 	}
 
 	/**
@@ -403,9 +403,9 @@ class BitFunctions {
 		$this->max_bits = 64; // Temporarily set max_bits to 64 for fraction processing
 		$this->from_int($fraction);
 		$e = 1.0;
-		for($i = 1; $i <= 52; $i++) $e += ($this->get_bit(52 - $i) ? 1 : 0) * pow(2.0, -$i);
+		for($i = 1; $i <= 52; $i++) $e += ($this->get_bit(52 - $i) ? 1 : 0) * \pow(2.0, -$i);
 		$this->max_bits = $max_bits;
-		return pow(-1.0, $sign) * $e * pow(2.0, $exponent - 1023);
+		return \pow(-1.0, $sign) * $e * \pow(2.0, $exponent - 1023);
 	}
 
 }

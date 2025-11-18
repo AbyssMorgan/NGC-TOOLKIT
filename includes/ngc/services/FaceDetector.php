@@ -63,7 +63,7 @@ class FaceDetector {
 	 * @param string $detection_data The path to the serialized detection data file.
 	 */
 	public function __construct(string $detection_data){
-		$this->detection_data = unserialize(\file_get_contents($detection_data));
+		$this->detection_data = \unserialize(\file_get_contents($detection_data));
 	}
 
 	/**
@@ -115,8 +115,8 @@ class FaceDetector {
 	 */
 	public function face_detect(GdImage $image) : bool {
 		$this->canvas = $image;
-		$im_width = imagesx($this->canvas);
-		$im_height = imagesy($this->canvas);
+		$im_width = \imagesx($this->canvas);
+		$im_height = \imagesy($this->canvas);
 		$diff_width = 256 - $im_width;
 		$diff_height = 256 - $im_height;
 		if($diff_width > $diff_height){
@@ -125,8 +125,8 @@ class FaceDetector {
 			$ratio = $im_height / 256;
 		}
 		if($ratio != 0){
-			$this->reduced_canvas = imagecreatetruecolor((int)($im_width / $ratio), (int)($im_height / $ratio));
-			imagecopyresampled($this->reduced_canvas, $this->canvas, 0, 0, 0, 0, (int)($im_width / $ratio), (int)($im_height / $ratio), $im_width, $im_height);
+			$this->reduced_canvas = \imagecreatetruecolor((int)($im_width / $ratio), (int)($im_height / $ratio));
+			\imagecopyresampled($this->reduced_canvas, $this->canvas, 0, 0, 0, 0, (int)($im_width / $ratio), (int)($im_height / $ratio), $im_width, $im_height);
 			$stats = $this->get_img_stats($this->reduced_canvas);
 			$this->face = $this->do_detect_greedy_big_to_small($stats['ii'], $stats['ii2'], $stats['width'], $stats['height']);
 			if(!\is_null($this->face)){
@@ -151,8 +151,8 @@ class FaceDetector {
 	 * @return array An associative array containing 'width', 'height', 'ii' (integral image), and 'ii2' (squared integral image).
 	 */
 	private function get_img_stats(GdImage $canvas) : array {
-		$image_width = imagesx($canvas);
-		$image_height = imagesy($canvas);
+		$image_width = \imagesx($canvas);
+		$image_height = \imagesy($canvas);
 		$iis = $this->compute_ii($canvas, $image_width, $image_height);
 		return [
 			'width' => $image_width,
@@ -186,7 +186,7 @@ class FaceDetector {
 			$rowsum = 0;
 			$rowsum2 = 0;
 			for($j = 1; $j < $ii_w - 1; $j++){
-				$rgb = imagecolorat($canvas, $j, $i);
+				$rgb = \imagecolorat($canvas, $j, $i);
 				$red = ($rgb >> 16) & 0xFF;
 				$green = ($rgb >> 8) & 0xFF;
 				$blue = $rgb & 0xFF;
@@ -222,7 +222,7 @@ class FaceDetector {
 			$w = (int)(20 * $scale);
 			$endx = $width - $w - 1;
 			$endy = $height - $w - 1;
-			$step = (int)(max($scale, 2));
+			$step = (int)(\max($scale, 2));
 			$inv_area = 1 / ($w * $w);
 			for($y = 0; $y < $endy; $y += $step){
 				for($x = 0; $x < $endx; $x += $step){
@@ -252,14 +252,14 @@ class FaceDetector {
 	private function detect_on_sub_image(int $x, int $y, float $scale, array $ii, array $ii2, int $w, int $iiw, float $inv_area) : bool {
 		$mean = ($ii[($y + $w) * $iiw + $x + $w] + $ii[$y * $iiw + $x] - $ii[($y + $w) * $iiw + $x] - $ii[$y * $iiw + $x + $w]) * $inv_area;
 		$vnorm = ($ii2[($y + $w) * $iiw + $x + $w] + $ii2[$y * $iiw + $x] - $ii2[($y + $w) * $iiw + $x] - $ii2[$y * $iiw + $x + $w]) * $inv_area - ($mean * $mean);
-		$vnorm = $vnorm > 1 ? sqrt($vnorm) : 1;
-		$count_data = count($this->detection_data);
+		$vnorm = $vnorm > 1 ? \sqrt($vnorm) : 1;
+		$count_data = \count($this->detection_data);
 		for($i_stage = 0; $i_stage < $count_data; $i_stage++){
 			$stage = $this->detection_data[$i_stage];
 			$trees = $stage[0];
 			$stage_thresh = $stage[1];
 			$stage_sum = 0;
-			$count_trees = count($trees);
+			$count_trees = \count($trees);
 			for($i_tree = 0; $i_tree < $count_trees; $i_tree++){
 				$tree = $trees[$i_tree];
 				$current_node = $tree[0];
@@ -271,7 +271,7 @@ class FaceDetector {
 					$leftidx = $current_node[0][3];
 					$rightidx = $current_node[0][4];
 					$rect_sum = 0;
-					$count_rects = count($current_node[1]);
+					$count_rects = \count($current_node[1]);
 					for($i_rect = 0; $i_rect < $count_rects; $i_rect++){
 						$rx = (int)($current_node[1][$i_rect][0] * $scale + $x);
 						$ry = (int)($current_node[1][$i_rect][1] * $scale + $y);

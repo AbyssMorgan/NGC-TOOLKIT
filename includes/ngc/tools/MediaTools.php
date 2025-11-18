@@ -103,7 +103,7 @@ class MediaTools {
 		}
 
 		$items = 0;
-		$total = count($files_video);
+		$total = \count($files_video);
 		foreach($files_video as $key => $file){
 			$items++;
 			if(!\file_exists($file)){
@@ -160,7 +160,7 @@ class MediaTools {
 		$lang = $this->core->config->get('SUBTITLES_LANGUAGE');
 		$files = $this->core->get_files($input, $this->core->media->extensions_video);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue;
@@ -210,19 +210,19 @@ class MediaTools {
 		$size = $this->core->get_input_integer(" Width (0 - no resize): ", 0);
 		if($size === false) return false;
 
-		$variants = explode(" ", $this->core->config->get('AVATAR_GENERATOR_VARIANTS'));
+		$variants = \explode(" ", $this->core->config->get('AVATAR_GENERATOR_VARIANTS'));
 		$files = $this->core->get_files($input, $this->core->media->extensions_images);
 
 		$errors = 0;
 
-		$detector = new FaceDetector(gzuncompress($this->core->get_resource("FaceDetector.zz")));
+		$detector = new FaceDetector(\gzuncompress($this->core->get_resource("FaceDetector.zz")));
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue;
 			$folder = \pathinfo($file, PATHINFO_DIRNAME);
-			$directory = str_ireplace($input, $output, $folder);
+			$directory = \str_ireplace($input, $output, $folder);
 			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
@@ -318,24 +318,24 @@ class MediaTools {
 			"\"Passthrough (AR)\"",
 		];
 
-		$csv->write(implode($separator, $labels));
+		$csv->write(\implode($separator, $labels));
 
 		$keys = [];
 		$files = $this->core->get_files($input, $this->core->media->extensions_video);
 		$items = 0;
 		$new = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			$this->core->set_errors($errors);
 			if(!\file_exists($file)) continue;
-			$key = \hash('md5', str_ireplace($input, '', $file));
+			$key = \hash('md5', \str_ireplace($input, '', $file));
 
 			$file_info = (object)[
-				'path' => str_replace("\\\\", "\\", addslashes($file)),
-				'directory' => str_replace("\\\\", "\\", addslashes(\pathinfo(\pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))),
-				'filename' => str_replace("\\\\", "\\", addslashes(\pathinfo($file, PATHINFO_FILENAME))),
-				'extension' => str_replace("\\\\", "\\", addslashes($this->core->get_extension($file))),
+				'path' => \str_replace("\\\\", "\\", \addslashes($file)),
+				'directory' => \str_replace("\\\\", "\\", \addslashes(\pathinfo(\pathinfo($file, PATHINFO_DIRNAME), PATHINFO_BASENAME))),
+				'filename' => \str_replace("\\\\", "\\", \addslashes(\pathinfo($file, PATHINFO_FILENAME))),
+				'extension' => \str_replace("\\\\", "\\", \addslashes($this->core->get_extension($file))),
 			];
 
 			$media_cache = $cache->get($key, []);
@@ -354,12 +354,12 @@ class MediaTools {
 			if(\file_exists("$file.md5")){
 				$meta->checksum = \file_get_contents("$file.md5");
 			} elseif($generate_checksum){
-				$meta->checksum = strtoupper(hash_file('md5', $file));
+				$meta->checksum = \strtoupper(\hash_file('md5', $file));
 			} else {
 				$meta->checksum = null;
 			}
 
-			$media_cache = array_merge((array)$meta, ['version' => 1]);
+			$media_cache = \array_merge((array)$meta, ['version' => 1]);
 			$cache->set($key, $media_cache);
 
 			if($new > 0 && $new % 25 == 0) $cache->save();
@@ -390,8 +390,8 @@ class MediaTools {
 				"\"$meta->vr_stereo_mode\"",
 				"\"$meta->vr_alpha\"",
 			];
-			array_push($keys, $key);
-			$csv->write(implode($separator, $data));
+			\array_push($keys, $key);
+			$csv->write(\implode($separator, $data));
 			$this->core->progress($items, $total);
 			$this->core->set_errors($errors);
 		}
@@ -400,7 +400,7 @@ class MediaTools {
 		$this->core->echo(" Saved results into ".$csv->get_path());
 		$csv->close();
 		$cache->set_all($cache->only($keys));
-		$cache->update(['.LAST_UPDATE' => date('Y-m-d H:i:s')], true);
+		$cache->update(['.LAST_UPDATE' => \date('Y-m-d H:i:s')], true);
 		$cache->close();
 
 		$this->core->open_logs(true);
@@ -425,7 +425,7 @@ class MediaTools {
 		if($line == '#') return false;
 
 		$params = [
-			'mode' => strtolower($line[0] ?? '?'),
+			'mode' => \strtolower($line[0] ?? '?'),
 		];
 
 		if(!\in_array($params['mode'], ['0', '1', '2', '3'])) goto set_mode;
@@ -447,7 +447,7 @@ class MediaTools {
 
 		$files = $this->core->get_files($input);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			$this->core->set_errors($errors);
@@ -458,7 +458,7 @@ class MediaTools {
 				continue;
 			}
 			$folder = \pathinfo($file, PATHINFO_DIRNAME);
-			$directory = str_ireplace($input, $output, $folder);
+			$directory = \str_ireplace($input, $output, $folder);
 			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
@@ -545,7 +545,7 @@ class MediaTools {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -596,7 +596,7 @@ class MediaTools {
 		$this->core->set_errors($errors);
 		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue 1;
@@ -606,13 +606,13 @@ class MediaTools {
 					$language = $stream['tags']['language'] ?? 'unk';
 					$index = $stream['index'];
 					$suffix = "-$index-$language";
-					$codec = strtolower($stream['codec_name'] ?? 'unknown');
+					$codec = \strtolower($stream['codec_name'] ?? 'unknown');
 					$extension = $this->core->media->get_video_extension($codec);
 					if(\is_null($extension)){
 						$this->core->write_error("UNSUPPORTED VIDEO CODEC \"$codec\" IN \"$file\"");
 						$errors++;
 					} else {
-						$directory = \pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$directory = \pathinfo(\str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
 						$this->core->mkdir($directory);
 						$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
 						if(!\file_exists($new_name)){
@@ -657,7 +657,7 @@ class MediaTools {
 		$this->core->set_errors($errors);
 		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue 1;
@@ -675,7 +675,7 @@ class MediaTools {
 						$this->core->write_error("UNSUPPORTED AUDIO CODEC \"{$stream['codec_name']}\" IN \"$file\"");
 						$errors++;
 					} else {
-						$directory = \pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$directory = \pathinfo(\str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
 						$this->core->mkdir($directory);
 						$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
 						if(!\file_exists($new_name)){
@@ -720,7 +720,7 @@ class MediaTools {
 		$this->core->set_errors($errors);
 		$files = $this->core->get_files($input, $this->core->media->extensions_media_container);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue 1;
@@ -738,7 +738,7 @@ class MediaTools {
 						$this->core->write_error("UNSUPORTED SUBTITLES \"{$stream['codec_name']}\" IN \"$file\"");
 						$errors++;
 					} else {
-						$directory = \pathinfo(str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
+						$directory = \pathinfo(\str_ireplace($input, $output, $file), PATHINFO_DIRNAME);
 						$this->core->mkdir($directory);
 						$new_name = $this->core->get_path("$directory/".\pathinfo($file, PATHINFO_FILENAME)."$suffix.$extension");
 						if(!\file_exists($new_name)){
@@ -778,12 +778,12 @@ class MediaTools {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, ['srt']);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				$validation = $subtitles_validator->srt_validate($file);
 				if($validation === false) continue 1;
-				$errors_in_file = count($validation);
+				$errors_in_file = \count($validation);
 				$errors += $errors_in_file;
 				if(!empty($validation)){
 					$this->core->write_error("Validation \"$file\" total $errors_in_file errors");
@@ -832,7 +832,7 @@ class MediaTools {
 		$errors = 0;
 		$this->core->set_errors($errors);
 		$items = 0;
-		$total = count($files_a);
+		$total = \count($files_a);
 		foreach($files_a as $file){
 			$items++;
 			$fname = \pathinfo($file, PATHINFO_BASENAME);
@@ -843,9 +843,9 @@ class MediaTools {
 			}
 			$validation = $subtitles_validator->srt_compare($file, $map[$fname]);
 			$count = (object)[
-				'global' => count($validation->global),
-				'file_a' => count($validation->file_a),
-				'file_b' => count($validation->file_b),
+				'global' => \count($validation->global),
+				'file_a' => \count($validation->file_a),
+				'file_b' => \count($validation->file_b),
 			];
 			if($count->global > 0 || $count->file_a > 0 || $count->file_b > 0){
 				$this->core->write_error("Comparsion \"$file\" to \"{$map[$fname]}\"");

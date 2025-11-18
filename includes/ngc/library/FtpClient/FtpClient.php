@@ -74,7 +74,7 @@ class FtpClient implements Countable {
 	 * @throws FtpException If FTP extension is not loaded.
 	 */
 	public function __construct(mixed $connection = null){
-		if(!extension_loaded('ftp')){
+		if(!\extension_loaded('ftp')){
 			throw new FtpException('FTP extension is not loaded!');
 		}
 		if($connection){
@@ -198,7 +198,7 @@ class FtpClient implements Countable {
 	public function modified_time(string $remote_file, ?string $format = null) : string|int {
 		$time = $this->ftp->mdtm($remote_file);
 		if($time !== -1 && $format !== null){
-			return date($format, $time);
+			return \date($format, $time);
 		}
 		return $time;
 	}
@@ -243,10 +243,10 @@ class FtpClient implements Countable {
 		}
 		$result = [];
 		$dir_len = \strlen($directory);
-		if(false !== ($kdot = array_search('.', $files))){
+		if(false !== ($kdot = \array_search('.', $files))){
 			unset($files[$kdot]);
 		}
-		if(false !== ($kdot = array_search('..', $files))){
+		if(false !== ($kdot = \array_search('..', $files))){
 			unset($files[$kdot]);
 		}
 		if(!$recursive){
@@ -257,8 +257,8 @@ class FtpClient implements Countable {
 		$flatten = function(array $arr) use (&$flatten) : array {
 			$flat = [];
 			foreach($arr as $k => $v){
-				if(is_array($v)){
-					$flat = array_merge($flat, $flatten($v));
+				if(\is_array($v)){
+					$flat = \array_merge($flat, $flatten($v));
 				} else {
 					$flat[] = $v;
 				}
@@ -267,8 +267,8 @@ class FtpClient implements Countable {
 		};
 		foreach($files as $file){
 			$file = $directory.'/'.$file;
-			if(0 === strpos($file, $directory, $dir_len)){
-				$file = substr($file, $dir_len);
+			if(0 === \strpos($file, $directory, $dir_len)){
+				$file = \substr($file, $dir_len);
 			}
 			if($this->is_dir($file)){
 				$result[] = $file;
@@ -280,7 +280,7 @@ class FtpClient implements Countable {
 				$result[] = $file;
 			}
 		}
-		$result = array_unique($result);
+		$result = \array_unique($result);
 		$filter($result);
 		return $result;
 	}
@@ -303,7 +303,7 @@ class FtpClient implements Countable {
 		}
 		$result = false;
 		$pwd = $this->ftp->pwd();
-		$parts = explode('/', $directory);
+		$parts = \explode('/', $directory);
 		foreach($parts as $part){
 			if($part == '') continue;
 			if(!@$this->ftp->chdir($part)){
@@ -371,7 +371,7 @@ class FtpClient implements Countable {
 		if($path == '.' || $path == '..') return false;
 		try {
 			if(@$this->ftp->delete($path) || ($this->is_dir($path) && $this->rmdir($path, $recursive))) return true;
-			$new_path = preg_replace('/[^A-Za-z0-9\/]/', '', $path);
+			$new_path = \preg_replace('/[^A-Za-z0-9\/]/', '', $path);
 			if($this->rename($path, $new_path)){
 				if(@$this->ftp->delete($new_path) || ($this->is_dir($new_path) && $this->rmdir($new_path, $recursive))){
 					return true;
@@ -488,11 +488,11 @@ class FtpClient implements Countable {
 	 * @return string|null
 	 */
 	public function get_content(string $remote_file, int $mode = FTP_BINARY, int $resumepos = 0) : string|null {
-		$handle = fopen('php://temp', 'r+');
+		$handle = \fopen('php://temp', 'r+');
 		if(!$handle) return null;
 		if($this->ftp->fget($handle, $remote_file, $mode, $resumepos)){
-			rewind($handle);
-			return stream_get_contents($handle);
+			\rewind($handle);
+			return \stream_get_contents($handle);
 		}
 		return null;
 	}
@@ -506,12 +506,12 @@ class FtpClient implements Countable {
 	 * @throws FtpException When the transfer fails
 	 */
 	public function put_from_string(string $remote_file, string $content) : static {
-		$handle = fopen('php://temp', 'w');
+		$handle = \fopen('php://temp', 'w');
 		if(!$handle){
 			throw new FtpException('Unable to put the file "'.$remote_file.'"');
 		}
-		fwrite($handle, $content);
-		rewind($handle);
+		\fwrite($handle, $content);
+		\rewind($handle);
 		if($this->ftp->fput($remote_file, $handle, FTP_BINARY)){
 			return $this;
 		}
@@ -527,10 +527,10 @@ class FtpClient implements Countable {
 	 */
 	public function put_from_path(string $local_file) : static {
 		$remote_file = \pathinfo($local_file, PATHINFO_BASENAME);
-		$handle = fopen($local_file, 'r');
+		$handle = \fopen($local_file, 'r');
 		if(!$handle) throw new FtpException('Unable to open local file "'.$local_file.'"');
 		if($this->ftp->fput($remote_file, $handle, FTP_BINARY)){
-			rewind($handle);
+			\rewind($handle);
 			return $this;
 		}
 		throw new FtpException('Unable to put the remote file from the local file "'.$local_file.'"');
@@ -545,7 +545,7 @@ class FtpClient implements Countable {
 	 * @return FtpClient
 	 */
 	public function put_all(string $source_directory, string $target_directory, int $mode = FTP_BINARY) : static {
-		$d = dir($source_directory);
+		$d = \dir($source_directory);
 		while($file = $d->read()){
 			if($file == '.' || $file == '..') continue;
 			if(\is_dir("$source_directory/$file")){
@@ -577,7 +577,7 @@ class FtpClient implements Countable {
 			if(!\file_exists($target_directory)){
 				\mkdir($target_directory, $permissions, true);
 			}
-			chdir($target_directory);
+			\chdir($target_directory);
 		}
 		$contents = $this->ftp->nlist(".");
 		foreach($contents as $file){
@@ -585,7 +585,7 @@ class FtpClient implements Countable {
 			$this->ftp->get("$target_directory/$file", $file, $mode);
 		}
 		$this->ftp->chdir("..");
-		chdir("..");
+		\chdir("..");
 		return $this;
 	}
 
@@ -604,7 +604,7 @@ class FtpClient implements Countable {
 		if(!$this->is_dir($directory)){
 			throw new FtpException('"'.$directory.'" is not a directory.');
 		}
-		if(strpos($directory, " ") > 0){
+		if(\strpos($directory, " ") > 0){
 			$ftproot = $this->ftp->pwd();
 			$this->ftp->chdir($directory);
 			$list = $this->ftp->rawlist("");
@@ -618,17 +618,17 @@ class FtpClient implements Countable {
 		}
 		if(!$recursive){
 			foreach($list as $path => $item){
-				$chunks = preg_split("/\s+/", $item);
+				$chunks = \preg_split("/\s+/", $item);
 				if(!isset($chunks[8]) || \strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 				$path = "$directory/{$chunks[8]}";
 				if(isset($chunks[9])){
-					$nb_chunks = count($chunks);
+					$nb_chunks = \count($chunks);
 					for($i = 9; $i < $nb_chunks; $i++){
 						$path .= ' '.$chunks[$i];
 					}
 				}
-				if(substr($path, 0, 2) == './'){
-					$path = substr($path, 2);
+				if(\substr($path, 0, 2) == './'){
+					$path = \substr($path, 2);
 				}
 				$items[$this->raw_to_type($item)."#$path"] = $item;
 			}
@@ -638,17 +638,17 @@ class FtpClient implements Countable {
 		foreach($list as $item){
 			$len = \strlen($item);
 			if(!$len || ($item[$len - 1] == '.' && $item[$len - 2] == ' ' || $item[$len - 1] == '.' && $item[$len - 2] == '.' && $item[$len - 3] == ' ')) continue;
-			$chunks = preg_split("/\s+/", $item);
+			$chunks = \preg_split("/\s+/", $item);
 			if(!isset($chunks[8]) || \strlen($chunks[8]) === 0 || $chunks[8] == '.' || $chunks[8] == '..') continue;
 			$path = "$directory/{$chunks[8]}";
 			if(isset($chunks[9])){
-				$nb_chunks = count($chunks);
+				$nb_chunks = \count($chunks);
 				for($i = 9; $i < $nb_chunks; $i++){
 					$path .= ' '.$chunks[$i];
 				}
 			}
-			if(substr($path, 0, 2) == './'){
-				$path = substr($path, 2);
+			if(\substr($path, 0, 2) == './'){
+				$path = \substr($path, 2);
 			}
 			$items[$this->raw_to_type($item).'#'.$path] = $item;
 			if($item[0] == 'd'){
@@ -674,16 +674,16 @@ class FtpClient implements Countable {
 		$items = [];
 		$path = '';
 		foreach($rawlist as $key => $child){
-			$chunks = preg_split("/\s+/", $child, 9);
+			$chunks = \preg_split("/\s+/", $child, 9);
 			if(isset($chunks[8]) && ($chunks[8] == '.' || $chunks[8] == '..')) continue;
-			if(count($chunks) === 1){
+			if(\count($chunks) === 1){
 				$len = \strlen($chunks[0]);
 				if($len && $chunks[0][$len - 1] == ':'){
-					$path = substr($chunks[0], 0, -1);
+					$path = \substr($chunks[0], 0, -1);
 				}
 				continue;
 			}
-			$name_slices = array_slice($chunks, 8, 1);
+			$name_slices = \array_slice($chunks, 8, 1);
 			$item = [
 				'permissions' => $chunks[0],
 				'number' => $chunks[1],
@@ -693,18 +693,18 @@ class FtpClient implements Countable {
 				'month' => $chunks[5],
 				'day' => $chunks[6],
 				'time' => $chunks[7],
-				'name' => implode(' ', $name_slices),
+				'name' => \implode(' ', $name_slices),
 				'type' => $this->raw_to_type($chunks[0]),
 			];
 			if($item['type'] == 'link' && isset($chunks[10])){
 				$item['target'] = $chunks[10];
 			}
-			if(is_int($key) || false === strpos($key, $item['name'])){
-				array_splice($chunks, 0, 8);
-				$key = $item['type'].'#'.($path ? $path.'/' : '').implode(' ', $chunks);
+			if(\is_int($key) || !\str_contains($key, $item['name'])){
+				\array_splice($chunks, 0, 8);
+				$key = $item['type'].'#'.($path ? $path.'/' : '').\implode(' ', $chunks);
 				if($item['type'] == 'link'){
-					$exp = explode(' ->', $key);
-					$key = rtrim($exp[0]);
+					$exp = \explode(' ->', $key);
+					$key = \rtrim($exp[0]);
 				}
 				$items[$key] = $item;
 			} else {

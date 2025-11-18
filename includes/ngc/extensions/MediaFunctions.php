@@ -56,7 +56,7 @@ class MediaFunctions {
 	 */
 	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
-		$this->file_info = finfo_open(FILEINFO_MIME_TYPE, $this->core->get_resource("magic.mgc"));
+		$this->file_info = \finfo_open(FILEINFO_MIME_TYPE, $this->core->get_resource("magic.mgc"));
 	}
 
 	/**
@@ -64,7 +64,7 @@ class MediaFunctions {
 	 * Closes the fileinfo resource.
 	 */
 	public function __destruct(){
-		finfo_close($this->file_info);
+		\finfo_close($this->file_info);
 		$this->file_info = null;
 	}
 
@@ -76,12 +76,12 @@ class MediaFunctions {
 	public function get_mime_type(string $path) : string|false {
 		if(!\file_exists($path)) return false;
 		try {
-			$mime_type = @finfo_file($this->file_info, $path);
+			$mime_type = @\finfo_file($this->file_info, $path);
 		}
 		catch(Exception $e){
 			return false;
 		}
-		return is_string($mime_type) ? \mb_strtolower($mime_type) : false;
+		return \is_string($mime_type) ? \mb_strtolower($mime_type) : false;
 	}
 
 	/**
@@ -91,12 +91,12 @@ class MediaFunctions {
 	 */
 	public function get_string_mime_type(string $content) : string|false {
 		try {
-			$mime_type = @finfo_buffer($this->file_info, $content);
+			$mime_type = @\finfo_buffer($this->file_info, $content);
 		}
 		catch(Exception $e){
 			return false;
 		}
-		return is_string($mime_type) ? \mb_strtolower($mime_type) : false;
+		return \is_string($mime_type) ? \mb_strtolower($mime_type) : false;
 	}
 
 	/**
@@ -113,51 +113,51 @@ class MediaFunctions {
 		$image = null;
 		switch($mime){
 			case 'image/bmp':{
-				$image = @imagecreatefrombmp($path);
+				$image = @\imagecreatefrombmp($path);
 				break;
 			}
 			case 'image/avif': {
-				$image = @imagecreatefromavif($path);
+				$image = @\imagecreatefromavif($path);
 				break;
 			}
 			case 'image/gd2': {
-				$image = @imagecreatefromgd2($path);
+				$image = @\imagecreatefromgd2($path);
 				break;
 			}
 			case 'image/gd': {
-				$image = @imagecreatefromgd($path);
+				$image = @\imagecreatefromgd($path);
 				break;
 			}
 			case 'image/gif': {
-				$image = @imagecreatefromgif($path);
+				$image = @\imagecreatefromgif($path);
 				break;
 			}
 			case 'image/jpeg': {
-				$image = @imagecreatefromjpeg($path);
+				$image = @\imagecreatefromjpeg($path);
 				break;
 			}
 			case 'image/png': {
-				$image = @imagecreatefrompng($path);
+				$image = @\imagecreatefrompng($path);
 				break;
 			}
 			case 'image/x-tga': {
-				$image = @imagecreatefromtga($path);
+				$image = @\imagecreatefromtga($path);
 				break;
 			}
 			case 'image/vnd.wap.wbmp': {
-				$image = @imagecreatefromwbmp($path);
+				$image = @\imagecreatefromwbmp($path);
 				break;
 			}
 			case 'image/webp': {
-				$image = @imagecreatefromwebp($path);
+				$image = @\imagecreatefromwebp($path);
 				break;
 			}
 			case 'image/x-xbitmap': {
-				$image = @imagecreatefromxbm($path);
+				$image = @\imagecreatefromxbm($path);
 				break;
 			}
 			case 'image/x-xpixmap': {
-				$image = @imagecreatefromxpm($path);
+				$image = @\imagecreatefromxpm($path);
 				break;
 			}
 		}
@@ -174,9 +174,9 @@ class MediaFunctions {
 	public function get_image_resolution(string $path) : string {
 		$image = $this->get_image_from_path($path);
 		if(!\is_null($image)){
-			$w = imagesx($image);
-			$h = imagesy($image);
-			imagedestroy($image);
+			$w = \imagesx($image);
+			$h = \imagesy($image);
+			\imagedestroy($image);
 			return "{$w}x{$h}";
 		}
 		try {
@@ -214,16 +214,16 @@ class MediaFunctions {
 				}
 			}
 			case 'image/webp': {
-				if(!($fp = @fopen($path, 'rb'))) return false;
-				$header = fread($fp, 1024);
-				fclose($fp);
-				return str_contains($header, 'ANMF');
+				if(!($fp = @\fopen($path, 'rb'))) return false;
+				$header = \fread($fp, 1024);
+				\fclose($fp);
+				return \str_contains($header, 'ANMF');
 			}
 			case 'image/apng': {
-				if(!($fp = @fopen($path, 'rb'))) return false;
-				$data = fread($fp, 1024 * 100);
-				fclose($fp);
-				return strpos($data, 'acTL') !== false;
+				if(!($fp = @\fopen($path, 'rb'))) return false;
+				$data = \fread($fp, 1024 * 100);
+				\fclose($fp);
+				return \str_contains($data, 'acTL');
 			}
 			default: return false;
 		}
@@ -237,7 +237,7 @@ class MediaFunctions {
 	public function ffprobe_get_resolution(string $path) : string {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 \"$path\" 2>{$this->core->device_null}", $output);
-		return rtrim($output[0] ?? '0x0', 'x');
+		return \rtrim($output[0] ?? '0x0', 'x');
 	}
 
 	/**
@@ -250,8 +250,8 @@ class MediaFunctions {
 		$this->core->exec("ffprobe", "-i \"$path\" -show_entries stream=index:stream_tags=language -select_streams a -of compact=p=0:nk=1 2> {$this->core->device_null}", $output);
 		$data = [];
 		foreach($output as $language){
-			$parts = explode("|", $language);
-			array_push($data, $parts[1] ?? $parts[0]);
+			$parts = \explode("|", $language);
+			\array_push($data, $parts[1] ?? $parts[0]);
 		}
 		return $data;
 	}
@@ -292,7 +292,7 @@ class MediaFunctions {
 		$image->readImage($input_file);
 		$image->writeImage($output_file);
 		$image->clear();
-		unlink($input_file);
+		\unlink($input_file);
 		return \file_exists($output_file);
 	}
 
@@ -330,8 +330,8 @@ class MediaFunctions {
 	 * @return int The quality value (e.g., 1080 for FullHD, 2160 for 4K).
 	 */
 	public function get_media_quality(int $width, int $height, bool $is_vr = false) : int {
-		$w = max($width, $height);
-		$h = min($width, $height);
+		$w = \max($width, $height);
+		$h = \min($width, $height);
 		if($is_vr) return $h;
 		if($w >= 61440 - 7680 || $h == 34560){
 			return 34560;
@@ -428,7 +428,7 @@ class MediaFunctions {
 		$episode = $episode % $max;
 		if($episode < 0) $episode += $max;
 		$ep = \strval($episode);
-		return str_repeat("0", $digits - \strlen($ep)).$ep;
+		return \str_repeat("0", $digits - \strlen($ep)).$ep;
 	}
 
 	/**
@@ -440,7 +440,7 @@ class MediaFunctions {
 	public function is_vr_video(string $path) : bool {
 		$name = \mb_strtoupper(\pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
-			if(str_ends_with($name, $tag)) return true;
+			if(\str_ends_with($name, $tag)) return true;
 		}
 		return false;
 	}
@@ -454,7 +454,7 @@ class MediaFunctions {
 	public function is_ar_video(string $path) : bool {
 		$name = \mb_strtoupper(\pathinfo($path, PATHINFO_FILENAME));
 		foreach($this->vr_tags as $tag){
-			if(str_ends_with("$name", "{$tag}_ALPHA")) return true;
+			if(\str_ends_with("$name", "{$tag}_ALPHA")) return true;
 		}
 		return false;
 	}
@@ -479,24 +479,24 @@ class MediaFunctions {
 	 * @return array{screen_type: string, stereo_mode: string, alpha: bool} An associative array containing 'screen_type', 'stereo_mode', and 'alpha' (boolean for AR).
 	 */
 	public function get_vr_mode(string $name) : array {
-		if(str_contains($name, '_LR_180')){
+		if(\str_contains($name, '_LR_180')){
 			$screen_type = "dome";
 			$stereo_mode = "sbs";
-		} elseif(str_contains($name, '_FISHEYE190')){
+		} elseif(\str_contains($name, '_FISHEYE190')){
 			$screen_type = "fisheye";
 			$stereo_mode = "sbs";
-		} elseif(str_contains($name, '_MKX200')){
+		} elseif(\str_contains($name, '_MKX200')){
 			$screen_type = "mkx200";
 			$stereo_mode = "sbs";
-		} elseif(str_contains($name, '_MKX220') || str_contains($name, '_VRCA220')){
+		} elseif(\str_contains($name, '_MKX220') || \str_contains($name, '_VRCA220')){
 			$screen_type = "mkx220";
 			$stereo_mode = "sbs";
-		} elseif(str_contains($name, '_TB_180')){
+		} elseif(\str_contains($name, '_TB_180')){
 			$screen_type = "180";
 			$stereo_mode = "tb";
-		} elseif(str_contains($name, '_360')){
+		} elseif(\str_contains($name, '_360')){
 			$screen_type = "360";
-			$stereo_mode = (str_contains($name, '_SBS_')) ? "sbs" : "off";
+			$stereo_mode = (\str_contains($name, '_SBS_')) ? "sbs" : "off";
 		} else {
 			$screen_type = "flat";
 			$stereo_mode = "off";
@@ -504,7 +504,7 @@ class MediaFunctions {
 		return [
 			'screen_type' => $screen_type,
 			'stereo_mode' => $stereo_mode,
-			'alpha' => (str_contains($name, '_ALPHA')),
+			'alpha' => (\str_contains($name, '_ALPHA')),
 		];
 	}
 
@@ -568,7 +568,7 @@ class MediaFunctions {
 	public function get_media_info(string $path) : array {
 		$output = [];
 		$this->core->exec("ffprobe", "-v error -show_entries format -show_streams -of json \"$path\" 2>{$this->core->device_null}", $output);
-		$info = \json_decode(implode('', $output), true);
+		$info = \json_decode(\implode('', $output), true);
 		return $info;
 	}
 
@@ -596,8 +596,8 @@ class MediaFunctions {
 	public function get_media_info_simple(string $path) : object|false {
 		if(!\file_exists($path)) return false;
 		$media_info = $this->get_media_info($path);
-		$video_duration_seconds = \intval(round(\floatval($media_info['format']['duration'])));
-		$file_size = filesize($path);
+		$video_duration_seconds = \intval(\round(\floatval($media_info['format']['duration'])));
+		$file_size = \filesize($path);
 		$meta = [
 			'video_resolution' => null,
 			'video_quality' => 0,
@@ -613,8 +613,8 @@ class MediaFunctions {
 			'audio_channels' => 0,
 			'file_size' => $file_size,
 			'file_size_human' => $this->core->format_bytes($file_size, 2, false),
-			'file_creation_time' => date("Y-m-d H:i:s", filectime($path)),
-			'file_modification_time' => date("Y-m-d H:i:s", filemtime($path)),
+			'file_creation_time' => \date("Y-m-d H:i:s", \filectime($path)),
+			'file_modification_time' => \date("Y-m-d H:i:s", \filemtime($path)),
 		];
 		$need_audio = true;
 		foreach($media_info['streams'] as $stream){
@@ -629,8 +629,8 @@ class MediaFunctions {
 					$meta['video_quality'] = $this->get_media_quality($width, $height, $is_vr || $is_ar);
 					$orientation = $this->get_media_orientation($width, $height);
 					$meta['video_orientation'] = $this->get_media_orientation_name($orientation);
-					eval('$fps = '.trim(preg_replace('/[^0-9.\/]+/', "", $stream['r_frame_rate'])).';');
-					$meta['video_fps'] = round($fps, 4);
+					eval('$fps = '.\trim(\preg_replace('/[^0-9.\/]+/', "", $stream['r_frame_rate'])).';');
+					$meta['video_fps'] = \round($fps, 4);
 					$meta['video_codec'] = $stream['codec_name'] ?? null;
 					$meta['video_aspect_ratio'] = $this->calculate_aspect_ratio($stream['width'], $stream['height']);
 					break;
@@ -669,7 +669,7 @@ class MediaFunctions {
 	 * @return string|null The file extension (e.g., 'srt', 'ass'), or null if not found.
 	 */
 	public function get_subtitle_extension(string $codec_name) : ?string {
-		$codec_name = strtolower($codec_name);
+		$codec_name = \strtolower($codec_name);
 		return $this->codec_extensions_subtitle[$codec_name] ?? null;
 	}
 
@@ -679,7 +679,7 @@ class MediaFunctions {
 	 * @return string|null The file extension (e.g., 'aac', 'mp3'), or null if not found.
 	 */
 	public function get_audio_extension(string $codec_name) : ?string {
-		$codec_name = strtolower($codec_name);
+		$codec_name = \strtolower($codec_name);
 		return $this->codec_extensions_audio[$codec_name] ?? null;
 	}
 
@@ -689,7 +689,7 @@ class MediaFunctions {
 	 * @return string|null The file extension (e.g., 'h264', 'h265'), or null if not found.
 	 */
 	public function get_video_extension(string $codec_name) : ?string {
-		$codec_name = strtolower($codec_name);
+		$codec_name = \strtolower($codec_name);
 		return $this->codec_extensions_video[$codec_name] ?? null;
 	}
 
@@ -723,7 +723,7 @@ class MediaFunctions {
 		}
 		$data = [];
 		$this->scan_dir_safe_mime_type($path, $data, $include_mime_types, $exclude_mime_types, $name_filters, $case_sensitive, $recursive);
-		asort($data, SORT_STRING);
+		\asort($data, SORT_STRING);
 		return $data;
 	}
 
@@ -852,7 +852,7 @@ class MediaFunctions {
 		$geometry = $img->getImageGeometry();
 		$w = $geometry['width'];
 		$h = $geometry['height'];
-		if(max($w, $h) > $max_size){
+		if(\max($w, $h) > $max_size){
 			if($w >= $h){
 				$img->resizeImage($max_size, 0, Imagick::FILTER_LANCZOS, 1);
 			} else {

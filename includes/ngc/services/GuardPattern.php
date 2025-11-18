@@ -61,7 +61,7 @@ class GuardPattern {
 	 */
 	public function add_folders(array|string $folders) : void {
 		if(\gettype($folders) == 'string') $folders = [$folders];
-		$this->folders = array_unique(array_merge($this->folders, $folders));
+		$this->folders = \array_unique(\array_merge($this->folders, $folders));
 	}
 
 	/**
@@ -91,7 +91,7 @@ class GuardPattern {
 	 */
 	public function add_files(array|string $files) : void {
 		if(\gettype($files) == 'string') $files = [$files];
-		$this->files = array_unique(array_merge($this->files, $files));
+		$this->files = \array_unique(\array_merge($this->files, $files));
 	}
 
 	/**
@@ -119,7 +119,7 @@ class GuardPattern {
 	 * @return string The input path.
 	 */
 	public function get_input() : string {
-		return rtrim($this->input, "\\/");
+		return \rtrim($this->input, "\\/");
 	}
 
 	/**
@@ -141,12 +141,12 @@ class GuardPattern {
 	public function get() : string {
 		$data = ['input:'.$this->get_input()];
 		foreach($this->get_folders() as $folder){
-			array_push($data, "folder:$folder");
+			\array_push($data, "folder:$folder");
 		}
 		foreach($this->get_files() as $file){
-			array_push($data, "file:$file");
+			\array_push($data, "file:$file");
 		}
-		return implode("\r\n", $data);
+		return \implode("\r\n", $data);
 	}
 
 	/**
@@ -156,16 +156,16 @@ class GuardPattern {
 	 * @param string $pattern The string representation of the guard pattern to load.
 	 */
 	public function load(string $pattern) : void {
-		$data = explode("\n", str_replace(["\r\n", "\r"], "\n", $pattern));
+		$data = \explode("\n", \str_replace(["\r\n", "\r"], "\n", $pattern));
 		$folders = [];
 		$files = [];
 		foreach($data as $pat){
-			if(substr($pat, 0, 7) == 'folder:'){
-				array_push($folders, substr($pat, 7));
-			} elseif(substr($pat, 0, 5) == 'file:'){
-				array_push($files, substr($pat, 5));
-			} elseif(substr($pat, 0, 6) == 'input:'){
-				$this->set_input(substr($pat, 6));
+			if(\substr($pat, 0, 7) == 'folder:'){
+				\array_push($folders, \substr($pat, 7));
+			} elseif(\substr($pat, 0, 5) == 'file:'){
+				\array_push($files, \substr($pat, 5));
+			} elseif(\substr($pat, 0, 6) == 'input:'){
+				$this->set_input(\substr($pat, 6));
 			}
 		}
 		$this->set_folders($folders);

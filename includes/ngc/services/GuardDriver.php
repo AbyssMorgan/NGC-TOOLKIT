@@ -95,7 +95,7 @@ class GuardDriver {
 	 */
 	public function add_folders(array|string $folders) : void {
 		if(\gettype($folders) == 'string') $folders = [$folders];
-		$this->folders_to_scan = array_unique(array_merge($this->folders_to_scan, $folders));
+		$this->folders_to_scan = \array_unique(\array_merge($this->folders_to_scan, $folders));
 	}
 
 	/**
@@ -124,7 +124,7 @@ class GuardDriver {
 	 */
 	public function add_files(array|string $files) : void {
 		if(\gettype($files) == 'string') $files = [$files];
-		$this->files_to_scan = array_unique(array_merge($this->files_to_scan, $files));
+		$this->files_to_scan = \array_unique(\array_merge($this->files_to_scan, $files));
 	}
 
 	/**
@@ -181,11 +181,11 @@ class GuardDriver {
 		foreach(new RecursiveIteratorIterator($files) as $file){
 			if($file->isDir() || $file->isLink()) continue;
 			$file = (string)$file;
-			$key = strtoupper(\hash('md5', str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
+			$key = \strtoupper(\hash('md5', \str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
 			if(!isset($data[$key])) $data[$key] = [];
-			$this->data[$key][\pathinfo($file, PATHINFO_BASENAME)] = strtoupper(hash_file('md5', $file));
-			array_push($this->file_list, str_replace("\\", "/", $file));
-			$this->keys[$key] = str_replace("\\", "/", \pathinfo($file, PATHINFO_DIRNAME));
+			$this->data[$key][\pathinfo($file, PATHINFO_BASENAME)] = \strtoupper(\hash_file('md5', $file));
+			\array_push($this->file_list, \str_replace("\\", "/", $file));
+			$this->keys[$key] = \str_replace("\\", "/", \pathinfo($file, PATHINFO_DIRNAME));
 		}
 	}
 
@@ -197,11 +197,11 @@ class GuardDriver {
 	 * @param bool $update If true, the file will not be added to the file_list again if it already exists.
 	 */
 	public function scan_file(string $file, bool $update = false) : void {
-		$key = strtoupper(\hash('md5', str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
+		$key = \strtoupper(\hash('md5', \str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
 		if(!isset($data[$key])) $data[$key] = [];
-		$this->data[$key][\pathinfo($file, PATHINFO_BASENAME)] = strtoupper(hash_file('md5', $file));
-		if(!$update) array_push($this->file_list, str_replace("\\", "/", $file));
-		$this->keys[$key] = str_replace("\\", "/", \pathinfo($file, PATHINFO_DIRNAME));
+		$this->data[$key][\pathinfo($file, PATHINFO_BASENAME)] = \strtoupper(\hash_file('md5', $file));
+		if(!$update) \array_push($this->file_list, \str_replace("\\", "/", $file));
+		$this->keys[$key] = \str_replace("\\", "/", \pathinfo($file, PATHINFO_DIRNAME));
 	}
 
 	/**
@@ -217,24 +217,24 @@ class GuardDriver {
 		foreach(new RecursiveIteratorIterator($files) as $file){
 			if($file->isDir() || $file->isLink()) continue;
 			$file = (string)$file;
-			$key = strtoupper(\hash('md5', str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
+			$key = \strtoupper(\hash('md5', \str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
 			$file_name = \pathinfo($file, PATHINFO_BASENAME);
-			$file = str_replace("\\", "/", $file);
+			$file = \str_replace("\\", "/", $file);
 			if(isset($this->data[$key][$file_name])){
 				if($this->flags['damaged']){
 					try {
-						$hash = strtoupper(hash_file('md5', $file));
+						$hash = \strtoupper(\hash_file('md5', $file));
 					}
 					catch (Exception $e){
 						$hash = "#UNKNOWN";
 					}
 					if($this->data[$key][$file_name] != $hash){
-						array_push($this->errors, ['type' => 'damaged', 'file' => $file]);
+						\array_push($this->errors, ['type' => 'damaged', 'file' => $file]);
 					}
 				}
 			} else {
 				if($this->flags['unknown']){
-					array_push($this->errors, ['type' => 'unknown', 'file' => $file]);
+					\array_push($this->errors, ['type' => 'unknown', 'file' => $file]);
 				}
 			}
 		}
@@ -274,23 +274,23 @@ class GuardDriver {
 	 */
 	public function validate_file(string $file) : bool {
 		if(!\file_exists($file)) return false;
-		$key = strtoupper(\hash('md5', str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
+		$key = \strtoupper(\hash('md5', \str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
 		$file_name = \pathinfo($file, PATHINFO_BASENAME);
 		if(isset($this->data[$key][$file_name])){
 			if($this->flags['damaged']){
 				try {
-					$hash = strtoupper(hash_file('md5', $file));
+					$hash = \strtoupper(\hash_file('md5', $file));
 				}
 				catch (Exception $e){
 					$hash = "#UNKNOWN";
 				}
 				if($this->data[$key][$file_name] != $hash){
-					array_push($this->errors, ['type' => 'damaged', 'file' => str_replace("\\", "/", $file)]);
+					\array_push($this->errors, ['type' => 'damaged', 'file' => \str_replace("\\", "/", $file)]);
 				}
 			}
 		} else {
 			if($this->flags['unknown']){
-				array_push($this->errors, ['type' => 'unknown', 'file' => str_replace("\\", "/", $file)]);
+				\array_push($this->errors, ['type' => 'unknown', 'file' => \str_replace("\\", "/", $file)]);
 			}
 		}
 		return true;
@@ -304,7 +304,7 @@ class GuardDriver {
 		if(isset($this->data['files'])){
 			foreach($this->data['files'] as $file){
 				if(!\file_exists($file)){
-					if($this->flags['missing']) array_push($this->errors, ['type' => 'missing', 'file' => $file]);
+					if($this->flags['missing']) \array_push($this->errors, ['type' => 'missing', 'file' => $file]);
 				}
 			}
 		}

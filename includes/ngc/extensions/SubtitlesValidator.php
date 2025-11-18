@@ -51,14 +51,14 @@ class SubtitlesValidator {
 	 */
 	public function srt_validate(string $path) : array|false {
 		if(!\file_exists($path)) return false;
-		$file_content = file($path, FILE_IGNORE_NEW_LINES);
+		$file_content = \file($path, FILE_IGNORE_NEW_LINES);
 		$timestamps = [];
 		$errors = [];
 		foreach($file_content as $line_index => $line){
-			if(strpos($line, '-->') !== false){
+			if(\str_contains($line, '-->')){
 				$line_number = $line_index + 1;
 				$pattern = '/^(\d{2}):(\d{2}):(\d{2}),(\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2}),(\d{3})$/';
-				if(!preg_match($pattern, $line, $m)){
+				if(!\preg_match($pattern, $line, $m)){
 					$errors[] = "Line $line_number: invalid timecode format: \"$line\"";
 					continue;
 				}
@@ -81,7 +81,7 @@ class SubtitlesValidator {
 						$errors[] = "Line {$p['ln']}: milliseconds out of range (0-999) in {$p['pos']} timecode";
 					}
 				}
-				if(empty($errors) || end($errors)[-1] !== $line_number){
+				if(empty($errors) || \end($errors)[-1] !== $line_number){
 					$timestamps[] = [
 						'start' => $this->core->media->timecode_to_seconds((int)$h1, (int)$mi1, (int)$s1, (int)$ms1),
 						'end' => $this->core->media->timecode_to_seconds((int)$h2, (int)$mi2, (int)$s2, (int)$ms2),
@@ -90,7 +90,7 @@ class SubtitlesValidator {
 				}
 			}
 		}
-		for($i = 0; $i < count($timestamps) - 1; $i++){
+		for($i = 0; $i < \count($timestamps) - 1; $i++){
 			if($timestamps[$i]['end'] > $timestamps[$i + 1]['start']){
 				$errors[] = \sprintf(
 					"Time in line %d (%s --> %s) overlaps with line %d (%s --> %s)",
@@ -135,10 +135,10 @@ class SubtitlesValidator {
 		$neb = !\file_exists($path_b);
 		if($nea && $neb) return false;
 		if($nea){
-			array_push($errors->global, "File \"$path_a\" not exists");
+			\array_push($errors->global, "File \"$path_a\" not exists");
 			return $errors;
 		} elseif($neb){
-			array_push($errors->global, "File \"$path_b\" not exists");
+			\array_push($errors->global, "File \"$path_b\" not exists");
 			return $errors;
 		}
 
@@ -164,23 +164,23 @@ class SubtitlesValidator {
 		}
 		unset($lines, $line);
 
-		$keys_a = array_keys($srt_content_a);
-		$keys_b = array_keys($srt_content_b);
+		$keys_a = \array_keys($srt_content_a);
+		$keys_b = \array_keys($srt_content_b);
 
-		$diff_keys_a = array_diff($keys_a, $keys_b);
-		$diff_keys_b = array_diff($keys_b, $keys_a);
+		$diff_keys_a = \array_diff($keys_a, $keys_b);
+		$diff_keys_b = \array_diff($keys_b, $keys_a);
 
 		if(!empty($diff_keys_a)){
 			foreach($diff_keys_a as $error_key){
 				$line = $srt_content_a[$error_key];
-				array_push($errors->file_b, "Missing \"$error_key\" with \"{$line['text']}\"");
+				\array_push($errors->file_b, "Missing \"$error_key\" with \"{$line['text']}\"");
 			}
 		}
 
 		if(!empty($diff_keys_b)){
 			foreach($diff_keys_b as $error_key){
 				$line = $srt_content_b[$error_key];
-				array_push($errors->file_a, "Missing \"$error_key\" with \"{$line['text']}\"");
+				\array_push($errors->file_a, "Missing \"$error_key\" with \"{$line['text']}\"");
 			}
 		}
 
@@ -204,18 +204,18 @@ class SubtitlesValidator {
 	public function srt_extract(string $path) : array|false {
 		if(!\file_exists($path)) return false;
 		$content = \file_get_contents($path);
-		$blocks = preg_split("/\R{2,}/", $content);
+		$blocks = \preg_split("/\R{2,}/", $content);
 		$subtitles = [];
 		foreach($blocks as $block){
-			$lines = preg_split("/\R/", trim($block));
-			if(count($lines) < 3) continue;
-			$index = (int)array_shift($lines);
-			$timestamp_line = array_shift($lines);
+			$lines = \preg_split("/\R/", \trim($block));
+			if(\count($lines) < 3) continue;
+			$index = (int)\array_shift($lines);
+			$timestamp_line = \array_shift($lines);
 			$pattern = '/^(\d{2}):(\d{2}):(\d{2}),(\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2}),(\d{3})$/';
-			if(!preg_match($pattern, $timestamp_line, $m)) continue;
+			if(!\preg_match($pattern, $timestamp_line, $m)) continue;
 			$start = $this->core->media->timecode_to_seconds((int)$m[1], (int)$m[2], (int)$m[3], (int)$m[4]);
 			$end = $this->core->media->timecode_to_seconds((int)$m[5], (int)$m[6], (int)$m[7], (int)$m[8]);
-			$text = implode("\n", $lines);
+			$text = \implode("\n", $lines);
 			$subtitles[] = [
 				'index' => $index,
 				'start' => "{$m[1]}:{$m[2]}:{$m[3]},{$m[4]}",

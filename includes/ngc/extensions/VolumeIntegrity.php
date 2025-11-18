@@ -256,7 +256,7 @@ class VolumeIntegrity {
 				'validation_date' => $item->validation_date,
 			];
 		}
-		ksort($data, SORT_STRING);
+		\ksort($data, SORT_STRING);
 		return $data;
 	}
 
@@ -267,7 +267,7 @@ class VolumeIntegrity {
 	 * @return string The escaped path relative to the disk.
 	 */
 	public function container_escape(string $path) : string {
-		return str_ireplace(["$this->disk\\", "$this->disk/", "\\"], ["", "", "/"], $path);
+		return \str_ireplace(["$this->disk\\", "$this->disk/", "\\"], ["", "", "/"], $path);
 	}
 
 	/**
@@ -331,18 +331,18 @@ class VolumeIntegrity {
 		if(isset($this->data[$path]->id)){
 			$update_parts = [];
 			foreach($params as $key => $value){
-				$column = trim($key, ':');
+				$column = \trim($key, ':');
 				$update_parts[] = "`$column` = $key";
 			}
-			$update_claus = implode(", ", $update_parts);
+			$update_claus = \implode(", ", $update_parts);
 			$stmt = $this->db->prepare("UPDATE `$this->table_data` SET $update_claus WHERE `id` = :id");
 			$params[':id'] = $this->data[$path]->id;
 		} else {
 			$columns[] = "`path`";
 			$placeholders[] = ":path";
 			$params[':path'] = $path;
-			$columns_clause = implode(", ", $columns);
-			$placeholders_clause = implode(", ", $placeholders);
+			$columns_clause = \implode(", ", $columns);
+			$placeholders_clause = \implode(", ", $placeholders);
 			$stmt = $this->db->prepare("INSERT INTO `$this->table_data` ($columns_clause) VALUES ($placeholders_clause)");
 		}
 
@@ -430,7 +430,7 @@ class VolumeIntegrity {
 			$except[] = $this->container_escape($item);
 		}
 		unset($items, $item);
-		$items = array_diff(array_keys($this->data), $except);
+		$items = \array_diff(\array_keys($this->data), $except);
 		foreach($items as $path){
 			$this->unset($path);
 			$callback($path);
@@ -463,8 +463,8 @@ class VolumeIntegrity {
 				}
 				$id++;
 			}
-			$offset += count($items);
-		} while(count($items) > 0);
+			$offset += \count($items);
+		} while(\count($items) > 0);
 		$this->db->commit();
 		$stmt = $this->db->query("SELECT MAX(`id`) as `max_id` FROM `$this->table_data`");
 		$max_id = $stmt->fetch(PDO::FETCH_ASSOC)['max_id'] ?? 0;
@@ -487,13 +487,13 @@ class VolumeIntegrity {
 	 * If the current file size is less than the allocation, it expands the file.
 	 */
 	public function allocate() : void {
-		$current_size = filesize($this->database);
+		$current_size = \filesize($this->database);
 		if($current_size < $this->allocation){
 			$empty_space = $this->allocation - $current_size;
-			$file = fopen($this->database, 'r+');
-			fseek($file, $empty_space - 1, SEEK_END);
-			fwrite($file, "\0");
-			fclose($file);
+			$file = \fopen($this->database, 'r+');
+			\fseek($file, $empty_space - 1, SEEK_END);
+			\fwrite($file, "\0");
+			\fclose($file);
 		}
 	}
 
@@ -508,7 +508,7 @@ class VolumeIntegrity {
 	public function escape(mixed $string) : string {
 		$string = \strval($string ?? '');
 		if(empty($string)) return '';
-		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
+		return \str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}
 
 	/**

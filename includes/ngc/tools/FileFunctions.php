@@ -70,8 +70,8 @@ class FileFunctions {
 		if($line == '#') return false;
 
 		$params = [
-			'mode' => strtolower($line[0] ?? '?'),
-			'action' => strtolower($line[1] ?? '?'),
+			'mode' => \strtolower($line[0] ?? '?'),
+			'action' => \strtolower($line[1] ?? '?'),
 		];
 
 		if(!\in_array($params['mode'], ['a', 'b'])) goto set_mode;
@@ -86,11 +86,11 @@ class FileFunctions {
 		$this->core->set_errors($errors);
 
 		$keys = [];
-		$except_files = explode(";", $this->core->config->get('IGNORE_VALIDATE_FILES'));
-		$except_extensions = explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
+		$except_files = \explode(";", $this->core->config->get('IGNORE_VALIDATE_FILES'));
+		$except_extensions = \explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!\file_exists($folder)) continue;
-			if(is_file($folder)){
+			if(\is_file($folder)){
 				if($this->core->get_extension($folder) == 'idx'){
 					$this->core->get_hash_from_idx($folder, $keys, true);
 					$this->core->set_folder_done($folder);
@@ -99,7 +99,7 @@ class FileFunctions {
 			}
 			$files = $this->core->get_files($folder, null, $except_extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -109,7 +109,7 @@ class FileFunctions {
 					continue 1;
 				}
 				if($params['mode'] == 'a'){
-					$key = strtoupper(hash_file('md5', $file, false));
+					$key = \strtoupper(\hash_file('md5', $file, false));
 				} else {
 					$key = \pathinfo($file, PATHINFO_FILENAME);
 				}
@@ -159,8 +159,8 @@ class FileFunctions {
 		if($line == '#') return false;
 
 		$params = [
-			'mode' => strtolower($line[0] ?? '?'),
-			'algo' => strtolower($line[1] ?? '0'),
+			'mode' => \strtolower($line[0] ?? '?'),
+			'algo' => \strtolower($line[1] ?? '0'),
 		];
 
 		if($params['algo'] == '?') $params['algo'] = '0';
@@ -177,25 +177,25 @@ class FileFunctions {
 
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$except_files = explode(";", $this->core->config->get('IGNORE_VALIDATE_FILES'));
-		$except_extensions = explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
+		$except_files = \explode(";", $this->core->config->get('IGNORE_VALIDATE_FILES'));
+		$except_extensions = \explode(" ", $this->core->config->get('IGNORE_VALIDATE_EXTENSIONS'));
 		foreach($folders as $folder){
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, null, $except_extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				if(\in_array(\mb_strtolower(\pathinfo($file, PATHINFO_BASENAME)), $except_files)) continue;
-				$hash = strtoupper(hash_file($algo['name'], $file, false));
+				$hash = \strtoupper(\hash_file($algo['name'], $file, false));
 				if($params['mode'] == '0'){
 					$checksum_file = "$file.{$algo['name']}";
 					if(!\file_exists($checksum_file)){
 						$this->core->write_error("FILE NOT FOUND \"$checksum_file\"");
 						$errors++;
 					} else {
-						$hash_current = strtoupper(trim(\file_get_contents($checksum_file)));
+						$hash_current = \strtoupper(\trim(\file_get_contents($checksum_file)));
 						if($hash_current != $hash){
 							$this->core->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $hash_current");
 							$errors++;
@@ -204,19 +204,19 @@ class FileFunctions {
 						}
 					}
 				} else {
-					$file_name = strtoupper(\pathinfo($file, PATHINFO_FILENAME));
+					$file_name = \strtoupper(\pathinfo($file, PATHINFO_FILENAME));
 					$len = \strlen($file_name);
 					if($len < $algo['length']){
 						$this->core->write_error("INVALID FILE NAME \"$file\"");
 						$errors++;
 					} else {
 						if($len > $algo['length']){
-							$start = strpos($file_name, '[');
+							$start = \strpos($file_name, '[');
 							if($start !== false){
-								$end = strpos($file_name, ']', $start);
-								$file_name = str_replace(' '.substr($file_name, $start, $end - $start + 1), '', $file_name);
+								$end = \strpos($file_name, ']', $start);
+								$file_name = \str_replace(' '.\substr($file_name, $start, $end - $start + 1), '', $file_name);
 							}
-							$file_name = substr($file_name, \intval(\strlen($file_name) - $algo['length']), $algo['length']);
+							$file_name = \substr($file_name, \intval(\strlen($file_name) - $algo['length']), $algo['length']);
 						}
 						if($file_name != $hash){
 							$this->core->write_error("INVALID FILE CHECKSUM \"$file\" current: $hash expected: $file_name");
@@ -258,7 +258,7 @@ class FileFunctions {
 		if($line == '#') return false;
 
 		$params = [
-			'mode' => strtolower($line[0] ?? '?'),
+			'mode' => \strtolower($line[0] ?? '?'),
 		];
 
 		if(!\in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
@@ -288,8 +288,8 @@ class FileFunctions {
 				break;
 			}
 			case '2': {
-				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes(\intval(floor($bytes / $quantity)), 0, false)." in total ".$this->core->format_bytes($bytes, 0, false)]);
-				$per_file_size = \intval(floor($bytes / $quantity));
+				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes(\intval(\floor($bytes / $quantity)), 0, false)." in total ".$this->core->format_bytes($bytes, 0, false)]);
+				$per_file_size = \intval(\floor($bytes / $quantity));
 				break;
 			}
 		}
@@ -297,10 +297,10 @@ class FileFunctions {
 		$small_mode = $per_file_size < $write_buffer;
 		$size_text = $this->core->format_bytes($per_file_size, 0, false);
 		for($i = 1; $i <= $quantity; $i++){
-			$random_name = \hash('md5', uniqid().$i);
+			$random_name = \hash('md5', \uniqid().$i);
 			$file_path = $this->core->get_path("$output/NGC_TOOLKIT_$random_name.tmp");
 			if(\file_exists($file_path)) $this->core->delete($file_path);
-			$fp = fopen($file_path, "w");
+			$fp = \fopen($file_path, "w");
 			if($small_mode){
 				$this->core->current_line(" Files: $i / $quantity");
 			} else {
@@ -308,11 +308,11 @@ class FileFunctions {
 			}
 			if($fp){
 				$this->core->write_log("FILE CREATE WITH DISK ALLOCATION \"$file_path\" Size: $size_text");
-				fseek($fp, $per_file_size - 1);
-				fwrite($fp, "\0");
-				fclose($fp);
-				$fp = fopen($file_path, "r+w");
-				fseek($fp, 0);
+				\fseek($fp, $per_file_size - 1);
+				\fwrite($fp, "\0");
+				\fclose($fp);
+				$fp = \fopen($file_path, "r+w");
+				\fseek($fp, 0);
 				$bytes_needle = $per_file_size;
 				$current_size = 0;
 				while($bytes_needle > 0){
@@ -326,17 +326,17 @@ class FileFunctions {
 						$current_size += $write_buffer;
 						$buffer = '';
 						for($si = 0; $si < $write_buffer; $si++){
-							$buffer .= chr(rand(0, 255));
+							$buffer .= \chr(\rand(0, 255));
 						}
-						fwrite($fp, $buffer, $write_buffer);
+						\fwrite($fp, $buffer, $write_buffer);
 						$bytes_needle -= $write_buffer;
 					} else {
 						$current_size += $bytes_needle;
 						$buffer = '';
 						for($si = 0; $si < $bytes_needle; $si++){
-							$buffer .= chr(rand(0, 255));
+							$buffer .= \chr(\rand(0, 255));
 						}
-						fwrite($fp, $buffer, $bytes_needle);
+						\fwrite($fp, $buffer, $bytes_needle);
 						$bytes_needle = 0;
 					}
 				}
@@ -345,7 +345,7 @@ class FileFunctions {
 				} else {
 					$this->core->current_line( " Files: $i / $quantity Progress: 100.00 %");
 				}
-				fclose($fp);
+				\fclose($fp);
 				$this->core->write_log("FILE CREATION FINISH \"$file_path\"");
 			} else {
 				$this->core->write_error("FAILED CREATE FILE \"$file_path\"");
@@ -377,39 +377,39 @@ class FileFunctions {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
-				$bytes_needle = filesize($file);
+				$bytes_needle = \filesize($file);
 				$current_size = 0;
-				$fp = fopen($file, "r+w");
+				$fp = \fopen($file, "r+w");
 				if(!$fp){
 					$this->core->write_error("FILE OVERWRITE FAILED \"$file\"");
 					$errors++;
 				} else {
 					$this->core->write_log("FILE OVERWRITE START \"$file\"");
-					fseek($fp, 0);
+					\fseek($fp, 0);
 					while($bytes_needle > 0){
 						if($bytes_needle > $write_buffer){
 							$current_size += $write_buffer;
 							$buffer = '';
 							for($si = 0; $si < $write_buffer; $si++){
-								$buffer .= chr(rand(0, 255));
+								$buffer .= \chr(\rand(0, 255));
 							}
-							fwrite($fp, $buffer, $write_buffer);
+							\fwrite($fp, $buffer, $write_buffer);
 							$bytes_needle -= $write_buffer;
 						} else {
 							$current_size += $bytes_needle;
 							$buffer = '';
 							for($si = 0; $si < $bytes_needle; $si++){
-								$buffer .= chr(rand(0, 255));
+								$buffer .= \chr(\rand(0, 255));
 							}
-							fwrite($fp, $buffer, $bytes_needle);
+							\fwrite($fp, $buffer, $bytes_needle);
 							$bytes_needle = 0;
 						}
 					}
-					fclose($fp);
+					\fclose($fp);
 					$this->core->write_log("FILE OVERWRITE END \"$file\"");
 				}
 				$this->core->progress($items, $total);
@@ -450,7 +450,7 @@ class FileFunctions {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		$errors = 0;
@@ -458,11 +458,11 @@ class FileFunctions {
 
 		$files = $this->core->get_files($input, $extensions, null, $filters);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue;
-			$new_name = str_ireplace($input, $output, $file);
+			$new_name = \str_ireplace($input, $output, $file);
 			if(\file_exists($new_name)){
 				$this->core->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
@@ -506,7 +506,7 @@ class FileFunctions {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		$errors = 0;
@@ -514,11 +514,11 @@ class FileFunctions {
 
 		$files = $this->core->get_files($input, $extensions, null, $filters);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue;
-			$new_name = str_ireplace($input, $output, $file);
+			$new_name = \str_ireplace($input, $output, $file);
 			if(\file_exists($new_name)){
 				$this->core->write_error("FILE ALREADY EXISTS \"$new_name\"");
 				$errors++;
@@ -554,7 +554,7 @@ class FileFunctions {
 		if($line == '#') return false;
 
 		$params = [
-			'algo' => strtolower($line[0] ?? '0'),
+			'algo' => \strtolower($line[0] ?? '0'),
 		];
 
 		if(!\in_array($params['algo'], ['0', '1', '2', '3'])) goto set_mode;
@@ -581,10 +581,10 @@ class FileFunctions {
 		$this->core->echo(" Delete not existing files on output");
 		$files = $this->core->get_files($output);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
-			$new_name = str_ireplace($output, $input, $file);
+			$new_name = \str_ireplace($output, $input, $file);
 			if(!\file_exists($new_name)){
 				if(!$this->core->delete($file)){
 					$errors++;
@@ -596,10 +596,10 @@ class FileFunctions {
 		$this->core->echo(" Delete not existing folders on output");
 		$files = $this->core->get_folders($output);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
-			$new_name = str_ireplace($output, $input, $file);
+			$new_name = \str_ireplace($output, $input, $file);
 			if(!\file_exists($new_name)){
 				if(!$this->core->rmdir($file)){
 					$errors++;
@@ -611,10 +611,10 @@ class FileFunctions {
 		$this->core->echo(" Clone folder structure");
 		$folders = $this->core->get_folders($input);
 		$items = 0;
-		$total = count($folders);
+		$total = \count($folders);
 		foreach($folders as $folder){
 			$items++;
-			$directory = str_ireplace($input, $output, $folder);
+			$directory = \str_ireplace($input, $output, $folder);
 			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;
@@ -628,23 +628,23 @@ class FileFunctions {
 		$this->core->echo(" Clone new/changed files");
 		$files = $this->core->get_files($input);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue;
-			$new_name = str_ireplace($input, $output, $file);
+			$new_name = \str_ireplace($input, $output, $file);
 			if(\file_exists($new_name)){
 				if(\file_exists("$file.$algo")){
 					$hash_input = \file_get_contents("$file.$algo");
 				} else {
-					$hash_input = hash_file($algo, $file);
+					$hash_input = \hash_file($algo, $file);
 				}
 				if(\file_exists("$new_name.$algo")){
 					$hash_output = \file_get_contents("$new_name.$algo");
 				} else {
-					$hash_output = hash_file($algo, $new_name);
+					$hash_output = \hash_file($algo, $new_name);
 				}
-				if(strtoupper($hash_input) != strtoupper($hash_output)){
+				if(\strtoupper($hash_input) != \strtoupper($hash_output)){
 					if(!$this->core->delete($new_name)){
 						$errors++;
 					} elseif(!$this->core->copy($file, $new_name)){

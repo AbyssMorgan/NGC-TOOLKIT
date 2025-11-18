@@ -276,7 +276,7 @@ class MySQLTools {
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('DB_HOST')){
 				$label = \pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".str_repeat(" ", 32 - \strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+				$this->core->echo(" $label".\str_repeat(" ", 32 - \strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 				$cnt++;
 			}
 		}
@@ -344,7 +344,7 @@ class MySQLTools {
 
 		$items = $backup->get_tables();
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Table', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -356,7 +356,7 @@ class MySQLTools {
 			if($ini->get('BACKUP_TYPE_DATA')){
 				$errors_data = $backup->backup_table_data($item);
 			}
-			$errors = array_merge($errors_structure ?? [], $errors_data ?? []);
+			$errors = \array_merge($errors_structure ?? [], $errors_data ?? []);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -379,7 +379,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get views");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('View', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -408,7 +408,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get functions");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Function', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -437,7 +437,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get procedures");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Procedure', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -466,7 +466,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get events");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Event', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -495,7 +495,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get triggers");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Trigger', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -628,7 +628,7 @@ class MySQLTools {
 
 		$items = $backup->get_tables();
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Table Structure', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -650,7 +650,7 @@ class MySQLTools {
 		}
 
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Table Data', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -679,7 +679,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get views");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('View', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -708,7 +708,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get functions");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Function', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -737,7 +737,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get procedures");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Procedure', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -766,7 +766,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get events");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Event', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -795,7 +795,7 @@ class MySQLTools {
 			$this->core->write_error("Access denied for get triggers");
 		}
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex('Trigger', $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -883,7 +883,7 @@ class MySQLTools {
 			if($ini->get('BACKUP_TYPE_DATA')){
 				$errors_data = $backup->backup_table_data($item);
 			}
-			$errors = array_merge($errors_structure ?? [], $errors_data ?? []);
+			$errors = \array_merge($errors_structure ?? [], $errors_data ?? []);
 			if(!empty($errors)){
 				$this->core->write_error($errors);
 				if($ini->get('BACKUP_CURL_SEND_ERRORS')){
@@ -1120,8 +1120,8 @@ class MySQLTools {
 			if($last_insert_id){
 				$this->core->echo(" Last insert id: $last_insert_id");
 				if($save_output) $this->core->write_data(" Last insert id: $last_insert_id");
-			} elseif(count($results) == 0){
-				if(substr($lquery, 0, 6) == 'select' || substr($lquery, 0, 4) == 'show'){
+			} elseif(\count($results) == 0){
+				if(\substr($lquery, 0, 6) == 'select' || \substr($lquery, 0, 4) == 'show'){
 					$this->core->echo(" MySQL returned an empty result");
 					if($save_output) $this->core->write_data(" MySQL returned an empty result");
 				} else {
@@ -1213,10 +1213,10 @@ class MySQLTools {
 	}
 
 	public function backup_selected(string $type, bool $need_lock) : bool {
-		$ftype = explode(" ", $type);
+		$ftype = \explode(" ", $type);
 		$ftype = $ftype[0];
 		$stype = \mb_strtolower($type);
-		$type = str_replace(" ", "", $type);
+		$type = \str_replace(" ", "", $type);
 		$this->core->clear();
 		$this->core->set_subtool("Backup selected ".$stype);
 
@@ -1286,7 +1286,7 @@ class MySQLTools {
 		$func = "get".$ftype."s";
 		$items_in_db = $backup->$func();
 		$progress = 0;
-		$total = count($items);
+		$total = \count($items);
 		$this->core->set_progress_ex($type, $progress, $total);
 		foreach($items as $item){
 			$progress++;
@@ -1354,7 +1354,7 @@ class MySQLTools {
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
 		$separator = $ini->get('SAVE_RESULTS_SEPARATOR');
-		$this->core->write_data(str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
+		$this->core->write_data(\str_replace("|", $separator, "Table|Engine|Collation|Rows|Data size|Data size (Bytes)|Index size|Index size (Bytes)|Row format"));
 
 		$db_name = $db->get_data_base();
 
@@ -1368,7 +1368,7 @@ class MySQLTools {
 		foreach($items as $item){
 			$data_size = $this->core->format_bytes(\intval($item->DATA_LENGTH), 2, false);
 			$index_size = $this->core->format_bytes(\intval($item->INDEX_LENGTH), 2, false);
-			$this->core->write_data(str_replace("|", $separator, "$item->TABLE_NAME|$item->ENGINE|$item->TABLE_COLLATION|$item->TABLE_ROWS|$data_size|$item->DATA_LENGTH|$index_size|$item->INDEX_LENGTH|$item->ROW_FORMAT"));
+			$this->core->write_data(\str_replace("|", $separator, "$item->TABLE_NAME|$item->ENGINE|$item->TABLE_COLLATION|$item->TABLE_ROWS|$data_size|$item->DATA_LENGTH|$index_size|$item->INDEX_LENGTH|$item->ROW_FORMAT"));
 		}
 
 		$db->disconnect();
@@ -1485,25 +1485,25 @@ class MySQLTools {
 		];
 		foreach($info_source as $table_name => $table_data){
 			if(!isset($info_dest[$table_name])){
-				array_push($errors['not_exists'], "Table \"$table_name\" not exists in destination");
+				\array_push($errors['not_exists'], "Table \"$table_name\" not exists in destination");
 			} else {
 				if($info_source[$table_name]['engine'] != $info_dest[$table_name]['engine']){
-					array_push($errors['engine'], "Table \"$table_name\" engine are different. Source: ".$info_source[$table_name]['engine']." Destination: ".$info_dest[$table_name]['engine']);
+					\array_push($errors['engine'], "Table \"$table_name\" engine are different. Source: ".$info_source[$table_name]['engine']." Destination: ".$info_dest[$table_name]['engine']);
 				}
 				if($info_source[$table_name]['collation'] != $info_dest[$table_name]['collation']){
-					array_push($errors['collation'], "Table \"$table_name\" collation are different. Source: ".$info_source[$table_name]['collation']." Destination: ".$info_dest[$table_name]['collation']);
+					\array_push($errors['collation'], "Table \"$table_name\" collation are different. Source: ".$info_source[$table_name]['collation']." Destination: ".$info_dest[$table_name]['collation']);
 				}
 				if($info_source[$table_name]['rows'] != $info_dest[$table_name]['rows']){
-					array_push($errors['rows'], "Table \"$table_name\" rows count are different. Source: ".$info_source[$table_name]['rows']." Destination: ".$info_dest[$table_name]['rows']);
+					\array_push($errors['rows'], "Table \"$table_name\" rows count are different. Source: ".$info_source[$table_name]['rows']." Destination: ".$info_dest[$table_name]['rows']);
 				}
 				if($info_source[$table_name]['data_size'] != $info_dest[$table_name]['data_size']){
-					array_push($errors['data_size'], "Table \"$table_name\" data size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['data_size'], 2, false)." (".$info_source[$table_name]['data_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['data_size'], 2, false)." (".$info_dest[$table_name]['data_size'].")");
+					\array_push($errors['data_size'], "Table \"$table_name\" data size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['data_size'], 2, false)." (".$info_source[$table_name]['data_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['data_size'], 2, false)." (".$info_dest[$table_name]['data_size'].")");
 				}
 				if($info_source[$table_name]['index_size'] != $info_dest[$table_name]['index_size']){
-					array_push($errors['index_size'], "Table \"$table_name\" index size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['index_size'], 2, false)." (".$info_source[$table_name]['index_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['index_size'], 2, false)." (".$info_dest[$table_name]['index_size'].")");
+					\array_push($errors['index_size'], "Table \"$table_name\" index size are different. Source: ".$this->core->format_bytes($info_source[$table_name]['index_size'], 2, false)." (".$info_source[$table_name]['index_size'].") Destination: ".$this->core->format_bytes($info_dest[$table_name]['index_size'], 2, false)." (".$info_dest[$table_name]['index_size'].")");
 				}
 				if($info_source[$table_name]['row_format'] != $info_dest[$table_name]['row_format']){
-					array_push($errors['row_format'], "Table \"$table_name\" row format are different. Source: ".$info_source[$table_name]['row_format']." Destination: ".$info_dest[$table_name]['row_format']);
+					\array_push($errors['row_format'], "Table \"$table_name\" row format are different. Source: ".$info_source[$table_name]['row_format']." Destination: ".$info_dest[$table_name]['row_format']);
 				}
 			}
 		}

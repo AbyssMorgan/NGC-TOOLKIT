@@ -40,7 +40,7 @@ class BitArray {
 	 * @return int The required size of the internal integer array.
 	 */
 	public function get_config_size(int $max_items) : int {
-		return (int)floor($max_items / 32) + 1;
+		return (int)\floor($max_items / 32) + 1;
 	}
 
 	/**
@@ -51,7 +51,7 @@ class BitArray {
 	public function get_config_used_size() : int {
 		$size = 0;
 		foreach($this->original as $key => $value){
-			$size = max($size, $key);
+			$size = \max($size, $key);
 		}
 		return (int)($size + 1);
 	}
@@ -63,7 +63,7 @@ class BitArray {
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
 	public function get_config(int $id) : bool {
-		return (bool)((($this->original[(int)floor($id / 32)] ?? 0) >> ($id % 32)) & 1);
+		return (bool)((($this->original[(int)\floor($id / 32)] ?? 0) >> ($id % 32)) & 1);
 	}
 
 	/**
@@ -73,7 +73,7 @@ class BitArray {
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
 	public function set_config(int $id, bool $state) : void {
-		$address = (int)floor($id / 32);
+		$address = (int)\floor($id / 32);
 		$bit_id = $id % 32;
 		$this->original[$address] = (($this->original[$address] ?? 0) & ~(1 << $bit_id)) | ((int)$state << $bit_id);
 	}
@@ -131,7 +131,7 @@ class BitArray {
 	 * @param string $hex The hexadecimal string.
 	 */
 	public function from_hex(string $hex) : void {
-		$this->from_binary(hex2bin($hex), \strlen($hex) * 2);
+		$this->from_binary(\hex2bin($hex), \strlen($hex) * 2);
 	}
 
 	/**
@@ -142,11 +142,11 @@ class BitArray {
 	 */
 	public function from_file(string $path) : bool {
 		if(!\file_exists($path)) return false;
-		$file = fopen($path, "rb");
+		$file = \fopen($path, "rb");
 		if(!$file) return false;
-		$length = filesize($path);
-		$this->from_binary(fread($file, $length), $length);
-		fclose($file);
+		$length = \filesize($path);
+		$this->from_binary(\fread($file, $length), $length);
+		\fclose($file);
 		return true;
 	}
 
@@ -202,7 +202,7 @@ class BitArray {
 		$max_address = $this->get_config_used_size();
 		for($address = 0; $address < $max_address; $address++){
 			$value = $this->original[$address] ?? 0;
-			$data .= chr(($value >> 24) & 0xFF).chr(($value >> 16) & 0xFF).chr(($value >> 8) & 0xFF).chr($value & 0xFF);
+			$data .= \chr(($value >> 24) & 0xFF).\chr(($value >> 16) & 0xFF).\chr(($value >> 8) & 0xFF).\chr($value & 0xFF);
 			$length += 4;
 		}
 		return $data;
@@ -214,7 +214,7 @@ class BitArray {
 	 * @return string The hexadecimal string representation of the bit array.
 	 */
 	public function to_hex() : string {
-		return bin2hex($this->to_binary());
+		return \bin2hex($this->to_binary());
 	}
 
 	/**
@@ -225,15 +225,15 @@ class BitArray {
 	 */
 	public function to_file(string $path) : bool {
 		if(\file_exists($path)){
-			unlink($path);
+			\unlink($path);
 			if(\file_exists($path)) return false;
 		}
-		$file = fopen($path, "wb");
+		$file = \fopen($path, "wb");
 		if(!$file) return false;
 		$length = 0;
 		$data = $this->to_binary($length);
-		fwrite($file, $data, $length);
-		fclose($file);
+		\fwrite($file, $data, $length);
+		\fclose($file);
 		return true;
 	}
 

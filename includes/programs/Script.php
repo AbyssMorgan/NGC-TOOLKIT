@@ -51,7 +51,7 @@ class Script extends Core {
 			}
 		}
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			dl('php_imagick.dll');
+			\dl('php_imagick.dll');
 		} else {
 			$open_file_binary = null;
 			$variants = ['xdg-open', 'nautilus', 'dolphin'];
@@ -116,11 +116,11 @@ class Script extends Core {
 
 		$this->init_logs();
 
-		ini_set('memory_limit', -1);
+		\ini_set('memory_limit', -1);
 	}
 
 	public function execute() : void {
-		array_unshift($this->arguments, $this->command);
+		\array_unshift($this->arguments, $this->command);
 		$path = $this->command;
 		if(empty($path) || !\file_exists($path)){
 			$this->echo(" File \"$path\" not exists");

@@ -59,13 +59,13 @@ class DirectoryFunctions {
 		$this->core->set_errors($errors);
 		foreach($folders as $folder){
 			if(!\file_exists($folder)) continue;
-			$files = array_reverse($this->core->get_folders($folder));
+			$files = \array_reverse($this->core->get_folders($folder));
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
-				$count = iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
+				$count = \iterator_count(new FilesystemIterator($file, FilesystemIterator::SKIP_DOTS));
 				if($count == 0){
 					if(!$this->core->rmdir($file)){
 						$errors++;
@@ -96,7 +96,7 @@ class DirectoryFunctions {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_folders($folder);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -135,7 +135,7 @@ class DirectoryFunctions {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -176,10 +176,10 @@ class DirectoryFunctions {
 
 		$folders = $this->core->get_folders($input);
 		$items = 0;
-		$total = count($folders);
+		$total = \count($folders);
 		foreach($folders as $folder){
 			$items++;
-			$directory = str_ireplace($input, $output, $folder);
+			$directory = \str_ireplace($input, $output, $folder);
 			if(!\file_exists($directory)){
 				if(!$this->core->mkdir($directory)){
 					$errors++;

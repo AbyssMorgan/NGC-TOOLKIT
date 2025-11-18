@@ -111,7 +111,7 @@ class StringConverter {
 	 * @return string The converted string.
 	 */
 	public function convert(string $string) : string {
-		return str_replace(array_keys($this->replace), array_values($this->replace), $string);
+		return \str_replace(\array_keys($this->replace), \array_values($this->replace), $string);
 	}
 
 	/**
@@ -121,7 +121,7 @@ class StringConverter {
 	 * @return string The cleaned string.
 	 */
 	public function clean(string $string) : string {
-		return str_replace(array_keys($this->removal), array_values($this->removal), $string);
+		return \str_replace(\array_keys($this->removal), \array_values($this->removal), $string);
 	}
 
 	/**
@@ -131,10 +131,10 @@ class StringConverter {
 	 * @return string The string with double spaces removed and trimmed.
 	 */
 	public function remove_double_spaces(string $string) : string {
-		while(str_contains($string, '  ')){
-			$string = str_replace('  ', ' ', $string);
+		while(\str_contains($string, '  ')){
+			$string = \str_replace('  ', ' ', $string);
 		}
-		return trim($string, ' ');
+		return \trim($string, ' ');
 	}
 
 	/**
@@ -145,7 +145,7 @@ class StringConverter {
 	 * @return string The string converted to Pinyin.
 	 */
 	public function string_to_pin_yin(string $string) : string {
-		$string = preg_replace("/\s/is", "_", $string);
+		$string = \preg_replace("/\s/is", "_", $string);
 		$pinyin = "";
 		$string = \iconv('UTF-8', 'GBK//TRANSLIT', $string);
 		for($i = 0; $i < \strlen($string); $i++){
@@ -161,7 +161,7 @@ class StringConverter {
 				$pinyin .= $string[$i];
 			}
 		}
-		return str_replace('_', ' ', $pinyin);
+		return \str_replace('_', ' ', $pinyin);
 	}
 
 	/**
@@ -173,7 +173,7 @@ class StringConverter {
 	 */
 	private function asc2_to_pin_yin(int $asc2) : ?string {
 		foreach($this->pinyin as $key => $value){
-			if(array_search($asc2, $value) !== false){
+			if(\array_search($asc2, $value) !== false){
 				return $key;
 			}
 		}

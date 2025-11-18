@@ -57,8 +57,8 @@ class DirectorySorter {
 			$files = $this->core->get_folders($folder, false, false);
 			foreach($files as $file){
 				if(!\file_exists($file)) continue 1;
-				$quantity = count($this->core->get_files($file));
-				$multiplier = floor(($quantity - 1) / $interval);
+				$quantity = \count($this->core->get_files($file));
+				$multiplier = \floor(($quantity - 1) / $interval);
 				if($quantity == 0) $multiplier = 0;
 				$end = \intval($interval * ($multiplier + 1));
 				$new_name = $this->core->get_path("$folder/$end/".\pathinfo($file, PATHINFO_BASENAME));

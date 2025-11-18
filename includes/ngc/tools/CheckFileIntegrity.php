@@ -74,7 +74,7 @@ class CheckFileIntegrity {
 
 		$pattern_file = $this->core->parse_input_path($line);
 		if(!isset($pattern_file[0])) goto set_name;
-		$pattern_file = preg_replace('/[^A-Za-z0-9_\-]/', '_', $pattern_file[0]).".ngc-pat";
+		$pattern_file = \preg_replace('/[^A-Za-z0-9_\-]/', '_', $pattern_file[0]).".ngc-pat";
 
 		$pattern = new GuardPattern();
 		$pattern->set_input($input);
@@ -83,7 +83,7 @@ class CheckFileIntegrity {
 		$line = $this->core->get_input(" Folders: ");
 		if($line == '#') return false;
 		foreach($this->core->parse_input_path($line) as $folder){
-			$pattern->add_folders(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
+			$pattern->add_folders(\str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $folder));
 		}
 
 		if(!empty($line)){
@@ -94,7 +94,7 @@ class CheckFileIntegrity {
 		$line = $this->core->get_input(" Files: ");
 		if($line == '#') return false;
 		foreach($this->core->parse_input_path($line) as $file){
-			$pattern->add_files(str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
+			$pattern->add_files(\str_replace([$input.DIRECTORY_SEPARATOR, $input], "", $file));
 		}
 
 		if(!empty($line)){
@@ -127,18 +127,18 @@ class CheckFileIntegrity {
 			goto set_pattern;
 		}
 
-		$files = count($pattern->get_files());
-		$folders = count($pattern->get_folders());
+		$files = \count($pattern->get_files());
+		$folders = \count($pattern->get_folders());
 		$this->core->echo(" Loaded $folders folders and $files files");
 
-		$guard_file = str_replace(chr(0x5C).chr(0x5C), chr(0x5C), $this->core->get_path("$input/".\pathinfo($pattern_file, PATHINFO_FILENAME).".ngc-guard"));
+		$guard_file = \str_replace(\chr(0x5C).\chr(0x5C), \chr(0x5C), $this->core->get_path("$input/".\pathinfo($pattern_file, PATHINFO_FILENAME).".ngc-guard"));
 
-		$cwd = getcwd();
-		chdir($input);
+		$cwd = \getcwd();
+		\chdir($input);
 		$this->core->echo(" Generate $guard_file");
 		$guard = new GuardDriver($guard_file, $pattern->get_folders(), $pattern->get_files());
 		$guard->generate();
-		chdir($cwd);
+		\chdir($cwd);
 
 		$this->core->open_logs(false);
 		$this->core->pause(" Operation done, press any key to back to menu");
@@ -161,12 +161,12 @@ class CheckFileIntegrity {
 
 		$input = \pathinfo($guard_file, PATHINFO_DIRNAME);
 
-		$cwd = getcwd();
-		chdir($input);
+		$cwd = \getcwd();
+		\chdir($input);
 		$this->core->echo(" Validate files from $guard_file");
 		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
 		$validation = $guard->validate();
-		chdir($cwd);
+		\chdir($cwd);
 
 		$damaged = 0;
 		$missing = 0;
@@ -182,17 +182,17 @@ class CheckFileIntegrity {
 			switch($error['type']){
 				case 'damaged': {
 					$damaged++;
-					array_push($errors['damaged'], $error['file']);
+					\array_push($errors['damaged'], $error['file']);
 					break;
 				}
 				case 'unknown': {
 					$unknown++;
-					array_push($errors['unknown'], $error['file']);
+					\array_push($errors['unknown'], $error['file']);
 					break;
 				}
 				case 'missing': {
 					$missing++;
-					array_push($errors['missing'], $error['file']);
+					\array_push($errors['missing'], $error['file']);
 					break;
 				}
 			}
@@ -228,7 +228,7 @@ class CheckFileIntegrity {
 		$guard = new GuardDriver($guard_file);
 		$tree_file = "$guard_file.txt";
 
-		\file_put_contents($tree_file, print_r($guard->get_tree(), true));
+		\file_put_contents($tree_file, \print_r($guard->get_tree(), true));
 
 		$this->core->open_file($tree_file);
 
@@ -298,8 +298,8 @@ class CheckFileIntegrity {
 	public function tool_guard_update(string $guard_file, array $params) : void {
 		$ini = new IniFile($guard_file, true, true);
 		$input = \pathinfo($guard_file, PATHINFO_DIRNAME);
-		$cwd = getcwd();
-		chdir($input);
+		$cwd = \getcwd();
+		\chdir($input);
 		$this->core->echo(" Validate files from $guard_file");
 		$guard = new GuardDriver($guard_file, $ini->get('folders_to_scan'), $ini->get('files_to_scan'));
 		$validation = $guard->validate($params);
@@ -321,13 +321,13 @@ class CheckFileIntegrity {
 				}
 				case 'missing': {
 					$this->core->write_log("REMOVE FILE \"$file\"");
-					$key = strtoupper(\hash('md5', str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
+					$key = \strtoupper(\hash('md5', \str_replace(["\\", "/"], ":", \pathinfo($file, PATHINFO_DIRNAME))));
 					if(isset($guard->data[$key][\pathinfo($file, PATHINFO_BASENAME)])) unset($guard->data[$key][\pathinfo($file, PATHINFO_BASENAME)]);
 					if(empty($guard->data[$key])){
 						if(isset($guard->data[$key])) unset($guard->data[$key]);
 					}
 					if(isset($guard->keys[$key])) unset($guard->keys[$key]);
-					$key = array_search($file, $guard->file_list);
+					$key = \array_search($file, $guard->file_list);
 					if($key !== false){
 						if(isset($guard->file_list[$key])) unset($guard->file_list[$key]);
 					}
@@ -338,7 +338,7 @@ class CheckFileIntegrity {
 
 		$ini->set_all($guard->get(), true);
 
-		chdir($cwd);
+		\chdir($cwd);
 	}
 
 }

@@ -58,7 +58,7 @@ class MySQL {
 	 * @throws BadMethodCallException If the method does not exist in MySQL wrapper or PDO.
 	 */
 	public function __call(string $name, array $arguments) : mixed {
-		if($this->db && method_exists($this->db, $name)){
+		if($this->db && \method_exists($this->db, $name)){
 			return $this->db->$name(...$arguments);
 		}
 		throw new BadMethodCallException("Method {$name} does not exist in MySQL wrapper or PDO.");
@@ -74,12 +74,12 @@ class MySQL {
 	 * @param int $port The database port (default: 3306).
 	 * @return bool True on successful connection, false otherwise.
 	 */
-	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
-		$options = [
+	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306, array $options = []) : bool {
+		$options = array_merge([
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;SET NAMES utf8mb4;',
+			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-		];
+		], $options);
 		try {
 			$this->db = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
@@ -133,7 +133,7 @@ class MySQL {
 	public function escape(mixed $string) : string {
 		$string = \strval($string ?? '');
 		if(empty($string)) return '';
-		return str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
+		return \str_replace(['\\', "\0", "\n", "\r", "'", '"', "\x1a"], ['\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'], $string);
 	}
 
 	/**
@@ -144,9 +144,9 @@ class MySQL {
 	 * @return string The formatted string representation of the results.
 	 */
 	public function results_to_string(array $results, string $separator = '|') : string {
-		$data = " ".implode($separator, array_keys($results[0]))."\r\n";
+		$data = " ".\implode($separator, \array_keys($results[0]))."\r\n";
 		foreach($results as $result){
-			$data .= " ".implode($separator, $result)."\r\n";
+			$data .= " ".\implode($separator, $result)."\r\n";
 		}
 		return $data;
 	}

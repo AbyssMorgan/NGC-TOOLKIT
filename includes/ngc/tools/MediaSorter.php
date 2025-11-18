@@ -68,7 +68,7 @@ class MediaSorter {
 		$line = $this->core->get_input(" Mode: ");
 		if($line == '#') return false;
 
-		$params['mode'] = strtolower($line[0] ?? '?');
+		$params['mode'] = \strtolower($line[0] ?? '?');
 		if(!\in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
 		$params['resolution'] = \in_array($params['mode'], ['0', '1']);
 		$params['quality'] = \in_array($params['mode'], ['0', '2']);
@@ -80,11 +80,11 @@ class MediaSorter {
 
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$extensions = array_merge($this->core->media->extensions_images, $this->core->media->extensions_video);
+		$extensions = \array_merge($this->core->media->extensions_images, $this->core->media->extensions_video);
 		foreach($folders as $folder){
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -100,7 +100,7 @@ class MediaSorter {
 					$this->core->set_errors($errors);
 					continue 1;
 				}
-				$size = explode("x", $resolution);
+				$size = \explode("x", $resolution);
 				$is_vr = $this->core->media->is_vr_video($file);
 				$is_ar = $this->core->media->is_ar_video($file);
 				$quality = $this->core->media->get_media_quality(\intval($size[0]), \intval($size[1]), $is_vr || $is_ar)."p";
@@ -141,7 +141,7 @@ class MediaSorter {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $this->core->media->extensions_images);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -179,11 +179,11 @@ class MediaSorter {
 
 		$errors = 0;
 		$this->core->set_errors($errors);
-		$extensions = array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio);
+		$extensions = \array_merge($this->core->media->extensions_video, $this->core->media->extensions_audio);
 		foreach($folders as $folder){
 			$files = $this->core->get_files($folder, $extensions);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -193,13 +193,13 @@ class MediaSorter {
 					$errors++;
 					continue;
 				}
-				$multiplier = max(floor(($meta->video_duration_seconds - 1) / $interval), 0);
+				$multiplier = \max(\floor(($meta->video_duration_seconds - 1) / $interval), 0);
 				if($multiplier == 0){
 					$start = '00_00';
 				} else {
-					$start = str_replace(":", "_", $this->core->seconds_to_time(\intval($interval * $multiplier) + 1));
+					$start = \str_replace(":", "_", $this->core->seconds_to_time(\intval($interval * $multiplier) + 1));
 				}
-				$end = str_replace(":", "_", $this->core->seconds_to_time(\intval($interval * ($multiplier + 1))));
+				$end = \str_replace(":", "_", $this->core->seconds_to_time(\intval($interval * ($multiplier + 1))));
 				$new_name = $this->core->put_folder_to_path($file, "$start - $end");
 				if($this->core->move($file, $new_name)){
 					$renamed = true;
@@ -209,7 +209,7 @@ class MediaSorter {
 				}
 				if($renamed){
 					$name = \pathinfo($file, PATHINFO_FILENAME);
-					$follow_extensions = explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
+					$follow_extensions = \explode(" ", $this->core->config->get('EXTENSIONS_VIDEO_FOLLOW'));
 					foreach($follow_extensions as $a){
 						if(\file_exists("$file.$a")){
 							if(!$this->core->move("$file.$a", "$new_name.$a")) $errors++;
@@ -247,7 +247,7 @@ class MediaSorter {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, ['gif', 'webp', 'apng']);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -285,7 +285,7 @@ class MediaSorter {
 			if(!\file_exists($folder)) continue;
 			$files = $this->core->get_files($folder, $this->core->media->extensions_images);
 			$items = 0;
-			$total = count($files);
+			$total = \count($files);
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
@@ -304,7 +304,7 @@ class MediaSorter {
 				$tolerance = 50;
 				foreach($histogram as $pixel){
 					$color = $pixel->getColor();
-					if(abs($color['r'] - $color['g']) > $tolerance || abs($color['g'] - $color['b']) > $tolerance || abs($color['b'] - $color['r']) > $tolerance){
+					if(\abs($color['r'] - $color['g']) > $tolerance || \abs($color['g'] - $color['b']) > $tolerance || \abs($color['b'] - $color['r']) > $tolerance){
 						$is_monochrome = false;
 						break;
 					}
@@ -342,40 +342,40 @@ class MediaSorter {
 		$this->core->set_errors($errors);
 		$files = $this->core->get_files($input, $this->core->media->extensions_video);
 		$items = 0;
-		$total = count($files);
+		$total = \count($files);
 		foreach($files as $file){
 			$items++;
 			if(!\file_exists($file)) continue;
-			$file_name = str_replace(['SEASON', 'EPISODE'], ['S', 'E'], \mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)));
-			$file_name = str_replace([' ', '.', '[', ']'], ' ', $file_name);
+			$file_name = \str_replace(['SEASON', 'EPISODE'], ['S', 'E'], \mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)));
+			$file_name = \str_replace([' ', '.', '[', ']'], ' ', $file_name);
 			$mathes = [];
-			if(preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
+			if(\preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
-			} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){
+			} elseif(\preg_match("/S[0-9]{1,2}E[0-9]{1,3}-E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
-			} elseif(preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
+			} elseif(\preg_match("/S[0-9]{1,2}E[0-9]{1,3}-[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
-			} elseif(preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-				if(\strlen($mathes[1]) == 2) $mathes[1] = "S0".substr($mathes[1], 1, 1);
-				if(\strlen($mathes[2]) == 2) $mathes[2] = "E0".substr($mathes[2], 1, 1);
+			} elseif(\preg_match("/(S[0-9]{1,2})(E[0-9]{1,3})/", $file_name, $mathes) == 1){
+				if(\strlen($mathes[1]) == 2) $mathes[1] = "S0".\substr($mathes[1], 1, 1);
+				if(\strlen($mathes[2]) == 2) $mathes[2] = "E0".\substr($mathes[2], 1, 1);
 				$marker = $mathes[1].$mathes[2];
-			} elseif(preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
-				$marker = "S01".preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
+			} elseif(\preg_match("/(S0)(E[0-9]{1,3})/", $file_name, $mathes) == 1){
+				$marker = "S01".\preg_replace("/[^E0-9]/i", "", $mathes[2], 1);
 			} else {
 				$marker = '';
 			}
 			if(!empty($marker)){
-				$end = strpos(\mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)), $marker);
+				$end = \strpos(\mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)), $marker);
 				if($end === false){
 					$this->core->write_error("FAILED GET MARKER \"$file\"");
 					$errors++;
 				} else {
-					$folder_name = str_replace(['_', '.', "\u{00A0}"], ' ', substr(\pathinfo($file, PATHINFO_FILENAME), 0, $end));
-					$folder_name = str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $folder_name);
-					while(str_contains($folder_name, '  ')){
-						$folder_name = str_replace('  ', ' ', $folder_name);
+					$folder_name = \str_replace(['_', '.', "\u{00A0}"], ' ', \substr(\pathinfo($file, PATHINFO_FILENAME), 0, $end));
+					$folder_name = \str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $folder_name);
+					while(\str_contains($folder_name, '  ')){
+						$folder_name = \str_replace('  ', ' ', $folder_name);
 					}
-					$folder_name = trim($folder_name, ' ');
+					$folder_name = \trim($folder_name, ' ');
 					if(empty($folder_name)){
 						$this->core->write_error("ESCAPED FOLDER NAME IS EMPTY \"$file\"");
 						$errors++;

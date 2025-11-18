@@ -223,7 +223,7 @@ class FtpTools {
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('FTP_HOST')){
 				$label = \pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".str_repeat(" ", 32 - \strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
+				$this->core->echo(" $label".\str_repeat(" ", 32 - \strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
 				$cnt++;
 			}
 		}
@@ -277,10 +277,10 @@ class FtpTools {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
-		$csv_file = $this->core->get_path("$output/FtpList ".date("Y-m-d His").".csv");
+		$csv_file = $this->core->get_path("$output/FtpList ".\date("Y-m-d His").".csv");
 		$this->core->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
 		if($this->core->get_confirm(" Simplified list (Y/N): ")){
@@ -304,7 +304,7 @@ class FtpTools {
 					'"'.$this->core->format_bytes($file['size']).'"',
 					'"'.$file['permission'].'"',
 				];
-				$csv->write(implode($this->core->config->get('CSV_SEPARATOR'), $meta));
+				$csv->write(\implode($this->core->config->get('CSV_SEPARATOR'), $meta));
 			}
 		}
 		$this->core->echo(" Saved results into ".$csv->get_path());
@@ -354,7 +354,7 @@ class FtpTools {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		$output = $this->core->get_input_folder(" Output (Folder): ", true);
@@ -367,7 +367,7 @@ class FtpTools {
 		$this->core->echo(" Download files \"$input\" => \"$output\"");
 		$remote->process_files($input, function(string $file, string $type) use ($ftp, $input, $output) : bool {
 			if($type == 'directory') return false;
-			$local_file = $this->core->get_path(str_ireplace($input, $output, $file));
+			$local_file = $this->core->get_path(\str_ireplace($input, $output, $file));
 			$directory = \pathinfo($local_file, PATHINFO_DIRNAME);
 			if(\file_exists($local_file)){
 				$this->core->delete($local_file);
@@ -421,7 +421,7 @@ class FtpTools {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		set_output:
@@ -443,11 +443,11 @@ class FtpTools {
 		$this->core->echo(" Prepare directories");
 		$files = $this->core->get_files($input, $extensions, null, $filters);
 		foreach($files as $file){
-			array_push($directories, str_ireplace([$input, "\\"], [$output, "/"], \pathinfo($file, PATHINFO_DIRNAME)));
+			\array_push($directories, \str_ireplace([$input, "\\"], [$output, "/"], \pathinfo($file, PATHINFO_DIRNAME)));
 		}
-		$directories = array_unique($directories);
+		$directories = \array_unique($directories);
 
-		$total = count($directories);
+		$total = \count($directories);
 		$items = 0;
 		$this->core->progress($items, $total);
 		foreach($directories as $directory){
@@ -464,13 +464,13 @@ class FtpTools {
 			$this->core->set_errors($errors);
 		}
 
-		$total = count($files);
+		$total = \count($files);
 		$items = 0;
 		$this->core->echo(" Upload files from \"$input\"");
 		$this->core->progress($items, $total);
 		foreach($files as $file){
 			$items++;
-			$remote_file = str_ireplace([$input, "\\"], [$output, "/"], $file);
+			$remote_file = \str_ireplace([$input, "\\"], [$output, "/"], $file);
 			if($ftp->put($remote_file, $file, FTP_BINARY, 0)){
 				$this->core->write_log("UPLOAD \"$file\" AS \"$remote_file\"");
 			} else {
@@ -525,7 +525,7 @@ class FtpTools {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		$this->core->clear();
@@ -571,7 +571,7 @@ class FtpTools {
 
 		$this->core->clear();
 		$this->core->echo(" Get folders list from \"$input\"");
-		$files = array_reverse($remote->get_folders($input));
+		$files = \array_reverse($remote->get_folders($input));
 		$this->core->echo(" Delete empty folders from \"$input\"");
 		foreach($files as $file){
 			if(!$remote->has_files($file)){
@@ -629,7 +629,7 @@ class FtpTools {
 			return true;
 		});
 
-		$folders = array_reverse($folders);
+		$folders = \array_reverse($folders);
 		$this->core->echo(" Delete folders from \"$input\"");
 		foreach($folders as $folder){
 			if($ftp->rmdir($folder, false)){
@@ -705,7 +705,7 @@ class FtpTools {
 		if(empty($line)){
 			$filters = null;
 		} else {
-			$filters = explode(" ", $line);
+			$filters = \explode(" ", $line);
 		}
 
 		$ftp_source->set_option(FTP_TIMEOUT_SEC, 3600);
@@ -714,7 +714,7 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->echo(" Copy files \"$input\" => \"$output\"");
 		$remote_source->process_files($input, function(string $file, string $type) use ($input, $output, $ftp_source, $ftp_destination) : bool {
-			$new_name = str_ireplace($input, $output, $file);
+			$new_name = \str_ireplace($input, $output, $file);
 			if($type == 'directory'){
 				if($ftp_destination->mkdir($new_name)){
 					$this->on_success("FTP MKDIR \"$new_name\"");
@@ -722,10 +722,10 @@ class FtpTools {
 					$this->on_error("FAILED FTP MKDIR \"$new_name\"");
 				}
 			} else {
-				$fp = fopen('php://memory', 'r+');
+				$fp = \fopen('php://memory', 'r+');
 				if($ftp_source->fget($fp, $file, FTP_BINARY)){
 					$this->on_success("DOWNLOAD \"$file\"");
-					fseek($fp, 0);
+					\fseek($fp, 0);
 					if($ftp_destination->fput($new_name, $fp, FTP_BINARY)){
 						$this->on_success("COPY \"$file\" => \"$new_name\"");
 					} else {
@@ -734,7 +734,7 @@ class FtpTools {
 				} else {
 					$this->on_error("FAILED DOWNLOAD \"$file\"");
 				}
-				fclose($fp);
+				\fclose($fp);
 			}
 			return true;
 		}, $extensions, null, $filters);
@@ -759,10 +759,10 @@ class FtpTools {
 
 		$xml = \file_get_contents($input);
 
-		$xml = str_replace(["\r", "\n", "\t"], '', $xml);
-		$xml = preg_replace('/<Folder [^>]+>[^>]+>/', '<Folder><Server>', $xml);
-		$xml = str_replace(['<Folder>', '</Folder>', '<Servers>', '</Servers>'], '', $xml);
-		$xml = @simplexml_load_string($xml);
+		$xml = \str_replace(["\r", "\n", "\t"], '', $xml);
+		$xml = \preg_replace('/<Folder [^>]+>[^>]+>/', '<Folder><Server>', $xml);
+		$xml = \str_replace(['<Folder>', '</Folder>', '<Servers>', '</Servers>'], '', $xml);
+		$xml = @\simplexml_load_string($xml);
 		if($xml === false){
 			$this->core->echo(" Failed parse XML");
 			goto set_xml_file;
@@ -797,8 +797,8 @@ class FtpTools {
 					$this->core->echo(" Import {$server['Name']} failed, missing property: Protocol");
 					continue;
 				}
-				$label = substr(preg_replace("/[^A-Za-z0-9_\-]/", '', str_replace(" ", "_", trim($server['Name']))), 0, 32);
-				if(\strlen($label) < 3) substr($label."___", 0, 3);
+				$label = \substr(\preg_replace("/[^A-Za-z0-9_\-]/", '', \str_replace(" ", "_", \trim($server['Name']))), 0, 32);
+				if(\strlen($label) < 3) \substr($label."___", 0, 3);
 				if($this->core->is_valid_label($label)){
 					$ini = $this->get_config($label);
 					$ini->update([

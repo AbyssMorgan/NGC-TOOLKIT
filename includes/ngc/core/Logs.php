@@ -81,10 +81,10 @@ class Logs {
 	protected function create() : bool {
 		$folder = \pathinfo($this->path, PATHINFO_DIRNAME);
 		if(!\file_exists($folder)) \mkdir($folder, $this->permissions, true);
-		$file = fopen($this->path, "w");
+		$file = \fopen($this->path, "w");
 		if(!$file) return false;
-		fwrite($file, "\xEF\xBB\xBF");
-		fclose($file);
+		\fwrite($file, "\xEF\xBB\xBF");
+		\fclose($file);
 		return \file_exists($this->path);
 	}
 
@@ -95,12 +95,12 @@ class Logs {
 	 * @return bool True on successful write, false on failure.
 	 */
 	protected function write_string(string $line) : bool {
-		if(!$this->file) $this->file = fopen($this->path, "a");
+		if(!$this->file) $this->file = \fopen($this->path, "a");
 		if(!$this->file) return false;
 		if($this->timestamp){
-			fwrite($this->file, "[".$this->get_timestamp()."] ");
+			\fwrite($this->file, "[".$this->get_timestamp()."] ");
 		}
-		fwrite($this->file, mb_convert_encoding("$line\r\n", 'UTF-8', 'auto'));
+		\fwrite($this->file, \mb_convert_encoding("$line\r\n", 'UTF-8', 'auto'));
 		if(!$this->hold_open) $this->close();
 		return true;
 	}
@@ -112,13 +112,13 @@ class Logs {
 	 * @return bool True on successful write, false on failure.
 	 */
 	protected function write_array(array $lines) : bool {
-		if(!$this->file) $this->file = fopen($this->path, "a");
+		if(!$this->file) $this->file = \fopen($this->path, "a");
 		if(!$this->file) return false;
 		foreach($lines as $line){
 			if($this->timestamp){
-				fwrite($this->file, "[".$this->get_timestamp()."] ");
+				\fwrite($this->file, "[".$this->get_timestamp()."] ");
 			}
-			fwrite($this->file, mb_convert_encoding("$line\r\n", 'UTF-8', 'auto'));
+			\fwrite($this->file, \mb_convert_encoding("$line\r\n", 'UTF-8', 'auto'));
 		}
 		if(!$this->hold_open) $this->close();
 		return true;
@@ -139,7 +139,7 @@ class Logs {
 	 * @return string The formatted timestamp string.
 	 */
 	public function get_timestamp() : string {
-		return date($this->date_format);
+		return \date($this->date_format);
 	}
 
 	/**
@@ -174,7 +174,7 @@ class Logs {
 	 */
 	public function close() : bool {
 		if(!$this->file) return false;
-		fclose($this->file);
+		\fclose($this->file);
 		$this->file = false;
 		return true;
 	}

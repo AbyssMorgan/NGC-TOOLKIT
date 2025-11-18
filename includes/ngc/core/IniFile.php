@@ -91,10 +91,10 @@ class IniFile {
 	protected function create() : bool {
 		$folder = \pathinfo($this->path, PATHINFO_DIRNAME);
 		if(!\file_exists($folder)) \mkdir($folder, $this->permissions, true);
-		$file = fopen($this->path, "w");
+		$file = \fopen($this->path, "w");
 		if(!$file) return false;
-		fwrite($file, "");
-		fclose($file);
+		\fwrite($file, "");
+		\fclose($file);
 		return \file_exists($this->path);
 	}
 
@@ -114,7 +114,7 @@ class IniFile {
 		$this->compressed = $compressed;
 		$this->permissions = $permissions;
 		if(!\is_null($encoder)){
-			if(method_exists($encoder, 'encrypt') && method_exists($encoder, 'decrypt') && method_exists($encoder, 'get_header')){
+			if(\method_exists($encoder, 'encrypt') && \method_exists($encoder, 'decrypt') && \method_exists($encoder, 'get_header')){
 				$this->encoder = $encoder;
 			}
 		}
@@ -150,14 +150,14 @@ class IniFile {
 		if(\strlen($content) > 0){
 			if(!\is_null($this->encoder)){
 				$header_length = \strlen($this->encoder->get_header());
-				if(substr($content, 0, $header_length) == $this->encoder->get_header()){
-					$content = $this->encoder->decrypt(substr($content, $header_length));
+				if(\substr($content, 0, $header_length) == $this->encoder->get_header()){
+					$content = $this->encoder->decrypt(\substr($content, $header_length));
 					if(\is_null($content)) return false;
 				}
 			}
-			if(substr($content, 0, 11) == 'ADM_GZ_INI:'){
-				$content = str_replace(["\r\n", "\r"], "\n", gzuncompress(substr($content, 11)));
-				$lines = explode("\n", $content);
+			if(\substr($content, 0, 11) == 'ADM_GZ_INI:'){
+				$content = \str_replace(["\r\n", "\r"], "\n", \gzuncompress(\substr($content, 11)));
+				$lines = \explode("\n", $content);
 				foreach($lines as $line){
 					if($this->parse_line($line, $key, $data)){
 						$this->data[$key] = $data;
@@ -165,14 +165,14 @@ class IniFile {
 				}
 			} else {
 				unset($content);
-				$file = fopen($this->path, "r");
+				$file = \fopen($this->path, "r");
 				if(!$file) return false;
-				while(($line = fgets($file)) !== false){
+				while(($line = \fgets($file)) !== false){
 					if($this->parse_line($line, $key, $data)){
 						$this->data[$key] = $data;
 					}
 				}
-				fclose($file);
+				\fclose($file);
 			}
 		}
 		$this->original = $this->data;
@@ -189,15 +189,15 @@ class IniFile {
 	 * @return bool True if the line was successfully parsed, false otherwise.
 	 */
 	public function parse_line(string $line, &$key, int|bool|string|array|float|null &$data, bool $escape = true) : bool {
-		if($escape) $line = str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
+		if($escape) $line = \str_replace(["\n", "\r", "\xEF\xBB\xBF"], "", $line);
 		if(\strlen($line) == 0 || $line[0] == '#' || $line[0] == ';' || $line[0] == '[') return false;
-		$option = explode("=", $line, 2);
-		if(!empty(trim($option[0]))){
-			$key = trim($option[0]);
+		$option = \explode("=", $line, 2);
+		if(!empty(\trim($option[0]))){
+			$key = \trim($option[0]);
 			if(!isset($option[1])){
 				$data = null;
-			} elseif(is_numeric($option[1])){
-				if(strpos($option[1], ".") !== false){
+			} elseif(\is_numeric($option[1])){
+				if(\str_contains($option[1], ".")){
 					$data = \floatval($option[1]);
 				} else {
 					$data = \intval($option[1]);
@@ -211,13 +211,13 @@ class IniFile {
 			} elseif($option[1] == 'null'){
 				$data = null;
 			} else {
-				if(substr($option[1], 0, 1) == '"' && substr($option[1], -1, 1) == '"'){
-					$data = stripslashes(substr($option[1], 1, -1));
+				if(\substr($option[1], 0, 1) == '"' && \substr($option[1], -1, 1) == '"'){
+					$data = \stripslashes(\substr($option[1], 1, -1));
 				} else {
 					$data = $option[1];
 				}
-				if(substr($data, 0, 5) == 'JSON:'){
-					$data = \json_decode(\base64_decode(substr($data, 5)), true);
+				if(\substr($data, 0, 5) == 'JSON:'){
+					$data = \json_decode(\base64_decode(\substr($data, 5)), true);
 				}
 			}
 		}
@@ -275,7 +275,7 @@ class IniFile {
 	 */
 	public function get_sorted() : array {
 		$data = $this->data;
-		ksort($data);
+		\ksort($data);
 		return $data;
 	}
 
@@ -285,7 +285,7 @@ class IniFile {
 	 * @return void
 	 */
 	public function sort() : void {
-		ksort($this->data);
+		\ksort($this->data);
 	}
 
 	/**
@@ -428,28 +428,28 @@ class IniFile {
 	 */
 	public function save(bool $as_output = false) : string|bool {
 		if(!$this->is_valid() && !$as_output) return false;
-		if($this->sort) ksort($this->data);
+		if($this->sort) \ksort($this->data);
 		$content = "\xEF\xBB\xBF"; // BOM for UTF-8
 		foreach($this->data as $key => $value){
-			if(is_numeric($value)){
+			if(\is_numeric($value)){
 				$content .= "$key=$value\r\n";
 			} elseif(\is_null($value)){
 				$content .= "$key=null\r\n";
-			} elseif(is_bool($value)){
+			} elseif(\is_bool($value)){
 				$value = $value ? 'true' : 'false';
 				$content .= "$key=$value\r\n";
-			} elseif(empty($value) && !is_array($value)){
+			} elseif(empty($value) && !\is_array($value)){
 				$content .= "$key=\"\"\r\n";
-			} elseif(is_array($value)){
+			} elseif(\is_array($value)){
 				$value = "JSON:".\base64_encode(\json_encode($value));
 				$content .= "$key=\"$value\"\r\n";
 			} else {
-				$value = addslashes($value);
+				$value = \addslashes($value);
 				$content .= "$key=\"$value\"\r\n";
 			}
 		}
 		try {
-			if($this->compressed) $content = "ADM_GZ_INI:".gzcompress($content, 9);
+			if($this->compressed) $content = "ADM_GZ_INI:".\gzcompress($content, 9);
 			if(!\is_null($this->encoder)){
 				$content = $this->encoder->encrypt($content);
 				if(\is_null($content)) return false;
@@ -501,7 +501,7 @@ class IniFile {
 	 * @return array An array of keys.
 	 */
 	public function keys() : array {
-		return array_keys($this->data);
+		return \array_keys($this->data);
 	}
 
 	/**
@@ -511,7 +511,7 @@ class IniFile {
 	 * @return bool True if the key exists, false otherwise.
 	 */
 	public function is_set(string $key) : bool {
-		return array_key_exists($key, $this->data);
+		return \array_key_exists($key, $this->data);
 	}
 
 	/**
@@ -521,7 +521,7 @@ class IniFile {
 	 */
 	public function get_size() : int {
 		if(!$this->is_valid()) return 0;
-		$size = filesize($this->path);
+		$size = \filesize($this->path);
 		if(!$size) return 0;
 		return $size;
 	}
@@ -533,7 +533,7 @@ class IniFile {
 	 */
 	public function get_modification_date() : string {
 		if(!$this->is_valid()) return '0000-00-00 00:00:00';
-		return date("Y-m-d H:i:s", filemtime($this->path));
+		return \date("Y-m-d H:i:s", \filemtime($this->path));
 	}
 
 	/**
@@ -587,8 +587,8 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(strpos($key, $search) !== false){
-				array_push($results, $key);
+			if(\str_contains($key, $search)){
+				\array_push($results, $key);
 			}
 		}
 		return $results;
@@ -604,8 +604,8 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(str_starts_with($key, $search) !== false){
-				array_push($results, $key);
+			if(\str_starts_with($key, $search)){
+				\array_push($results, $key);
 			}
 		}
 		return $results;
@@ -621,8 +621,8 @@ class IniFile {
 		$results = [];
 		$keys = $this->keys();
 		foreach($keys as $key){
-			if(str_ends_with($key, $search) !== false){
-				array_push($results, $key);
+			if(\str_ends_with($key, $search)){
+				\array_push($results, $key);
 			}
 		}
 		return $results;
@@ -697,7 +697,7 @@ class IniFile {
 	 * @return void
 	 */
 	public function set_nested_array_value(array &$array, string $path, array $value, string $delimiter = '/') : void {
-		$path_parts = explode($delimiter, $path);
+		$path_parts = \explode($delimiter, $path);
 		$current = &$array;
 		foreach($path_parts as $key) $current = &$current[$key];
 		$current = $value;

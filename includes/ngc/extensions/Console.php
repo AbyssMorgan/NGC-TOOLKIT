@@ -41,7 +41,7 @@ class Console {
 
 	/**
 	 * Constructor for the Console class.
-	 * @param \Toolkit|\Script $core
+	 * @param Toolkit|Script $core
 	 */
 	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
@@ -58,14 +58,14 @@ class Console {
 		$this->script = $path;
 		$this->path = \pathinfo($path, PATHINFO_DIRNAME);
 		$content = \file_get_contents($path);
-		if(strpos($content, "@AppType NGC_SCRIPT") === false){
+		if(\strpos($content, "@AppType NGC_SCRIPT") === false){
 			$this->core->echo();
 			$this->core->echo(" File \"$path\" is not a valid {$this->core->app_name} Script");
 			$this->core->echo();
 			$this->core->pause(" Press any key to close");
 			return false;
 		}
-		$params = explode(" ", explode("\n", $content, 2)[0]);
+		$params = \explode(" ", \explode("\n", $content, 2)[0]);
 		if($this->core->get_version_number($this->core->version) < $this->core->get_version_number($params[2])){
 			$this->core->echo();
 			$this->core->echo(" File \"$path\" require NGC-TOOLKIT v{$params[2]}+");
@@ -73,11 +73,11 @@ class Console {
 			$this->core->pause(" Press any key to close");
 			return false;
 		}
-		$pos = strpos($content, "<?");
-		$content = substr($content, $pos);
-		chdir($this->path);
-		eval(str_replace(["?>", "<?php", "<?"], "", $content));
-		chdir($this->core->path);
+		$pos = \strpos($content, "<?");
+		$content = \substr($content, $pos);
+		\chdir($this->path);
+		eval(\str_replace(["?>", "<?php", "<?"], "", $content));
+		\chdir($this->core->path);
 		return true;
 	}
 
