@@ -223,24 +223,35 @@ class VolumeIntegrity {
 	/**
 	 * Loads all media items from the database into the internal data array.
 	 *
+	 * @param string $order_by Column for order
+	 * @param string $order Order type (ASC/DESC)
 	 * @return bool True if the data was loaded successfully, false if the database is not connected.
 	 */
-	public function load() : bool {
+	public function load(string $order_by = 'path', string $order = 'ASC') : bool {
 		if(\is_null($this->db)) return false;
-		$this->data = $this->get_all();
+		$this->data = $this->get_all($order_by, $order);
 		return true;
 	}
 
 	/**
 	 * Retrieves all media items from the data table in the database.
 	 *
+	 * @param string $order_by Column for order
+	 * @param string $order Order type (ASC/DESC)
 	 * @return array|false An associative array of media items, keyed by their path, or false if the database is not connected.
 	 * Each item is an object with properties: id, checksum, size, modification_date, validation_date.
 	 */
-	public function get_all() : array|false {
+	public function get_all(string $order_by = 'path', string $order = 'ASC') : array|false {
 		if(\is_null($this->db)) return false;
+		$order = strtoupper($order);
+		if(!\in_array($order_by, ['id', 'path', 'checksum', 'mime_type', 'size', 'modification_date', 'validation_date'])){
+			throw new Exception("Invalid order by value");
+		}
+		if(!\in_array($order, ['ASC', 'DESC'])){
+			throw new Exception("Invalid order value");
+		}
 		$data = [];
-		$items = $this->db->query("SELECT * FROM `$this->table_data`", PDO::FETCH_OBJ);
+		$items = $this->db->query("SELECT * FROM `$this->table_data` ORDER BY `$order_by` $order", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			if(isset($data[$item->path])){
 				$this->core->echo(" Duplicate integrity for \"$item->path\", removed.");
@@ -256,7 +267,6 @@ class VolumeIntegrity {
 				'validation_date' => $item->validation_date,
 			];
 		}
-		\ksort($data, SORT_STRING);
 		return $data;
 	}
 
