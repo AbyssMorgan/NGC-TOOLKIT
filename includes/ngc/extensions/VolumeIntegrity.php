@@ -370,18 +370,26 @@ class VolumeIntegrity {
 	}
 
 	/**
-	 * Deletes a media item from the database and the internal data array.
+	 * Deletes one or more media items from the database and the internal data array.
 	 *
-	 * @param string $path The path of the media item to unset.
+	 * @param string|array $paths The path(s) of the media item(s) to unset.
 	 * @return bool True if the operation was successful, false if the database is not connected.
 	 */
-	public function unset(string $path) : bool {
+	public function unset(string|array $paths, int $chunk_size = 1000) : bool {
 		if(\is_null($this->db)) return false;
-		$path = $this->container_escape($path);
-		$query = $this->db->prepare("DELETE FROM `$this->table_data` WHERE `path` = :path");
-		$query->bindParam(':path', $path);
-		$query->execute();
-		if(isset($this->data[$path])) unset($this->data[$path]);
+		if(!\is_array($paths)){
+			$paths = [$paths];
+		}
+		$escaped_paths = \array_map([$this, 'container_escape'], $paths);
+		$chunk_size = 1000;
+		foreach(\array_chunk($escaped_paths, $chunk_size) as $chunk){
+			$placeholders = \implode(',', \array_fill(0, \count($chunk), '?'));
+			$query = $this->db->prepare("DELETE FROM `$this->table_data` WHERE `path` IN ($placeholders)");
+			$query->execute($chunk);
+		}
+		foreach($paths as $path){
+			if(isset($this->data[$path])) unset($this->data[$path]);
+		}
 		return true;
 	}
 
@@ -441,8 +449,8 @@ class VolumeIntegrity {
 		}
 		unset($items, $item);
 		$items = \array_diff(\array_keys($this->data), $except);
+		$this->unset($items);
 		foreach($items as $path){
-			$this->unset($path);
 			$callback($path);
 		}
 		return true;
