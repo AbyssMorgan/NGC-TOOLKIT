@@ -1,5 +1,5 @@
 #define MyAppName "NGC-TOOLKIT"
-#define MyAppVersion "2.7.5"
+#define MyAppVersion "2.8.0"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "Toolkit.cmd"

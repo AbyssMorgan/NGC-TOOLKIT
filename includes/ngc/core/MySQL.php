@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.5 – Component
+ * NGC-TOOLKIT v2.8.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -16,6 +16,7 @@ namespace NGC\Core;
 use PDO;
 use PDOException;
 use BadMethodCallException;
+use Pdo\Mysql as PdoMySQL;
 
 /**
  * A wrapper class for PDO to simplify database interactions.
@@ -72,14 +73,20 @@ class MySQL {
 	 * @param string $password The database password.
 	 * @param string $dbname The database name. Use "*" to connect without selecting a specific database initially.
 	 * @param int $port The database port (default: 3306).
+	 * @param array $options A key=>value array of driver-specific connection options.
 	 * @return bool True on successful connection, false otherwise.
 	 */
 	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306, array $options = []) : bool {
-		$options = array_merge([
+		$defaults = [
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-		], $options);
+		];
+		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+		} else {
+			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+		}
+		$options = \array_merge($defaults, $options);
 		try {
 			$this->db = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}

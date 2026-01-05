@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.5 – Component
+ * NGC-TOOLKIT v2.8.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -370,7 +370,6 @@ class Request {
 		$response = \curl_exec($curl);
 		$info = \curl_getinfo($curl);
 		$error = \curl_error($curl);
-		\curl_close($curl);
 		if($response === false){
 			return [
 				'code' => $info['http_code'] ?? 0,

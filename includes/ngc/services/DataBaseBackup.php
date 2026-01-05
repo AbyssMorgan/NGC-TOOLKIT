@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.5 – Component
+ * NGC-TOOLKIT v2.8.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -15,6 +15,7 @@ namespace NGC\Services;
 
 use PDO;
 use PDOException;
+use Pdo\Mysql as PdoMySQL;
 
 /**
  * Class DataBaseBackup
@@ -180,16 +181,22 @@ class DataBaseBackup {
 	 * @param string $password The database password.
 	 * @param string $dbname The database name. Use "*" to connect without specifying a database (e.g., for showing databases).
 	 * @param int $port The database port.
+	 * @param array $options A key=>value array of driver-specific connection options.
 	 * @return bool True on successful connection, false otherwise.
 	 */
-	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
-		$options = [
+	public function connect(string $host, string $user, string $password, string $dbname, int $port = 3306, array $options = []) : bool {
+		$defaults = [
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;SET character_set_results = binary;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
+		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+		} else {
+			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+		}
+		$options = \array_merge($defaults, $options);
 		try {
-			$this->source = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=UTF8", $user, $password, $options);
+			$this->source = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";
@@ -208,16 +215,22 @@ class DataBaseBackup {
 	 * @param string $password The database password.
 	 * @param string $dbname The database name. Use "*" to connect without specifying a database.
 	 * @param int $port The database port.
+	 * @param array $options A key=>value array of driver-specific connection options.
 	 * @return bool True on successful connection, false otherwise.
 	 */
-	public function connect_destination(string $host, string $user, string $password, string $dbname, int $port = 3306) : bool {
-		$options = [
+	public function connect_destination(string $host, string $user, string $password, string $dbname, int $port = 3306, array $options = []) : bool {
+		$defaults = [
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;SET character_set_results = binary;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
+		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+		} else {
+			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+		}
+		$options = \array_merge($defaults, $options);
 		try {
-			$this->destination = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=UTF8", $user, $password, $options);
+			$this->destination = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
 			echo " Failed to connect:\r\n";

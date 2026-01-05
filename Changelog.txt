@@ -1,3 +1,8 @@
+v2.8.0:
+- MySQL SSL Support
+- Added more 7z config for compress
+- Updated MySQLTools, 7z config now is per instance. Default copy from global.
+
 v2.7.5:
 - Fixes
 - Optimizations

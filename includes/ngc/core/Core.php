@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.5 – Component
+ * NGC-TOOLKIT v2.8.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace NGC\Core;
 
 use Exception;
-use IntlTimeZone;
 use FilesystemIterator;
+use IntlTimeZone;
 
 \define('SYSTEM_TYPE_UNKNOWN', 0);
 \define('SYSTEM_TYPE_WINDOWS', 1);
@@ -1624,9 +1624,9 @@ class Core {
 	 */
 	public function get_computer_name() : string {
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			return $this->get_variable("%COMPUTERNAME%");
+			return \trim($this->get_variable("%COMPUTERNAME%"));
 		} else {
-			return \shell_exec('hostname');
+			return \trim(\shell_exec('hostname'));
 		}
 	}
 

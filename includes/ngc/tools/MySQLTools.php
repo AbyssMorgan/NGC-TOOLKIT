@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.5 – Component
+ * NGC-TOOLKIT v2.8.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -20,6 +20,7 @@ use NGC\Core\IniFile;
 use NGC\Core\Request;
 use NGC\Core\MySQL;
 use NGC\Services\DataBaseBackup;
+use Pdo\Mysql as PdoMySQL;
 
 class MySQLTools {
 
@@ -181,12 +182,35 @@ class MySQLTools {
 		$db['password'] = $this->core->get_input_password(" DB Pass: ");
 		if($db['password'] == '#') return false;
 
+		$db['ssl'] = $this->core->get_confirm(" DB SSL (Y/N): ");
+		if($db['ssl']){
+			$db['ssl_ca'] = $this->core->get_input_file(" SSL CA (File): ");
+			$db['ssl_cert'] = $this->core->get_input_file(" SSL Cert (File): ");
+			$db['ssl_key'] = $this->core->get_input_file(" SSL Key (File): ");
+		}
+
 		try_login_same:
-		$options = [
+		$defaults = [
 			PDO::ATTR_EMULATE_PREPARES => true,
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION SQL_BIG_SELECTS=1;',
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
+		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+			if($db['ssl']){
+				$options[PdoMySQL::ATTR_SSL_CA] = $db['ssl_ca'];
+				$options[PdoMySQL::ATTR_SSL_CERT] = $db['ssl_cert'];
+				$options[PdoMySQL::ATTR_SSL_KEY] = $db['ssl_key'];
+			}
+		} else {
+			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+			if($db['ssl']){
+				$options[PDO::MYSQL_ATTR_SSL_CA] = $db['ssl_ca'];
+				$options[PDO::MYSQL_ATTR_SSL_CERT] = $db['ssl_cert'];
+				$options[PDO::MYSQL_ATTR_SSL_KEY] = $db['ssl_key'];
+			}
+		}
+		$options = \array_merge($defaults, $options);
+
 		try {
 			$this->core->echo(" Connecting to: ".$db['host'].":".$db['port']."@".$db['user']);
 			$conn = new PDO("mysql:".($db['name'] == "*" ? "" : "dbname=".$db['name'].";")."host=".$db['host'].";port=".$db['port'], $db['user'], $db['password'], $options);
@@ -217,6 +241,10 @@ class MySQLTools {
 			'DB_PASSWORD' => $db['password'],
 			'DB_NAME' => $db['name'],
 			'DB_PORT' => \intval($db['port']),
+			'DB_SSL' => $db['ssl'],
+			'DB_SSL_CA' => $db['ssl_ca'] ?? null,
+			'DB_SSL_CERT' => $db['ssl_cert'] ?? null,
+			'DB_SSL_KEY' => $db['ssl_key'] ?? null,
 			'FOLDER_DATE_FORMAT' => "Y-m-d_His",
 			'BACKUP_QUERY_LIMIT' => 50000,
 			'BACKUP_INSERT_LIMIT' => 100,
@@ -338,7 +366,7 @@ class MySQLTools {
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
-		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 		$this->core->echo(" Create backup");
 
@@ -523,7 +551,7 @@ class MySQLTools {
 
 		$output = $backup->get_output();
 		if($ini->get('BACKUP_COMPRESS', false)){
-			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
+			$this->compress($callback, $output, $ini, $request);
 		}
 
 		$this->core->open_logs(true);
@@ -575,7 +603,7 @@ class MySQLTools {
 		$backup->toggle_lock_tables($lock_tables);
 
 		$this->core->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
-		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
+		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'), $this->get_mysql_options($ini_source))) goto set_label_source;
 		if($ini_source->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 
 		$this->core->clear();
@@ -865,7 +893,7 @@ class MySQLTools {
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
-		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))){
+		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))){
 			$this->core->echo(" Failed connect to database");
 			return false;
 		}
@@ -1024,7 +1052,7 @@ class MySQLTools {
 
 		$output = $backup->get_output();
 		if($ini->get('BACKUP_COMPRESS', false)){
-			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
+			$this->compress($callback, $output, $ini, $request);
 		}
 
 		$this->core->echo(" Backup for \"$label\" done");
@@ -1081,7 +1109,7 @@ class MySQLTools {
 
 		$db = new MySQL();
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
-		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
 		$save_output = $this->core->get_confirm(" Save query results in data file (Y/N): ");
@@ -1177,39 +1205,106 @@ class MySQLTools {
 	}
 
 	public function check_config(IniFile $config) : void {
-		if(!$config->is_set('BACKUP_ADD_LABEL_TO_PATH')) $config->set('BACKUP_ADD_LABEL_TO_PATH', true);
-		if(!$config->is_set('BACKUP_CURL_SEND_ERRORS')) $config->set('BACKUP_CURL_SEND_ERRORS', false);
-		if(!$config->is_set('BACKUP_CURL_CALLBACK')) $config->set('BACKUP_CURL_CALLBACK', null);
-		if(!$config->is_set('BACKUP_QUERY_LIMIT')) $config->set('BACKUP_QUERY_LIMIT', 50000);
-		if(!$config->is_set('BACKUP_INSERT_LIMIT')) $config->set('BACKUP_INSERT_LIMIT', 100);
-		if(!$config->is_set('BACKUP_TYPE_STRUCTURE')) $config->set('BACKUP_TYPE_STRUCTURE', true);
-		if(!$config->is_set('BACKUP_TYPE_DATA')) $config->set('BACKUP_TYPE_DATA', true);
-		if(!$config->is_set('BACKUP_COMPRESS')) $config->set('BACKUP_COMPRESS', true);
-		if(!$config->is_set('FOLDER_DATE_FORMAT')) $config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
-		if(!$config->is_set('SAVE_RESULTS_SEPARATOR')) $config->set('SAVE_RESULTS_SEPARATOR', '|');
-		if(!$config->is_set('BACKUP_LOCK_TABLES')) $config->set('BACKUP_LOCK_TABLES', false);
+		if(!$config->is_set('BACKUP_ADD_LABEL_TO_PATH')){
+			$config->set('BACKUP_ADD_LABEL_TO_PATH', true);
+		}
+		if(!$config->is_set('BACKUP_CURL_SEND_ERRORS')){
+			$config->set('BACKUP_CURL_SEND_ERRORS', false);
+		}
+		if(!$config->is_set('BACKUP_CURL_CALLBACK')){
+			$config->set('BACKUP_CURL_CALLBACK', null);
+		}
+		if(!$config->is_set('BACKUP_QUERY_LIMIT')){
+			$config->set('BACKUP_QUERY_LIMIT', 50000);
+		}
+		if(!$config->is_set('BACKUP_INSERT_LIMIT')){
+			$config->set('BACKUP_INSERT_LIMIT', 100);
+		}
+		if(!$config->is_set('BACKUP_TYPE_STRUCTURE')){
+			$config->set('BACKUP_TYPE_STRUCTURE', true);
+		}
+		if(!$config->is_set('BACKUP_TYPE_DATA')){
+			$config->set('BACKUP_TYPE_DATA', true);
+		}
+		if(!$config->is_set('BACKUP_COMPRESS')){
+			$config->set('BACKUP_COMPRESS', true);
+		}
+		if(!$config->is_set('FOLDER_DATE_FORMAT')){
+			$config->set('FOLDER_DATE_FORMAT', 'Y-m-d_His');
+		}
+		if(!$config->is_set('SAVE_RESULTS_SEPARATOR')){
+			$config->set('SAVE_RESULTS_SEPARATOR', '|');
+		}
+		if(!$config->is_set('BACKUP_LOCK_TABLES')){
+			$config->set('BACKUP_LOCK_TABLES', false);
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_TYPE')){
+			$config->set('BACKUP_COMPRESS_TYPE', $this->core->config->get('BACKUP_COMPRESS_TYPE'));
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_LEVEL')){
+			$config->set('BACKUP_COMPRESS_LEVEL', $this->core->config->get('BACKUP_COMPRESS_LEVEL'));
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_METHOD')){
+			$config->set('BACKUP_COMPRESS_METHOD', $this->core->config->get('BACKUP_COMPRESS_METHOD'));
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_DICTIONARY_SIZE')){
+			$config->set('BACKUP_COMPRESS_DICTIONARY_SIZE', $this->core->config->get('BACKUP_COMPRESS_DICTIONARY_SIZE'));
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_WORD_SIZE')){
+			$config->set('BACKUP_COMPRESS_WORD_SIZE', $this->core->config->get('BACKUP_COMPRESS_WORD_SIZE'));
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_SOLID_BLOCK')){
+			$config->set('BACKUP_COMPRESS_SOLID_BLOCK', $this->core->config->get('BACKUP_COMPRESS_SOLID_BLOCK'));
+		}
+		if(!$config->is_set('BACKUP_COMPRESS_MAX_THREADS')){
+			$config->set('BACKUP_COMPRESS_MAX_THREADS', $this->core->config->get('BACKUP_COMPRESS_MAX_THREADS'));
+		}
 		if($config->is_changed()) $config->save();
 	}
 
-	public function compress(?string $callback, string $output, string $backup_path, Request $request) : void {
+	public function compress(?string $callback, string $input, IniFile $config, Request $request) : bool {
+		$extension = $config->get('BACKUP_COMPRESS_TYPE');
+		$mx = $config->get('BACKUP_COMPRESS_LEVEL');
+		$m0 = $config->get('BACKUP_COMPRESS_METHOD');
+		$md = $config->get('BACKUP_COMPRESS_DICTIONARY_SIZE');
+		$mfb = $config->get('BACKUP_COMPRESS_WORD_SIZE');
+		$ms = $config->get('BACKUP_COMPRESS_SOLID_BLOCK');
+		$mmt = $config->get('BACKUP_COMPRESS_MAX_THREADS');
+
+		$sql = $this->core->get_path("$input/*");
+		$file_output = "$input.$extension";
+		$file_temp = "$input.tmp";
+
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
 		$this->core->echo(" Compressing backup");
 		$this->core->write_log("Compressing backup");
-		$sql = $this->core->get_path("$output/*");
-		$cl = $this->core->config->get('BACKUP_COMPRESS_LEVEL');
-		$at = $this->core->config->get('BACKUP_COMPRESS_TYPE');
-		$this->core->exec("7z", "a -mx$cl -t$at \"$output.7z\" \"$sql\"");
-		$this->core->echo();
-		if(\file_exists("$output.7z")){
-			if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
-			$this->core->echo(" Compress backup into \"$output.7z\" success");
-			$this->core->write_log("Compress backup into \"$output.7z\" success");
-			$this->core->rrmdir($output);
-		} else {
-			if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
-			$this->core->echo(" Compress backup into \"$output.7z\" fail");
-			$this->core->write_log("Compress backup into \"$output.7z\" fail");
+
+		if(file_exists($file_output)){
+			if(!$this->core->delete($file_output)){
+				$this->core->echo(" Compress backup into \"$file_output\" fail");
+				$this->core->write_log("Compress backup into \"$file_output\" fail");
+				return false;
+			}
 		}
+		
+		$this->core->exec("7z", "a -m0=$m0 -mx=$mx -md=$md -mfb=$mfb -ms=$ms -mmt=$mmt -t$extension \"$file_temp\" \"$sql\"");
+		$this->core->echo();
+
+		if(file_exists($file_temp)){
+			if($this->core->move($file_temp, $file_output)){
+				$this->core->rrmdir($input);
+				if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
+				$this->core->echo(" Compress backup into \"$file_output\" success");
+				$this->core->write_log("Compress backup into \"$file_output\" success");
+				$this->core->rrmdir($input);
+				return true;
+			}
+		}
+		
+		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
+		$this->core->echo(" Compress backup into \"$file_output\" fail");
+		$this->core->write_log("Compress backup into \"$file_output\" fail");
+		return false;
 	}
 
 	public function backup_selected(string $type, bool $need_lock) : bool {
@@ -1279,7 +1374,7 @@ class MySQLTools {
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
-		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 
 		$this->core->echo(" Create backup");
@@ -1319,7 +1414,7 @@ class MySQLTools {
 
 		$output = $backup->get_output();
 		if($compress){
-			$this->compress($callback, $output, $ini->get('BACKUP_PATH'), $request);
+			$this->compress($callback, $output, $ini, $request);
 		}
 
 		$this->core->open_logs(true);
@@ -1350,7 +1445,7 @@ class MySQLTools {
 
 		$db = new MySQL();
 		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
-		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'))) goto set_label;
+		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
 		$separator = $ini->get('SAVE_RESULTS_SEPARATOR');
@@ -1400,7 +1495,7 @@ class MySQLTools {
 		$db_source = new MySQL();
 		$ini_source = $this->get_config($source);
 		$this->core->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
-		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'))) goto set_label_source;
+		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'), $this->get_mysql_options($ini_source))) goto set_label_source;
 		if($ini_source->get('DB_NAME') == "*" && !$this->select_data_base($db_source->get_connection())) return false;
 
 		set_label_destination:
@@ -1425,7 +1520,7 @@ class MySQLTools {
 		$db_destination = new MySQL();
 		$ini_destination = $this->get_config($destination);
 		$this->core->echo(" Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
-		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'))) goto set_label_destination;
+		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'), $this->get_mysql_options($ini_destination))) goto set_label_destination;
 		if($ini_destination->get('DB_NAME') == "*" && !$this->select_data_base($db_destination->get_connection())) return false;
 
 		$info_source = [];
@@ -1515,6 +1610,22 @@ class MySQLTools {
 		$this->core->open_logs(true);
 		$this->core->pause(" Comparison \"$source\" to \"$destination\" done, press any key to back to menu");
 		return false;
+	}
+
+	private function get_mysql_options(IniFile $config) : array {
+		$options = [];
+		if($config->get('DB_SSL', false)){
+			if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+				$options[PdoMySQL::ATTR_SSL_CA] = $config->get('DB_SSL_CA', '');
+				$options[PdoMySQL::ATTR_SSL_CERT] = $config->get('DB_SSL_CERT', '');
+				$options[PdoMySQL::ATTR_SSL_KEY] = $config->get('DB_SSL_KEY', '');
+			} else {
+				$options[PDO::MYSQL_ATTR_SSL_CA] = $config->get('DB_SSL_CA', '');
+				$options[PDO::MYSQL_ATTR_SSL_CERT] = $config->get('DB_SSL_CERT', '');
+				$options[PDO::MYSQL_ATTR_SSL_KEY] = $config->get('DB_SSL_KEY', '');
+			}
+		}
+		return $options;
 	}
 
 }

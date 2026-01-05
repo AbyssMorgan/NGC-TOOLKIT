@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.7.5 – Component
+ * NGC-TOOLKIT v2.8.0 – Component
  *
  * © 2025 Abyss Morgan
  *
@@ -95,10 +95,22 @@ class VolumeInfo {
 			foreach($this->search_folders as $search_folder){
 				if(!\file_exists($search_folder)) continue;
 				foreach($this->core->get_folders($search_folder, false, false) as $drive){
-					$this->search_volumes($data, $drive, $with_config);
+					if($this->search_volumes($data, $drive, $with_config) == 0){
+						$items = $this->core->get_folders($drive, false, false);
+						foreach($items as $item){
+							$this->search_volumes($data, $this->core->get_path($item), $with_config);
+						}
+					}
 				}
 			}
 		}
+		\uasort($data, static function(object $a, object $b) : int {
+			$group_cmp = \strcmp((string)$a->group_name, (string)$b->group_name);
+			if($group_cmp !== 0){
+				return $group_cmp;
+			}
+			return \strcmp((string)$a->name, (string)$b->name);
+		});
 		return $data;
 	}
 
