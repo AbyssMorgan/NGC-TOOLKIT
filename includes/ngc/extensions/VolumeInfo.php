@@ -47,8 +47,8 @@ class VolumeInfo {
 			$this->search_folders = $search_folders;
 		} else {
 			$search_folders = $core->config->get('VOLUME_INFO_SEARCH_FOLDERS');
-			if(!is_null($search_folders)){
-				$this->search_folders = explode(";", $search_folders);
+			if(!\is_null($search_folders)){
+				$this->search_folders = \explode(";", $search_folders);
 			} else {
 				$this->search_folders = [];
 			}

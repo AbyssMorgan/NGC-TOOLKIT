@@ -63,12 +63,12 @@ class Toolkit extends Core {
 			}
 		}
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			\dl('php_imagick.dll');
+			dl('php_imagick.dll');
 		} else {
 			$open_file_binary = null;
 			$variants = ['xdg-open', 'nautilus', 'dolphin'];
 			foreach($variants as $variant){
-				if(\file_exists("/usr/bin/$variant")){
+				if(file_exists("/usr/bin/$variant")){
 					$open_file_binary = $variant;
 				}
 			}
@@ -82,13 +82,13 @@ class Toolkit extends Core {
 
 		$path_config_toolkit = $this->get_path("$this->app_data/config.ini");
 
-		if(!\file_exists($this->app_data)) \mkdir($this->app_data);
+		if(!file_exists($this->app_data)) mkdir($this->app_data);
 
 		$path_config_mysql = $this->get_path("$this->app_data/MySQL");
-		if(!\file_exists($path_config_mysql)) \mkdir($path_config_mysql);
+		if(!file_exists($path_config_mysql)) mkdir($path_config_mysql);
 
 		$path_config_ftp = $this->get_path("$this->app_data/FTP");
-		if(!\file_exists($path_config_ftp)) \mkdir($path_config_ftp);
+		if(!file_exists($path_config_ftp)) mkdir($path_config_ftp);
 
 		$this->config = new IniFile($path_config_toolkit, true);
 		$this->storage = new AppStorage($this);
@@ -117,9 +117,9 @@ class Toolkit extends Core {
 				$changed = true;
 			}
 			if($this->config->get('CHECK_FOR_UPDATES')){
-				$next_check_update = $this->config->get('APP_NEXT_CHECK_FOR_UPDATE', \date("U") - 3600);
-				if(\date("U") >= $next_check_update){
-					$this->config->set('APP_NEXT_CHECK_FOR_UPDATE', \date("U") + 86400 * $this->config->get('CHECK_FOR_UPDATES_DAYS'));
+				$next_check_update = $this->config->get('APP_NEXT_CHECK_FOR_UPDATE', date("U") - 3600);
+				if(date("U") >= $next_check_update){
+					$this->config->set('APP_NEXT_CHECK_FOR_UPDATE', date("U") + 86400 * $this->config->get('CHECK_FOR_UPDATES_DAYS'));
 					$changed = true;
 					$check_for_updates = true;
 				}
@@ -134,11 +134,11 @@ class Toolkit extends Core {
 
 			$items = $this->get_folders($this->get_path("$program_files/NGC-UTILITIES/core"), false, false);
 			foreach($items as $item){
-				if(\pathinfo($item, PATHINFO_BASENAME) != $this->utilities_version) \array_push($files, $item);
+				if(pathinfo($item, PATHINFO_BASENAME) != $this->utilities_version) array_push($files, $item);
 			}
 
 			foreach($files as $file){
-				if(!\file_exists($file)) continue;
+				if(!file_exists($file)) continue;
 				if(!$this->is_admin()){
 					$this->echo();
 					$this->echo(" Please run once NGC-TOOLKIT as administrator for remove old NGC-UTILITIES files");
@@ -148,8 +148,8 @@ class Toolkit extends Core {
 					return;
 				}
 				$this->rrmdir($file, false);
-				if(\str_contains($file, "php")){
-					$this->delete($this->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/".\pathinfo($file, PATHINFO_BASENAME).".ini"), false);
+				if(str_contains($file, "php")){
+					$this->delete($this->get_path(pathinfo($file, PATHINFO_DIRNAME)."/".pathinfo($file, PATHINFO_BASENAME).".ini"), false);
 				}
 			}
 		}
@@ -171,12 +171,12 @@ class Toolkit extends Core {
 
 		$this->init_logs();
 
-		\ini_set('memory_limit', -1);
+		ini_set('memory_limit', -1);
 
-		$dev = \file_exists($this->get_path("$this->path/.git"));
+		$dev = file_exists($this->get_path("$this->path/.git"));
 		if($dev){
-			if(\file_get_contents("$this->path/version") != $this->version){
-				\file_put_contents("$this->path/version", $this->version);
+			if(file_get_contents("$this->path/version") != $this->version){
+				file_put_contents("$this->path/version", $this->version);
 			}
 		}
 		if($check_for_updates && !$dev){
@@ -186,7 +186,7 @@ class Toolkit extends Core {
 	}
 
 	public function execute() : void {
-		switch(\mb_strtolower($this->command ?? '')){
+		switch(mb_strtolower($this->command ?? '')){
 			case '--make-backup': {
 				if(empty($this->arguments[0] ?? '')){
 					$this->print_help([" Usage: --make-backup <label> [dbname]"]);
@@ -199,7 +199,7 @@ class Toolkit extends Core {
 			case '--interactive': {
 				while(!$this->abort){
 					$this->abort = $this->select_tool();
-					\gc_collect_cycles();
+					gc_collect_cycles();
 				}
 				$this->close(false);
 				break;
@@ -237,8 +237,8 @@ class Toolkit extends Core {
 		$this->print_help($options);
 
 		$line = $this->get_input(' Tool: ');
-		$dynamic_action = \explode(' ', $line);
-		switch(\mb_strtoupper($dynamic_action[0])){
+		$dynamic_action = explode(' ', $line);
+		switch(mb_strtoupper($dynamic_action[0])){
 			case 'F1': {
 				$this->tool = new FileFunctions($this);
 				break;
@@ -300,9 +300,9 @@ class Toolkit extends Core {
 				break;
 			}
 		}
-		if(!$this->abort && !\is_null($this->tool)){
+		if(!$this->abort && !is_null($this->tool)){
 			$response = $this->select_action($dynamic_action[1] ?? null);
-			\gc_collect_cycles();
+			gc_collect_cycles();
 			return $response;
 		}
 		return false;

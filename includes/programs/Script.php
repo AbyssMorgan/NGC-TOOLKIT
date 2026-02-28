@@ -51,12 +51,12 @@ class Script extends Core {
 			}
 		}
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			\dl('php_imagick.dll');
+			dl('php_imagick.dll');
 		} else {
 			$open_file_binary = null;
 			$variants = ['xdg-open', 'nautilus', 'dolphin'];
 			foreach($variants as $variant){
-				if(\file_exists("/usr/bin/$variant")){
+				if(file_exists("/usr/bin/$variant")){
 					$open_file_binary = $variant;
 				}
 			}
@@ -70,13 +70,13 @@ class Script extends Core {
 
 		$path_config_toolkit = $this->get_path("$this->app_data/config.ini");
 
-		if(!\file_exists($this->app_data)) \mkdir($this->app_data);
+		if(!file_exists($this->app_data)) mkdir($this->app_data);
 
 		$path_config_mysql = $this->get_path("$this->app_data/MySQL");
-		if(!\file_exists($path_config_mysql)) \mkdir($path_config_mysql);
+		if(!file_exists($path_config_mysql)) mkdir($path_config_mysql);
 
 		$path_config_ftp = $this->get_path("$this->app_data/FTP");
-		if(!\file_exists($path_config_ftp)) \mkdir($path_config_ftp);
+		if(!file_exists($path_config_ftp)) mkdir($path_config_ftp);
 
 		$this->config = new IniFile($path_config_toolkit, true);
 		$this->storage = new AppStorage($this);
@@ -116,13 +116,13 @@ class Script extends Core {
 
 		$this->init_logs();
 
-		\ini_set('memory_limit', -1);
+		ini_set('memory_limit', -1);
 	}
 
 	public function execute() : void {
-		\array_unshift($this->arguments, $this->command);
+		array_unshift($this->arguments, $this->command);
 		$path = $this->command;
-		if(empty($path) || !\file_exists($path)){
+		if(empty($path) || !file_exists($path)){
 			$this->echo(" File \"$path\" not exists");
 		} else {
 			$console = new Console($this);

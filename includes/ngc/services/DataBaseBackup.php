@@ -189,7 +189,7 @@ class DataBaseBackup {
 			PDO::ATTR_EMULATE_PREPARES => true,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
-		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+		if(PHP_VERSION_ID >= 80400 && \class_exists('Pdo\\Mysql')){
 			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
 		} else {
 			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
@@ -223,7 +223,7 @@ class DataBaseBackup {
 			PDO::ATTR_EMULATE_PREPARES => true,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
-		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+		if(PHP_VERSION_ID >= 80400 && \class_exists('Pdo\\Mysql')){
 			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
 		} else {
 			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';

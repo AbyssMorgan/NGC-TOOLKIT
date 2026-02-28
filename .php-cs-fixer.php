@@ -25,6 +25,11 @@ $config = [
 	'ternary_operator_spaces' => true,
 	'trailing_comma_in_multiline' => ['elements' => ['arrays']],
 	'whitespace_after_comma_in_array' => true,
+	'native_function_invocation' => [
+		'include' => ['@all'],
+		'scope' => 'namespaced',
+		'strict' => true,
+	],
 ];
 
 return (new Config())->setRules($config)->setIndent("\t")->setLineEnding("\n")->setFinder($finder);

@@ -1,5 +1,5 @@
 @ECHO OFF
-chcp 65001
+chcp 65001 >> nul
 CD /D "%~dp0\.."
 CLS
 SET VERSION_PHP=8.5

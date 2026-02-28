@@ -194,7 +194,7 @@ class MySQLTools {
 			PDO::ATTR_EMULATE_PREPARES => true,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
-		if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+		if(PHP_VERSION_ID >= 80400 && \class_exists('Pdo\\Mysql')){
 			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
 			if($db['ssl']){
 				$options[PdoMySQL::ATTR_SSL_CA] = $db['ssl_ca'];
@@ -1279,7 +1279,7 @@ class MySQLTools {
 		$this->core->echo(" Compressing backup");
 		$this->core->write_log("Compressing backup");
 
-		if(file_exists($file_output)){
+		if(\file_exists($file_output)){
 			if(!$this->core->delete($file_output)){
 				$this->core->echo(" Compress backup into \"$file_output\" fail");
 				$this->core->write_log("Compress backup into \"$file_output\" fail");
@@ -1290,7 +1290,7 @@ class MySQLTools {
 		$this->core->exec("7z", "a -m0=$m0 -mx=$mx -md=$md -mfb=$mfb -ms=$ms -mmt=$mmt -t$extension \"$file_temp\" \"$sql\"");
 		$this->core->echo();
 
-		if(file_exists($file_temp)){
+		if(\file_exists($file_temp)){
 			if($this->core->move($file_temp, $file_output)){
 				$this->core->rrmdir($input);
 				if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
@@ -1615,7 +1615,7 @@ class MySQLTools {
 	private function get_mysql_options(IniFile $config) : array {
 		$options = [];
 		if($config->get('DB_SSL', false)){
-			if(PHP_VERSION_ID >= 80400 && class_exists('Pdo\\Mysql')){
+			if(PHP_VERSION_ID >= 80400 && \class_exists('Pdo\\Mysql')){
 				$options[PdoMySQL::ATTR_SSL_CA] = $config->get('DB_SSL_CA', '');
 				$options[PdoMySQL::ATTR_SSL_CERT] = $config->get('DB_SSL_CERT', '');
 				$options[PdoMySQL::ATTR_SSL_KEY] = $config->get('DB_SSL_KEY', '');

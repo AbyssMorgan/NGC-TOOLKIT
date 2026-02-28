@@ -243,7 +243,7 @@ class VolumeIntegrity {
 	 */
 	public function get_all(string $order_by = 'path', string $order = 'ASC') : array|false {
 		if(\is_null($this->db)) return false;
-		$order = strtoupper($order);
+		$order = \strtoupper($order);
 		if(!\in_array($order_by, ['id', 'path', 'checksum', 'mime_type', 'size', 'modification_date', 'validation_date'])){
 			throw new Exception("Invalid order by value");
 		}
