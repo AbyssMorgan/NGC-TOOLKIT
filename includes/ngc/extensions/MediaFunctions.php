@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -56,7 +56,7 @@ class MediaFunctions {
 	 */
 	public function __construct(Toolkit|Script $core){
 		$this->core = $core;
-		$this->file_info = \finfo_open(FILEINFO_MIME_TYPE, $this->core->get_resource("magic.mgc"));
+		$this->file_info = \finfo_open(FILEINFO_MIME_TYPE, $this->core->get_resource("magic.text"));
 	}
 
 	/**
@@ -64,7 +64,6 @@ class MediaFunctions {
 	 * Closes the fileinfo resource.
 	 */
 	public function __destruct(){
-		\finfo_close($this->file_info);
 		$this->file_info = null;
 	}
 
@@ -176,7 +175,7 @@ class MediaFunctions {
 		if(!\is_null($image)){
 			$w = \imagesx($image);
 			$h = \imagesy($image);
-			\imagedestroy($image);
+			$image = null;
 			return "{$w}x{$h}";
 		}
 		try {

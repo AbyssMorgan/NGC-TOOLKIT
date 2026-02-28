@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -347,7 +347,7 @@ class MediaSorter {
 			$items++;
 			if(!\file_exists($file)) continue;
 			$file_name = \str_replace(['SEASON', 'EPISODE'], ['S', 'E'], \mb_strtoupper(\pathinfo($file, PATHINFO_FILENAME)));
-			$file_name = \str_replace([' ', '.', '[', ']'], ' ', $file_name);
+			$file_name = \str_replace(["\u{00A0}", '.', '[', ']'], "\x20", $file_name);
 			$mathes = [];
 			if(\preg_match("/S[0-9]{1,2}E[0-9]{1,3}E[0-9]{1,3}/", $file_name, $mathes) == 1){
 				$marker = $mathes[0];
@@ -370,12 +370,12 @@ class MediaSorter {
 					$this->core->write_error("FAILED GET MARKER \"$file\"");
 					$errors++;
 				} else {
-					$folder_name = \str_replace(['_', '.', "\u{00A0}"], ' ', \substr(\pathinfo($file, PATHINFO_FILENAME), 0, $end));
+					$folder_name = \str_replace(['_', '.', "\u{00A0}"], "\x20", \substr(\pathinfo($file, PATHINFO_FILENAME), 0, $end));
 					$folder_name = \str_replace([';', '@', '#', '~', '!', '$', '%', '^', '&'], '', $folder_name);
-					while(\str_contains($folder_name, '  ')){
-						$folder_name = \str_replace('  ', ' ', $folder_name);
+					while(\str_contains($folder_name, "\x20\x20")){
+						$folder_name = \str_replace("\x20\x20", "\x20", $folder_name);
 					}
-					$folder_name = \trim($folder_name, ' ');
+					$folder_name = \trim($folder_name, "\x20");
 					if(empty($folder_name)){
 						$this->core->write_error("ESCAPED FOLDER NAME IS EMPTY \"$file\"");
 						$errors++;

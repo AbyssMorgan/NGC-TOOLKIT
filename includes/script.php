@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -34,7 +34,7 @@ set_exception_handler(function(Throwable $e) : void {
 	$message .= " Line: $line_count\r\n";
 	$message .= " Error: ".$e->getMessage()."\r\n";
 	$message .= " Trace: \r\n";
-	$message .= preg_replace('/^/m', ' ', $e->getTraceAsString())."\r\n\r\n";
+	$message .= preg_replace('/^/m', "\x20", $e->getTraceAsString())."\r\n\r\n";
 	echo $message;
 	echo " ABORT, PRESS ANY KEY TO EXIT\r\n";
 	if(!empty($GLOBALS['script_name'])){
@@ -54,6 +54,10 @@ function get_includes_list(string $path) : array {
 	}
 	fclose($file);
 	return $data;
+}
+
+if(version_compare(PHP_VERSION, '8.5.0', '<')){
+	throw new Exception("PHP 8.5 required!");
 }
 
 $includes_path = __DIR__;

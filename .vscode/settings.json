@@ -8,7 +8,7 @@
 		"imagick",
 		"opcache"
 	],
-	"php.version": "8.4",
+	"php.version": "8.5",
 	"php.problems.exclude": {
 		"*": [7001, 7103]
 	}

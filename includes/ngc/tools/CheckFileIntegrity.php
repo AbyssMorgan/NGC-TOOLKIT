@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -74,7 +74,7 @@ class CheckFileIntegrity {
 
 		$pattern_file = $this->core->parse_input_path($line);
 		if(!isset($pattern_file[0])) goto set_name;
-		$pattern_file = \preg_replace('/[^A-Za-z0-9_\-]/', '_', $pattern_file[0]).".ngc-pat";
+		$pattern_file = \preg_replace('/[^A-Za-z0-9_\-]/', "_", $pattern_file[0]).".ngc-pat";
 
 		$pattern = new GuardPattern();
 		$pattern->set_input($input);

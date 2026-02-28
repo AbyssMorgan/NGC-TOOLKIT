@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -43,10 +43,15 @@ class VolumeInfo {
 	 */
 	public function __construct(Toolkit|Script $core, ?array $search_folders = null){
 		$this->core = $core;
-		if($this->core->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			$this->search_folders = $search_folders ?? [];
+		if(isset($search_folders)){
+			$this->search_folders = $search_folders;
 		} else {
-			$this->search_folders = $search_folders ?? ['/media', '/mnt'];
+			$search_folders = $core->config->get('VOLUME_INFO_SEARCH_FOLDERS');
+			if(!is_null($search_folders)){
+				$this->search_folders = explode(";", $search_folders);
+			} else {
+				$this->search_folders = [];
+			}
 		}
 	}
 

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -611,7 +611,7 @@ class DataBaseBackup {
 			\fwrite($file, $this->get_table_drop($table)."\n\n");
 			\fwrite($file, $creation['query']."\n\n");
 			\fwrite($file, "\n".$this->get_footer()."\n");
-			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			echo "\n Failed make backup for table structure $table, skipping\r\n";
@@ -646,7 +646,7 @@ class DataBaseBackup {
 			$this->destination->query($creation['query']);
 			$this->alters .= $creation['alters']."\n";
 			$this->destination->query($this->get_footer());
-			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			echo " Failed clone table $table skipping\r\n";
@@ -674,7 +674,7 @@ class DataBaseBackup {
 			\fwrite($file, "-- やあ --\n\n");
 			\fwrite($file, $this->get_header()."\n\n");
 			\fwrite($file, "SET foreign_key_checks = 0;\n\n");
-			echo " Table data: `$this->database`.`$table` Progress: 0.00 %        \r";
+			echo " Table data: `$this->database`.`$table` Progress: 0.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r";
 			$insert = $this->get_insert($table, \array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
@@ -683,7 +683,7 @@ class DataBaseBackup {
 			if($count > 0){
 				do {
 					$percent = \sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table data: `$this->database`.`$table` Progress: $percent %        \r";
+					echo " Table data: `$this->database`.`$table` Progress: $percent % \x20\x20\x20\x20\x20\x20\x20\r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					$query = '';
@@ -740,7 +740,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			\fwrite($file, "SET foreign_key_checks = 1;\n\n");
 			\fwrite($file, "\n".$this->get_footer()."\n");
-			echo " Table data: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+			echo " Table data: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			try {
@@ -771,7 +771,7 @@ class DataBaseBackup {
 			$columns = $this->get_columns($table);
 			$this->destination->query($this->get_header());
 			$this->destination->query("SET foreign_key_checks = 0;");
-			echo " Table: `$this->database`.`$table` Progress: 0.00 %        \r";
+			echo " Table: `$this->database`.`$table` Progress: 0.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r";
 			$insert = $this->get_insert($table, \array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
@@ -780,7 +780,7 @@ class DataBaseBackup {
 			if($count > 0){
 				do {
 					$percent = \sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table: `$this->database`.`$table` Progress: $percent %        \r";
+					echo " Table: `$this->database`.`$table` Progress: $percent % \x20\x20\x20\x20\x20\x20\x20\r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					foreach($rows as $row){
@@ -837,7 +837,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			$this->destination->query("SET foreign_key_checks = 1;");
 			$this->destination->query($this->get_footer());
-			echo " Table: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+			echo " Table: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			try {
@@ -871,7 +871,7 @@ class DataBaseBackup {
 			\fwrite($file, $this->get_view_drop($table)."\n\n");
 			\fwrite($file, $this->get_view_creation($table)."\n\n");
 			\fwrite($file, "\n".$this->get_footer()."\n");
-			echo " View: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+			echo " View: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			echo "\n Failed make backup for view $table, skipping\r\n";
@@ -901,7 +901,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone view $table reason: ".$e->getMessage();
 		}
-		echo " View: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " View: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -929,7 +929,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone function $table reason: ".$e->getMessage();
 		}
-		echo " Function: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Function: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -953,7 +953,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone function $table reason: ".$e->getMessage();
 		}
-		echo " Function: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Function: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -981,7 +981,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone procedure $table reason: ".$e->getMessage();
 		}
-		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -1005,7 +1005,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone procedure $table reason: ".$e->getMessage();
 		}
-		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -1033,7 +1033,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone event $table reason: ".$e->getMessage();
 		}
-		echo " Event: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Event: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -1057,7 +1057,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone event $table reason: ".$e->getMessage();
 		}
-		echo " Event: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Event: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -1085,7 +1085,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone trigger $table reason: ".$e->getMessage();
 		}
-		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -1109,7 +1109,7 @@ class DataBaseBackup {
 			echo " ".$e->getMessage()."\r\n";
 			$errors[] = "Failed clone trigger $table reason: ".$e->getMessage();
 		}
-		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %        \r\n";
+		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 

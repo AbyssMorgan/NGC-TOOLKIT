@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -152,7 +152,7 @@ class Core {
 	 * Version of utilities.
 	 * @var string
 	 */
-	public string $utilities_version = "1.3.0";
+	public string $utilities_version = "1.4.0";
 
 	/**
 	 * Current console title.
@@ -214,6 +214,16 @@ class Core {
 	];
 
 	/**
+	 * Windows reserved names
+	 * @var array
+	 */
+	public array $reserved_names = [
+		'con', 'prn', 'aux', 'nul',
+		'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9',
+		'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9',
+	];
+
+	/**
 	 * Constructor for the Core class.
 	 * Initializes timezone, internal encoding, command, arguments, and base path.
 	 *
@@ -224,8 +234,11 @@ class Core {
 		\mb_internal_encoding('UTF-8');
 		unset($arguments[0]);
 		$this->command = $arguments[1] ?? null;
+		if(!\is_null($this->command)) $this->command = \rtrim($this->command, "\r\n");
 		if(isset($arguments[1])) unset($arguments[1]);
-		$this->arguments = \array_values($arguments);
+		$this->arguments = \array_map(function(string $arg) : string {
+			return \rtrim($arg, "\r\n");
+		}, \array_values($arguments));
 		$this->path = \realpath($this->get_path(__DIR__."/../../.."));
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
 			$this->device_null = 'nul';
@@ -527,7 +540,7 @@ class Core {
 	public function format_bytes(float|int $bytes, int $precision = 2, bool $dot = true) : string {
 		if($bytes > 0){
 			$i = \floor(\log($bytes) / \log(1024));
-			$res = \sprintf("%.{$precision}f", $bytes / \pow(1024, $i)).' '.$this->units_bytes[$i];
+			$res = \sprintf("%.{$precision}f", $bytes / \pow(1024, $i))." {$this->units_bytes[$i]}";
 		} else {
 			$res = \sprintf("%.{$precision}f", 0).' B';
 		}
@@ -546,7 +559,7 @@ class Core {
 	public function format_bits(float|int $bits, int $precision = 2, bool $dot = true) : string {
 		if($bits > 0){
 			$i = \floor(\log($bits) / \log(1000));
-			$res = \sprintf("%.{$precision}f", $bits / \pow(1000, $i)).' '.$this->units_bits[$i];
+			$res = \sprintf("%.{$precision}f", $bits / \pow(1000, $i))." {$this->units_bits[$i]}";
 		} else {
 			$res = \sprintf("%.{$precision}f", 0).' bit';
 		}
@@ -1048,13 +1061,16 @@ class Core {
 	 * @param string $from The source file path.
 	 * @param string $to The destination file path.
 	 * @param bool $log Whether to log the operation.
+	 * @param ?int $buffer_size Determine buffer size.
 	 * @return bool True on success, false on failure.
 	 */
-	public function acopy(string $from, string $to, bool $log = true) : bool {
+	public function acopy(string $from, string $to, bool $log = true, ?int $buffer_size = null) : bool {
 		if(!\file_exists($from)) return false;
 		if($this->same_path($from, $to)) return true;
-		$write_buffer = $this->get_write_buffer();
-		if(!$write_buffer) return false;
+		if(\is_null($buffer_size)){
+			$buffer_size = $this->get_write_buffer();
+			if(!$buffer_size) return false;
+		}
 		if(\file_exists($to) && \pathinfo($from, PATHINFO_DIRNAME) != \pathinfo($to, PATHINFO_DIRNAME)){
 			if($log) $this->write_error("FAILED COPY \"$from\" \"$to\" FILE EXISTS");
 			return false;
@@ -1072,7 +1088,7 @@ class Core {
 		try {
 			@\ftruncate($destination, $filesize);
 			while(!\feof($source)){
-				$buffer = @\fread($source, $write_buffer);
+				$buffer = @\fread($source, $buffer_size);
 				if($buffer === false) throw new Exception("Failed read block");
 				$state = @\fwrite($destination, $buffer);
 				if($state === false) throw new Exception("Failed write block");
@@ -1496,8 +1512,6 @@ class Core {
 				\exec("START $params \"\" \"$path\"");
 			} elseif(!\is_null($this->config->get('OPEN_FILE_BINARY'))){
 				\exec($this->config->get('OPEN_FILE_BINARY')." \"$path\"");
-			} else {
-				$this->write_error("Failed open file OPEN_FILE_BINARY is not configured");
 			}
 		}
 	}
@@ -1513,8 +1527,6 @@ class Core {
 				\exec("START \"\" \"$url\"");
 			} elseif(!\is_null($this->config->get('OPEN_FILE_BINARY'))){
 				\exec($this->config->get('OPEN_FILE_BINARY')." \"$url\"");
-			} else {
-				$this->write_error("Failed open url OPEN_FILE_BINARY is not configured");
 			}
 		}
 	}
@@ -2139,6 +2151,27 @@ class Core {
 			return $code === 0;
 		}
 		return \symlink($target_path, $link_path);
+	}
+
+	/**
+	 * Validates a filesystem path for Windows / SMB compatibility.
+	 *
+	 * @param string $path Input path (Windows or Unix style)
+	 * @return bool TRUE if path is Windows-safe, FALSE otherwise
+	 */
+	public function is_windows_safe_path(string $path) : bool {
+		$path = \str_replace("\\", "/", $path);
+		if($path === "" || $path === "/") return false;
+		$segments = \array_filter(\explode('/', $path), 'strlen');
+		foreach($segments as $i => $segment){
+			if($this->get_system_type() == SYSTEM_TYPE_WINDOWS && $i === 0 && \preg_match('/^[a-zA-Z]:$/', $segment)) continue;
+			if($segment === '.' || $segment === '..') return false;
+			if(\preg_match('/[\. ]$/', $segment)) return false;
+			if(\preg_match('/[<>:"\/\\\\|?*\x00-\x1F]/', $segment)) return false;
+			$base = \strtolower(\pathinfo($segment, PATHINFO_FILENAME));
+			if(\in_array($base, $this->reserved_names, true)) return false;
+		}
+		return true;
 	}
 
 }

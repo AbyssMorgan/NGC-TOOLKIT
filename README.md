@@ -10,6 +10,6 @@ Windows/Linux interactive console tool for media
 - Microsoft Visual C++ Redistributable for Visual Studio 2019
 
 #### Requirements (Linux)
-- PHP 8.2 - 8.4 with packages: php8.4 php8.4-cli php8.4-bcmath php8.4-bz2 php8.4-common php8.4-curl php8.4-gd php8.4-intl php8.4-mbstring php8.4-mysql php8.4-sqlite3 php8.4-zip php8.4-imagick
+- PHP 8.5 with packages: php8.5 php8.5-cli php8.5-bcmath php8.5-bz2 php8.5-common php8.5-curl php8.5-gd php8.5-intl php8.5-mbstring php8.5-mysql php8.5-sqlite3 php8.5-zip php8.5-imagick
 - Required programs: ffmpeg, mkvtoolnix, imagemagick
 - Optional programs: [Movie Thumbnailer](https://www.videohelp.com/software/movie-thumbnailer)

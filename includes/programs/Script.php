@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -22,7 +22,7 @@ class Script extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.8.0";
+	public string $version = "2.9.0";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 	public string $script;

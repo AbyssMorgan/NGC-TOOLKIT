@@ -1,3 +1,4 @@
+ngc/core/StopLoopException.php
 ngc/core/Logs.php
 ngc/core/IniFile.php
 ngc/core/Core.php

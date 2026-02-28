@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -540,10 +540,10 @@ class FileNamesEditor {
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				$escaped_name = \pathinfo($file, PATHINFO_FILENAME);
-				while(\str_contains($escaped_name, '  ')){
-					$escaped_name = \str_replace('  ', ' ', $escaped_name);
+				while(\str_contains($escaped_name, "\x20\x20")){
+					$escaped_name = \str_replace("\x20\x20", "\x20", $escaped_name);
 				}
-				$escaped_name = \trim(\preg_replace('/[^A-Za-z0-9_\-.]/', '', \str_replace(' ', '_', $escaped_name)), ' ');
+				$escaped_name = \trim(\preg_replace('/[^A-Za-z0-9_\-.]/', '', \str_replace("\x20", "_", $escaped_name)), "\x20");
 				if(empty($escaped_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
 					$errors++;
@@ -723,13 +723,13 @@ class FileNamesEditor {
 					$end = \strpos($file_name, ')', $start);
 					if($end !== false){
 						$quality_tag = \substr($file_name, $start, $end - $start + 1);
-						if(\strpos($quality_tag, '_') === false){
+						if(\strpos($quality_tag, "_") === false){
 							$quality_tag = '';
 						}
 					}
 				}
 				if(!empty($quality_tag)){
-					$escaped_name = \trim(\str_replace($quality_tag, '', $file_name), ' ');
+					$escaped_name = \trim(\str_replace($quality_tag, '', $file_name), "\x20");
 				} else {
 					$escaped_name = '';
 				}

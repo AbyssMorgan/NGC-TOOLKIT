@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -230,7 +230,7 @@ class IniFile {
 	 * @return bool True if changes exist, false otherwise.
 	 */
 	public function is_changed() : bool {
-		return (\json_encode($this->get_original_all()) != \json_encode($this->get_all()));
+		return \json_encode($this->get_original_all()) != \json_encode($this->get_all());
 	}
 
 	/**

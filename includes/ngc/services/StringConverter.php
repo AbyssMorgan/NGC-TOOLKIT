@@ -1,9 +1,9 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.8.0 – Component
+ * NGC-TOOLKIT v2.9.0 – Component
  *
- * © 2025 Abyss Morgan
+ * © 2026 Abyss Morgan
  *
  * This component is free to use in both non-commercial and commercial projects.
  * No attribution required, but appreciated.
@@ -55,9 +55,9 @@ class StringConverter {
 			"\u{3011}" => ']', // '】'
 			"\u{30FB}" => ' - ', // '・'
 			"\u{FF0C}" => ',', // '，'
-			"\u{00A0}" => ' ',
-			'_' => ' ',
-			'.' => ' ',
+			"\u{00A0}" => "\x20",
+			"_" => "\x20",
+			"." => "\x20",
 		];
 		$this->removal = [
 			';' => '',
@@ -131,10 +131,10 @@ class StringConverter {
 	 * @return string The string with double spaces removed and trimmed.
 	 */
 	public function remove_double_spaces(string $string) : string {
-		while(\str_contains($string, '  ')){
-			$string = \str_replace('  ', ' ', $string);
+		while(\str_contains($string, "\x20\x20")){
+			$string = \str_replace("\x20\x20", "\x20", $string);
 		}
-		return \trim($string, ' ');
+		return \trim($string, "\x20");
 	}
 
 	/**
@@ -161,7 +161,7 @@ class StringConverter {
 				$pinyin .= $string[$i];
 			}
 		}
-		return \str_replace('_', ' ', $pinyin);
+		return \str_replace("_", "\x20", $pinyin);
 	}
 
 	/**
