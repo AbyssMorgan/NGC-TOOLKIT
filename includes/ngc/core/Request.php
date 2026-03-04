@@ -60,13 +60,13 @@ class Request {
 	 * The default filename for the cookie file.
 	 * @const string
 	 */
-	public const DEFAULT_COOKIE_FILE = 'NGC-TOOLKIT-COOKIE.txt';
+	public const string DEFAULT_COOKIE_FILE = 'NGC-TOOLKIT-COOKIE.txt';
 
 	/**
 	 * The default User-Agent string for requests.
 	 * @const string
 	 */
-	public const DEFAULT_USER_AGENT = 'NGC-TOOLKIT';
+	public const string DEFAULT_USER_AGENT = 'NGC-TOOLKIT';
 
 	/**
 	 * Constructor for the Request class.

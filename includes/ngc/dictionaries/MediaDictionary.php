@@ -25,19 +25,19 @@ trait MediaDictionary {
 	 * Media orientation constant for horizontal media.
 	 * @const int
 	 */
-	public const MEDIA_ORIENTATION_HORIZONTAL = 0;
+	public const int MEDIA_ORIENTATION_HORIZONTAL = 0;
 
 	/**
 	 * Media orientation constant for vertical media.
 	 * @const int
 	 */
-	public const MEDIA_ORIENTATION_VERTICAL = 1;
+	public const int MEDIA_ORIENTATION_VERTICAL = 1;
 
 	/**
 	 * Media orientation constant for square media.
 	 * @const int
 	 */
-	public const MEDIA_ORIENTATION_SQUARE = 2;
+	public const int MEDIA_ORIENTATION_SQUARE = 2;
 
 	/**
 	 * An associative array mapping media orientation constants to their human-readable names.

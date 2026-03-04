@@ -40,7 +40,7 @@ class JournalService {
 	 * The expected header data for the journal file.
 	 * @const string
 	 */
-	public const FILE_HEADER_DATA = 'ADM-JOURNAL';
+	public const string FILE_HEADER_DATA = 'ADM-JOURNAL';
 
 	/**
 	 * Constructor for the JournalService.
