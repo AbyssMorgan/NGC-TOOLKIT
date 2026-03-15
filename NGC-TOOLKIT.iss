@@ -1,5 +1,5 @@
 #define MyAppName "NGC-TOOLKIT"
-#define MyAppVersion "2.9.0"
+#define MyAppVersion "2.9.1"
 #define MyAppPublisher "Abyss Morgan"
 #define MyAppURL "https://github.com/AbyssMorgan"
 #define MyAppExeName "Toolkit.cmd"
@@ -54,12 +54,21 @@ Root: HKCR; Subkey: "NGC.SCRIPT\DefaultIcon"; ValueType: string; ValueName: ""; 
 Root: HKCR; Subkey: "NGC.SCRIPT\shell"; Flags: uninsdeletekeyifempty
 Root: HKCR; Subkey: "NGC.SCRIPT\shell\open"; Flags: uninsdeletekeyifempty
 Root: HKCR; Subkey: "NGC.SCRIPT\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\Script.cmd"" ""%1"" %*"
+Root: HKCR; Subkey: "NGC.SCRIPT\shell\runas"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "NGC.SCRIPT\shell\runas\command"; ValueType: string; ValueName: ""; ValueData: "cmd.exe /c """"{app}\bin\Script.cmd"" ""%1"" %*"""""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".ngcp"; ValueType: string; ValueName: ""; ValueData: "NGC.PHP"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "NGC.PHP"; ValueType: string; ValueName: ""; ValueData: "{#MyAppName} PHP"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "NGC.PHP\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\NGC-TOOLKIT.ico"""
+Root: HKCR; Subkey: "NGC.PHP\shell"; Flags: uninsdeletekeyifempty
+Root: HKCR; Subkey: "NGC.PHP\shell\open"; Flags: uninsdeletekeyifempty
+Root: HKCR; Subkey: "NGC.PHP\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\PHP-Script.cmd"" ""%1"" %*"
+Root: HKCR; Subkey: "NGC.PHP\shell\runas"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "NGC.PHP\shell\runas\command"; ValueType: string; ValueName: ""; ValueData: "cmd.exe /c """"{app}\bin\PHP-Script.cmd"" ""%1"" %*"""""; Flags: uninsdeletevalue
 
 [Code]
 procedure DeleteOldFiles;
 begin
   DelTree(ExpandConstant('{app}\includes'), True, True, True);
-  DelTree(ExpandConstant('{app}\vendor'), True, True, True);
   DelTree(ExpandConstant('{app}\bin'), True, True, True);
 end;
 

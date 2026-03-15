@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.0 – Component
+ * NGC-TOOLKIT v2.9.1 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -35,7 +35,7 @@ class Toolkit extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.9.0";
+	public string $version = "2.9.1";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 

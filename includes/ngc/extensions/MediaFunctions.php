@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.0 – Component
+ * NGC-TOOLKIT v2.9.1 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -20,6 +20,7 @@ use GdImage;
 use Imagick;
 use Exception;
 use ImagickKernel;
+use ImagickException;
 use NGC\Core\IniFile;
 use NGC\Dictionaries\MediaDictionary;
 
@@ -894,6 +895,21 @@ class MediaFunctions {
 		$img->destroy();
 
 		return $variance < $threshold;
+	}
+
+	public function is_image_valid(string $path) : bool {
+		try {
+			$img = new Imagick();
+			$img->readImage($path);
+			$width  = $img->getImageWidth();
+			$height = $img->getImageHeight();
+			if($width <= 0 || $height <= 0) return false;
+			$img->clear();
+			$img->destroy();
+			return true;
+		} catch(ImagickException $e){
+			return false;
+		}
 	}
 
 }

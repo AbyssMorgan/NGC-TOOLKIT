@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.0 – Component
+ * NGC-TOOLKIT v2.9.1 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -2146,7 +2146,7 @@ class Core {
 	public function create_directory_symlink(string $target_path, string $link_path) : bool {
 		if(\is_link($link_path) || \file_exists($link_path)) return true;
 		if($this->get_system_type() == SYSTEM_TYPE_WINDOWS){
-			$cmd = \sprintf('cmd /c mklink /D %s %s', \escapeshellarg($link_path), \escapeshellarg($target_path));
+			$cmd = \sprintf('cmd /V:OFF /C mklink /D %s %s', $this->escape_windows_arg($link_path), $this->escape_windows_arg($target_path));
 			\exec($cmd, $output, $code);
 			return $code === 0;
 		}
@@ -2172,6 +2172,16 @@ class Core {
 			if(\in_array($base, $this->reserved_names, true)) return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Escape windows cmd parameter quotes
+	 * 
+	 * @param string $arg Argument to perform escape
+	 * @return string
+	 */
+	public function escape_windows_arg(string $arg) : string {
+		return '"'.str_replace('"', '""', $arg).'"';
 	}
 
 }
