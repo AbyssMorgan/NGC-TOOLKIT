@@ -1,1 +1,2 @@
 *.ngcs linguist-language=PHP
+includes/data/magic.text binary
