@@ -59,7 +59,6 @@ class FaceDetector {
 
 	/**
 	 * FaceDetector constructor.
-	 *
 	 * @param string $detection_data The path to the serialized detection data file.
 	 */
 	public function __construct(string $detection_data){
@@ -68,7 +67,6 @@ class FaceDetector {
 
 	/**
 	 * Calculates the dimensions and position of a variant rectangle based on the detected face.
-	 *
 	 * @param float $multiplier A multiplier to adjust the size of the rectangle.
 	 * @return array An associative array containing 'x', 'y', 'width', and 'height' of the variant rectangle.
 	 */
@@ -85,7 +83,6 @@ class FaceDetector {
 
 	/**
 	 * Saves a cropped and optionally resized image based on the detected face and a multiplier.
-	 *
 	 * @param float $multiplier The multiplier to apply to the detected face's dimensions for cropping.
 	 * @param string $input The path to the input image file.
 	 * @param string $output The path where the output image will be saved.
@@ -109,7 +106,6 @@ class FaceDetector {
 	 *
 	 * The image is optionally scaled down for detection efficiency.
 	 * The detected face coordinates are then scaled back to the original image's dimensions.
-	 *
 	 * @param GdImage $image The GD image resource to perform face detection on.
 	 * @return bool True if a face is detected, false otherwise.
 	 */
@@ -146,7 +142,6 @@ class FaceDetector {
 
 	/**
 	 * Calculates and returns image statistics, including width, height, and integral images (ii and ii2).
-	 *
 	 * @param GdImage $canvas The GD image resource.
 	 * @return array An associative array containing 'width', 'height', 'ii' (integral image), and 'ii2' (squared integral image).
 	 */
@@ -165,7 +160,6 @@ class FaceDetector {
 	/**
 	 * Computes the integral image (ii) and squared integral image (ii2) for a given GD image.
 	 * These are used for efficient calculation of sums over rectangular regions.
-	 *
 	 * @param GdImage $canvas The GD image resource.
 	 * @param int $image_width The width of the image.
 	 * @param int $image_height The height of the image.
@@ -206,7 +200,6 @@ class FaceDetector {
 	 * Performs greedy face detection from big to small scale.
 	 *
 	 * It iterates through different scales and positions to find the best-fit face.
-	 *
 	 * @param array $ii The integral image.
 	 * @param array $ii2 The squared integral image.
 	 * @param int $width The width of the image.
@@ -238,7 +231,6 @@ class FaceDetector {
 
 	/**
 	 * Checks if a sub-image at a given position and scale passes the cascade classifier stages.
-	 *
 	 * @param int $x The x-coordinate of the top-left corner of the sub-image.
 	 * @param int $y The y-coordinate of the top-left corner of the sub-image.
 	 * @param float $scale The current detection scale.

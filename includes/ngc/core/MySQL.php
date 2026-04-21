@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -52,7 +52,6 @@ class MySQL {
 
 	/**
 	 * Magic method to catch calls to undefined methods and forward them to the PDO instance.
-	 *
 	 * @param string $name The name of the method being called.
 	 * @param array $arguments The arguments passed to the method.
 	 * @return mixed The result of the PDO method call.
@@ -67,7 +66,6 @@ class MySQL {
 
 	/**
 	 * Establishes a connection to the MySQL database.
-	 *
 	 * @param string $host The database host.
 	 * @param string $user The database username.
 	 * @param string $password The database password.
@@ -107,7 +105,6 @@ class MySQL {
 
 	/**
 	 * Returns the current PDO connection instance.
-	 *
 	 * @return PDO|null The PDO instance or null if not connected.
 	 */
 	public function get_connection() : ?PDO {
@@ -116,7 +113,6 @@ class MySQL {
 
 	/**
 	 * Retrieves the name of the current database.
-	 *
 	 * @return string|null The name of the current database, or null if not set or an error occurs.
 	 */
 	public function get_data_base() : ?string {
@@ -133,7 +129,6 @@ class MySQL {
 	 * Escapes a string for safe use in SQL queries.
 	 * Note: This is a basic escaping function and might not cover all edge cases.
 	 * It's generally recommended to use prepared statements (PDO::prepare) for safer queries.
-	 *
 	 * @param mixed $string The string to escape.
 	 * @return string The escaped string.
 	 */
@@ -145,7 +140,6 @@ class MySQL {
 
 	/**
 	 * Converts an array of query results into a formatted string.
-	 *
 	 * @param array $results An array of associative arrays, where each inner array represents a row.
 	 * @param string $separator The separator to use between column values (default: '|').
 	 * @return string The formatted string representation of the results.

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -29,13 +29,13 @@ class DirectoryNamesEditor {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Escape directory name (WWW)',
-			' 1 - Pretty directory name',
-			' 2 - Add directory name prefix/suffix',
-			' 3 - Remove keywords from directory name',
-			' 4 - Insert string into directory name',
-			' 5 - Replace keywords in directory name',
+			'Actions:',
+			'0 - Escape directory name (WWW)',
+			'1 - Pretty directory name',
+			'2 - Add directory name prefix/suffix',
+			'3 - Remove keywords from directory name',
+			'4 - Insert string into directory name',
+			'5 - Replace keywords in directory name',
 		]);
 	}
 
@@ -56,12 +56,12 @@ class DirectoryNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Escape directory name WWW");
 		$this->core->print_help([
-			" Double spaces reduce",
-			" Characters after escape: A-Z a-z 0-9 _ - .",
-			" Be careful to prevent use on Japanese, Chinese, Korean, etc. directory names",
+			"Double spaces reduce",
+			"Characters after escape: A-Z a-z 0-9 _ - .",
+			"Be careful to prevent use on Japanese, Chinese, Korean, etc. directory names",
 		]);
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -103,7 +103,7 @@ class DirectoryNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -114,19 +114,19 @@ class DirectoryNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Flags (type in one line, default BC):',
-			' B - Basic replacement',
-			' C - Basic remove',
-			' L - Replace language characters',
-			' P - Capitalize properly',
-			' 0 - Chinese to PinYin',
-			' 1 - Hiragama to Romaji',
-			' 2 - Katakana to Romaji',
-			' + - To upper case',
-			' - - To lower case',
+			'Flags (type in one line, default BC):',
+			'B - Basic replacement',
+			'C - Basic remove',
+			'L - Replace language characters',
+			'P - Capitalize properly',
+			'0 - Chinese to PinYin',
+			'1 - Hiragama to Romaji',
+			'2 - Katakana to Romaji',
+			'+ - To upper case',
+			'- - To lower case',
 		]);
 
-		$line = \strtoupper($this->core->get_input(" Flags: "));
+		$line = \strtoupper($this->core->get_input("Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
 		if(\str_replace(['B', 'C', 'L', 'P', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
@@ -156,7 +156,7 @@ class DirectoryNamesEditor {
 		}
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -217,7 +217,7 @@ class DirectoryNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -225,14 +225,14 @@ class DirectoryNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Add directory name prefix/suffix");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$prefix = $this->core->get_input(" Prefix (may be empty): ", false);
+		$prefix = $this->core->get_input("Prefix (may be empty): ", false);
 		if($prefix == '#') return false;
 		$prefix = \str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
 
-		$suffix = $this->core->get_input(" Suffix (may be empty): ", false);
+		$suffix = $this->core->get_input("Suffix (may be empty): ", false);
 		if($suffix == '#') return false;
 		$suffix = \str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
 
@@ -264,7 +264,7 @@ class DirectoryNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -275,12 +275,12 @@ class DirectoryNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Type keywords',
-			' 1 - Load from file (new line every keyword)',
+			'Modes:',
+			'0 - Type keywords',
+			'1 - Load from file (new line every keyword)',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -291,27 +291,27 @@ class DirectoryNamesEditor {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$keywords = [];
 		if($params['mode'] == '0'){
-			$this->core->echo(" Put numbers how much keywords you want remove");
+			$this->core->echo("Put numbers how much keywords you want remove");
 
-			$quantity = $this->core->get_input_integer(" Quantity: ");
+			$quantity = $this->core->get_input_integer("Quantity: ");
 			if($quantity === false) return false;
 
 			for($i = 0; $i < $quantity; $i++){
-				$keywords[$i] = $this->core->get_input(" Keyword ".($i + 1).": ", false);
+				$keywords[$i] = $this->core->get_input("Keyword ".($i + 1).": ", false);
 			}
 		} elseif($params['mode'] == '1'){
 			set_keyword_file:
-			$input = $this->core->get_input_file(" Keywords file: ", true);
+			$input = $this->core->get_input_file("Keywords file: ", true);
 			if($input === false) return false;
 
 			$fp = \fopen($input, 'r');
 			if(!$fp){
-				$this->core->echo(" Failed open keywords file");
+				$this->core->echo("Failed open keywords file");
 				goto set_keyword_file;
 			}
 			while(($line = \fgets($fp)) !== false){
@@ -354,7 +354,7 @@ class DirectoryNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -364,25 +364,25 @@ class DirectoryNamesEditor {
 		set_offset:
 		$this->core->clear();
 		$this->core->print_help([
-			' Specify the string offset where you want insert into directory name',
-			' Offset = 0 - means the beginning, i.e. the string will be inserted before the directory name (prefix)',
-			' Offset > 0 - means that the string will be inserted after skipping N characters',
-			' Offset < 0 - means that the string will be inserted after skipping N characters from the end',
+			'Specify the string offset where you want insert into directory name',
+			'Offset = 0 - means the beginning, i.e. the string will be inserted before the directory name (prefix)',
+			'Offset > 0 - means that the string will be inserted after skipping N characters',
+			'Offset < 0 - means that the string will be inserted after skipping N characters from the end',
 		]);
-		$line = $this->core->get_input(" Offset: ");
+		$line = $this->core->get_input("Offset: ");
 		if($line == '#') return false;
 		$offset = \preg_replace("/[^0-9\-]/", '', $line);
 		if($offset == '') goto set_offset;
 		$offset = \intval($offset);
 
 		$this->core->print_help([
-			' Specify the string you want to inject the file name, may contain spaces',
+			'Specify the string you want to inject the file name, may contain spaces',
 		]);
-		$insert_string = $this->core->get_input(" String: ", false);
+		$insert_string = $this->core->get_input("String: ", false);
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -425,7 +425,7 @@ class DirectoryNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -433,16 +433,16 @@ class DirectoryNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Replace keywords in directory name");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		set_keyword_file:
-		$input = $this->core->get_input_file(" Keywords file: ", true);
+		$input = $this->core->get_input_file("Keywords file: ", true);
 		if($input === false) return false;
 
 		$fp = \fopen($input, 'r');
 		if(!$fp){
-			$this->core->echo(" Failed open keywords file");
+			$this->core->echo("Failed open keywords file");
 			goto set_keyword_file;
 		}
 
@@ -455,7 +455,7 @@ class DirectoryNamesEditor {
 			if(empty(\trim($line))) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
-				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
+				$this->core->echo("Failed parse replacement in line $i content: '$line'");
 				$errors++;
 			} else {
 				$replacements[$replace[0]] = $replace[1];
@@ -464,7 +464,7 @@ class DirectoryNamesEditor {
 		\fclose($fp);
 
 		if($errors > 0){
-			if(!$this->core->get_confirm(" Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
+			if(!$this->core->get_confirm("Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
 		}
 
 		$this->core->setup_folders($folders);
@@ -499,7 +499,7 @@ class DirectoryNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

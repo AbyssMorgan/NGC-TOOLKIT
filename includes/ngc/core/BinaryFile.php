@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -35,7 +35,6 @@ class BinaryFile {
 	 * BinaryFile constructor.
 	 *
 	 * Initializes a new BinaryFile instance. If a path is provided, it attempts to open the file.
-	 *
 	 * @param string|null $path The path to the binary file.
 	 * @param int|null $allocate The initial size to allocate for the file in bytes.
 	 */
@@ -48,7 +47,6 @@ class BinaryFile {
 	 * Creates a new binary file.
 	 *
 	 * If the file already exists, it returns false. It attempts to create the directory if it doesn't exist.
-	 *
 	 * @param string $path The path to the new binary file.
 	 * @param int|null $allocate The initial size to allocate for the file in bytes.
 	 * @param int $permissions The permissions for the newly created directory (if applicable). Default is 0755.
@@ -74,7 +72,6 @@ class BinaryFile {
 	 * Opens an existing binary file or creates it if it doesn't exist.
 	 *
 	 * If a file is already open, it returns false.
-	 *
 	 * @param string $path The path to the binary file to open.
 	 * @param int|null $allocate The initial size to allocate for the file in bytes if it needs to be created.
 	 * @param int $permissions The permissions for the newly created directory (if applicable). Default is 0755.
@@ -91,7 +88,6 @@ class BinaryFile {
 
 	/**
 	 * Closes the currently open binary file.
-	 *
 	 * @return bool True on success, false if no file is open.
 	 */
 	public function close() : bool {
@@ -104,7 +100,6 @@ class BinaryFile {
 
 	/**
 	 * Reads data from the binary file.
-	 *
 	 * @param int $offset The offset from the beginning of the file to start reading. Default is 0.
 	 * @param int|null $length The number of bytes to read. If null, it reads until the end of the file.
 	 * @return string|false The read data as a string, or false on failure or if no file is open.
@@ -120,7 +115,6 @@ class BinaryFile {
 
 	/**
 	 * Writes data to the binary file.
-	 *
 	 * @param string $data The data to write.
 	 * @param int $offset The offset from the beginning of the file to start writing. Default is 0.
 	 * @param int|null $length The maximum number of bytes to write. If null, the entire data string is written.
@@ -134,7 +128,6 @@ class BinaryFile {
 
 	/**
 	 * Returns the size of the binary file in bytes.
-	 *
 	 * @return int|false The size of the file in bytes, or false on failure or if no file is open.
 	 */
 	public function size() : int|false {
@@ -144,7 +137,6 @@ class BinaryFile {
 
 	/**
 	 * Truncates the file to a specified size.
-	 *
 	 * @param int $size The desired size of the file in bytes.
 	 * @return bool True on success, false on failure or if no file is open.
 	 */

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -29,11 +29,11 @@ class DirectoryFunctions {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Delete empty folders',
-			' 1 - Force load icon (desktop.ini)',
-			' 2 - Count files in every folder',
-			' 3 - Clone folder structure',
+			'Actions:',
+			'0 - Delete empty folders',
+			'1 - Force load icon (desktop.ini)',
+			'2 - Count files in every folder',
+			'3 - Clone folder structure',
 		]);
 	}
 
@@ -52,7 +52,7 @@ class DirectoryFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Delete empty folders");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -80,7 +80,7 @@ class DirectoryFunctions {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -89,7 +89,7 @@ class DirectoryFunctions {
 		$this->core->set_subtool("Force load icon");
 		if($this->core->get_system_type() != SYSTEM_TYPE_WINDOWS) return $this->core->windows_only();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		foreach($folders as $folder){
@@ -114,7 +114,7 @@ class DirectoryFunctions {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -122,7 +122,7 @@ class DirectoryFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Count files");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -157,7 +157,7 @@ class DirectoryFunctions {
 		unset($data);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -165,10 +165,10 @@ class DirectoryFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Clone folder structure");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		$errors = 0;
@@ -191,7 +191,7 @@ class DirectoryFunctions {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

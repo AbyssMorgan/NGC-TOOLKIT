@@ -66,7 +66,6 @@ class FtpWrapper {
 
 	/**
 	 * Constructor.
-	 *
 	 * @param resource &$connection The FTP (or SSL-FTP) connection (takes by reference).
 	 */
 	public function __construct(&$connection){
@@ -75,7 +74,6 @@ class FtpWrapper {
 
 	/**
 	 * Forward the method call to FTP functions
-	 *
 	 * @param string $function
 	 * @param array $arguments
 	 * @return mixed
@@ -92,7 +90,6 @@ class FtpWrapper {
 
 	/**
 	 * Opens a FTP connection
-	 *
 	 * @param string $host
 	 * @param int $port
 	 * @param int $timeout

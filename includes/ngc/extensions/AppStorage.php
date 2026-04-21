@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -30,7 +30,6 @@ class AppStorage {
 
 	/**
 	 * Constructs a new AppStorage instance.
-	 *
 	 * @param Toolkit|Script $core The core Toolkit or Script instance providing application context.
 	 */
 	public function __construct(Toolkit|Script $core){
@@ -39,7 +38,6 @@ class AppStorage {
 
 	/**
 	 * Checks if a MySQL configuration file exists for the given label.
-	 *
 	 * @param string|null $label The label of the MySQL configuration.
 	 * @return bool True if the MySQL configuration file exists, false otherwise.
 	 */
@@ -50,7 +48,6 @@ class AppStorage {
 
 	/**
 	 * Retrieves an IniFile instance for the specified MySQL configuration.
-	 *
 	 * @param string $label The label of the MySQL configuration.
 	 * @return IniFile An IniFile instance representing the MySQL configuration file.
 	 */
@@ -60,7 +57,6 @@ class AppStorage {
 
 	/**
 	 * Checks if an FTP configuration file exists for the given label.
-	 *
 	 * @param string|null $label The label of the FTP configuration.
 	 * @return bool True if the FTP configuration file exists, false otherwise.
 	 */
@@ -71,7 +67,6 @@ class AppStorage {
 
 	/**
 	 * Retrieves an IniFile instance for the specified FTP configuration.
-	 *
 	 * @param string $label The label of the FTP configuration.
 	 * @return IniFile An IniFile instance representing the FTP configuration file.
 	 */

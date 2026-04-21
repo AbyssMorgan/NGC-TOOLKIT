@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -35,7 +35,6 @@ class BitArray {
 
 	/**
 	 * Calculates the minimum required size of the internal array to store a given number of items (bits).
-	 *
 	 * @param int $max_items The maximum number of bits to be stored.
 	 * @return int The required size of the internal integer array.
 	 */
@@ -45,7 +44,6 @@ class BitArray {
 
 	/**
 	 * Returns the effective size of the internal array based on the highest used index.
-	 *
 	 * @return int The number of integers currently used in the internal array.
 	 */
 	public function get_config_used_size() : int {
@@ -58,7 +56,6 @@ class BitArray {
 
 	/**
 	 * Gets the boolean value of a specific bit by its global ID.
-	 *
 	 * @param int $id The zero-based global ID of the bit to retrieve.
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
@@ -68,7 +65,6 @@ class BitArray {
 
 	/**
 	 * Sets or unsets a specific bit by its global ID.
-	 *
 	 * @param int $id The zero-based global ID of the bit to set or unset.
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
@@ -80,7 +76,6 @@ class BitArray {
 
 	/**
 	 * Sets the internal bit array directly from a provided array of integers.
-	 *
 	 * @param array $array An array of integers, where each integer represents a block of bits.
 	 */
 	public function from_array(array $array) : void {
@@ -90,7 +85,6 @@ class BitArray {
 	/**
 	 * Populates the bit array from an associative array using a key mapping.
 	 * Each boolean value in the associative array, mapped by `keys`, sets the corresponding bit.
-	 *
 	 * @param array $assoc An associative array containing boolean values.
 	 * @param array $keys An array where keys are global bit IDs and values are the corresponding keys in $assoc.
 	 */
@@ -103,7 +97,6 @@ class BitArray {
 
 	/**
 	 * Populates the bit array by decoding a JSON string into an array of integers.
-	 *
 	 * @param string $json The JSON string representing an array of integers.
 	 */
 	public function from_json(string $json) : void {
@@ -112,7 +105,6 @@ class BitArray {
 
 	/**
 	 * Populates the bit array from a binary string. Each 4 bytes are merged into an integer.
-	 *
 	 * @param string $binary The binary string.
 	 * @param int $length The length of the binary string to process.
 	 */
@@ -127,7 +119,6 @@ class BitArray {
 
 	/**
 	 * Populates the bit array from a hexadecimal string by converting it to binary first.
-	 *
 	 * @param string $hex The hexadecimal string.
 	 */
 	public function from_hex(string $hex) : void {
@@ -136,7 +127,6 @@ class BitArray {
 
 	/**
 	 * Populates the bit array from the contents of a binary file.
-	 *
 	 * @param string $path The path to the binary file.
 	 * @return bool True on success, false on failure (e.g., file not found or not readable).
 	 */
@@ -152,7 +142,6 @@ class BitArray {
 
 	/**
 	 * Returns the internal array of integers representing the bit array.
-	 *
 	 * @return array The array of integers.
 	 */
 	public function to_array() : array {
@@ -161,7 +150,6 @@ class BitArray {
 
 	/**
 	 * Converts the bit array into an associative array of boolean values, using a key mapping.
-	 *
 	 * @param array $keys An array where keys are global bit IDs and values are the desired keys in the output associative array.
 	 * @return array An associative array of booleans.
 	 */
@@ -182,7 +170,6 @@ class BitArray {
 
 	/**
 	 * Converts the internal bit array into a JSON string.
-	 *
 	 * @return string The JSON string representing the array of integers.
 	 */
 	public function to_json() : string {
@@ -192,7 +179,6 @@ class BitArray {
 	/**
 	 * Converts the internal bit array into a binary string.
 	 * Each integer from the internal array is broken down into 4 bytes.
-	 *
 	 * @param int $length Output parameter: The length of the generated binary string in bytes.
 	 * @return string The binary string representation of the bit array.
 	 */
@@ -210,7 +196,6 @@ class BitArray {
 
 	/**
 	 * Converts the internal bit array into a hexadecimal string.
-	 *
 	 * @return string The hexadecimal string representation of the bit array.
 	 */
 	public function to_hex() : string {
@@ -219,7 +204,6 @@ class BitArray {
 
 	/**
 	 * Writes the binary representation of the bit array to a file.
-	 *
 	 * @param string $path The path to the file where the data will be written.
 	 * @return bool True on success, false on failure (e.g., file cannot be created or written).
 	 */

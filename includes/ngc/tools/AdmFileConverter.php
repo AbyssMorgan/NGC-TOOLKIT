@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -31,9 +31,9 @@ class AdmFileConverter {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Ini converter (INI <=> GZ-INI)',
-			' 1 - ADM Journal converter (ADM-JOURNAL => Text)',
+			'Actions:',
+			'0 - Ini converter (INI <=> GZ-INI)',
+			'1 - ADM Journal converter (ADM-JOURNAL => Text)',
 		]);
 	}
 
@@ -52,13 +52,13 @@ class AdmFileConverter {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Convert INI to GZ-INI',
-			' 1 - Convert GZ-INI to INI',
-			' 2 - Print GZ-INI/INI',
+			'Modes:',
+			'0 - Convert INI to GZ-INI',
+			'1 - Convert GZ-INI to INI',
+			'2 - Print GZ-INI/INI',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -70,14 +70,14 @@ class AdmFileConverter {
 		$this->core->clear();
 
 		set_input:
-		$input = $this->core->get_input_file(" Input (File): ", true);
+		$input = $this->core->get_input_file("Input (File): ", true);
 		if($input === false) return false;
 
 		try {
 			$ini = new IniFile($input, true, $params['mode'] == '0');
 		}
 		catch(Exception $e){
-			$this->core->echo(" Failed parse file: ".$e->getMessage());
+			$this->core->echo("Failed parse file: ".$e->getMessage());
 			goto set_input;
 		}
 
@@ -86,11 +86,11 @@ class AdmFileConverter {
 			$this->core->open_logs();
 		} else {
 			set_output:
-			$output = $this->core->get_input_file(" Output (File): ", false, true);
+			$output = $this->core->get_input_file("Output (File): ", false, true);
 			if($output === false) return false;
 
 			if(\file_exists($output)){
-				if(!$this->core->get_confirm(" Output file exists, overwrite (Y/N): ")) goto set_output;
+				if(!$this->core->get_confirm("Output file exists, overwrite (Y/N): ")) goto set_output;
 			}
 
 			if($input == $output){
@@ -102,7 +102,7 @@ class AdmFileConverter {
 			}
 		}
 
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -111,28 +111,28 @@ class AdmFileConverter {
 		$this->core->set_subtool("ADM Journal converter");
 
 		set_input:
-		$input = $this->core->get_input_file(" Input (File): ", true);
+		$input = $this->core->get_input_file("Input (File): ", true);
 		if($input === false) return false;
 
 		try {
 			$journal = new JournalService($input);
 		}
 		catch(Exception $e){
-			$this->core->echo(" Failed parse file: ".$e->getMessage());
+			$this->core->echo("Failed parse file: ".$e->getMessage());
 			goto set_input;
 		}
 
 		set_output:
-		$output = $this->core->get_input_file(" Output (File): ", false, true);
+		$output = $this->core->get_input_file("Output (File): ", false, true);
 		if($output === false) return false;
 
 		if(\file_exists($output)){
-			if(!$this->core->get_confirm(" Output file exists, overwrite (Y/N): ")) goto set_output;
+			if(!$this->core->get_confirm("Output file exists, overwrite (Y/N): ")) goto set_output;
 		}
 
 		\file_put_contents($output, \implode("\r\n", $journal->read()));
 
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -29,7 +29,6 @@ class AppBuffer {
 	 * AppBuffer constructor.
 	 *
 	 * Initializes the AppBuffer with a specified path. If the directory does not exist, it will be created.
-	 *
 	 * @param string $path The directory path where buffer files will be stored.
 	 * @param int $permissions The permissions to set for the created directory, default to 0755.
 	 */
@@ -40,7 +39,6 @@ class AppBuffer {
 
 	/**
 	 * Get the base path of the buffer directory.
-	 *
 	 * @return string The buffer directory path.
 	 */
 	public function get_path() : string {
@@ -50,7 +48,6 @@ class AppBuffer {
 	/**
 	 * Generates the full file path for a given key.
 	 * The key is hashed using SHA256 to create a unique filename.
-	 *
 	 * @param string $key The key for which to generate the file path.
 	 * @return string The full path to the buffer file.
 	 */
@@ -64,7 +61,6 @@ class AppBuffer {
 	 *
 	 * If the file does not exist, or if the buffer has expired, the default value is returned.
 	 * Handles different data types (integer, boolean, string, array, float, null).
-	 *
 	 * @param string $key The key of the value to retrieve.
 	 * @param int|bool|string|array|float|null $default The default value to return if the key is not found or expired.
 	 * @return int|bool|string|array|float|null The retrieved value, or the default value if not found or expired.
@@ -91,7 +87,6 @@ class AppBuffer {
 	 *
 	 * The value can be set with an optional expiration time.
 	 * Different data types are handled and converted for storage.
-	 *
 	 * @param string $key The key under which to store the value.
 	 * @param int|bool|string|array|float|null $value The value to store.
 	 * @param int $expire The expiration time in seconds. Use -1 for no expiration (default).
@@ -129,7 +124,6 @@ class AppBuffer {
 
 	/**
 	 * Removes a specific key-value pair from the buffer.
-	 *
 	 * @param string $key The key of the value to remove.
 	 */
 	public function forget(string $key) : void {
@@ -164,7 +158,6 @@ class AppBuffer {
 
 	/**
 	 * Deletes a file from the file system.
-	 *
 	 * @param string $path The full path to the file to delete.
 	 * @return bool True on success, false on failure.
 	 */

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -30,13 +30,13 @@ class MediaSorter {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Sort by quality (Video/Images)',
-			' 1 - Sort by colors count (Images)',
-			' 2 - Sort by duration (Video/Audio)',
-			' 3 - Sort by animated (Images)',
-			' 4 - Sort by monochrome (Images)',
-			' 5 - Sort by auto detect series name (Video)',
+			'Actions:',
+			'0 - Sort by quality (Video/Images)',
+			'1 - Sort by colors count (Images)',
+			'2 - Sort by duration (Video/Audio)',
+			'3 - Sort by animated (Images)',
+			'4 - Sort by monochrome (Images)',
+			'5 - Sort by auto detect series name (Video)',
 		]);
 	}
 
@@ -59,13 +59,13 @@ class MediaSorter {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Orientation + Quality',
-			' 1 - Orientation: Vertical / Horizontal / Square',
-			' 2 - Quality: 34560p 17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
+			'Modes:',
+			'0 - Orientation + Quality',
+			'1 - Orientation: Vertical / Horizontal / Square',
+			'2 - Quality: 34560p 17280p 8640p 4320p 2160p 1440p 1080p 720p 540p 480p 360p 240p 144p',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params['mode'] = \strtolower($line[0] ?? '?');
@@ -75,7 +75,7 @@ class MediaSorter {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -124,7 +124,7 @@ class MediaSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -132,7 +132,7 @@ class MediaSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by colors count");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -163,7 +163,7 @@ class MediaSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -171,10 +171,10 @@ class MediaSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by duration");
 
-		$interval = $this->core->get_input_time_interval(" Interval: ");
+		$interval = $this->core->get_input_time_interval("Interval: ");
 		if($interval === false) return false;
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -229,7 +229,7 @@ class MediaSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -237,7 +237,7 @@ class MediaSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by animated");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -268,7 +268,7 @@ class MediaSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -276,7 +276,7 @@ class MediaSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by monochrome");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -327,7 +327,7 @@ class MediaSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -335,7 +335,7 @@ class MediaSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by auto detect series name");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		$errors = 0;
@@ -398,7 +398,7 @@ class MediaSorter {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

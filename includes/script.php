@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -30,13 +30,13 @@ set_exception_handler(function(Throwable $e) : void {
 		}
 	}
 	$message = "\r\n";
-	$message .= " File: $file\r\n";
-	$message .= " Line: $line_count\r\n";
-	$message .= " Error: ".$e->getMessage()."\r\n";
-	$message .= " Trace: \r\n";
+	$message .= "File: $file\r\n";
+	$message .= "Line: $line_count\r\n";
+	$message .= "Error: ".$e->getMessage()."\r\n";
+	$message .= "Trace: \r\n";
 	$message .= preg_replace('/^/m', "\x20", $e->getTraceAsString())."\r\n\r\n";
 	echo $message;
-	echo " ABORT, PRESS ANY KEY TO EXIT\r\n";
+	echo "ABORT, PRESS ANY KEY TO EXIT\r\n";
 	if(!empty($GLOBALS['script_name'])){
 		$date = date('Y-m-d His');
 		@file_put_contents("{$GLOBALS['script_name']}-crash-$date.txt", $message);

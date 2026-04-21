@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -39,24 +39,24 @@ class MySQLTools {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0  - Configure connection',
-			' 1  - Remove connection',
-			' 2  - Open config folder',
-			' 3  - Show connections',
-			' 4  - Make backup',
-			' 5  - Clone DB1 to DB2 (overwrite)',
-			' 6  - Open backup folder',
-			' 7  - MySQL Console',
-			' 8  - Backup selected: Table structure',
-			' 9  - Backup selected: Table data',
-			' 10 - Backup selected: Views',
-			' 11 - Backup selected: Functions',
-			' 12 - Backup selected: Procedures',
-			' 13 - Backup selected: Events',
-			' 14 - Backup selected: Triggers',
-			' 15 - Fetch data base info',
-			' 16 - Compare data base info',
+			'Actions:',
+			'0  - Configure connection',
+			'1  - Remove connection',
+			'2  - Open config folder',
+			'3  - Show connections',
+			'4  - Make backup',
+			'5  - Clone DB1 to DB2 (overwrite)',
+			'6  - Open backup folder',
+			'7  - MySQL Console',
+			'8  - Backup selected: Table structure',
+			'9  - Backup selected: Table data',
+			'10 - Backup selected: Views',
+			'11 - Backup selected: Functions',
+			'12 - Backup selected: Procedures',
+			'13 - Backup selected: Events',
+			'14 - Backup selected: Triggers',
+			'15 - Fetch data base info',
+			'16 - Compare data base info',
 		]);
 	}
 
@@ -95,9 +95,9 @@ class MySQLTools {
 			$i++;
 		}
 		if(!empty($this->select_label)){
-			$this->core->echo(" Labels: ");
+			$this->core->echo("Labels: ");
 			foreach($this->select_label as $i => $label){
-				$this->core->echo(" $i - $label");
+				$this->core->echo("$i - $label");
 			}
 			$this->core->echo();
 		}
@@ -117,16 +117,16 @@ class MySQLTools {
 		$options = [];
 		$i = 0;
 		$this->core->echo();
-		$this->core->echo(" Data bases: ");
+		$this->core->echo("Data bases: ");
 		$items = $connection->query("SHOW DATABASES;", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$options[$i] = $item->Database;
-			$this->core->echo(" $i - $item->Database");
+			$this->core->echo("$i - $item->Database");
 			$i++;
 		}
 		$this->core->echo();
 		select_database:
-		$database = $this->core->get_input(" DataBase: ");
+		$database = $this->core->get_input("DataBase: ");
 		if($database == '#') return false;
 		if(!isset($options[$database])) goto select_database;
 		$connection->query("USE ".$options[$database]);
@@ -145,94 +145,93 @@ class MySQLTools {
 		$this->core->set_subtool("Configure connection");
 
 		$this->core->print_help([
-			' Allowed characters: A-Z a-z 0-9 _ -',
-			' Label length 3 - 32',
+			'Allowed characters: A-Z a-z 0-9 _ -',
+			'Label length 3 - 32',
 		]);
 
 		set_label:
-		$label = $this->core->get_input(" Label: ");
+		$label = $this->core->get_input("Label: ");
 		if($label == '#') return false;
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" already in use");
-			if(!$this->core->get_confirm(" Overwrite (Y/N): ")) goto set_label;
+			$this->core->echo("Label \"$label\" already in use");
+			if(!$this->core->get_confirm("Overwrite (Y/N): ")) goto set_label;
 		}
 
 		$this->core->clear();
 		$this->core->print_help([
-			" Setup label: \"$label\"",
+			"Setup label: \"$label\"",
 		]);
 
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		set_db_connection:
-		$db['host'] = $this->core->get_input(" DB Host: ");
+		$db['host'] = $this->core->get_input("DB Host: ");
 		if($db['host'] == '#') return false;
-		$db['port'] = $this->core->get_input_integer(" DB Port (Default 3306): ", 0, 65353);
+		$db['port'] = $this->core->get_input_integer("DB Port (Default 3306): ", 0, 65353);
 		if($db['port'] === false) return false;
-		$db['name'] = $this->core->get_input(" DB Name (Type * for none): ");
+		$db['name'] = $this->core->get_input("DB Name (Type * for none): ");
 		if($db['name'] == '#') return false;
-		$db['user'] = $this->core->get_input(" DB User: ");
+		$db['user'] = $this->core->get_input("DB User: ");
 		if($db['user'] == '#') return false;
 		$db['password'] = $this->core->get_input_password(" DB Pass: ");
 		if($db['password'] == '#') return false;
 
-		$db['ssl'] = $this->core->get_confirm(" DB SSL (Y/N): ");
+		$db['ssl'] = $this->core->get_confirm("DB SSL (Y/N): ");
 		if($db['ssl']){
-			$db['ssl_ca'] = $this->core->get_input_file(" SSL CA (File): ");
-			$db['ssl_cert'] = $this->core->get_input_file(" SSL Cert (File): ");
-			$db['ssl_key'] = $this->core->get_input_file(" SSL Key (File): ");
+			$db['ssl_ca'] = $this->core->get_input_file("SSL CA (File): ");
+			$db['ssl_cert'] = $this->core->get_input_file("SSL Cert (File): ");
+			$db['ssl_key'] = $this->core->get_input_file("SSL Key (File): ");
 		}
 
 		try_login_same:
-		$defaults = [
+		$options = [
 			PDO::ATTR_EMULATE_PREPARES => true,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		];
 		if(PHP_VERSION_ID >= 80400 && \class_exists('Pdo\\Mysql')){
-			$defaults[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+			$options[PdoMySQL::ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
 			if($db['ssl']){
 				$options[PdoMySQL::ATTR_SSL_CA] = $db['ssl_ca'];
 				$options[PdoMySQL::ATTR_SSL_CERT] = $db['ssl_cert'];
 				$options[PdoMySQL::ATTR_SSL_KEY] = $db['ssl_key'];
 			}
 		} else {
-			$defaults[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
+			$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET SESSION SQL_BIG_SELECTS = 1; SET NAMES utf8mb4;';
 			if($db['ssl']){
 				$options[PDO::MYSQL_ATTR_SSL_CA] = $db['ssl_ca'];
 				$options[PDO::MYSQL_ATTR_SSL_CERT] = $db['ssl_cert'];
 				$options[PDO::MYSQL_ATTR_SSL_KEY] = $db['ssl_key'];
 			}
 		}
-		$options = \array_merge($defaults, $options);
 
 		try {
-			$this->core->echo(" Connecting to: ".$db['host'].":".$db['port']."@".$db['user']);
+			$this->core->echo("Connecting to: ".$db['host'].":".$db['port']."@".$db['user']);
 			$conn = new PDO("mysql:".($db['name'] == "*" ? "" : "dbname=".$db['name'].";")."host=".$db['host'].";port=".$db['port'], $db['user'], $db['password'], $options);
 		}
 		catch(PDOException $e){
-			$this->core->echo(" Failed to connect:");
-			$this->core->echo(" ".$e->getMessage());
-			if($this->core->get_confirm(" Retry (Y/N): ")) goto try_login_same;
+			$this->core->echo("Failed to connect:");
+			$this->core->echo("".$e->getMessage());
+			if($this->core->get_confirm("Retry (Y/N): ")) goto try_login_same;
 			goto set_db_connection;
 		}
 		$conn = null;
 
 		$this->core->clear();
 		$this->core->print_help([
-			" Connection test completed successfully.",
-			" Set additional config for label: \"$label\"",
+			"Connection test completed successfully.",
+			"Set additional config for label: \"$label\"",
 		]);
 
-		$backup['structure'] = $this->core->get_confirm(" Backup structure (Y/N): ");
-		$backup['data'] = $this->core->get_confirm(" Backup data (Y/N): ");
-		$backup['compress'] = $this->core->get_confirm(" Compress after backup (Y/N): ");
-		$backup['lock_tables'] = $this->core->get_confirm(" Lock tables during background backup (Y/N): ");
+		$backup['structure'] = $this->core->get_confirm("Backup structure (Y/N): ");
+		$backup['data'] = $this->core->get_confirm("Backup data (Y/N): ");
+		$backup['compress'] = $this->core->get_confirm("Compress after backup (Y/N): ");
+		$backup['lock_tables'] = $this->core->get_confirm("Lock tables during background backup (Y/N): ");
 
 		$ini = $this->get_config($label);
 		$ini->update([
@@ -256,7 +255,7 @@ class MySQLTools {
 		], true);
 
 		$this->core->clear();
-		$this->core->pause(" Setup connection for \"$label\" done, press any key to back to menu");
+		$this->core->pause("Setup connection for \"$label\" done, press any key to back to menu");
 
 		return false;
 	}
@@ -267,17 +266,17 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		$path = $this->get_config_path($label);
 		if(!\file_exists($path)){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
@@ -297,23 +296,24 @@ class MySQLTools {
 		$this->core->clear();
 		$this->core->set_subtool("Show connections");
 
-		$this->core->echo(" Connections:");
+		$this->core->echo("Connections:");
 		$cnt = 0;
 		$files = $this->core->get_files($this->path, ['ini']);
 		foreach($files as $file){
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('DB_HOST')){
 				$label = \pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".\str_repeat(" ", 32 - \strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+				$this->core->echo("$label".\str_repeat(" ", 32 - \strlen($label))." ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 				$cnt++;
 			}
 		}
 
 		if($cnt == 0){
-			$this->core->echo(" No connections found");
+			$this->core->echo("No connections found");
 		}
 
-		$this->core->pause("\r\n Press any key to back to menu");
+		$this->core->echo();
+		$this->core->pause("Press any key to back to menu");
 		return false;
 	}
 
@@ -323,16 +323,16 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(!\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
@@ -347,28 +347,28 @@ class MySQLTools {
 		$request->set_http_version($ini->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!$this->core->is_valid_path($path)){
-			$this->core->echo(" Output device \"$path\" is not available");
+			$this->core->echo("Output device \"$path\" is not available");
 			goto set_label;
 		}
 
 		if(!\is_null($callback)){
-			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
+			if(!$this->core->get_confirm("Toggle website into maintenance (Y/N): ")){
 				$callback = null;
 			}
 		}
 
-		$lock_tables = $this->core->get_confirm(" Lock tables during backup (Y/N): ");
+		$lock_tables = $this->core->get_confirm("Lock tables during backup (Y/N): ");
 
 		$this->core->write_log("Initialize backup for \"$label\"");
-		$this->core->echo(" Initialize backup service");
+		$this->core->echo("Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($lock_tables);
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
-		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
-		$this->core->echo(" Create backup");
+		$this->core->echo("Create backup");
 
 		$items = $backup->get_tables();
 		$progress = 0;
@@ -555,7 +555,7 @@ class MySQLTools {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Backup for \"$label\" done, press any key to back to menu");
+		$this->core->pause("Backup for \"$label\" done, press any key to back to menu");
 		return false;
 	}
 
@@ -566,16 +566,16 @@ class MySQLTools {
 		$this->core->clear();
 		$this->get_select_label();
 		set_label_source:
-		$source = $this->core->get_input(" Source label / ID: ");
+		$source = $this->core->get_input("Source label / ID: ");
 		if($source == '#') return false;
 		if(isset($this->select_label[$source])) $source = $this->select_label[$source];
 		if(!$this->core->is_valid_label($source)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label_source;
 		}
 
 		if(!\file_exists($this->get_config_path($source))){
-			$this->core->echo(" Source label \"$source\" not exists");
+			$this->core->echo("Source label \"$source\" not exists");
 			goto set_label_source;
 		}
 
@@ -590,41 +590,41 @@ class MySQLTools {
 		$request->set_http_version($ini_source->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!\is_null($callback)){
-			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
+			if(!$this->core->get_confirm("Toggle website into maintenance (Y/N): ")){
 				$callback = null;
 			}
 		}
 
-		$lock_tables = $this->core->get_confirm(" Lock tables during clone (Y/N): ");
+		$lock_tables = $this->core->get_confirm("Lock tables during clone (Y/N): ");
 
 		$this->core->write_log("Initialize backup for \"$source\"");
-		$this->core->echo(" Initialize backup service");
+		$this->core->echo("Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini_source->get('BACKUP_QUERY_LIMIT'), $ini_source->get('BACKUP_INSERT_LIMIT'), $ini_source->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($lock_tables);
 
-		$this->core->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$backup->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'), $this->get_mysql_options($ini_source))) goto set_label_source;
 		if($ini_source->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 
 		$this->core->clear();
 		$this->get_select_label();
 		set_label_destination:
-		$destination = $this->core->get_input(" Destination label: ");
+		$destination = $this->core->get_input("Destination label: ");
 		if($destination == '#') return false;
 		if(isset($this->select_label[$destination])) $destination = $this->select_label[$destination];
 		if(!$this->core->is_valid_label($destination)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label_destination;
 		}
 
 		if(!\file_exists($this->get_config_path($destination))){
-			$this->core->echo(" Destination label \"$destination\" not exists");
+			$this->core->echo("Destination label \"$destination\" not exists");
 			goto set_label_destination;
 		}
 
 		$ini_dest = $this->get_config($destination);
 
-		$this->core->echo(" Connecting to: ".$ini_dest->get('DB_HOST').":".$ini_dest->get('DB_PORT')."@".$ini_dest->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini_dest->get('DB_HOST').":".$ini_dest->get('DB_PORT')."@".$ini_dest->get('DB_USER'));
 		if(!$backup->connect_destination($ini_dest->get('DB_HOST'), $ini_dest->get('DB_USER'), $ini_dest->get('DB_PASSWORD'), $ini_dest->get('DB_NAME'), $ini_dest->get('DB_PORT'))) goto set_label_destination;
 		if($ini_dest->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_destination())) return false;
 
@@ -634,24 +634,24 @@ class MySQLTools {
 		if($ini_source->get('DB_HOST') == $ini_dest->get('DB_HOST') && $ini_source->get('DB_USER') == $ini_dest->get('DB_USER') && $dbname_source == $dbname_destination && $ini_source->get('DB_PORT') == $ini_dest->get('DB_PORT')){
 			$backup->disconnect();
 			$backup->disconnect_destination();
-			$this->core->pause(" Destination database `$dbname_destination` is same as source database `$dbname_source`, press any key to reset connection");
+			$this->core->pause("Destination database `$dbname_destination` is same as source database `$dbname_source`, press any key to reset connection");
 			goto reset_connection;
 		}
 
 		$this->core->clear();
-		if(!$this->core->get_confirm(" Clone database `$dbname_source` to `$dbname_destination` (Y/N): ")){
-			$this->core->pause(" Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
+		if(!$this->core->get_confirm("Clone database `$dbname_source` to `$dbname_destination` (Y/N): ")){
+			$this->core->pause("Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
 			return false;
 		}
 
 		if(!$backup->is_destination_empty()){
-			if(!$this->core->get_confirm(" Output database is not empty, continue (Y/N): ")){
-				$this->core->pause(" Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
+			if(!$this->core->get_confirm("Output database is not empty, continue (Y/N): ")){
+				$this->core->pause("Clone `$dbname_source` to `$dbname_destination` aborted, press any key to back to menu");
 				return false;
 			}
 		}
 
-		$this->core->echo(" Clone `$dbname_source` to `$dbname_destination`");
+		$this->core->echo("Clone `$dbname_source` to `$dbname_destination`");
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
 
 		$items = $backup->get_tables();
@@ -851,18 +851,18 @@ class MySQLTools {
 		$backup->disconnect_destination();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Clone for `$dbname_source` to `$dbname_destination` done, press any key to back to menu");
+		$this->core->pause("Clone for `$dbname_source` to `$dbname_destination` done, press any key to back to menu");
 		return false;
 	}
 
 	public function tool_make_backup_cmd(string $label, ?string $dbname = null) : bool {
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label \"$label\"");
+			$this->core->echo("Invalid label \"$label\"");
 			return false;
 		}
 
 		if(!\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			return false;
 		}
 
@@ -877,29 +877,29 @@ class MySQLTools {
 		$request->set_http_version($ini->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!$this->core->is_valid_path($path)){
-			$this->core->echo(" Output device \"$path\" is not available");
+			$this->core->echo("Output device \"$path\" is not available");
 			return false;
 		}
 
 		if($ini->get('DB_NAME') == "*" && \is_null($dbname)){
-			$this->core->echo(" No data base selected");
+			$this->core->echo("No data base selected");
 			return false;
 		}
 
 		$this->core->write_log("Initialize backup for \"$label\"");
-		$this->core->echo(" Initialize backup service");
+		$this->core->echo("Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($ini->get('BACKUP_LOCK_TABLES'));
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
-		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))){
-			$this->core->echo(" Failed connect to database");
+			$this->core->echo("Failed connect to database");
 			return false;
 		}
 		if($ini->get('DB_NAME') == "*") $backup->get_source()->query("USE $dbname");
 
-		$this->core->echo(" Create backup");
+		$this->core->echo("Create backup");
 
 		$items = $backup->get_tables();
 		foreach($items as $item){
@@ -1055,7 +1055,7 @@ class MySQLTools {
 			$this->compress($callback, $output, $ini, $request);
 		}
 
-		$this->core->echo(" Backup for \"$label\" done");
+		$this->core->echo("Backup for \"$label\" done");
 		$this->core->write_log(" Backup for \"$label\" done");
 		return true;
 	}
@@ -1066,17 +1066,17 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		$path = $this->get_config_path($label);
 		if(!\file_exists($path)){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
@@ -1092,27 +1092,27 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(!\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
 		$ini = $this->get_config($label);
 
 		$db = new MySQL();
-		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
-		$save_output = $this->core->get_confirm(" Save query results in data file (Y/N): ");
+		$save_output = $this->core->get_confirm("Save query results in data file (Y/N): ");
 		if($save_output){
 			$this->core->write_data([" Query results for: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'), ""]);
 		}
@@ -1120,17 +1120,17 @@ class MySQLTools {
 		clear:
 		$this->core->clear();
 		$this->core->print_help([
-			" MySQL Console: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER')." [$label] Save results: ".($save_output ? 'Enabled' : 'Disabled'),
-			" Additional commands: ",
-			" @exit  - close connection",
-			" @clear - clear console",
-			" @open  - open data folder",
+			"MySQL Console: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER')." [$label] Save results: ".($save_output ? 'Enabled' : 'Disabled'),
+			"Additional commands: ",
+			"@exit  - close connection",
+			"@clear - clear console",
+			"@open  - open data folder",
 		]);
 
 		try {
 			query:
 			if($save_output) $this->core->write_data("");
-			$query = $this->core->get_input(" MySQL: ", false);
+			$query = $this->core->get_input("MySQL: ", false);
 			$lquery = \mb_strtolower($query);
 			if($lquery == '@exit'){
 				goto close_connection;
@@ -1146,14 +1146,14 @@ class MySQLTools {
 			$results = $sth->fetchAll(PDO::FETCH_ASSOC);
 			$last_insert_id = $db->get_connection()->lastInsertId();
 			if($last_insert_id){
-				$this->core->echo(" Last insert id: $last_insert_id");
+				$this->core->echo("Last insert id: $last_insert_id");
 				if($save_output) $this->core->write_data(" Last insert id: $last_insert_id");
 			} elseif(\count($results) == 0){
 				if(\substr($lquery, 0, 6) == 'select' || \substr($lquery, 0, 4) == 'show'){
-					$this->core->echo(" MySQL returned an empty result");
+					$this->core->echo("MySQL returned an empty result");
 					if($save_output) $this->core->write_data(" MySQL returned an empty result");
 				} else {
-					$this->core->echo(" Done");
+					$this->core->echo("Done");
 					if($save_output) $this->core->write_data(" Done");
 				}
 			} else {
@@ -1163,7 +1163,7 @@ class MySQLTools {
 			}
 		}
 		catch(PDOException $e){
-			$this->core->echo(" ".$e->getMessage());
+			$this->core->echo("".$e->getMessage());
 			if($save_output) $this->core->write_data(" ".$e->getMessage());
 		}
 		goto query;
@@ -1172,7 +1172,7 @@ class MySQLTools {
 		$db->disconnect();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Connection \"$label\" closed, press any key to back to menu");
+		$this->core->pause("Connection \"$label\" closed, press any key to back to menu");
 		return false;
 	}
 
@@ -1276,12 +1276,12 @@ class MySQLTools {
 		$file_temp = "$input.tmp";
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_START'], true);
-		$this->core->echo(" Compressing backup");
+		$this->core->echo("Compressing backup");
 		$this->core->write_log("Compressing backup");
 
 		if(\file_exists($file_output)){
 			if(!$this->core->delete($file_output)){
-				$this->core->echo(" Compress backup into \"$file_output\" fail");
+				$this->core->echo("Compress backup into \"$file_output\" fail");
 				$this->core->write_log("Compress backup into \"$file_output\" fail");
 				return false;
 			}
@@ -1294,7 +1294,7 @@ class MySQLTools {
 			if($this->core->move($file_temp, $file_output)){
 				$this->core->rrmdir($input);
 				if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_END'], true);
-				$this->core->echo(" Compress backup into \"$file_output\" success");
+				$this->core->echo("Compress backup into \"$file_output\" success");
 				$this->core->write_log("Compress backup into \"$file_output\" success");
 				$this->core->rrmdir($input);
 				return true;
@@ -1302,7 +1302,7 @@ class MySQLTools {
 		}
 		
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => false, 'state' => 'COMPRESS_BACKUP_ERROR'], true);
-		$this->core->echo(" Compress backup into \"$file_output\" fail");
+		$this->core->echo("Compress backup into \"$file_output\" fail");
 		$this->core->write_log("Compress backup into \"$file_output\" fail");
 		return false;
 	}
@@ -1317,16 +1317,16 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(!\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
@@ -1341,43 +1341,43 @@ class MySQLTools {
 		$request->set_http_version($ini->get('BACKUP_CURL_HTTP_VERSION', CURL_HTTP_VERSION_1_1));
 
 		if(!$this->core->is_valid_path($path)){
-			$this->core->echo(" Output device \"$path\" is not available");
+			$this->core->echo("Output device \"$path\" is not available");
 			goto set_label;
 		}
 
 		if(!\is_null($callback)){
-			if(!$this->core->get_confirm(" Toggle website into maintenance (Y/N): ")){
+			if(!$this->core->get_confirm("Toggle website into maintenance (Y/N): ")){
 				$callback = null;
 			}
 		}
 
 		if($need_lock){
-			$lock_tables = $this->core->get_confirm(" Lock tables during backup (Y/N): ");
+			$lock_tables = $this->core->get_confirm("Lock tables during backup (Y/N): ");
 		} else {
 			$lock_tables = false;
 		}
 
-		$compress = $this->core->get_confirm(" Compress backup (Y/N): ");
+		$compress = $this->core->get_confirm("Compress backup (Y/N): ");
 
 		$this->core->print_help([
-			" Type $stype you want to backup, separate with a space",
-			" Use double quotes \" for escape name",
+			"Type $stype you want to backup, separate with a space",
+			"Use double quotes \" for escape name",
 		]);
-		$line = $this->core->get_input(" Names: ");
+		$line = $this->core->get_input("Names: ");
 		if($line == '#') return false;
 		$items = $this->core->parse_input_path($line);
 
 		$this->core->write_log("Initialize backup for \"$label\"");
-		$this->core->echo(" Initialize backup service");
+		$this->core->echo("Initialize backup service");
 		$backup = new DataBaseBackup($path, $ini->get('BACKUP_QUERY_LIMIT'), $ini->get('BACKUP_INSERT_LIMIT'), $ini->get('FOLDER_DATE_FORMAT'));
 		$backup->toggle_lock_tables($lock_tables);
 
 		if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_START'], true);
-		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$backup->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($backup->get_source(), $backup)) return false;
 
-		$this->core->echo(" Create backup");
+		$this->core->echo("Create backup");
 		$func = "get".$ftype."s";
 		$items_in_db = $backup->$func();
 		$progress = 0;
@@ -1402,7 +1402,7 @@ class MySQLTools {
 					if(!\is_null($callback)) $request->get($callback, ['maintenance' => true, 'state' => 'BACKUP_TABLE_END', 'table' => "$stype:$item"], true);
 				}
 			} else {
-				$this->core->echo(" $type: $item not exists, skipping");
+				$this->core->echo("$type: $item not exists, skipping");
 				$this->core->write_error("Create backup for $stype $item failed, $stype not exists");
 			}
 			$this->core->set_progress_ex($type, $progress, $total);
@@ -1418,7 +1418,7 @@ class MySQLTools {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Backup for \"$label\" done, press any key to back to menu");
+		$this->core->pause("Backup for \"$label\" done, press any key to back to menu");
 		return false;
 	}
 
@@ -1428,23 +1428,23 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(!\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
 		$ini = $this->get_config($label);
 
 		$db = new MySQL();
-		$this->core->echo(" Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'));
 		if(!$db->connect($ini->get('DB_HOST'), $ini->get('DB_USER'), $ini->get('DB_PASSWORD'), $ini->get('DB_NAME'), $ini->get('DB_PORT'), $this->get_mysql_options($ini))) goto set_label;
 		if($ini->get('DB_NAME') == "*" && !$this->select_data_base($db->get_connection())) return false;
 
@@ -1469,7 +1469,7 @@ class MySQLTools {
 		$db->disconnect();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Connection \"$label\" closed, press any key to back to menu");
+		$this->core->pause("Connection \"$label\" closed, press any key to back to menu");
 		return false;
 	}
 
@@ -1479,47 +1479,47 @@ class MySQLTools {
 
 		$this->get_select_label();
 		set_label_source:
-		$source = $this->core->get_input(" Source label / ID: ");
+		$source = $this->core->get_input("Source label / ID: ");
 		if($source == '#') return false;
 		if(isset($this->select_label[$source])) $source = $this->select_label[$source];
 		if(!$this->core->is_valid_label($source)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label_source;
 		}
 
 		if(!\file_exists($this->get_config_path($source))){
-			$this->core->echo(" Source label \"$source\" not exists");
+			$this->core->echo("Source label \"$source\" not exists");
 			goto set_label_source;
 		}
 
 		$db_source = new MySQL();
 		$ini_source = $this->get_config($source);
-		$this->core->echo(" Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'));
 		if(!$db_source->connect($ini_source->get('DB_HOST'), $ini_source->get('DB_USER'), $ini_source->get('DB_PASSWORD'), $ini_source->get('DB_NAME'), $ini_source->get('DB_PORT'), $this->get_mysql_options($ini_source))) goto set_label_source;
 		if($ini_source->get('DB_NAME') == "*" && !$this->select_data_base($db_source->get_connection())) return false;
 
 		set_label_destination:
-		$destination = $this->core->get_input(" Destination label: ");
+		$destination = $this->core->get_input("Destination label: ");
 		if($destination == '#') return false;
 		if(isset($this->select_label[$destination])) $destination = $this->select_label[$destination];
 		if(!$this->core->is_valid_label($destination)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label_destination;
 		}
 
 		if(!\file_exists($this->get_config_path($destination))){
-			$this->core->echo(" Destination label \"$destination\" not exists");
+			$this->core->echo("Destination label \"$destination\" not exists");
 			goto set_label_destination;
 		}
 
 		if($source == $destination){
-			$this->core->echo(" Destination label must be different than source label");
+			$this->core->echo("Destination label must be different than source label");
 			goto set_label_destination;
 		}
 
 		$db_destination = new MySQL();
 		$ini_destination = $this->get_config($destination);
-		$this->core->echo(" Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
+		$this->core->echo("Connecting to: ".$ini_destination->get('DB_HOST').":".$ini_destination->get('DB_PORT')."@".$ini_destination->get('DB_USER'));
 		if(!$db_destination->connect($ini_destination->get('DB_HOST'), $ini_destination->get('DB_USER'), $ini_destination->get('DB_PASSWORD'), $ini_destination->get('DB_NAME'), $ini_destination->get('DB_PORT'), $this->get_mysql_options($ini_destination))) goto set_label_destination;
 		if($ini_destination->get('DB_NAME') == "*" && !$this->select_data_base($db_destination->get_connection())) return false;
 
@@ -1527,7 +1527,7 @@ class MySQLTools {
 		$info_dest = [];
 
 		$db_name = $db_source->get_data_base();
-		$this->core->echo(" Fetch data base info for \"$source\"");
+		$this->core->echo("Fetch data base info for \"$source\"");
 		$items = $db_source->query("SHOW FULL TABLES WHERE TABLE_TYPE LIKE 'BASE TABLE'", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$table = $item->{"Tables_in_$db_name"};
@@ -1550,7 +1550,7 @@ class MySQLTools {
 			$table = $item->{"Tables_in_$db_name"};
 			$db_destination->query("ANALYZE TABLE `$table`");
 		}
-		$this->core->echo(" Fetch data base info for \"$destination\"");
+		$this->core->echo("Fetch data base info for \"$destination\"");
 		$items = $db_destination->query("SELECT * FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = '$db_name'", PDO::FETCH_OBJ);
 		foreach($items as $item){
 			$info_dest[$item->TABLE_NAME]['engine'] = $item->ENGINE;
@@ -1562,7 +1562,7 @@ class MySQLTools {
 		}
 		$db_destination->disconnect();
 
-		$this->core->echo(" Check data base info differences");
+		$this->core->echo("Check data base info differences");
 		$this->core->write_data([
 			"Data base info differences",
 			"Source:      ".$ini_source->get('DB_HOST').":".$ini_source->get('DB_PORT')."@".$ini_source->get('DB_USER'),
@@ -1608,7 +1608,7 @@ class MySQLTools {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Comparison \"$source\" to \"$destination\" done, press any key to back to menu");
+		$this->core->pause("Comparison \"$source\" to \"$destination\" done, press any key to back to menu");
 		return false;
 	}
 

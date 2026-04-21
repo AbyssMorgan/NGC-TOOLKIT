@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -22,7 +22,7 @@ class Script extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.9.1";
+	public string $version = "2.9.2";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 	public string $script;
@@ -123,7 +123,7 @@ class Script extends Core {
 		array_unshift($this->arguments, $this->command);
 		$path = $this->command;
 		if(empty($path) || !file_exists($path)){
-			$this->echo(" File \"$path\" not exists");
+			$this->echo("File \"$path\" not exists");
 		} else {
 			$console = new Console($this);
 			$console->execute($path);

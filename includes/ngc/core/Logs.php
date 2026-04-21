@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -57,7 +57,6 @@ class Logs {
 
 	/**
 	 * Constructor for the Logs class.
-	 *
 	 * @param string $path The full path to the log file.
 	 * @param bool $timestamp Optional. Whether to prepend a timestamp to each log entry. Defaults to true.
 	 * @param bool $hold_open Optional. Whether to keep the file handle open between writes. Defaults to false.
@@ -75,7 +74,6 @@ class Logs {
 
 	/**
 	 * Creates the log file and its parent directories if they do not exist.
-	 *
 	 * @return bool True if the file and directory structure were successfully created or already exist, false otherwise.
 	 */
 	protected function create() : bool {
@@ -90,7 +88,6 @@ class Logs {
 
 	/**
 	 * Writes a single string line to the log file.
-	 *
 	 * @param string $line The string content to write.
 	 * @return bool True on successful write, false on failure.
 	 */
@@ -107,7 +104,6 @@ class Logs {
 
 	/**
 	 * Writes multiple string lines from an array to the log file.
-	 *
 	 * @param array $lines An array of strings, where each string is a log line.
 	 * @return bool True on successful write, false on failure.
 	 */
@@ -126,7 +122,6 @@ class Logs {
 
 	/**
 	 * Sets the date format for timestamps in log entries.
-	 *
 	 * @param string $date_format The date format string (e.g., 'Y-m-d H:i:s').
 	 */
 	public function set_date_format(string $date_format) : void {
@@ -135,7 +130,6 @@ class Logs {
 
 	/**
 	 * Generates a formatted timestamp based on the configured date format.
-	 *
 	 * @return string The formatted timestamp string.
 	 */
 	public function get_timestamp() : string {
@@ -145,7 +139,6 @@ class Logs {
 	/**
 	 * Writes content to the log file. The content can be a single string or an array of strings.
 	 * If the log file does not exist, it attempts to create it.
-	 *
 	 * @param string|array $content The content to write. Can be a string or an array of strings.
 	 * @return bool True on successful write, false on failure.
 	 */
@@ -160,7 +153,6 @@ class Logs {
 
 	/**
 	 * Returns the path to the log file.
-	 *
 	 * @return string The log file path.
 	 */
 	public function get_path() : string {
@@ -169,7 +161,6 @@ class Logs {
 
 	/**
 	 * Closes the currently open log file handle.
-	 *
 	 * @return bool True if the file was successfully closed or if it was not open, false on error during close.
 	 */
 	public function close() : bool {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -26,7 +26,6 @@ class FtpService {
 
 	/**
 	 * FtpService constructor.
-	 *
 	 * @param FtpClient $ftp An instance of FtpClient.
 	 */
 	public function __construct(FtpClient $ftp){
@@ -35,7 +34,6 @@ class FtpService {
 
 	/**
 	 * Converts a Unix-style permission string (e.g., 'rwxr-xr--') to an octal representation.
-	 *
 	 * @param string $permission The Unix permission string.
 	 * @return string The octal representation of the permission.
 	 */
@@ -51,7 +49,6 @@ class FtpService {
 
 	/**
 	 * Recursively retrieves a list of files from a given FTP path.
-	 *
 	 * @param string $path The starting path on the FTP server.
 	 * @param array|null $include_extensions An optional array of allowed file extensions. If null, all extensions are allowed.
 	 * @param array|null $exclude_extensions An optional array of file extensions to exclude.
@@ -80,7 +77,6 @@ class FtpService {
 
 	/**
 	 * Do operations on a list of files from a given path, with optional filtering.
-	 *
 	 * @param string|array $path The directory/direcories path to scan.
 	 * @param callable $callback Callback called for every found files function(string $file)
 	 * @param ?array $include_extensions An array of extensions to include (e.g., ['jpg', 'png']). Null for all.
@@ -110,7 +106,6 @@ class FtpService {
 
 	/**
 	 * Recursively scans a directory for files, applying include/exclude extension filters and name filters.
-	 *
 	 * @param string $dir The directory to scan.
 	 * @param callable $callback Callback called for every found files function(string $file)
 	 * @param ?array $include_extensions An array of extensions to include.
@@ -155,7 +150,6 @@ class FtpService {
 
 	/**
 	 * Converts all string items in an array to lowercase.
-	 *
 	 * @param array $items The input array.
 	 * @return array The array with all string items converted to lowercase.
 	 */
@@ -169,7 +163,6 @@ class FtpService {
 
 	/**
 	 * Recursively retrieves a list of files with detailed metadata from a given FTP path.
-	 *
 	 * @param string $path The starting path on the FTP server.
 	 * @param array|null $include_extensions An optional array of allowed file extensions. If null, all extensions are allowed.
 	 * @param array|null $exclude_extensions An optional array of file extensions to exclude.
@@ -204,7 +197,6 @@ class FtpService {
 
 	/**
 	 * Recursively retrieves a list of folders from a given FTP path.
-	 *
 	 * @param string $path The starting path on the FTP server.
 	 * @return array An array of folder paths.
 	 */
@@ -225,7 +217,6 @@ class FtpService {
 
 	/**
 	 * Checks if a given FTP folder contains any files or subfolders (excluding '.' and '..').
-	 *
 	 * @param string $path The path of the folder to check.
 	 * @return bool True if the folder contains files or subfolders, false otherwise.
 	 */
@@ -241,7 +232,6 @@ class FtpService {
 
 	/**
 	 * Checks if a given folder exists on the FTP server.
-	 *
 	 * @param string $path The path of the folder to check.
 	 * @return bool True if the folder exists, false otherwise.
 	 */
@@ -254,7 +244,6 @@ class FtpService {
 
 	/**
 	 * Filters a search string against a list of filters.
-	 *
 	 * @param string $search The string to search within.
 	 * @param array $filters An array of strings to filter by.
 	 * @param bool $case_sensitive Whether the search should be case-sensitive.

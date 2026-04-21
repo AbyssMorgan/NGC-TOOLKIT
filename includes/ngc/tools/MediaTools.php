@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -34,18 +34,18 @@ class MediaTools {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0  - Merge: Video + Audio',
-			' 1  - Merge: Video + SRT',
-			' 2  - Avatar generator',
-			' 3  - Fetch media info (Video)',
-			' 4  - Image converter',
-			' 5  - Ident mime type',
-			' 6  - Extract video',
-			' 7  - Extract audio',
-			' 8  - Extract subtitles',
-			' 9  - Validate subtitles (SRT)',
-			' 10 - Compare subtitles (SRT)',
+			'Actions:',
+			'0  - Merge: Video + Audio',
+			'1  - Merge: Video + SRT',
+			'2  - Avatar generator',
+			'3  - Fetch media info (Video)',
+			'4  - Image converter',
+			'5  - Ident mime type',
+			'6  - Extract video',
+			'7  - Extract audio',
+			'8  - Extract subtitles',
+			'9  - Validate subtitles (SRT)',
+			'10 - Compare subtitles (SRT)',
 		]);
 	}
 
@@ -71,18 +71,18 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Merge video audio");
 
-		$video = $this->core->get_input_folder(" Video (Folder): ");
+		$video = $this->core->get_input_folder("Video (Folder): ");
 		if($video === false) return false;
 
-		$audio = $this->core->get_input_folder(" Audio (Folder): ");
+		$audio = $this->core->get_input_folder("Audio (Folder): ");
 		if($audio === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($audio == $output || $video == $output){
-			$this->core->echo(" Output folder must be different than audio/video folder");
+			$this->core->echo("Output folder must be different than audio/video folder");
 			goto set_output;
 		}
 
@@ -134,7 +134,7 @@ class MediaTools {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -142,15 +142,15 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Merge video subtitles");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
@@ -187,7 +187,7 @@ class MediaTools {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -195,19 +195,19 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Avatar generator");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
-		$size = $this->core->get_input_integer(" Width (0 - no resize): ", 0);
+		$size = $this->core->get_input_integer("Width (0 - no resize): ", 0);
 		if($size === false) return false;
 
 		$variants = \explode(" ", $this->core->config->get('AVATAR_GENERATOR_VARIANTS'));
@@ -254,7 +254,7 @@ class MediaTools {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -262,20 +262,20 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Fetch media info");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		$file_name = 'MediaInfo';
 
-		$line = $this->core->get_input(" File name (Empty, default): ");
+		$line = $this->core->get_input("File name (Empty, default): ");
 		if($line == '#') return false;
 		$fname = $this->core->clean_file_name($line);
 		if(!empty($fname)) $file_name = $fname;
 
-		$generate_checksum = $this->core->get_confirm(" Generate checksum if .md5 file not found (Y/N): ");
+		$generate_checksum = $this->core->get_confirm("Generate checksum if .md5 file not found (Y/N): ");
 
 		$errors = 0;
 		$this->core->set_errors($errors);
@@ -286,8 +286,8 @@ class MediaTools {
 			$this->core->move($ini_old, $ini_new);
 		}
 		$cache = new IniFile($ini_new, true, true);
-		$this->core->echo(" Read file: $ini_new");
-		$this->core->echo(" Last update: ".$cache->get('.LAST_UPDATE', 'None'));
+		$this->core->echo("Read file: $ini_new");
+		$this->core->echo("Last update: ".$cache->get('.LAST_UPDATE', 'None'));
 
 		$csv_file = $this->core->get_path("$output/$file_name.csv");
 		$this->core->delete($csv_file);
@@ -397,14 +397,14 @@ class MediaTools {
 		}
 		$this->core->progress($items, $total);
 		$this->core->set_errors($errors);
-		$this->core->echo(" Saved results into ".$csv->get_path());
+		$this->core->echo("Saved results into ".$csv->get_path());
 		$csv->close();
 		$cache->set_all($cache->only($keys));
 		$cache->update(['.LAST_UPDATE' => \date('Y-m-d H:i:s')], true);
 		$cache->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -414,14 +414,14 @@ class MediaTools {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Image > WEBP',
-			' 1 - Image > JPG',
-			' 2 - Image > PNG',
-			' 3 - Image > GIF',
+			'Modes:',
+			'0 - Image > WEBP',
+			'1 - Image > JPG',
+			'2 - Image > PNG',
+			'3 - Image > GIF',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -431,15 +431,15 @@ class MediaTools {
 		if(!\in_array($params['mode'], ['0', '1', '2', '3'])) goto set_mode;
 		$this->core->clear();
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
@@ -528,7 +528,7 @@ class MediaTools {
 		$this->core->set_errors($errors);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -536,7 +536,7 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Ident mime type");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -572,7 +572,7 @@ class MediaTools {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -580,15 +580,15 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Extract video");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
@@ -633,7 +633,7 @@ class MediaTools {
 		unset($files);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -641,15 +641,15 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Extract audio");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
@@ -696,7 +696,7 @@ class MediaTools {
 		unset($files);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -704,15 +704,15 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Extract subtitles");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
@@ -759,7 +759,7 @@ class MediaTools {
 		unset($files);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -767,7 +767,7 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Validate subtitles");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$subtitles_validator = new SubtitlesValidator($this->core);
@@ -799,7 +799,7 @@ class MediaTools {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -807,15 +807,15 @@ class MediaTools {
 		$this->core->clear();
 		$this->core->set_subtool("Compare subtitles");
 
-		$input_a = $this->core->get_input_folder(" Input (Folder A): ");
+		$input_a = $this->core->get_input_folder("Input (Folder A): ");
 		if($input_a === false) return false;
 
 		set_input_b:
-		$input_b = $this->core->get_input_folder(" Input (Folder B): ");
+		$input_b = $this->core->get_input_folder("Input (Folder B): ");
 		if($input_b === false) return false;
 
 		if($input_a == $input_b){
-			$this->core->echo(" Input Folder A must be different than input Folder B");
+			$this->core->echo("Input Folder A must be different than input Folder B");
 			goto set_input_b;
 		}
 
@@ -874,7 +874,7 @@ class MediaTools {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

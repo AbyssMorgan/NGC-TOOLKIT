@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -77,7 +77,6 @@ class GuardDriver {
 
 	/**
 	 * Constructor for GuardDriver.
-	 *
 	 * @param string $file The path to the INI file to be used for guard data.
 	 * @param array $folders_to_scan Optional array of initial folders to scan.
 	 * @param array $files_to_scan Optional array of initial files to scan.
@@ -90,7 +89,6 @@ class GuardDriver {
 
 	/**
 	 * Adds one or more folders to the list of folders to be scanned.
-	 *
 	 * @param array|string $folders A single folder path (string) or an array of folder paths.
 	 */
 	public function add_folders(array|string $folders) : void {
@@ -100,7 +98,6 @@ class GuardDriver {
 
 	/**
 	 * Sets the list of folders to be scanned, replacing any existing list.
-	 *
 	 * @param array|string $folders A single folder path (string) or an array of folder paths.
 	 */
 	public function set_folders(array|string $folders) : void {
@@ -110,7 +107,6 @@ class GuardDriver {
 
 	/**
 	 * Retrieves the current list of folders to be scanned.
-	 *
 	 * @return array An array of folder paths.
 	 */
 	public function get_folders() : array {
@@ -119,7 +115,6 @@ class GuardDriver {
 
 	/**
 	 * Adds one or more files to the list of files to be scanned.
-	 *
 	 * @param array|string $files A single file path (string) or an array of file paths.
 	 */
 	public function add_files(array|string $files) : void {
@@ -129,7 +124,6 @@ class GuardDriver {
 
 	/**
 	 * Sets the list of files to be scanned, replacing any existing list.
-	 *
 	 * @param array|string $files A single file path (string) or an array of file paths.
 	 */
 	public function set_files(array|string $files) : void {
@@ -139,7 +133,6 @@ class GuardDriver {
 
 	/**
 	 * Retrieves the current list of files to be scanned.
-	 *
 	 * @return array An array of file paths.
 	 */
 	public function get_files() : array {
@@ -158,7 +151,6 @@ class GuardDriver {
 
 	/**
 	 * Loads guard data from a provided IniFile object.
-	 *
 	 * @param IniFile $guard An instance of IniFile containing the guard data.
 	 */
 	public function load(IniFile $guard) : void {
@@ -173,7 +165,6 @@ class GuardDriver {
 	/**
 	 * Scans a specified folder recursively to generate MD5 hashes for all files within it.
 	 * The hashes and file paths are stored internally.
-	 *
 	 * @param string $folder The path to the folder to scan.
 	 */
 	public function scan_folder(string $folder) : void {
@@ -192,7 +183,6 @@ class GuardDriver {
 	/**
 	 * Scans a single file to generate its MD5 hash.
 	 * The hash and file path are stored internally.
-	 *
 	 * @param string $file The path to the file to scan.
 	 * @param bool $update If true, the file will not be added to the file_list again if it already exists.
 	 */
@@ -207,7 +197,6 @@ class GuardDriver {
 	/**
 	 * Validates the files within a specified folder against the loaded guard data.
 	 * Checks for damaged or unknown files based on the 'flags' property.
-	 *
 	 * @param string $folder The path to the folder to validate.
 	 * @return bool True if the folder exists, false otherwise.
 	 */
@@ -254,7 +243,6 @@ class GuardDriver {
 	/**
 	 * Retrieves the collected guard data, including file checksums, file lists,
 	 * and folders/files that were scanned.
-	 *
 	 * @return array The complete guard data.
 	 */
 	public function get() : array {
@@ -268,7 +256,6 @@ class GuardDriver {
 	/**
 	 * Validates a single file against the loaded guard data.
 	 * Checks for damaged or unknown files based on the 'flags' property.
-	 *
 	 * @param string $file The path to the file to validate.
 	 * @return bool True if the file exists, false otherwise.
 	 */
@@ -312,7 +299,6 @@ class GuardDriver {
 
 	/**
 	 * Performs a comprehensive validation of files and folders against the stored guard data.
-	 *
 	 * @param array $flags An associative array of flags to determine what types of validation to perform.
 	 * Possible keys: 'damaged', 'unknown', 'missing'. Default is all true.
 	 * @return array An array of detected errors. Each error is an associative array with 'type' and 'file' keys.
@@ -341,7 +327,6 @@ class GuardDriver {
 	/**
 	 * Retrieves the guard data organized into a hierarchical tree structure,
 	 * representing the file system.
-	 *
 	 * @return array The hierarchical representation of the guarded files.
 	 */
 	public function get_tree() : array {

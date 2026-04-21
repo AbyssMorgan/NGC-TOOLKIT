@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -29,20 +29,20 @@ class FileNamesEditor {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0  - Generate names: CheckSum',
-			' 1  - Generate names: Number (Video/Images)',
-			' 2  - Generate video: CheckSum/Resolution/Thumbnail',
-			' 3  - Generate series name: S00E00 etc.',
-			' 4  - Escape file name (WWW)',
-			' 5  - Pretty file name',
-			' 6  - Remove YouTube quality tag',
-			' 7  - Series episode editor',
-			' 8  - Add file name prefix/suffix',
-			' 9  - Remove keywords from file name',
-			' 10 - Insert string into file name',
-			' 11 - Replace keywords in file name',
-			' 12 - Extension change',
+			'Actions:',
+			'0  - Generate names: CheckSum',
+			'1  - Generate names: Number (Video/Images)',
+			'2  - Generate video: CheckSum/Resolution/Thumbnail',
+			'3  - Generate series name: S00E00 etc.',
+			'4  - Escape file name (WWW)',
+			'5  - Pretty file name',
+			'6  - Remove YouTube quality tag',
+			'7  - Series episode editor',
+			'8  - Add file name prefix/suffix',
+			'9  - Remove keywords from file name',
+			'10 - Insert string into file name',
+			'11 - Replace keywords in file name',
+			'12 - Extension change',
 		]);
 	}
 
@@ -72,23 +72,23 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0   - Normal           "<HASH>"',
-			' 1   - CurrentName      "name <HASH>"',
-			' 2   - DirectoryName    "dir_name <HASH>"',
-			' 3   - DirectoryNameEx  "dir_name DDDD <HASH>"',
-			' 4   - DateName         "YYYY.MM.DD <HASH>"',
-			' 5   - DateNameEx       "YYYY.MM.DD DDDD <HASH>"',
-			' 6   - NumberFour       "DDDD <HASH>"',
-			' 7   - NumberSix        "DDDDDD <HASH>"',
-			' ?0  - md5 (default)',
-			' ?1  - sha256',
-			' ?2  - crc32',
-			' ?3  - whirlpool',
-			' ??l - List only',
+			'Modes:',
+			'0   - Normal           "<HASH>"',
+			'1   - CurrentName      "name <HASH>"',
+			'2   - DirectoryName    "dir_name <HASH>"',
+			'3   - DirectoryNameEx  "dir_name DDDD <HASH>"',
+			'4   - DateName         "YYYY.MM.DD <HASH>"',
+			'5   - DateNameEx       "YYYY.MM.DD DDDD <HASH>"',
+			'6   - NumberFour       "DDDD <HASH>"',
+			'7   - NumberSix        "DDDDDD <HASH>"',
+			'?0  - md5 (default)',
+			'?1  - sha256',
+			'?2  - crc32',
+			'?3  - whirlpool',
+			'??l - List only',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -103,7 +103,7 @@ class FileNamesEditor {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$algo = $this->core->get_hash_alghoritm(\intval($params['algo']))['name'];
@@ -155,7 +155,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -183,17 +183,17 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Group | Single | Format                  | Range',
-			' g0    | s0     | PREFIX_DDDDDD           | 000001 - 999999',
-			' g1    | s1     | PART\PREFIX_DDDDDD      | 000001 - 999999',
-			' g2    | s2     | PREFIX_DDDDDD           | 000001 - 999999',
-			' g3    | s3     | PREFIX_dir_name_DDDDDD  | 000001 - 999999',
-			' g4    | s4     | PREFIX_dir_name_DDDD    |   0001 -   9999',
-			' g5    | s5     | PREFIX_DDDDDD           | 999999 - 000001',
-			' g6    | s6     | DDDDDD                  | 000001 - 999999',
+			'Group | Single | Format                  | Range',
+			'g0    | s0     | PREFIX_DDDDDD           | 000001 - 999999',
+			'g1    | s1     | PART\PREFIX_DDDDDD      | 000001 - 999999',
+			'g2    | s2     | PREFIX_DDDDDD           | 000001 - 999999',
+			'g3    | s3     | PREFIX_dir_name_DDDDDD  | 000001 - 999999',
+			'g4    | s4     | PREFIX_dir_name_DDDD    |   0001 -   9999',
+			'g5    | s5     | PREFIX_DDDDDD           | 999999 - 000001',
+			'g6    | s6     | DDDDDD                  | 000001 - 999999',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -283,7 +283,7 @@ class FileNamesEditor {
 	public function tool_number_action_single(string $mode) : bool {
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -294,14 +294,14 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
 	public function tool_number_action_group(string $mode) : bool {
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -320,7 +320,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -330,19 +330,19 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0  - CheckSum',
-			' 1  - Resolution',
-			' 2  - Thumbnail',
-			' 3  - CheckSum + Resolution + Thumbnail',
-			' 4  - CheckSum + Resolution',
-			' ?0 - md5 (default)',
-			' ?1 - sha256',
-			' ?2 - crc32',
-			' ?3 - whirlpool',
+			'Modes:',
+			'0  - CheckSum',
+			'1  - Resolution',
+			'2  - Thumbnail',
+			'3  - CheckSum + Resolution + Thumbnail',
+			'4  - CheckSum + Resolution',
+			'?0 - md5 (default)',
+			'?1 - sha256',
+			'?2 - crc32',
+			'?3 - whirlpool',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -360,7 +360,7 @@ class FileNamesEditor {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$algo = $this->core->get_hash_alghoritm(\intval($params['algo']))['name'];
@@ -444,7 +444,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -452,7 +452,7 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Generate series name");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -509,7 +509,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -517,12 +517,12 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Escape file name WWW");
 		$this->core->print_help([
-			" Double spaces reduce",
-			" Characters after escape: A-Z a-z 0-9 _ - .",
-			" Be careful to prevent use on Japanese, Chinese, Korean, etc. file names",
+			"Double spaces reduce",
+			"Characters after escape: A-Z a-z 0-9 _ - .",
+			"Be careful to prevent use on Japanese, Chinese, Korean, etc. file names",
 		]);
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -568,7 +568,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -579,19 +579,19 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Flags (type in one line, default BC):',
-			' B - Basic replacement',
-			' C - Basic remove',
-			' L - Replace language characters',
-			' P - Capitalize properly',
-			' 0 - Chinese to PinYin',
-			' 1 - Hiragama to Romaji',
-			' 2 - Katakana to Romaji',
-			' + - To upper case',
-			' - - To lower case',
+			'Flags (type in one line, default BC):',
+			'B - Basic replacement',
+			'C - Basic remove',
+			'L - Replace language characters',
+			'P - Capitalize properly',
+			'0 - Chinese to PinYin',
+			'1 - Hiragama to Romaji',
+			'2 - Katakana to Romaji',
+			'+ - To upper case',
+			'- - To lower case',
 		]);
 
-		$line = \strtoupper($this->core->get_input(" Flags: "));
+		$line = \strtoupper($this->core->get_input("Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
 		if(\str_replace(['B', 'C', 'L', 'P', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
@@ -621,14 +621,14 @@ class FileNamesEditor {
 		}
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#') return false;
 		if(empty($line)){
 			$filters = null;
@@ -695,7 +695,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -703,7 +703,7 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Remove YouTube quality tag");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -761,7 +761,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -771,12 +771,12 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0   - Change season number',
-			' 1   - Change episode numbers',
+			'Modes:',
+			'0 - Change season number',
+			'1 - Change episode numbers',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -796,24 +796,24 @@ class FileNamesEditor {
 		$this->core->set_subtool("Series episode editor > Change season");
 
 		$this->core->print_help([
-			" Attention file name must begin with the season and episode number in the format:",
-			" \"S00E00{whatever}.{extension}\"",
-			" \"S00E000{whatever}.{extension}\"",
+			"Attention file name must begin with the season and episode number in the format:",
+			"\"S00E00{whatever}.{extension}\"",
+			"\"S00E000{whatever}.{extension}\"",
 		]);
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
-		$this->core->echo(" Example: 1 or 01 (up to 99)");
+		$this->core->echo("Example: 1 or 01 (up to 99)");
 		set_season_current:
-		$line = $this->core->get_input(" Current season: ");
+		$line = $this->core->get_input("Current season: ");
 		if($line == '#') return false;
 		$current_season = \substr(\preg_replace('/\D/', '', $line), 0, 2);
 		if($current_season == '') goto set_season_current;
 		if(\strlen($current_season) == 1) $current_season = "0$current_season";
 
 		set_season_new:
-		$line = $this->core->get_input(" New season: ");
+		$line = $this->core->get_input("New season: ");
 		if($line == '#') return false;
 		$new_season = \substr(\preg_replace('/\D/', '', $line), 0, 2);
 		if($new_season == '') goto set_season_new;
@@ -857,7 +857,7 @@ class FileNamesEditor {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -866,18 +866,18 @@ class FileNamesEditor {
 		$this->core->set_subtool("Series episode editor > Change episode");
 
 		$this->core->print_help([
-			" Attention file name must begin with the season and episode number in the format:",
-			" \"S00E00{whatever}.{extension}\"",
-			" \"S00E000{whatever}.{extension}\"",
+			"Attention file name must begin with the season and episode number in the format:",
+			"\"S00E00{whatever}.{extension}\"",
+			"\"S00E000{whatever}.{extension}\"",
 		]);
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
-		$this->core->echo(" Choose episodes to edit (example 01 or 001)");
+		$this->core->echo("Choose episodes to edit (example 01 or 001)");
 
 		set_start:
-		$line = $this->core->get_input(" Start: ");
+		$line = $this->core->get_input("Start: ");
 		if($line == '#') return false;
 		$episode_start = \substr(\preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_start == '') goto set_start;
@@ -885,15 +885,15 @@ class FileNamesEditor {
 		$episode_start = \intval($episode_start);
 
 		set_end:
-		$line = $this->core->get_input(" End: ");
+		$line = $this->core->get_input("End: ");
 		if($line == '#') return false;
 		$episode_end = \substr(\preg_replace('/\D/', '', $line), 0, 3);
 		if($episode_end == '') goto set_end;
 		if($episode_end[0] == '0') $episode_end = \substr($episode_end, 1);
 		$episode_end = \intval($episode_end);
 
-		$this->core->echo(" Choose step as integer (example 5 or -5)");
-		$line = $this->core->get_input(" Step: ");
+		$this->core->echo("Choose step as integer (example 5 or -5)");
+		$line = $this->core->get_input("Step: ");
 		if($line == '#') return false;
 		$episode_step = \intval(\substr(\preg_replace("/[^0-9\-]/", '', $line), 0, 3));
 
@@ -964,7 +964,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -972,17 +972,17 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Add file name prefix/suffix");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
-		$prefix = $this->core->get_input(" Prefix (may be empty): ", false);
+		$prefix = $this->core->get_input("Prefix (may be empty): ", false);
 		if($prefix == '#') return false;
 		$prefix = \str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $prefix);
 
-		$suffix = $this->core->get_input(" Suffix (may be empty): ", false);
+		$suffix = $this->core->get_input("Suffix (may be empty): ", false);
 		if($suffix == '#') return false;
 		$suffix = \str_replace(['<', '>', ':', '"', '/', '\\', '|', '?', '*'], '', $suffix);
 
@@ -1014,7 +1014,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1025,12 +1025,12 @@ class FileNamesEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Type keywords',
-			' 1 - Load from file (new line every keyword)',
+			'Modes:',
+			'0 - Type keywords',
+			'1 - Load from file (new line every keyword)',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -1041,7 +1041,7 @@ class FileNamesEditor {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -1049,22 +1049,22 @@ class FileNamesEditor {
 
 		$keywords = [];
 		if($params['mode'] == '0'){
-			$this->core->echo(" Put numbers how much keywords you want remove");
+			$this->core->echo("Put numbers how much keywords you want remove");
 
-			$quantity = $this->core->get_input_integer(" Quantity: ");
+			$quantity = $this->core->get_input_integer("Quantity: ");
 			if($quantity === false) return false;
 
 			for($i = 0; $i < $quantity; $i++){
-				$keywords[$i] = $this->core->get_input(" Keyword ".($i + 1).": ", false);
+				$keywords[$i] = $this->core->get_input("Keyword ".($i + 1).": ", false);
 			}
 		} elseif($params['mode'] == '1'){
 			set_keyword_file:
-			$input = $this->core->get_input_file(" Keywords file: ", true);
+			$input = $this->core->get_input_file("Keywords file: ", true);
 			if($input === false) return false;
 
 			$fp = \fopen($input, 'r');
 			if(!$fp){
-				$this->core->echo(" Failed open keywords file");
+				$this->core->echo("Failed open keywords file");
 				goto set_keyword_file;
 			}
 			while(($line = \fgets($fp)) !== false){
@@ -1107,7 +1107,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1117,25 +1117,25 @@ class FileNamesEditor {
 		set_offset:
 		$this->core->clear();
 		$this->core->print_help([
-			' Specify the string offset where you want insert into file name',
-			' Offset = 0 - means the beginning, i.e. the string will be inserted before the file name (prefix)',
-			' Offset > 0 - means that the string will be inserted after skipping N characters',
-			' Offset < 0 - means that the string will be inserted after skipping N characters from the end',
+			'Specify the string offset where you want insert into file name',
+			'Offset = 0 - means the beginning, i.e. the string will be inserted before the file name (prefix)',
+			'Offset > 0 - means that the string will be inserted after skipping N characters',
+			'Offset < 0 - means that the string will be inserted after skipping N characters from the end',
 		]);
-		$line = $this->core->get_input(" Offset: ");
+		$line = $this->core->get_input("Offset: ");
 		if($line == '#') return false;
 		$offset = \preg_replace("/[^0-9\-]/", '', $line);
 		if($offset == '') goto set_offset;
 		$offset = \intval($offset);
 
 		$this->core->print_help([
-			' Specify the string you want to inject the file name, may contain spaces',
+			'Specify the string you want to inject the file name, may contain spaces',
 		]);
-		$insert_string = $this->core->get_input(" String: ", false);
+		$insert_string = $this->core->get_input("String: ", false);
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -1182,7 +1182,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1190,19 +1190,19 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Replace keywords in file name");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
 		set_keyword_file:
-		$input = $this->core->get_input_file(" Keywords file: ", true);
+		$input = $this->core->get_input_file("Keywords file: ", true);
 		if($input === false) return false;
 
 		$fp = \fopen($input, 'r');
 		if(!$fp){
-			$this->core->echo(" Failed open keywords file");
+			$this->core->echo("Failed open keywords file");
 			goto set_keyword_file;
 		}
 
@@ -1215,7 +1215,7 @@ class FileNamesEditor {
 			if(empty(\trim($line))) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
-				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
+				$this->core->echo("Failed parse replacement in line $i content: '$line'");
 				$errors++;
 			} else {
 				$replacements[$replace[0]] = $replace[1];
@@ -1224,7 +1224,7 @@ class FileNamesEditor {
 		\fclose($fp);
 
 		if($errors > 0){
-			if(!$this->core->get_confirm(" Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
+			if(!$this->core->get_confirm("Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
 		}
 
 		$this->core->setup_folders($folders);
@@ -1259,7 +1259,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -1267,13 +1267,13 @@ class FileNamesEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Extension change");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extension_old = \mb_strtolower($this->core->get_input(" Extension old: "));
+		$extension_old = \mb_strtolower($this->core->get_input("Extension old: "));
 		if($extension_old == '#') return false;
 
-		$extension_new = $this->core->get_input(" Extension new: ");
+		$extension_new = $this->core->get_input("Extension new: ");
 		if($extension_new == '#') return false;
 
 		$this->core->setup_folders($folders);
@@ -1303,7 +1303,7 @@ class FileNamesEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

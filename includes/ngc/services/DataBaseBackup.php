@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -115,7 +115,6 @@ class DataBaseBackup {
 
 	/**
 	 * DataBaseBackup constructor.
-	 *
 	 * @param string|null $path The base path to store backup files. If null, no file backups will be made.
 	 * @param int $query_limit The number of rows to fetch per query for data operations.
 	 * @param int $insert_limit The number of rows per INSERT statement for data operations.
@@ -135,7 +134,6 @@ class DataBaseBackup {
 
 	/**
 	 * Get the accumulated ALTER TABLE statements.
-	 *
 	 * @return string The string containing all ALTER TABLE statements.
 	 */
 	public function get_alters() : string {
@@ -144,7 +142,6 @@ class DataBaseBackup {
 
 	/**
 	 * Reset the accumulated ALTER TABLE statements.
-	 *
 	 * @return void
 	 */
 	public function reset_alters() : void {
@@ -153,7 +150,6 @@ class DataBaseBackup {
 
 	/**
 	 * Get the output path for backup files.
-	 *
 	 * @param string|null $folder An optional subfolder within the main backup path (e.g., "structure", "data").
 	 * @return string The full output path.
 	 */
@@ -165,7 +161,6 @@ class DataBaseBackup {
 
 	/**
 	 * Toggle table locking during data operations.
-	 *
 	 * @param bool $toggle True to enable table locking, false to disable.
 	 * @return void
 	 */
@@ -175,7 +170,6 @@ class DataBaseBackup {
 
 	/**
 	 * Establishes a PDO connection to the source database.
-	 *
 	 * @param string $host The database host.
 	 * @param string $user The database username.
 	 * @param string $password The database password.
@@ -209,7 +203,6 @@ class DataBaseBackup {
 
 	/**
 	 * Establishes a PDO connection to the destination database for cloning operations.
-	 *
 	 * @param string $host The database host.
 	 * @param string $user The database username.
 	 * @param string $password The database password.
@@ -242,7 +235,6 @@ class DataBaseBackup {
 
 	/**
 	 * Get the source PDO connection object.
-	 *
 	 * @return PDO|null The source PDO object, or null if not connected.
 	 */
 	public function get_source() : ?PDO {
@@ -251,7 +243,6 @@ class DataBaseBackup {
 
 	/**
 	 * Get the destination PDO connection object.
-	 *
 	 * @return PDO|null The destination PDO object, or null if not connected.
 	 */
 	public function get_destination() : ?PDO {
@@ -260,7 +251,6 @@ class DataBaseBackup {
 
 	/**
 	 * Disconnects from the source database.
-	 *
 	 * @return void
 	 */
 	public function disconnect() : void {
@@ -269,7 +259,6 @@ class DataBaseBackup {
 
 	/**
 	 * Disconnects from the destination database.
-	 *
 	 * @return void
 	 */
 	public function disconnect_destination() : void {
@@ -278,7 +267,6 @@ class DataBaseBackup {
 
 	/**
 	 * Sets the name of the database to be operated on.
-	 *
 	 * @param string $dbname The database name.
 	 * @return void
 	 */
@@ -288,7 +276,6 @@ class DataBaseBackup {
 
 	/**
 	 * Escapes special characters in a string for use in SQL statements.
-	 *
 	 * @param mixed $string The string to escape.
 	 * @return string The escaped string.
 	 */
@@ -300,7 +287,6 @@ class DataBaseBackup {
 
 	/**
 	 * Checks if the destination database is empty (contains no tables).
-	 *
 	 * @return bool True if the destination database is empty, false otherwise.
 	 */
 	public function is_destination_empty() : bool {
@@ -310,7 +296,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves a list of all base tables in the current database.
-	 *
 	 * @return array An array of table names.
 	 */
 	public function get_tables() : array {
@@ -324,7 +309,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves a list of all views in the current database.
-	 *
 	 * @return array An array of view names.
 	 */
 	public function get_views() : array {
@@ -338,7 +322,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves a list of all functions in the current database.
-	 *
 	 * @return array An array of function names.
 	 */
 	public function get_functions() : array {
@@ -352,7 +335,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves a list of all procedures in the current database.
-	 *
 	 * @return array An array of procedure names.
 	 */
 	public function get_procedures() : array {
@@ -366,7 +348,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves a list of all events in the current database.
-	 *
 	 * @return array An array of event names.
 	 */
 	public function get_events() : array {
@@ -380,7 +361,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves a list of all triggers in the current database.
-	 *
 	 * @return array An array of trigger names.
 	 */
 	public function get_triggers() : array {
@@ -394,7 +374,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves the column names and their data types for a given table.
-	 *
 	 * @param string $name The name of the table.
 	 * @return array An associative array where keys are column names and values are their data types (lowercase).
 	 */
@@ -410,7 +389,6 @@ class DataBaseBackup {
 	/**
 	 * Retrieves the CREATE TABLE statement and associated ALTER TABLE statements for a given table.
 	 * This method separates foreign key constraints into ALTER TABLE statements.
-	 *
 	 * @param string $name The name of the table.
 	 * @return array An associative array with 'query' (CREATE TABLE statement) and 'alters' (ALTER TABLE statements).
 	 */
@@ -439,7 +417,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves the CREATE VIEW statement for a given view.
-	 *
 	 * @param string $name The name of the view.
 	 * @return string The CREATE VIEW statement.
 	 */
@@ -451,7 +428,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves the CREATE FUNCTION statement for a given function.
-	 *
 	 * @param string $name The name of the function.
 	 * @return string The CREATE FUNCTION statement, enclosed in DELIMITER commands.
 	 */
@@ -463,7 +439,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves the CREATE PROCEDURE statement for a given procedure.
-	 *
 	 * @param string $name The name of the procedure.
 	 * @return string The CREATE PROCEDURE statement, enclosed in DELIMITER commands.
 	 */
@@ -475,7 +450,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves the CREATE EVENT statement for a given event.
-	 *
 	 * @param string $name The name of the event.
 	 * @return string The CREATE EVENT statement, enclosed in DELIMITER commands.
 	 */
@@ -487,7 +461,6 @@ class DataBaseBackup {
 
 	/**
 	 * Retrieves the CREATE TRIGGER statement for a given trigger.
-	 *
 	 * @param string $name The name of the trigger.
 	 * @return string The CREATE TRIGGER statement, enclosed in DELIMITER commands.
 	 */
@@ -499,7 +472,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates a DROP TABLE IF EXISTS statement for a given table.
-	 *
 	 * @param string $name The name of the table.
 	 * @return string The DROP TABLE statement.
 	 */
@@ -509,7 +481,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates a DROP VIEW IF EXISTS statement for a given view.
-	 *
 	 * @param string $name The name of the view.
 	 * @return string The DROP VIEW statement.
 	 */
@@ -519,7 +490,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates a DROP FUNCTION IF EXISTS statement for a given function.
-	 *
 	 * @param string $name The name of the function.
 	 * @return string The DROP FUNCTION statement.
 	 */
@@ -529,7 +499,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates a DROP PROCEDURE IF EXISTS statement for a given procedure.
-	 *
 	 * @param string $name The name of the procedure.
 	 * @return string The DROP PROCEDURE statement.
 	 */
@@ -539,7 +508,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates a DROP EVENT IF EXISTS statement for a given event.
-	 *
 	 * @param string $name The name of the event.
 	 * @return string The DROP EVENT statement.
 	 */
@@ -549,7 +517,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates a DROP TRIGGER IF EXISTS statement for a given trigger.
-	 *
 	 * @param string $name The name of the trigger.
 	 * @return string The DROP TRIGGER statement.
 	 */
@@ -559,7 +526,6 @@ class DataBaseBackup {
 
 	/**
 	 * Get the SQL header content.
-	 *
 	 * @return string The header SQL.
 	 */
 	public function get_header() : string {
@@ -568,7 +534,6 @@ class DataBaseBackup {
 
 	/**
 	 * Get the SQL footer content.
-	 *
 	 * @return string The footer SQL.
 	 */
 	public function get_footer() : string {
@@ -577,7 +542,6 @@ class DataBaseBackup {
 
 	/**
 	 * Generates the beginning of an INSERT INTO statement with specified columns.
-	 *
 	 * @param string $table The table name.
 	 * @param array $columns An array of column names.
 	 * @return string The INSERT INTO part of the SQL statement.
@@ -594,7 +558,6 @@ class DataBaseBackup {
 	/**
 	 * Backs up the structure (CREATE TABLE statement) of a given table to a SQL file.
 	 * Foreign key constraints are separated into a separate "alters" file.
-	 *
 	 * @param string $table The name of the table to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -633,7 +596,6 @@ class DataBaseBackup {
 	/**
 	 * Clones the structure (CREATE TABLE statement) of a given table to the destination database.
 	 * Foreign key constraints are accumulated in the `alters` property for later execution.
-	 *
 	 * @param string $table The name of the table to clone.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -658,7 +620,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the data of a given table to a SQL file as INSERT statements.
-	 *
 	 * @param string $table The name of the table to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -760,7 +721,6 @@ class DataBaseBackup {
 	/**
 	 * Clones the data of a given table from the source to the destination database.
 	 * Data is inserted in chunks to manage memory and performance.
-	 *
 	 * @param string $table The name of the table to clone data from.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -855,7 +815,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the structure (CREATE VIEW statement) of a given view to a SQL file.
-	 *
 	 * @param string $table The name of the view to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -884,7 +843,6 @@ class DataBaseBackup {
 
 	/**
 	 * Clones the structure (CREATE VIEW statement) of a given view to the destination database.
-	 *
 	 * @param string $table The name of the view to clone.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -907,7 +865,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the definition (CREATE FUNCTION statement) of a given function to a SQL file.
-	 *
 	 * @param string $table The name of the function to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -936,7 +893,6 @@ class DataBaseBackup {
 
 	/**
 	 * Clones the definition (CREATE FUNCTION statement) of a given function to the destination database.
-	 *
 	 * @param string $table The name of the function to clone.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -959,7 +915,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the definition (CREATE PROCEDURE statement) of a given procedure to a SQL file.
-	 *
 	 * @param string $table The name of the procedure to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -988,7 +943,6 @@ class DataBaseBackup {
 
 	/**
 	 * Clones the definition (CREATE PROCEDURE statement) of a given procedure to the destination database.
-	 *
 	 * @param string $table The name of the procedure to clone.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -1011,7 +965,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the definition (CREATE EVENT statement) of a given event to a SQL file.
-	 *
 	 * @param string $table The name of the event to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -1040,7 +993,6 @@ class DataBaseBackup {
 
 	/**
 	 * Clones the definition (CREATE EVENT statement) of a given event to the destination database.
-	 *
 	 * @param string $table The name of the event to clone.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -1063,7 +1015,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the definition (CREATE TRIGGER statement) of a given trigger to a SQL file.
-	 *
 	 * @param string $table The name of the trigger to backup.
 	 * @return array An array of errors encountered during the backup process.
 	 */
@@ -1092,7 +1043,6 @@ class DataBaseBackup {
 
 	/**
 	 * Clones the definition (CREATE TRIGGER statement) of a given trigger to the destination database.
-	 *
 	 * @param string $table The name of the trigger to clone.
 	 * @return array An array of errors encountered during the cloning process.
 	 */
@@ -1115,7 +1065,6 @@ class DataBaseBackup {
 
 	/**
 	 * Backs up the entire database, including tables (structure and data), views, functions, procedures, events, and triggers.
-	 *
 	 * @return array An array of all errors encountered during the backup process.
 	 */
 	public function backup_all() : array {
@@ -1151,7 +1100,6 @@ class DataBaseBackup {
 	/**
 	 * Clones the entire database from the source to the destination, including tables (structure and data), views, functions, procedures, events, and triggers.
 	 * Table structures are cloned first, then data, and finally other database objects.
-	 *
 	 * @return array An array of all errors encountered during the cloning process.
 	 */
 	public function clone_all() : array {

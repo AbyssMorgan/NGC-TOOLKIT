@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -15,6 +15,10 @@ namespace NGC\Core;
 
 use Exception;
 
+/**
+ * Class StopLoopException
+ * Exception for stopping loops.
+ */
 class StopLoopException extends Exception {
 
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -33,7 +33,6 @@ class BitFunctions {
 
 	/**
 	 * Constructor for the BitFunctions class.
-	 *
 	 * @param int $max_bits The maximum number of bits to use for operations. Can be 32 or 64. Defaults to 32.
 	 */
 	public function __construct(int $max_bits = 32){
@@ -46,7 +45,6 @@ class BitFunctions {
 
 	/**
 	 * Returns the maximum number of bits currently configured for operations.
-	 *
 	 * @return int The maximum number of bits (32 or 64).
 	 */
 	public function get_max_bits() : int {
@@ -55,7 +53,6 @@ class BitFunctions {
 
 	/**
 	 * Gets the boolean value of a specific bit within a given integer.
-	 *
 	 * @param int $value The integer to read the bit from.
 	 * @param int $bit_id The zero-based index of the bit to retrieve (e.g., 0 for the least significant bit).
 	 * @return bool True if the bit is set (1), false if it's not set (0).
@@ -66,7 +63,6 @@ class BitFunctions {
 
 	/**
 	 * Sets or unsets a specific bit within a given integer by reference.
-	 *
 	 * @param int $value The integer whose bit will be modified (passed by reference).
 	 * @param int $bit_id The zero-based index of the bit to set or unset.
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
@@ -77,7 +73,6 @@ class BitFunctions {
 
 	/**
 	 * Gets the boolean value of a specific bit in the internal 'original' integer.
-	 *
 	 * @param int $bit_id The zero-based index of the bit to retrieve.
 	 * @return bool True if the bit is set (1), false if it's not set (0).
 	 */
@@ -87,7 +82,6 @@ class BitFunctions {
 
 	/**
 	 * Sets or unsets a specific bit in the internal 'original' integer.
-	 *
 	 * @param int $bit_id The zero-based index of the bit to set or unset.
 	 * @param bool $state True to set the bit to 1, false to set it to 0.
 	 */
@@ -97,7 +91,6 @@ class BitFunctions {
 
 	/**
 	 * Sets the internal 'original' integer to the provided integer value.
-	 *
 	 * @param int $int The integer value to set.
 	 */
 	public function from_int(int $int) : void {
@@ -107,7 +100,6 @@ class BitFunctions {
 	/**
 	 * Sets the internal 'original' integer based on a boolean array representing individual bits.
 	 * The array index corresponds to the bit ID.
-	 *
 	 * @param array $array An array of booleans, where array[bit_id] determines the state of that bit.
 	 */
 	public function from_array(array $array) : void {
@@ -119,7 +111,6 @@ class BitFunctions {
 
 	/**
 	 * Sets the internal 'original' integer based on an associative array and a mapping of bit IDs to keys.
-	 *
 	 * @param array $assoc An associative array containing boolean values.
 	 * @param array $keys An array where keys are bit IDs and values are the corresponding keys in $assoc.
 	 */
@@ -132,7 +123,6 @@ class BitFunctions {
 
 	/**
 	 * Sets the internal 'original' integer by converting a binary string to an integer.
-	 *
 	 * @param string $string The binary string (e.g., "10110").
 	 */
 	public function from_string(string $string) : void {
@@ -142,7 +132,6 @@ class BitFunctions {
 	/**
 	 * Sets the internal 'original' integer by decoding a JSON string into an array of booleans,
 	 * then using that array to set the bits.
-	 *
 	 * @param string $json The JSON string representing an array of boolean bit values.
 	 */
 	public function from_json(string $json) : void {
@@ -151,7 +140,6 @@ class BitFunctions {
 
 	/**
 	 * Returns the current value of the internal 'original' integer.
-	 *
 	 * @return int The integer representation of the bits.
 	 */
 	public function to_int() : int {
@@ -161,7 +149,6 @@ class BitFunctions {
 	/**
 	 * Converts the internal 'original' integer into an array of boolean bit values.
 	 * The array index corresponds to the bit ID.
-	 *
 	 * @return array An array of booleans, where each element represents the state of a bit.
 	 */
 	public function to_array() : array {
@@ -175,7 +162,6 @@ class BitFunctions {
 	/**
 	 * Converts the internal 'original' integer into an associative array of boolean bit values,
 	 * using provided keys for the array elements.
-	 *
 	 * @param array $keys An array where keys are bit IDs and values are the desired keys in the output associative array.
 	 * @return array An associative array of booleans.
 	 */
@@ -189,7 +175,6 @@ class BitFunctions {
 
 	/**
 	 * Converts the internal 'original' integer into its binary string representation.
-	 *
 	 * @param bool $full_string Optional. If true, the string will be padded with leading zeros up to max_bits.
 	 * If false, leading zeros will be trimmed. Defaults to false.
 	 * @return string The binary string representation.
@@ -213,7 +198,6 @@ class BitFunctions {
 
 	/**
 	 * Converts the internal 'original' integer's bit representation to a JSON string.
-	 *
 	 * @return string The JSON string representing an array of boolean bit values.
 	 */
 	public function to_json() : string {
@@ -224,7 +208,6 @@ class BitFunctions {
 	 * Inverts the bits of the value.
 	 * - If $full_string is false, only the used bits (from first '1') are inverted.
 	 * - If $full_string is true, all bits (including leading zeros) are inverted.
-	 *
 	 * @param bool $full_string Optional. Passed to to_string() to determine if the string should be full length.
 	 */
 	public function invert(bool $full_string = false) : void {
@@ -242,7 +225,6 @@ class BitFunctions {
 	/**
 	 * Compares a given integer value against a bitmask.
 	 * Returns true if all bits set in the mask are also set in the value.
-	 *
 	 * @param int $value The integer value to compare.
 	 * @param int $mask The bitmask to compare against.
 	 * @return bool True if the masked bits match, false otherwise.
@@ -254,7 +236,6 @@ class BitFunctions {
 	/**
 	 * Compares the internal 'original' integer against a bitmask.
 	 * Returns true if all bits set in the mask are also set in the 'original' integer.
-	 *
 	 * @param int $mask The bitmask to compare against.
 	 * @return bool True if the masked bits match, false otherwise.
 	 */
@@ -264,7 +245,6 @@ class BitFunctions {
 
 	/**
 	 * Extracts four 8-bit integer values from a 32-bit integer.
-	 *
 	 * @param int $value The 32-bit integer from which to extract values.
 	 * @param int|null $int1 Output parameter for the most significant 8 bits.
 	 * @param int|null $int2 Output parameter for the next 8 bits.
@@ -280,7 +260,6 @@ class BitFunctions {
 
 	/**
 	 * Merges four 8-bit integer values into a single 32-bit integer.
-	 *
 	 * @param int $int1 The most significant 8-bit integer.
 	 * @param int $int2 The next 8-bit integer.
 	 * @param int $int3 The next 8-bit integer.
@@ -293,7 +272,6 @@ class BitFunctions {
 
 	/**
 	 * Extracts eight 8-bit integer values from a 64-bit integer.
-	 *
 	 * @param int $value The 64-bit integer from which to extract values.
 	 * @param int|null $int1 Output parameter for the most significant 8 bits.
 	 * @param int|null $int2 Output parameter for the next 8 bits.
@@ -317,7 +295,6 @@ class BitFunctions {
 
 	/**
 	 * Merges eight 8-bit integer values into a single 64-bit integer.
-	 *
 	 * @param int $int1 The most significant 8-bit integer.
 	 * @param int $int2 The next 8-bit integer.
 	 * @param int $int3 The next 8-bit integer.
@@ -334,7 +311,6 @@ class BitFunctions {
 
 	/**
 	 * Extracts four 8-bit integer values from the internal 'original' 32-bit integer.
-	 *
 	 * @param int|null $int1 Output parameter for the most significant 8 bits.
 	 * @param int|null $int2 Output parameter for the next 8 bits.
 	 * @param int|null $int3 Output parameter for the next 8 bits.
@@ -346,7 +322,6 @@ class BitFunctions {
 
 	/**
 	 * Merges four 8-bit integer values into the internal 'original' 32-bit integer.
-	 *
 	 * @param int $int1 The most significant 8-bit integer.
 	 * @param int $int2 The next 8-bit integer.
 	 * @param int $int3 The next 8-bit integer.
@@ -358,7 +333,6 @@ class BitFunctions {
 
 	/**
 	 * Extracts eight 8-bit integer values from the internal 'original' 64-bit integer.
-	 *
 	 * @param int|null $int1 Output parameter for the most significant 8 bits.
 	 * @param int|null $int2 Output parameter for the next 8 bits.
 	 * @param int|null $int3 Output parameter for the next 8 bits.
@@ -374,7 +348,6 @@ class BitFunctions {
 
 	/**
 	 * Merges eight 8-bit integer values into the internal 'original' 64-bit integer.
-	 *
 	 * @param int $int1 The most significant 8-bit integer.
 	 * @param int $int2 The next 8-bit integer.
 	 * @param int $int3 The next 8-bit integer.
@@ -391,7 +364,6 @@ class BitFunctions {
 	/**
 	 * Converts a 64-bit integer representing an IEEE 754 double-precision floating-point number
 	 * into its corresponding float value.
-	 *
 	 * @param int $value The 64-bit integer representation of a float.
 	 * @return float The converted double-precision floating-point number.
 	 */

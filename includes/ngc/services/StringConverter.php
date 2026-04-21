@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -81,7 +81,6 @@ class StringConverter {
 	/**
 	 * Imports Pinyin mapping from a specified INI file.
 	 * The Pinyin data is loaded only if the $pinyin array is empty.
-	 *
 	 * @param string $path The path to the INI file containing Pinyin mappings.
 	 */
 	public function import_pin_yin(string $path) : void {
@@ -94,7 +93,6 @@ class StringConverter {
 	/**
 	 * Imports additional replacement rules from a specified INI file.
 	 * These rules are merged with the existing replacement rules.
-	 *
 	 * @param string $path The path to the INI file containing replacement rules.
 	 */
 	public function import_replacement(string $path) : void {
@@ -106,7 +104,6 @@ class StringConverter {
 
 	/**
 	 * Converts a string by replacing characters based on the defined `$replace` array.
-	 *
 	 * @param string $string The input string to convert.
 	 * @return string The converted string.
 	 */
@@ -116,7 +113,6 @@ class StringConverter {
 
 	/**
 	 * Cleans a string by removing characters based on the defined `$removal` array.
-	 *
 	 * @param string $string The input string to clean.
 	 * @return string The cleaned string.
 	 */
@@ -126,7 +122,6 @@ class StringConverter {
 
 	/**
 	 * Removes all double spaces from a string and trims leading/trailing spaces.
-	 *
 	 * @param string $string The input string.
 	 * @return string The string with double spaces removed and trimmed.
 	 */
@@ -140,7 +135,6 @@ class StringConverter {
 	/**
 	 * Converts a string containing Chinese characters to Pinyin.
 	 * This method uses `iconv` for character encoding conversion and a custom mapping for Pinyin.
-	 *
 	 * @param string $string The input string containing characters to convert to Pinyin.
 	 * @return string The string converted to Pinyin.
 	 */
@@ -167,7 +161,6 @@ class StringConverter {
 	/**
 	 * Converts a 2-byte ASCII code (representing a Chinese character) to its Pinyin equivalent.
 	 * This is a private helper method used by `string_to_pin_yin`.
-	 *
 	 * @param int $asc2 The 2-byte ASCII code of the character.
 	 * @return string|null The Pinyin string if found, otherwise null.
 	 */

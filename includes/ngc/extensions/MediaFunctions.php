@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -729,7 +729,6 @@ class MediaFunctions {
 
 	/**
 	 * Do operations on a list of files from a given path, matching specified MIME types and name filters
-	 *
 	 * @param string|array $path The directory/direcories path to scan.
 	 * @param callable $callback Callback called for every found files function(string $file, string $mime_type)
 	 * @param array<string>|null $include_mime_types Optional. An array of MIME types to include. If null, all MIME types are included.
@@ -800,7 +799,6 @@ class MediaFunctions {
 
 	/**
 	 * Recursively scans a directory for files, applying MIME type and name filters.
-	 *
 	 * @param string $dir The directory to scan.
 	 * @param callable $callback Callback called for every found files function(string $file, string $mime_type)
 	 * @param array<string>|null $include_mime_types MIME types to include.
@@ -901,7 +899,7 @@ class MediaFunctions {
 		try {
 			$img = new Imagick();
 			$img->readImage($path);
-			$width  = $img->getImageWidth();
+			$width = $img->getImageWidth();
 			$height = $img->getImageHeight();
 			if($width <= 0 || $height <= 0) return false;
 			$img->clear();

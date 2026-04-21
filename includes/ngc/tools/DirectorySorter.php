@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -28,8 +28,8 @@ class DirectorySorter {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Sort by items quantity (First parent)',
+			'Actions:',
+			'0 - Sort by items quantity (First parent)',
 		]);
 	}
 
@@ -45,10 +45,10 @@ class DirectorySorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by items quantity");
 
-		$interval = $this->core->get_input_integer(" Quantity interval: ");
+		$interval = $this->core->get_input_integer("Quantity interval: ");
 		if($interval === false) return false;
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -72,7 +72,7 @@ class DirectorySorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

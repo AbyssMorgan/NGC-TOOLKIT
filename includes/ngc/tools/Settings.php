@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -30,14 +30,14 @@ class Settings {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Show documentation',
-			' 1 - Open config folder',
-			' 2 - Open logs folder',
-			' 3 - Open data folder',
-			' 4 - Open program folder',
-			' 5 - Check for updates',
-			' 6 - Restore default settings',
+			'Actions:',
+			'0 - Show documentation',
+			'1 - Open config folder',
+			'2 - Open logs folder',
+			'3 - Open data folder',
+			'4 - Open program folder',
+			'5 - Check for updates',
+			'6 - Restore default settings',
 		]);
 	}
 
@@ -88,15 +88,15 @@ class Settings {
 
 	public function tool_check_for_updates(bool $response = true) : bool {
 		$this->core->clear();
-		$this->core->echo(" Check for updates ...");
+		$this->core->echo("Check for updates ...");
 		$version = '';
 		if($this->check_for_updates($version)){
-			$this->core->echo(" Update available v$version current v{$this->core->version}");
-			if($this->core->get_confirm(" Open download website now (Y/N): ")){
+			$this->core->echo("Update available v$version current v{$this->core->version}");
+			if($this->core->get_confirm("Open download website now (Y/N): ")){
 				$this->core->open_url("https://github.com/AbyssMorgan/NGC-TOOLKIT/releases/tag/v$version");
 			}
 		} elseif($response){
-			$this->core->echo(" No updates available");
+			$this->core->echo("No updates available");
 			$this->core->pause();
 		}
 		return false;
@@ -104,7 +104,7 @@ class Settings {
 
 	public function tool_restore_default_settings() : bool {
 		$this->core->clear();
-		if($this->core->get_confirm(" Restore default settings (Y/N): ")){
+		if($this->core->get_confirm("Restore default settings (Y/N): ")){
 			$config_default = new IniFile($this->core->get_path("{$this->core->path}/includes/config/default.ini"), true);
 			switch($this->core->get_system_type()){
 				case SYSTEM_TYPE_WINDOWS: {
@@ -122,11 +122,11 @@ class Settings {
 			}
 			$config_default->update($config_default_system->get_all());
 			$this->core->config->update($config_default->get_all(), true);
-			$this->core->echo(" Settings have been reset");
+			$this->core->echo("Settings have been reset");
 		} else {
-			$this->core->echo(" Settings reset has been cancelled");
+			$this->core->echo("Settings reset has been cancelled");
 		}
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -142,7 +142,7 @@ class Settings {
 			$version = \strval($response['data']);
 			return ($ver_repo > $ver_current);
 		}
-		$this->core->echo(" Failed check for updates: {$response['code']}");
+		$this->core->echo("Failed check for updates: {$response['code']}");
 		return false;
 	}
 
@@ -151,19 +151,19 @@ class Settings {
 		$this->core->clear();
 		$program_path = \realpath($this->core->path);
 		if(!$this->core->is_admin()){
-			$this->core->echo(" You must run {$this->core->app_name} as administrator to use this feature");
-			$this->core->pause(" Press any key to back to menu");
+			$this->core->echo("You must run {$this->core->app_name} as administrator to use this feature");
+			$this->core->pause("Press any key to back to menu");
 		} else {
-			if($this->core->get_confirm(" Install .ngcs scripts support (Y/N): ")){
-				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\.ngcs /ve /d "NGC.SCRIPT" /f'));
-				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT /ve /d "'.$this->core->app_name.' Script" /f'));
-				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\DefaultIcon /ve /d "\"'.$program_path.'\NGC-TOOLKIT.ico\"" /f'));
-				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell /f'));
-				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open /f'));
-				$this->core->echo(" ".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open\command /ve /d "\"'.$program_path.'\bin\Script.cmd\" \"%1\" %*" /f'));
-				$this->core->pause(" Operation done, press any key to back to menu");
+			if($this->core->get_confirm("Install .ngcs scripts support (Y/N): ")){
+				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\.ngcs /ve /d "NGC.SCRIPT" /f'));
+				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT /ve /d "'.$this->core->app_name.' Script" /f'));
+				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\DefaultIcon /ve /d "\"'.$program_path.'\NGC-TOOLKIT.ico\"" /f'));
+				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell /f'));
+				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open /f'));
+				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open\command /ve /d "\"'.$program_path.'\bin\Script.cmd\" \"%1\" %*" /f'));
+				$this->core->pause("Operation done, press any key to back to menu");
 			} else {
-				$this->core->pause(" Operation aborted, press any key to back to menu");
+				$this->core->pause("Operation aborted, press any key to back to menu");
 			}
 		}
 		return false;

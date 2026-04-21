@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -28,12 +28,12 @@ class FileSorter {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Sort by date',
-			' 1 - Sort by extension',
-			' 2 - Sort by size',
-			' 3 - Sort by name prefix',
-			' 4 - Sort by mime type',
+			'Actions:',
+			'0 - Sort by date',
+			'1 - Sort by extension',
+			'2 - Sort by size',
+			'3 - Sort by name prefix',
+			'4 - Sort by mime type',
 		]);
 	}
 
@@ -55,18 +55,18 @@ class FileSorter {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - YYYYxMMxDD',
-			' 1 - YYYYxMM',
-			' 2 - YYYY',
-			' 3 - YYxMMxDD',
-			' 4 - DDxMMxYY',
-			' 5 - DDxMMxYYYY',
-			' 6 - YYYYxMMxDDxhh',
-			' 7 - YYYYxMMxDDxhhxmm',
+			'Modes:',
+			'0 - YYYYxMMxDD',
+			'1 - YYYYxMM',
+			'2 - YYYY',
+			'3 - YYxMMxDD',
+			'4 - DDxMMxYY',
+			'5 - DDxMMxYYYY',
+			'6 - YYYYxMMxDDxhh',
+			'7 - YYYYxMMxDDxhhxmm',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params['mode'] = \strtolower($line[0] ?? '?');
@@ -75,11 +75,11 @@ class FileSorter {
 		set_separator:
 		$this->core->clear();
 		$this->core->print_help([
-			' Separators:',
-			' . - _ \ @',
+			'Separators:',
+			'. - _ \ @',
 		]);
 
-		$separator = $this->core->get_input(" Separator: ");
+		$separator = $this->core->get_input("Separator: ");
 		if($separator == '#') return false;
 		$params['separator'] = \strtolower($separator[0] ?? '?');
 		if(!\in_array($params['separator'], ['.', '-', '_', '\\', '@'])) goto set_separator;
@@ -87,7 +87,7 @@ class FileSorter {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -116,7 +116,7 @@ class FileSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -124,7 +124,7 @@ class FileSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by extension");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -149,7 +149,7 @@ class FileSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -171,12 +171,12 @@ class FileSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by size");
 
-		$interval = $this->core->get_input_bytes_size(" Size: ");
+		$interval = $this->core->get_input_bytes_size("Size: ");
 		if($interval === false) return false;
 
-		$prefix = $this->core->get_confirm(" Add numeric prefix for better sort folders (Y/N): ");
+		$prefix = $this->core->get_confirm("Add numeric prefix for better sort folders (Y/N): ");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -213,7 +213,7 @@ class FileSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -224,12 +224,12 @@ class FileSorter {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Delimiter',
-			' 1 - Word length',
+			'Modes:',
+			'0 - Delimiter',
+			'1 - Word length',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params['mode'] = \strtolower($line[0] ?? '?');
@@ -237,13 +237,13 @@ class FileSorter {
 
 		if($params['mode'] == '0'){
 			set_delimiter:
-			$delimiter = $this->core->get_input(" Delimiter: ");
+			$delimiter = $this->core->get_input("Delimiter: ");
 			if(\strlen($delimiter) == 0) goto set_delimiter;
 		} elseif($params['mode'] == '1'){
-			$length = $this->core->get_input_integer(" Word length: ");
+			$length = $this->core->get_input_integer("Word length: ");
 		}
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -288,7 +288,7 @@ class FileSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -296,7 +296,7 @@ class FileSorter {
 		$this->core->clear();
 		$this->core->set_subtool("Sort by mime type");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -327,7 +327,7 @@ class FileSorter {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

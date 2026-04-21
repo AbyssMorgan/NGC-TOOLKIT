@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -30,14 +30,14 @@ class FileEditor {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Replace keywords in files',
-			' 1 - Remove keywords in files',
-			' 2 - Remove duplicate lines in file',
-			' 3 - Split file by lines count',
-			' 4 - Split file by size (Binary)',
-			' 5 - Reverse text file lines',
-			' 6 - Pretty file content',
+			'Actions:',
+			'0 - Replace keywords in files',
+			'1 - Remove keywords in files',
+			'2 - Remove duplicate lines in file',
+			'3 - Split file by lines count',
+			'4 - Split file by size (Binary)',
+			'5 - Reverse text file lines',
+			'6 - Pretty file content',
 		]);
 	}
 
@@ -59,20 +59,20 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Replace keywords in files");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
 		set_keyword_file:
-		$keywords_file = $this->core->get_input_file(" Keywords file: ", true);
+		$keywords_file = $this->core->get_input_file("Keywords file: ", true);
 		if($keywords_file === false) return false;
 
 		$replacements = [];
 		$fp = \fopen($keywords_file, 'r');
 		if(!$fp){
-			$this->core->echo(" Failed open keywords file");
+			$this->core->echo("Failed open keywords file");
 			goto set_keyword_file;
 		}
 		$i = 0;
@@ -83,7 +83,7 @@ class FileEditor {
 			if(empty(\trim($line))) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
-				$this->core->echo(" Failed parse replacement in line $i content: '$line'");
+				$this->core->echo("Failed parse replacement in line $i content: '$line'");
 				$errors++;
 			} else {
 				$replacements[$replace[0]] = $replace[1];
@@ -92,7 +92,7 @@ class FileEditor {
 		\fclose($fp);
 
 		if($errors > 0){
-			if(!$this->core->get_confirm(" Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
+			if(!$this->core->get_confirm("Errors detected, continue with valid replacement (Y/N): ")) goto set_keyword_file;
 		}
 
 		$this->core->setup_folders($folders);
@@ -128,7 +128,7 @@ class FileEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -136,20 +136,20 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Remove keywords in files");
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
 		set_keyword_file:
-		$keywords_file = $this->core->get_input_file(" Keywords file: ", true);
+		$keywords_file = $this->core->get_input_file("Keywords file: ", true);
 		if($keywords_file === false) return false;
 
 		$keywords = [];
 		$fp = \fopen($keywords_file, 'r');
 		if(!$fp){
-			$this->core->echo(" Failed open keywords file");
+			$this->core->echo("Failed open keywords file");
 			goto set_keyword_file;
 		}
 		while(($line = \fgets($fp)) !== false){
@@ -192,7 +192,7 @@ class FileEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -201,14 +201,14 @@ class FileEditor {
 		$this->core->set_subtool("Remove duplicate lines in file");
 
 		set_input:
-		$file = $this->core->get_input_file(" File: ", true);
+		$file = $this->core->get_input_file("File: ", true);
 		if($file === false) return false;
 
 		if(!$this->core->is_text_file($file)){
-			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
+			if(!$this->core->get_confirm("The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 
-		$ignore_empty_lines = $this->core->get_confirm(" Ignore empty lines comparison (Y/N): ");
+		$ignore_empty_lines = $this->core->get_confirm("Ignore empty lines comparison (Y/N): ");
 
 		$duplicates = 0;
 
@@ -242,15 +242,15 @@ class FileEditor {
 			unset($content);
 			if($changed){
 				\file_put_contents($file, $new_content);
-				$this->core->echo(" Removed $duplicates lines in \"$file\"");
+				$this->core->echo("Removed $duplicates lines in \"$file\"");
 			}
 		}
 		catch(Exception $e){
-			$this->core->echo(" Failed edit \"$file\" Error:".$e->getMessage());
+			$this->core->echo("Failed edit \"$file\" Error:".$e->getMessage());
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -258,20 +258,20 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Split file by lines count");
 
-		$lines_limit = $this->core->get_input_integer(" Lines limit: ");
+		$lines_limit = $this->core->get_input_integer("Lines limit: ");
 		if($lines_limit === false) return false;
 
 		set_input:
-		$file = $this->core->get_input_file(" File: ", true);
+		$file = $this->core->get_input_file("File: ", true);
 		if($file === false) return false;
 
 		if(!$this->core->is_text_file($file)){
-			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
+			if(!$this->core->get_confirm("The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 
 		$fp = \fopen($file, 'r');
 		if(!$fp){
-			$this->core->echo(" Failed open input file");
+			$this->core->echo("Failed open input file");
 			goto set_input;
 		}
 
@@ -313,7 +313,7 @@ class FileEditor {
 		\fclose($fp);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -321,16 +321,16 @@ class FileEditor {
 		$this->core->clear();
 		$this->core->set_subtool("Split file by size");
 
-		$bytes = $this->core->get_input_bytes_size(" Size: ");
+		$bytes = $this->core->get_input_bytes_size("Size: ");
 		if($bytes === false) return false;
 
 		set_input:
-		$file = $this->core->get_input_file(" File: ", true);
+		$file = $this->core->get_input_file("File: ", true);
 		if($file === false) return false;
 
 		$fp = \fopen($file, 'r');
 		if(!$fp){
-			$this->core->echo(" Failed open input file");
+			$this->core->echo("Failed open input file");
 			goto set_input;
 		}
 
@@ -353,7 +353,7 @@ class FileEditor {
 		\fclose($fp);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -362,11 +362,11 @@ class FileEditor {
 		$this->core->set_subtool("Reverse file lines");
 
 		set_input:
-		$file = $this->core->get_input_file(" File: ", true);
+		$file = $this->core->get_input_file("File: ", true);
 		if($file === false) return false;
 
 		if(!$this->core->is_text_file($file)){
-			if(!$this->core->get_confirm(" The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
+			if(!$this->core->get_confirm("The file does not appear to be a text file, continue (Y/N): ")) goto set_input;
 		}
 
 		try {
@@ -382,15 +382,15 @@ class FileEditor {
 			unset($content);
 			if($changed){
 				\file_put_contents($file, $new_content);
-				$this->core->echo(" Reversed file lines in \"$file\"");
+				$this->core->echo("Reversed file lines in \"$file\"");
 			}
 		}
 		catch(Exception $e){
-			$this->core->echo(" Failed edit \"$file\" Error:".$e->getMessage());
+			$this->core->echo("Failed edit \"$file\" Error:".$e->getMessage());
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -401,21 +401,21 @@ class FileEditor {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Flags (type in one line, default BC):',
-			' B - Basic replacement',
-			' C - Basic remove',
-			' L - Replace language characters',
-			' S - Remove double spaces',
-			' W - Remove whitespace characters on EOL',
-			' F - Remove whitespace characters on EOF',
-			' 0 - Chinese to PinYin',
-			' 1 - Hiragama to Romaji',
-			' 2 - Katakana to Romaji',
-			' + - To upper case',
-			' - - To lower case',
+			'Flags (type in one line, default BC):',
+			'B - Basic replacement',
+			'C - Basic remove',
+			'L - Replace language characters',
+			'S - Remove double spaces',
+			'W - Remove whitespace characters on EOL',
+			'F - Remove whitespace characters on EOF',
+			'0 - Chinese to PinYin',
+			'1 - Hiragama to Romaji',
+			'2 - Katakana to Romaji',
+			'+ - To upper case',
+			'- - To lower case',
 		]);
 
-		$line = \strtoupper($this->core->get_input(" Flags: "));
+		$line = \strtoupper($this->core->get_input("Flags: "));
 		if($line == '#') return false;
 		if(empty($line)) $line = 'BC';
 		if(\str_replace(['B', 'C', 'L', 'S', 'W', 'F', '0', '1', '2', '+', '-'], '', $line) != '') goto set_mode;
@@ -447,14 +447,14 @@ class FileEditor {
 		}
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#') return false;
 		if(empty($line)){
 			$filters = null;
@@ -523,7 +523,7 @@ class FileEditor {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

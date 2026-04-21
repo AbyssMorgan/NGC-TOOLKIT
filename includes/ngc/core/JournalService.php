@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -44,7 +44,6 @@ class JournalService {
 
 	/**
 	 * Constructor for the JournalService.
-	 *
 	 * @param string|null $path The path to the journal file. Defaults to null.
 	 * @param int $permissions The file permissions for the journal file. Defaults to 0755.
 	 */
@@ -56,7 +55,6 @@ class JournalService {
 
 	/**
 	 * Creates a new journal file with the predefined header.
-	 *
 	 * @return bool True if the file was created successfully, false otherwise.
 	 */
 	protected function create() : bool {
@@ -71,7 +69,6 @@ class JournalService {
 
 	/**
 	 * Calculates the length of the given data in bytes.
-	 *
 	 * @param string $data The data to calculate the length of.
 	 * @return int The length of the data in bytes.
 	 */
@@ -82,7 +79,6 @@ class JournalService {
 	/**
 	 * Writes a single string to the journal file.
 	 * The string is compressed before writing.
-	 *
 	 * @param string $line The string to write.
 	 * @return bool True if the string was written successfully, false otherwise.
 	 */
@@ -104,7 +100,6 @@ class JournalService {
 	/**
 	 * Writes an array of strings to the journal file.
 	 * Each string is compressed before writing.
-	 *
 	 * @param array $lines An array of strings to write.
 	 * @return bool True if the strings were written successfully, false otherwise.
 	 */
@@ -129,7 +124,6 @@ class JournalService {
 	 * Writes content to the journal file.
 	 * If the file does not exist, it will be created.
 	 * The content can be a single string or an array of strings.
-	 *
 	 * @param string|array $content The content to write.
 	 * @return bool True if the content was written successfully, false otherwise.
 	 */
@@ -144,7 +138,6 @@ class JournalService {
 
 	/**
 	 * Reads the content from the journal file.
-	 *
 	 * @param bool $json If true, attempts to decode each line as JSON. Defaults to false.
 	 * @return array|null An array of strings (or decoded JSON objects) read from the file, or null if the file does not exist or an error occurs.
 	 */

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -28,14 +28,14 @@ class FileFunctions {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0 - Anti Duplicates',
-			' 1 - Validate CheckSum',
-			' 2 - Random file generator',
-			' 3 - Overwrite folders content',
-			' 4 - Move files with structure',
-			' 5 - Copy files with structure',
-			' 6 - Clone files with structure (Mirror)',
+			'Actions:',
+			'0 - Anti Duplicates',
+			'1 - Validate CheckSum',
+			'2 - Random file generator',
+			'3 - Overwrite folders content',
+			'4 - Move files with structure',
+			'5 - Copy files with structure',
+			'6 - Clone files with structure (Mirror)',
 		]);
 	}
 
@@ -59,14 +59,14 @@ class FileFunctions {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' CheckSum Name   Action',
-			' a1       b1     Rename',
-			' a2       b2     Delete',
-			' a3       b3     List',
+			'Modes:',
+			'CheckSum Name   Action',
+			'a1       b1     Rename',
+			'a2       b2     Delete',
+			'a3       b3     List',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -79,7 +79,7 @@ class FileFunctions {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$errors = 0;
@@ -136,7 +136,7 @@ class FileFunctions {
 		unset($keys);
 
 		$this->core->open_logs($params['action'] != '3');
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -146,16 +146,16 @@ class FileFunctions {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0  - From file',
-			' 1  - From name',
-			' ?0 - md5 (default)',
-			' ?1 - sha256',
-			' ?2 - crc32',
-			' ?3 - whirlpool',
+			'Modes:',
+			'0  - From file',
+			'1  - From name',
+			'?0 - md5 (default)',
+			'?1 - sha256',
+			'?2 - crc32',
+			'?3 - whirlpool',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -170,7 +170,7 @@ class FileFunctions {
 
 		$this->core->clear();
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ");
+		$folders = $this->core->get_input_multiple_folders("Folders: ");
 		if($folders === false) return false;
 
 		$algo = $this->core->get_hash_alghoritm(\intval($params['algo']));
@@ -235,7 +235,7 @@ class FileFunctions {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -248,13 +248,13 @@ class FileFunctions {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Modes:',
-			' 0 - Single file',
-			' 1 - Multiple files (size for one)',
-			' 2 - Multiple files (size for all)',
+			'Modes:',
+			'0 - Single file',
+			'1 - Multiple files (size for one)',
+			'2 - Multiple files (size for all)',
 		]);
 
-		$line = $this->core->get_input(" Mode: ");
+		$line = $this->core->get_input("Mode: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -263,17 +263,17 @@ class FileFunctions {
 
 		if(!\in_array($params['mode'], ['0', '1', '2'])) goto set_mode;
 
-		$bytes = $this->core->get_input_bytes_size(" Size: ");
+		$bytes = $this->core->get_input_bytes_size("Size: ");
 		if($bytes === false) return false;
 
 		if(\in_array($params['mode'], ['1', '2'])){
-			$quantity = $this->core->get_input_integer(" Quantity: ");
+			$quantity = $this->core->get_input_integer("Quantity: ");
 			if($quantity === false) return false;
 		} else {
 			$quantity = 1;
 		}
 
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		switch($params['mode']){
@@ -353,7 +353,7 @@ class FileFunctions {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -364,7 +364,7 @@ class FileFunctions {
 		$write_buffer = $this->core->get_write_buffer();
 		if($write_buffer === false) return false;
 
-		$folders = $this->core->get_input_multiple_folders(" Folders: ", false);
+		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
@@ -421,7 +421,7 @@ class FileFunctions {
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -429,23 +429,23 @@ class FileFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Move files with structure");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#') return false;
 		if(empty($line)){
 			$filters = null;
@@ -477,7 +477,7 @@ class FileFunctions {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -485,23 +485,23 @@ class FileFunctions {
 		$this->core->clear();
 		$this->core->set_subtool("Copy files with structure");
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
 		$extensions = $this->core->get_input_extensions(" Extensions: ");
 		if($extensions === false) return false;
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#') return false;
 		if(empty($line)){
 			$filters = null;
@@ -533,7 +533,7 @@ class FileFunctions {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -543,14 +543,14 @@ class FileFunctions {
 		set_mode:
 		$this->core->clear();
 		$this->core->print_help([
-			' Checksum algorithm:',
-			' 0 - md5 (default)',
-			' 1 - sha256',
-			' 2 - crc32',
-			' 3 - whirlpool',
+			'Checksum algorithm:',
+			'0 - md5 (default)',
+			'1 - sha256',
+			'2 - crc32',
+			'3 - whirlpool',
 		]);
 
-		$line = $this->core->get_input(" Algorithm: ");
+		$line = $this->core->get_input("Algorithm: ");
 		if($line == '#') return false;
 
 		$params = [
@@ -561,15 +561,15 @@ class FileFunctions {
 
 		$this->core->clear();
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false) return false;
 
 		set_output:
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false) return false;
 
 		if($input == $output){
-			$this->core->echo(" Output folder must be different than input folder");
+			$this->core->echo("Output folder must be different than input folder");
 			goto set_output;
 		}
 
@@ -578,7 +578,7 @@ class FileFunctions {
 
 		$algo = $this->core->get_hash_alghoritm(\intval($params['algo']))['name'];
 
-		$this->core->echo(" Delete not existing files on output");
+		$this->core->echo("Delete not existing files on output");
 		$files = $this->core->get_files($output);
 		$items = 0;
 		$total = \count($files);
@@ -593,7 +593,7 @@ class FileFunctions {
 		}
 		$this->core->progress($items, $total);
 
-		$this->core->echo(" Delete not existing folders on output");
+		$this->core->echo("Delete not existing folders on output");
 		$files = $this->core->get_folders($output);
 		$items = 0;
 		$total = \count($files);
@@ -608,7 +608,7 @@ class FileFunctions {
 		}
 		$this->core->progress($items, $total);
 
-		$this->core->echo(" Clone folder structure");
+		$this->core->echo("Clone folder structure");
 		$folders = $this->core->get_folders($input);
 		$items = 0;
 		$total = \count($folders);
@@ -625,7 +625,7 @@ class FileFunctions {
 		}
 		$this->core->progress($items, $total);
 
-		$this->core->echo(" Clone new/changed files");
+		$this->core->echo("Clone new/changed files");
 		$files = $this->core->get_files($input);
 		$items = 0;
 		$total = \count($files);
@@ -662,7 +662,7 @@ class FileFunctions {
 		$this->core->progress($items, $total);
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 

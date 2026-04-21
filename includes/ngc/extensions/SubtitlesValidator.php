@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -29,7 +29,6 @@ class SubtitlesValidator {
 
 	/**
 	 * Constructor for the SubtitlesValidator.
-	 *
 	 * @param Toolkit|Script $core The core toolkit or script instance.
 	 */
 	public function __construct(Toolkit|Script $core){
@@ -45,7 +44,6 @@ class SubtitlesValidator {
 	 * - Timecode values within valid ranges (hours >= 0, minutes 0-59, seconds 0-59, milliseconds 0-999).
 	 * - Overlapping subtitles.
 	 * - Out-of-order subtitle timings.
-	 *
 	 * @param string $path The path to the SRT file.
 	 * @return array|false An array of error messages, or false if the file does not exist.
 	 */
@@ -117,7 +115,6 @@ class SubtitlesValidator {
 	 * Compares two SRT subtitle files and identifies missing subtitle blocks.
 	 *
 	 * Comparison is based on the timecode range (start --> end) and the text content.
-	 *
 	 * @param string $path_a The path to the first SRT file.
 	 * @param string $path_b The path to the second SRT file.
 	 * @return object|false An object containing arrays of missing subtitles in each file and global errors, or false if both files do not exist.
@@ -197,7 +194,6 @@ class SubtitlesValidator {
 	 * - 'start_seconds': The start time in total seconds.
 	 * - 'end_seconds': The end time in total seconds.
 	 * - 'text': The subtitle text.
-	 *
 	 * @param string $path The path to the SRT file.
 	 * @return array|false An array of subtitle blocks, or false if the file does not exist.
 	 */

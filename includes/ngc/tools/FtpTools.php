@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -37,19 +37,19 @@ class FtpTools {
 
 	public function help() : void {
 		$this->core->print_help([
-			' Actions:',
-			' 0  - Configure connection',
-			' 1  - Remove connection',
-			' 2  - Open config folder',
-			' 3  - Show connections',
-			' 4  - Get file list',
-			' 5  - Download files',
-			' 6  - Upload files',
-			' 7  - Delete files',
-			' 8  - Delete empty folders',
-			' 9  - Delete structure (folders and files)',
-			' 10 - Copy files from FTP to FTP',
-			' 11 - Import FileZilla XML',
+			'Actions:',
+			'0  - Configure connection',
+			'1  - Remove connection',
+			'2  - Open config folder',
+			'3  - Show connections',
+			'4  - Get file list',
+			'5  - Download files',
+			'6  - Upload files',
+			'7  - Delete files',
+			'8  - Delete empty folders',
+			'9  - Delete structure (folders and files)',
+			'10 - Copy files from FTP to FTP',
+			'11 - Import FileZilla XML',
 		]);
 	}
 
@@ -83,9 +83,9 @@ class FtpTools {
 			$i++;
 		}
 		if(!empty($this->select_label)){
-			$this->core->echo(" Labels: ");
+			$this->core->echo("Labels: ");
 			foreach($this->select_label as $i => $label){
-				$this->core->echo(" $i - $label");
+				$this->core->echo("$i - $label");
 			}
 			$this->core->echo();
 		}
@@ -105,51 +105,51 @@ class FtpTools {
 		$this->core->set_subtool("Configure connection");
 
 		$this->core->print_help([
-			' Allowed characters: A-Z a-z 0-9 _ -',
-			' Label length 3 - 32',
+			'Allowed characters: A-Z a-z 0-9 _ -',
+			'Label length 3 - 32',
 		]);
 
 		set_label:
-		$label = $this->core->get_input(" Label: ");
+		$label = $this->core->get_input("Label: ");
 		if($label == '#') return false;
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" already in use");
-			if(!$this->core->get_confirm(" Overwrite (Y/N): ")) goto set_label;
+			$this->core->echo("Label \"$label\" already in use");
+			if(!$this->core->get_confirm("Overwrite (Y/N): ")) goto set_label;
 		}
 
 		$this->core->clear();
 		$this->core->print_help([
-			" Setup label: \"$label\"",
+			"Setup label: \"$label\"",
 		]);
 
 		$ftp = new FtpClient();
 
 		set_ftp_connection:
-		$auth['host'] = $this->core->get_input(" FTP Host: ");
+		$auth['host'] = $this->core->get_input("FTP Host: ");
 		if($auth['host'] == '#') return false;
-		$auth['port'] = $this->core->get_input_integer(" FTP Port (Default 21): ", 0, 65353);
+		$auth['port'] = $this->core->get_input_integer("FTP Port (Default 21): ", 0, 65353);
 		if($auth['port'] === false) return false;
-		$auth['ssl'] = $this->core->get_confirm(" FTP SSL (Y/N): ");
+		$auth['ssl'] = $this->core->get_confirm("FTP SSL (Y/N): ");
 
 		try {
 			try_login_same:
-			$this->core->echo(" Connecting to: {$auth['host']}:{$auth['port']}");
+			$this->core->echo("Connecting to: {$auth['host']}:{$auth['port']}");
 			$ftp->connect($auth['host'], $auth['ssl'], $auth['port']);
 		}
 		catch(FtpException $e){
-			$this->core->echo(" Failed to connect:");
-			$this->core->echo(" ".$e->getMessage());
-			if($this->core->get_confirm(" Retry (Y/N): ")) goto try_login_same;
+			$this->core->echo("Failed to connect:");
+			$this->core->echo("".$e->getMessage());
+			if($this->core->get_confirm("Retry (Y/N): ")) goto try_login_same;
 			goto set_ftp_connection;
 		}
 
 		set_ftp_user:
-		$auth['user'] = $this->core->get_input(" FTP User: ");
+		$auth['user'] = $this->core->get_input("FTP User: ");
 		if($auth['user'] == '#') return false;
 		$auth['password'] = $this->core->get_input_password(" FTP Pass: ");
 		if($auth['password'] == '#') return false;
@@ -158,9 +158,9 @@ class FtpTools {
 			$ftp->login($auth['user'], $auth['password']);
 		}
 		catch(FtpException $e){
-			$this->core->echo(" Failed to login:");
-			$this->core->echo(" ".$e->getMessage());
-			if($this->core->get_confirm(" Retry (Y/N): ")) goto try_login_same_user;
+			$this->core->echo("Failed to login:");
+			$this->core->echo("".$e->getMessage());
+			if($this->core->get_confirm("Retry (Y/N): ")) goto try_login_same_user;
 			goto set_ftp_user;
 		}
 		$ftp->close();
@@ -175,7 +175,7 @@ class FtpTools {
 		], true);
 
 		$this->core->clear();
-		$this->core->pause(" Setup connection for \"$label\" done, press any key to back to menu");
+		$this->core->pause("Setup connection for \"$label\" done, press any key to back to menu");
 
 		return false;
 	}
@@ -186,17 +186,17 @@ class FtpTools {
 
 		$this->get_select_label();
 		set_label:
-		$label = $this->core->get_input(" Label / ID: ");
+		$label = $this->core->get_input("Label / ID: ");
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		$path = $this->get_config_path($label);
 		if(!\file_exists($path)){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
@@ -216,23 +216,24 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Show connections");
 
-		$this->core->echo(" Connections:");
+		$this->core->echo("Connections:");
 		$cnt = 0;
 		$files = $this->core->get_files($this->path, ['ini']);
 		foreach($files as $file){
 			$ini = new IniFile($file);
 			if($ini->is_valid() && $ini->is_set('FTP_HOST')){
 				$label = \pathinfo($file, PATHINFO_FILENAME);
-				$this->core->echo(" $label".\str_repeat(" ", 32 - \strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
+				$this->core->echo("$label".\str_repeat(" ", 32 - \strlen($label))." ".$ini->get('FTP_HOST').":".$ini->get('FTP_PORT')."@".$ini->get('FTP_USER'));
 				$cnt++;
 			}
 		}
 
 		if($cnt == 0){
-			$this->core->echo(" No connections found");
+			$this->core->echo("No connections found");
 		}
 
-		$this->core->pause("\r\n Press any key to back to menu");
+		$this->core->echo();
+		$this->core->pause("Press any key to back to menu");
 		return false;
 	}
 
@@ -240,25 +241,25 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Get file list");
 
-		$ftp = $this->setup_ftp(" Label / ID: ");
+		$ftp = $this->setup_ftp("Label / ID: ");
 		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false){
 			$ftp->close();
 			return false;
 		}
 
 		set_input:
-		$input = $this->core->get_input(" FTP folder: ");
+		$input = $this->core->get_input("FTP folder: ");
 		if($input == '#'){
 			$ftp->close();
 			return false;
 		}
 		if(!$ftp->chdir($input)){
-			$this->core->echo(" Cannot change current folder to \"$input\"");
+			$this->core->echo("Cannot change current folder to \"$input\"");
 			goto set_input;
 		}
 
@@ -268,8 +269,8 @@ class FtpTools {
 			return false;
 		}
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#'){
 			$ftp->close();
 			return false;
@@ -283,13 +284,13 @@ class FtpTools {
 		$csv_file = $this->core->get_path("$output/FtpList ".\date("Y-m-d His").".csv");
 		$this->core->delete($csv_file);
 		$csv = new Logs($csv_file, false, true);
-		if($this->core->get_confirm(" Simplified list (Y/N): ")){
+		if($this->core->get_confirm("Simplified list (Y/N): ")){
 			$this->core->clear();
-			$this->core->echo(" Get file list from \"$input\"");
+			$this->core->echo("Get file list from \"$input\"");
 			$csv->write($remote->get_files($input, $extensions, null, $filters));
 		} else {
 			$this->core->clear();
-			$this->core->echo(" Get file list from \"$input\"");
+			$this->core->echo("Get file list from \"$input\"");
 			$files = $remote->get_files_meta($input, $extensions, null, $filters);
 			if(!empty($files)){
 				$s = $this->core->config->get('CSV_SEPARATOR');
@@ -307,15 +308,15 @@ class FtpTools {
 				$csv->write(\implode($this->core->config->get('CSV_SEPARATOR'), $meta));
 			}
 		}
-		$this->core->echo(" Saved results into ".$csv->get_path());
+		$this->core->echo("Saved results into ".$csv->get_path());
 		$csv->close();
 
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -323,19 +324,19 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Download files");
 
-		$ftp = $this->setup_ftp(" Label / ID: ");
+		$ftp = $this->setup_ftp("Label / ID: ");
 		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
 		set_input:
-		$input = $this->core->get_input(" FTP folder: ");
+		$input = $this->core->get_input("FTP folder: ");
 		if($input == '#'){
 			$ftp->close();
 			return false;
 		}
 		if(!$ftp->chdir($input)){
-			$this->core->echo(" Cannot change current folder to \"$input\"");
+			$this->core->echo("Cannot change current folder to \"$input\"");
 			goto set_input;
 		}
 
@@ -345,8 +346,8 @@ class FtpTools {
 			return false;
 		}
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#'){
 			$ftp->close();
 			return false;
@@ -357,14 +358,14 @@ class FtpTools {
 			$filters = \explode(" ", $line);
 		}
 
-		$output = $this->core->get_input_folder(" Output (Folder): ", true);
+		$output = $this->core->get_input_folder("Output (Folder): ", true);
 		if($output === false){
 			$ftp->close();
 			return false;
 		}
 
 		$this->core->clear();
-		$this->core->echo(" Download files \"$input\" => \"$output\"");
+		$this->core->echo("Download files \"$input\" => \"$output\"");
 		$remote->process_files($input, function(string $file, string $type) use ($ftp, $input, $output) : bool {
 			if($type == 'directory') return false;
 			$local_file = $this->core->get_path(\str_ireplace($input, $output, $file));
@@ -383,11 +384,11 @@ class FtpTools {
 		}, $extensions, null, $filters);
 		
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -395,12 +396,12 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Upload files");
 
-		$ftp = $this->setup_ftp(" Label / ID: ");
+		$ftp = $this->setup_ftp("Label / ID: ");
 		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
-		$input = $this->core->get_input_folder(" Input (Folder): ");
+		$input = $this->core->get_input_folder("Input (Folder): ");
 		if($input === false){
 			$ftp->close();
 			return false;
@@ -412,8 +413,8 @@ class FtpTools {
 			return false;
 		}
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#'){
 			$ftp->close();
 			return false;
@@ -425,13 +426,13 @@ class FtpTools {
 		}
 
 		set_output:
-		$output = $this->core->get_input(" FTP folder: ");
+		$output = $this->core->get_input("FTP folder: ");
 		if($output == '#'){
 			$ftp->close();
 			return false;
 		}
 		if(!$remote->folder_exists($output) && !$ftp->mkdir($output)){
-			$this->core->echo(" Cannot access/create folder \"$output\"");
+			$this->core->echo("Cannot access/create folder \"$output\"");
 			goto set_output;
 		}
 
@@ -440,7 +441,7 @@ class FtpTools {
 
 		$directories = [];
 		$this->core->clear();
-		$this->core->echo(" Prepare directories");
+		$this->core->echo("Prepare directories");
 		$files = $this->core->get_files($input, $extensions, null, $filters);
 		foreach($files as $file){
 			\array_push($directories, \str_ireplace([$input, "\\"], [$output, "/"], \pathinfo($file, PATHINFO_DIRNAME)));
@@ -466,7 +467,7 @@ class FtpTools {
 
 		$total = \count($files);
 		$items = 0;
-		$this->core->echo(" Upload files from \"$input\"");
+		$this->core->echo("Upload files from \"$input\"");
 		$this->core->progress($items, $total);
 		foreach($files as $file){
 			$items++;
@@ -482,11 +483,11 @@ class FtpTools {
 		}
 
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -494,19 +495,19 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Delete files");
 
-		$ftp = $this->setup_ftp(" Label / ID: ");
+		$ftp = $this->setup_ftp("Label / ID: ");
 		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
 		set_input:
-		$input = $this->core->get_input(" FTP folder: ");
+		$input = $this->core->get_input("FTP folder: ");
 		if($input == '#'){
 			$ftp->close();
 			return false;
 		}
 		if(!$ftp->chdir($input)){
-			$this->core->echo(" Cannot change current folder to \"$input\"");
+			$this->core->echo("Cannot change current folder to \"$input\"");
 			goto set_input;
 		}
 
@@ -516,8 +517,8 @@ class FtpTools {
 			return false;
 		}
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#'){
 			$ftp->close();
 			return false;
@@ -529,7 +530,7 @@ class FtpTools {
 		}
 
 		$this->core->clear();
-		$this->core->echo(" Delete files from \"$input\"");
+		$this->core->echo("Delete files from \"$input\"");
 		$remote->process_files($input, function(string $file, string $type) use ($ftp) : bool {
 			if($type == 'directory') return false;
 			if($ftp->delete($file)){
@@ -541,11 +542,11 @@ class FtpTools {
 		}, $extensions, null, $filters);
 
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -553,26 +554,26 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Delete empty folders");
 
-		$ftp = $this->setup_ftp(" Label / ID: ");
+		$ftp = $this->setup_ftp("Label / ID: ");
 		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
 		set_input:
-		$input = $this->core->get_input(" FTP folder: ");
+		$input = $this->core->get_input("FTP folder: ");
 		if($input == '#'){
 			$ftp->close();
 			return false;
 		}
 		if(!$ftp->chdir($input)){
-			$this->core->echo(" Cannot change current folder to \"$input\"");
+			$this->core->echo("Cannot change current folder to \"$input\"");
 			goto set_input;
 		}
 
 		$this->core->clear();
-		$this->core->echo(" Get folders list from \"$input\"");
+		$this->core->echo("Get folders list from \"$input\"");
 		$files = \array_reverse($remote->get_folders($input));
-		$this->core->echo(" Delete empty folders from \"$input\"");
+		$this->core->echo("Delete empty folders from \"$input\"");
 		foreach($files as $file){
 			if(!$remote->has_files($file)){
 				if($ftp->rmdir($file, false)){
@@ -584,11 +585,11 @@ class FtpTools {
 		}
 
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -596,26 +597,26 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Delete structure");
 
-		$ftp = $this->setup_ftp(" Label / ID: ");
+		$ftp = $this->setup_ftp("Label / ID: ");
 		if($ftp === false) return false;
 
 		$remote = new FtpService($ftp);
 
 		set_input:
-		$input = $this->core->get_input(" FTP folder: ");
+		$input = $this->core->get_input("FTP folder: ");
 		if($input == '#'){
 			$ftp->close();
 			return false;
 		}
 		if(!$ftp->chdir($input)){
-			$this->core->echo(" Cannot change current folder to \"$input\"");
+			$this->core->echo("Cannot change current folder to \"$input\"");
 			goto set_input;
 		}
 
 		$folders = [];
 		
 		$this->core->clear();
-		$this->core->echo(" Delete files from \"$input\"");
+		$this->core->echo("Delete files from \"$input\"");
 		$remote->process_files($input, function(string $file, string $type) use ($ftp, $folders) : bool {
 			if($type == 'directory'){
 				$folders[] = $file;
@@ -630,7 +631,7 @@ class FtpTools {
 		});
 
 		$folders = \array_reverse($folders);
-		$this->core->echo(" Delete folders from \"$input\"");
+		$this->core->echo("Delete folders from \"$input\"");
 		foreach($folders as $folder){
 			if($ftp->rmdir($folder, false)){
 				$this->on_success("DELETE \"$folder\"");
@@ -640,11 +641,11 @@ class FtpTools {
 		}
 		
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -652,10 +653,10 @@ class FtpTools {
 		$this->core->clear();
 		$this->core->set_subtool("Copy files from FTP to FTP");
 
-		$ftp_source = $this->setup_ftp(" Source label / ID: ");
+		$ftp_source = $this->setup_ftp("Source label / ID: ");
 		if($ftp_source === false) return false;
 
-		$ftp_destination = $this->setup_ftp(" Destination label / ID: ", false);
+		$ftp_destination = $this->setup_ftp("Destination label / ID: ", false);
 		if(!$ftp_destination){
 			$ftp_source->close();
 			return false;
@@ -665,26 +666,26 @@ class FtpTools {
 		$remote_destination = new FtpService($ftp_destination);
 
 		set_input:
-		$input = $this->core->get_input(" FTP input: ");
+		$input = $this->core->get_input("FTP input: ");
 		if($input == '#'){
 			$ftp_source->close();
 			$ftp_destination->close();
 			return false;
 		}
 		if(!$ftp_source->chdir($input)){
-			$this->core->echo(" Cannot change current folder to \"$input\"");
+			$this->core->echo("Cannot change current folder to \"$input\"");
 			goto set_input;
 		}
 
 		set_output:
-		$output = $this->core->get_input(" FTP output: ");
+		$output = $this->core->get_input("FTP output: ");
 		if($output == '#'){
 			$ftp_source->close();
 			$ftp_destination->close();
 			return false;
 		}
 		if(!$remote_destination->folder_exists($output) && !$ftp_destination->mkdir($output)){
-			$this->core->echo(" Cannot access/create folder \"$output\"");
+			$this->core->echo("Cannot access/create folder \"$output\"");
 			goto set_output;
 		}
 
@@ -695,8 +696,8 @@ class FtpTools {
 			return false;
 		}
 
-		$this->core->echo(" Empty for none, separate with spaces for multiple");
-		$line = $this->core->get_input(" Name filter: ");
+		$this->core->echo("Empty for none, separate with spaces for multiple");
+		$line = $this->core->get_input("Name filter: ");
 		if($line == '#'){
 			$ftp_source->close();
 			$ftp_destination->close();
@@ -712,7 +713,7 @@ class FtpTools {
 		$ftp_destination->set_option(FTP_TIMEOUT_SEC, 3600);
 
 		$this->core->clear();
-		$this->core->echo(" Copy files \"$input\" => \"$output\"");
+		$this->core->echo("Copy files \"$input\" => \"$output\"");
 		$remote_source->process_files($input, function(string $file, string $type) use ($input, $output, $ftp_source, $ftp_destination) : bool {
 			$new_name = \str_ireplace($input, $output, $file);
 			if($type == 'directory'){
@@ -740,12 +741,12 @@ class FtpTools {
 		}, $extensions, null, $filters);
 
 		$this->core->echo();
-		$this->core->echo(" Disconnect from FTP");
+		$this->core->echo("Disconnect from FTP");
 		$ftp_source->close();
 		$ftp_destination->close();
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -754,7 +755,7 @@ class FtpTools {
 		$this->core->set_subtool("Import filezilla XML");
 
 		set_xml_file:
-		$input = $this->core->get_input_file(" XML file: ", true);
+		$input = $this->core->get_input_file("XML file: ", true);
 		if($input === false) return false;
 
 		$xml = \file_get_contents($input);
@@ -764,7 +765,7 @@ class FtpTools {
 		$xml = \str_replace(['<Folder>', '</Folder>', '<Servers>', '</Servers>'], '', $xml);
 		$xml = @\simplexml_load_string($xml);
 		if($xml === false){
-			$this->core->echo(" Failed parse XML");
+			$this->core->echo("Failed parse XML");
 			goto set_xml_file;
 		}
 
@@ -774,27 +775,27 @@ class FtpTools {
 			if(isset($data['Server']['Name'])) $data['Server'] = [$data['Server']];
 			foreach($data['Server'] as $key => $server){
 				if(!isset($server['Name'])){
-					$this->core->echo(" Import servers[$key] failed, missing property: Name");
+					$this->core->echo("Import servers[$key] failed, missing property: Name");
 					continue;
 				}
 				if(!isset($server['Host'])){
-					$this->core->echo(" Import {$server['Name']} failed, missing property: Host");
+					$this->core->echo("Import {$server['Name']} failed, missing property: Host");
 					continue;
 				}
 				if(!isset($server['Port'])){
-					$this->core->echo(" Import {$server['Name']} failed, missing property: Port");
+					$this->core->echo("Import {$server['Name']} failed, missing property: Port");
 					continue;
 				}
 				if(!isset($server['User'])){
-					$this->core->echo(" Import {$server['Name']} failed, missing property: User");
+					$this->core->echo("Import {$server['Name']} failed, missing property: User");
 					continue;
 				}
 				if(!isset($server['Pass'])){
-					$this->core->echo(" Import {$server['Name']} failed, missing property: Pass");
+					$this->core->echo("Import {$server['Name']} failed, missing property: Pass");
 					continue;
 				}
 				if(!isset($server['Protocol'])){
-					$this->core->echo(" Import {$server['Name']} failed, missing property: Protocol");
+					$this->core->echo("Import {$server['Name']} failed, missing property: Protocol");
 					continue;
 				}
 				$label = \substr(\preg_replace("/[^A-Za-z0-9_\-]/", '', \str_replace(" ", "_", \trim($server['Name']))), 0, 32);
@@ -809,15 +810,15 @@ class FtpTools {
 						'FTP_PORT' => \intval($server['Port']),
 					], true);
 					$ini->close();
-					$this->core->echo(" Import {$server['Name']} as $label success");
+					$this->core->echo("Import {$server['Name']} as $label success");
 				} else {
-					$this->core->echo(" Import {$server['Name']} failed, invalid label");
+					$this->core->echo("Import {$server['Name']} failed, invalid label");
 				}
 			}
 		}
 
 		$this->core->open_logs(true);
-		$this->core->pause(" Operation done, press any key to back to menu");
+		$this->core->pause("Operation done, press any key to back to menu");
 		return false;
 	}
 
@@ -828,12 +829,12 @@ class FtpTools {
 		if($label == '#') return false;
 		if(isset($this->select_label[$label])) $label = $this->select_label[$label];
 		if(!$this->core->is_valid_label($label)){
-			$this->core->echo(" Invalid label");
+			$this->core->echo("Invalid label");
 			goto set_label;
 		}
 
 		if(!\file_exists($this->get_config_path($label))){
-			$this->core->echo(" Label \"$label\" not exists");
+			$this->core->echo("Label \"$label\" not exists");
 			goto set_label;
 		}
 
@@ -845,8 +846,8 @@ class FtpTools {
 			$ftp->login($ini->get('FTP_USER'), $ini->get('FTP_PASSWORD'));
 		}
 		catch(FtpException $e){
-			$this->core->echo(" Failed to connect:");
-			$this->core->echo(" ".$e->getMessage());
+			$this->core->echo("Failed to connect:");
+			$this->core->echo("".$e->getMessage());
 			goto set_label;
 		}
 		$ftp->set_option(FTP_TIMEOUT_SEC, 300);
@@ -856,12 +857,12 @@ class FtpTools {
 	}
 
 	private function on_success(string $message) : void {
-		$this->core->echo(" $message");
+		$this->core->echo("$message");
 		$this->core->write_log($message);
 	}
 
 	private function on_error(string $message) : void {
-		$this->core->echo(" $message");
+		$this->core->echo("$message");
 		$this->core->write_error($message);
 	}
 

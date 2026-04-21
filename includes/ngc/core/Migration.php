@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -40,7 +40,6 @@ class Migration extends MySQL {
 
 	/**
 	 * Migration constructor.
-	 *
 	 * @param string $table_version The name of the table for storing versions. Defaults to 'ngc_version'.
 	 * @param string $table_config The name of the table for storing configuration. Defaults to 'ngc_config'.
 	 */
@@ -52,7 +51,6 @@ class Migration extends MySQL {
 
 	/**
 	 * Checks if a given table exists in the database.
-	 *
 	 * @param string $table The name of the table to check.
 	 * @return bool True if the table exists, false otherwise.
 	 */
@@ -108,7 +106,6 @@ class Migration extends MySQL {
 	 * Retrieves the current version of a given database table.
 	 *
 	 * Optionally performs a migration check before retrieving the version.
-	 *
 	 * @param string $table The name of the table to get the version for.
 	 * @param bool $migrate If true, `migrate()` will be called before checking the version. Defaults to true.
 	 * @return int The version number of the table, or 0 if not found.
@@ -126,7 +123,6 @@ class Migration extends MySQL {
 
 	/**
 	 * Sets or updates the version of a given database table.
-	 *
 	 * @param string $table The name of the table whose version is to be set.
 	 * @param int $version The new version number.
 	 */
@@ -140,7 +136,6 @@ class Migration extends MySQL {
 
 	/**
 	 * Retrieves a configuration value by its name.
-	 *
 	 * @param string $name The name of the configuration setting.
 	 * @param string|null $default The default value to return if the configuration name is not found. Defaults to null.
 	 * @return string|null The retrieved configuration value, or the default value if not found.
@@ -158,7 +153,6 @@ class Migration extends MySQL {
 	 * Sets or updates a configuration value.
 	 *
 	 * If the configuration name does not exist, it will be inserted. Otherwise, it will be updated.
-	 *
 	 * @param string $name The name of the configuration setting.
 	 * @param string $value The value to set for the configuration setting.
 	 */

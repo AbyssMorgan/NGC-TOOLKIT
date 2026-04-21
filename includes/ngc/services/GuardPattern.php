@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -43,7 +43,6 @@ class GuardPattern {
 
 	/**
 	 * Constructor for GuardPattern.
-	 *
 	 * @param array $folders Optional array of initial folder paths.
 	 * @param array $files Optional array of initial file paths.
 	 */
@@ -56,7 +55,6 @@ class GuardPattern {
 	/**
 	 * Adds one or more folders to the existing list of folders in the pattern.
 	 * Duplicate folders will be automatically removed.
-	 *
 	 * @param array|string $folders A single folder path (string) or an array of folder paths.
 	 */
 	public function add_folders(array|string $folders) : void {
@@ -66,7 +64,6 @@ class GuardPattern {
 
 	/**
 	 * Sets the list of folders for the pattern, replacing any previously added folders.
-	 *
 	 * @param array|string $folders A single folder path (string) or an array of folder paths.
 	 */
 	public function set_folders(array|string $folders) : void {
@@ -76,7 +73,6 @@ class GuardPattern {
 
 	/**
 	 * Retrieves the current list of folders in the pattern.
-	 *
 	 * @return array An array of folder paths.
 	 */
 	public function get_folders() : array {
@@ -86,7 +82,6 @@ class GuardPattern {
 	/**
 	 * Adds one or more files to the existing list of files in the pattern.
 	 * Duplicate files will be automatically removed.
-	 *
 	 * @param array|string $files A single file path (string) or an array of file paths.
 	 */
 	public function add_files(array|string $files) : void {
@@ -96,7 +91,6 @@ class GuardPattern {
 
 	/**
 	 * Sets the list of files for the pattern, replacing any previously added files.
-	 *
 	 * @param array|string $files A single file path (string) or an array of file paths.
 	 */
 	public function set_files(array|string $files) : void {
@@ -106,7 +100,6 @@ class GuardPattern {
 
 	/**
 	 * Retrieves the current list of files in the pattern.
-	 *
 	 * @return array An array of file paths.
 	 */
 	public function get_files() : array {
@@ -115,7 +108,6 @@ class GuardPattern {
 
 	/**
 	 * Retrieves the current input path, with trailing slashes removed.
-	 *
 	 * @return string The input path.
 	 */
 	public function get_input() : string {
@@ -124,7 +116,6 @@ class GuardPattern {
 
 	/**
 	 * Sets the input path for the pattern.
-	 *
 	 * @param string $input The input path to set.
 	 */
 	public function set_input(string $input) : void {
@@ -135,7 +126,6 @@ class GuardPattern {
 	 * Generates a string representation of the guard pattern.
 	 * The format includes "input:PATH", "folder:PATH", and "file:PATH" lines,
 	 * separated by CRLF.
-	 *
 	 * @return string The serialized guard pattern.
 	 */
 	public function get() : string {
@@ -152,7 +142,6 @@ class GuardPattern {
 	/**
 	 * Loads a guard pattern from a string representation.
 	 * The string is parsed to extract the input path, folders, and files.
-	 *
 	 * @param string $pattern The string representation of the guard pattern to load.
 	 */
 	public function load(string $pattern) : void {

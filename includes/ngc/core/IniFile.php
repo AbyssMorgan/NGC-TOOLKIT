@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -70,7 +70,6 @@ class IniFile {
 
 	/**
 	 * IniFile constructor.
-	 *
 	 * @param string|null $path The path to the INI file.
 	 * @param bool $sort Whether to sort the data when saving.
 	 * @param bool $compressed Whether the INI file content is compressed.
@@ -85,7 +84,6 @@ class IniFile {
 
 	/**
 	 * Creates the INI file and its parent directories if they don't exist.
-	 *
 	 * @return bool True on success, false on failure.
 	 */
 	protected function create() : bool {
@@ -100,7 +98,6 @@ class IniFile {
 
 	/**
 	 * Opens and reads the INI file.
-	 *
 	 * @param string $path The path to the INI file.
 	 * @param bool $sort Whether to sort the data when saving.
 	 * @param bool $compressed Whether the INI file content is compressed.
@@ -124,7 +121,6 @@ class IniFile {
 
 	/**
 	 * Closes the INI file, clearing its internal state.
-	 *
 	 * @return void
 	 */
 	public function close() : void {
@@ -137,7 +133,6 @@ class IniFile {
 
 	/**
 	 * Reads the content of the INI file and populates the internal data array.
-	 *
 	 * @return bool True on success, false on failure.
 	 */
 	public function read() : bool {
@@ -181,7 +176,6 @@ class IniFile {
 
 	/**
 	 * Parses a single line from the INI file.
-	 *
 	 * @param string $line The line to parse.
 	 * @param string $key The extracted key (passed by reference).
 	 * @param int|bool|string|array|float|null $data The extracted data (passed by reference).
@@ -226,7 +220,6 @@ class IniFile {
 
 	/**
 	 * Checks if any data in the INI file has been changed compared to the original loaded data.
-	 *
 	 * @return bool True if changes exist, false otherwise.
 	 */
 	public function is_changed() : bool {
@@ -235,7 +228,6 @@ class IniFile {
 
 	/**
 	 * Checks if a specific value has been changed compared to its original loaded value.
-	 *
 	 * @param string $key The key of the value to check.
 	 * @return bool True if the value has changed, false otherwise.
 	 */
@@ -252,7 +244,6 @@ class IniFile {
 
 	/**
 	 * Returns all original data loaded from the INI file.
-	 *
 	 * @return array The original data.
 	 */
 	public function get_original_all() : array {
@@ -261,7 +252,6 @@ class IniFile {
 
 	/**
 	 * Returns all current data.
-	 *
 	 * @return array The current data.
 	 */
 	public function get_all() : array {
@@ -270,7 +260,6 @@ class IniFile {
 
 	/**
 	 * Returns all data sorted by key.
-	 *
 	 * @return array The sorted data.
 	 */
 	public function get_sorted() : array {
@@ -281,7 +270,6 @@ class IniFile {
 
 	/**
 	 * Sorts the internal data array by key.
-	 *
 	 * @return void
 	 */
 	public function sort() : void {
@@ -290,7 +278,6 @@ class IniFile {
 
 	/**
 	 * Sets all data in the INI file.
-	 *
 	 * @param array $data The data to set.
 	 * @param bool $save Whether to save the changes immediately.
 	 * @return void
@@ -302,7 +289,6 @@ class IniFile {
 
 	/**
 	 * Updates the INI file with new data, merging with existing data.
-	 *
 	 * @param array $data The data to update.
 	 * @param bool $save Whether to save the changes immediately.
 	 * @return void
@@ -316,7 +302,6 @@ class IniFile {
 
 	/**
 	 * Retrieves a value from the INI file by its key.
-	 *
 	 * @param string $key The key of the value to retrieve.
 	 * @param int|bool|string|array|float|null $default The default value to return if the key does not exist.
 	 * @return int|bool|string|array|float|null The retrieved value or the default value.
@@ -327,7 +312,6 @@ class IniFile {
 
 	/**
 	 * Retrieves a value from the INI file as a string.
-	 *
 	 * @param string $key The key of the value to retrieve.
 	 * @param int|bool|string|array|float|null $default The default value to return if the key does not exist.
 	 * @return string The retrieved value as a string.
@@ -338,7 +322,6 @@ class IniFile {
 
 	/**
 	 * Retrieves the original value from the INI file by its key (before any modifications).
-	 *
 	 * @param string $key The key of the value to retrieve.
 	 * @param int|bool|string|array|float|null $default The default value to return if the key does not exist.
 	 * @return int|bool|string|array|float|null The retrieved original value or the default value.
@@ -349,7 +332,6 @@ class IniFile {
 
 	/**
 	 * Sets a value in the INI file.
-	 *
 	 * @param string $key The key to set.
 	 * @param int|bool|string|array|float|null $value The value to set.
 	 * @return void
@@ -361,7 +343,6 @@ class IniFile {
 	/**
 	 * Cleans and normalizes a value before setting it.
 	 * Converts string "true" to boolean true, and string "false" to boolean false.
-	 *
 	 * @param int|bool|string|array|float|null $value The value to clean.
 	 * @return int|bool|string|array|float|null The cleaned value.
 	 */
@@ -379,7 +360,6 @@ class IniFile {
 
 	/**
 	 * Renames a key in the INI file.
-	 *
 	 * @param string $key1 The old key name.
 	 * @param string $key2 The new key name.
 	 * @return void
@@ -391,7 +371,6 @@ class IniFile {
 
 	/**
 	 * Unsets (removes) one or more keys from the INI file.
-	 *
 	 * @param string|array $keys The key or an array of keys to unset.
 	 * @return void
 	 */
@@ -406,7 +385,6 @@ class IniFile {
 
 	/**
 	 * Resets the value of one or more keys to a specified default value (or null if not provided).
-	 *
 	 * @param string|array $keys The key or an array of keys to reset.
 	 * @param int|bool|string|array|float|null $value The value to reset to. Defaults to null.
 	 * @return void
@@ -422,7 +400,6 @@ class IniFile {
 
 	/**
 	 * Saves the current data to the INI file.
-	 *
 	 * @param bool $as_output Whether to return the content as a string instead of saving to file.
 	 * @return string|bool The content as a string if $as_output is true, otherwise true on success or false on failure.
 	 */
@@ -469,7 +446,6 @@ class IniFile {
 
 	/**
 	 * Returns the current INI file content as a string.
-	 *
 	 * @return string|bool The content as a string, or false on failure.
 	 */
 	public function get_output() : string|bool {
@@ -478,7 +454,6 @@ class IniFile {
 
 	/**
 	 * Checks if the INI file is currently valid (successfully opened and read).
-	 *
 	 * @return bool True if valid, false otherwise.
 	 */
 	public function is_valid() : bool {
@@ -487,7 +462,6 @@ class IniFile {
 
 	/**
 	 * Toggles the sorting behavior when saving the INI file.
-	 *
 	 * @param bool $sort True to enable sorting, false to disable.
 	 * @return void
 	 */
@@ -497,7 +471,6 @@ class IniFile {
 
 	/**
 	 * Returns an array of all keys in the INI file.
-	 *
 	 * @return array An array of keys.
 	 */
 	public function keys() : array {
@@ -506,7 +479,6 @@ class IniFile {
 
 	/**
 	 * Checks if a specific key exists in the INI file.
-	 *
 	 * @param string $key The key to check.
 	 * @return bool True if the key exists, false otherwise.
 	 */
@@ -516,7 +488,6 @@ class IniFile {
 
 	/**
 	 * Returns the size of the INI file in bytes.
-	 *
 	 * @return int The file size, or 0 if the file is not valid or doesn't exist.
 	 */
 	public function get_size() : int {
@@ -528,7 +499,6 @@ class IniFile {
 
 	/**
 	 * Returns the last modification date of the INI file.
-	 *
 	 * @return string The modification date in "Y-m-d H:i:s" format, or '0000-00-00 00:00:00' if not valid.
 	 */
 	public function get_modification_date() : string {
@@ -538,7 +508,6 @@ class IniFile {
 
 	/**
 	 * Converts the INI file data to a JSON string.
-	 *
 	 * @return string|false The JSON string, or false on failure.
 	 */
 	public function to_json() : string|false {
@@ -547,7 +516,6 @@ class IniFile {
 
 	/**
 	 * Loads data into the INI file from a JSON string.
-	 *
 	 * @param string $json The JSON string.
 	 * @param bool $merge Whether to merge with existing data or overwrite.
 	 * @param bool $save Whether to save the changes immediately.
@@ -563,7 +531,6 @@ class IniFile {
 
 	/**
 	 * Loads data into the INI file from an associative array.
-	 *
 	 * @param array $assoc The associative array.
 	 * @param bool $merge Whether to merge with existing data or overwrite.
 	 * @param bool $save Whether to save the changes immediately.
@@ -579,7 +546,6 @@ class IniFile {
 
 	/**
 	 * Searches for keys containing a specific substring.
-	 *
 	 * @param string $search The substring to search for.
 	 * @return array An array of keys that contain the search string.
 	 */
@@ -596,7 +562,6 @@ class IniFile {
 
 	/**
 	 * Searches for keys that start with a specific prefix.
-	 *
 	 * @param string $search The prefix to search for.
 	 * @return array An array of keys that start with the search string.
 	 */
@@ -613,7 +578,6 @@ class IniFile {
 
 	/**
 	 * Searches for keys that end with a specific suffix.
-	 *
 	 * @param string $search The suffix to search for.
 	 * @return array An array of keys that end with the search string.
 	 */
@@ -631,7 +595,6 @@ class IniFile {
 	/**
 	 * Sets a value if it's different from the default, otherwise unsets the key.
 	 * This is useful for saving only changed values.
-	 *
 	 * @param string $key The key to set or unset.
 	 * @param int|bool|string|array|float|null $value The value to set.
 	 * @param int|bool|string|array|float|null $default The default value to compare against.
@@ -647,7 +610,6 @@ class IniFile {
 
 	/**
 	 * Returns an associative array containing only the specified keys and their values.
-	 *
 	 * @param string|array $keys The key or an array of keys to include.
 	 * @return array An associative array of the selected keys and their values.
 	 */
@@ -662,7 +624,6 @@ class IniFile {
 
 	/**
 	 * Returns an associative array containing all keys and their values except for the specified ones.
-	 *
 	 * @param string|array $keys The key or an array of keys to exclude.
 	 * @return array An associative array of all keys and their values except the excluded ones.
 	 */
@@ -677,7 +638,6 @@ class IniFile {
 
 	/**
 	 * Extracts a value from the INI file based on a path-like key and sets it into a nested array structure.
-	 *
 	 * @param array $data The array to populate with the nested value (passed by reference).
 	 * @param string $key The key from the INI file (can contain delimiters for nested structure).
 	 * @param string $delimiter The delimiter used in the key to represent nesting.
@@ -689,7 +649,6 @@ class IniFile {
 
 	/**
 	 * Sets a value in a nested array structure based on a path and delimiter.
-	 *
 	 * @param array $array The array to modify (passed by reference).
 	 * @param string $path The path to the desired element in the array (e.g., "level1/level2/key").
 	 * @param mixed $value The value to set.

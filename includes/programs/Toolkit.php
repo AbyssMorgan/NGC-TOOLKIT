@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -35,7 +35,7 @@ class Toolkit extends Core {
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.9.1";
+	public string $version = "2.9.2";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 
@@ -77,7 +77,7 @@ class Toolkit extends Core {
 
 		$config_default->update($config_default_system->get_all());
 
-		$this->logo = "\r\n $this->app_name v$this->version by Abyss Morgan\r\n";
+		$this->logo = "\r\n$this->app_name v$this->version by Abyss Morgan\r\n";
 		$changed = false;
 
 		$path_config_toolkit = $this->get_path("$this->app_data/config.ini");
@@ -141,7 +141,7 @@ class Toolkit extends Core {
 				if(!file_exists($file)) continue;
 				if(!$this->is_admin()){
 					$this->echo();
-					$this->echo(" Please run once NGC-TOOLKIT as administrator for remove old NGC-UTILITIES files");
+					$this->echo("Please run once NGC-TOOLKIT as administrator for remove old NGC-UTILITIES files");
 					$this->echo();
 					$this->pause();
 					$this->close(false);
@@ -217,26 +217,26 @@ class Toolkit extends Core {
 		$this->tool = null;
 		$this->tool_name = '';
 		$options = [
-			' Tools:',
-			' F1 - File Functions',
-			' F2 - File Sorter',
-			' F3 - File Names Editor',
-			' F4 - File Editor',
-			' D1 - Directory Functions',
-			' D2 - Directory Sorter',
-			' D3 - Directory Names Editor',
-			' M1 - Media Tools',
-			' M2 - Media Sorter',
-			' T1 - MySQL Tools',
-			' T2 - FTP Tools',
-			' O1 - Check File Integrity',
-			' O2 - ADM File Converter',
-			' H  - Help',
-			' #  - Close program',
+			'Tools:',
+			'F1 - File Functions',
+			'F2 - File Sorter',
+			'F3 - File Names Editor',
+			'F4 - File Editor',
+			'D1 - Directory Functions',
+			'D2 - Directory Sorter',
+			'D3 - Directory Names Editor',
+			'M1 - Media Tools',
+			'M2 - Media Sorter',
+			'T1 - MySQL Tools',
+			'T2 - FTP Tools',
+			'O1 - Check File Integrity',
+			'O2 - ADM File Converter',
+			'H  - Help',
+			'#  - Close program',
 		];
 		$this->print_help($options);
 
-		$line = $this->get_input(' Tool: ');
+		$line = $this->get_input("Tool: ");
 		$dynamic_action = explode(' ', $line);
 		switch(mb_strtoupper($dynamic_action[0])){
 			case 'F1': {

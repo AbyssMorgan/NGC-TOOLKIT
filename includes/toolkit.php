@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -17,13 +17,13 @@ set_exception_handler(function(Throwable $e) : void {
 	$file = $e->getFile();
 	$line_count = $e->getLine();
 	$message = "\r\n";
-	$message .= " File: $file\r\n";
-	$message .= " Line: $line_count\r\n";
-	$message .= " Error: ".$e->getMessage()."\r\n";
-	$message .= " Trace: \r\n";
+	$message .= "File: $file\r\n";
+	$message .= "Line: $line_count\r\n";
+	$message .= "Error: ".$e->getMessage()."\r\n";
+	$message .= "Trace: \r\n";
 	$message .= preg_replace('/^/m', "\x20", $e->getTraceAsString())."\r\n\r\n";
 	echo $message;
-	echo " ABORT, PRESS ANY KEY TO EXIT\r\n";
+	echo "ABORT, PRESS ANY KEY TO EXIT\r\n";
 	if(file_exists('.git')){
 		file_put_contents('NGC-TOOLKIT-CRASH-'.date('Y-m-d His').'.txt', $message);
 	}

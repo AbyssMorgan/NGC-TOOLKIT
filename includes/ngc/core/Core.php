@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -226,7 +226,6 @@ class Core {
 	/**
 	 * Constructor for the Core class.
 	 * Initializes timezone, internal encoding, command, arguments, and base path.
-	 *
 	 * @param array $arguments Command line arguments.
 	 */
 	public function __construct(array $arguments){
@@ -249,7 +248,6 @@ class Core {
 
 	/**
 	 * Sets the path to the resources folder.
-	 *
 	 * @param string $path The path to the resources folder.
 	 * @return bool True if the folder exists and was set, false otherwise.
 	 */
@@ -261,7 +259,6 @@ class Core {
 
 	/**
 	 * Gets the full path to a resource within the resources folder.
-	 *
 	 * @param string $name The name of the resource.
 	 * @return string The full path to the resource.
 	 */
@@ -290,7 +287,7 @@ class Core {
 
 			if(!$utilities){
 				$this->echo();
-				$this->echo(" Invalid NGC-UTILITIES version detected: v{$utilities_version} required: v$this->utilities_version");
+				$this->echo("Invalid NGC-UTILITIES version detected: v{$utilities_version} required: v$this->utilities_version");
 				$this->echo();
 				$this->pause();
 				die("");
@@ -320,7 +317,6 @@ class Core {
 
 	/**
 	 * Allows the user to select an action for the current tool.
-	 *
 	 * @param ?string $trigger_action An optional action to trigger directly, bypassing user input.
 	 * @return bool True if an action was successfully performed, false otherwise.
 	 */
@@ -331,7 +327,7 @@ class Core {
 			$this->title("$this->app_name v$this->version > $this->tool_name");
 			if(\is_null($trigger_action)){
 				$this->tool->help();
-				$line = $this->get_input(" Action: ");
+				$line = $this->get_input("Action: ");
 				if($line == '#') return false;
 				$response = $this->tool->action($line);
 			} else {
@@ -345,7 +341,6 @@ class Core {
 
 	/**
 	 * Sets up and scans the initial state of specified folders.
-	 *
 	 * @param array $folders An array of folder paths to set up.
 	 */
 	public function setup_folders(array $folders) : void {
@@ -359,7 +354,6 @@ class Core {
 
 	/**
 	 * Sets the state of a specific folder to '[DONE]'.
-	 *
 	 * @param string $folder The path of the folder to mark as done.
 	 */
 	public function set_folder_done(string $folder) : void {
@@ -373,13 +367,12 @@ class Core {
 	public function print_folders_state() : void {
 		$this->clear();
 		foreach($this->folders_state as $folder_name => $state){
-			$this->echo(" Scan: \"$folder_name\" $state");
+			$this->echo("Scan: \"$folder_name\" $state");
 		}
 	}
 
 	/**
 	 * Gets the formatted title for the current tool, including app name, version, and subtool if applicable.
-	 *
 	 * @return string The formatted tool title.
 	 */
 	public function get_tool_name() : string {
@@ -390,7 +383,6 @@ class Core {
 
 	/**
 	 * Sets the name of the current tool and updates the console title.
-	 *
 	 * @param string $name The name of the tool.
 	 */
 	public function set_tool(string $name) : void {
@@ -401,7 +393,6 @@ class Core {
 
 	/**
 	 * Sets the name of the current subtool and updates the console title.
-	 *
 	 * @param string $name The name of the subtool.
 	 */
 	public function set_subtool(string $name) : void {
@@ -411,7 +402,6 @@ class Core {
 
 	/**
 	 * Updates the console title to display the current number of errors.
-	 *
 	 * @param int $errors The number of errors.
 	 */
 	public function set_errors(int $errors) : void {
@@ -420,7 +410,6 @@ class Core {
 
 	/**
 	 * Updates the console title to display extended progress information.
-	 *
 	 * @param string $label A label for the progress.
 	 * @param int $progress The current progress count.
 	 * @param int $total The total count for the progress.
@@ -447,7 +436,6 @@ class Core {
 
 	/**
 	 * Converts a version string (e.g., "1.2.3") into an integer for comparison.
-	 *
 	 * @param string $version The version string.
 	 * @return int The integer representation of the version.
 	 */
@@ -458,7 +446,6 @@ class Core {
 
 	/**
 	 * Prints a help message to the console.
-	 *
 	 * @param array $help An array of strings representing the help message.
 	 */
 	public function print_help(array $help) : void {
@@ -468,20 +455,18 @@ class Core {
 
 	/**
 	 * Displays progress percentage on the current console line.
-	 *
 	 * @param int|float $count The current count.
 	 * @param int|float $total The total count.
 	 */
 	public function progress(int|float $count, int|float $total) : void {
 		if($total > 0){
 			$percent = \sprintf("%.02f", ($count / $total) * 100.0);
-			$this->current_line(" Progress: $percent %");
+			$this->current_line("Progress: $percent %");
 		}
 	}
 
 	/**
 	 * Checks if a given label is valid (alphanumeric, underscores, dot, hyphens, spaces, 3-48 characters).
-	 *
 	 * @param string $label The label to validate.
 	 * @return bool True if the label is valid, false otherwise.
 	 */
@@ -491,7 +476,6 @@ class Core {
 
 	/**
 	 * Displays extended progress with a label on the current console line.
-	 *
 	 * @param string $label A label for the progress.
 	 * @param int|float $count The current count.
 	 * @param int|float $total The total count.
@@ -499,13 +483,12 @@ class Core {
 	public function progress_ex(string $label, int|float $count, int|float $total) : void {
 		if($total > 0){
 			$percent = \sprintf("%.02f", ($count / $total) * 100.0);
-			$this->current_line(" $label Progress: $percent %");
+			$this->current_line("$label Progress: $percent %");
 		}
 	}
 
 	/**
 	 * Reads hashes and their corresponding lines from an index file.
-	 *
 	 * @param string $path The path to the index file.
 	 * @param array $keys Reference to an array to store the hashes and lines.
 	 * @param bool $progress Whether to display progress while reading.
@@ -531,7 +514,6 @@ class Core {
 
 	/**
 	 * Formats a given number of bytes into a human-readable string (e.g., "1.23 GiB").
-	 *
 	 * @param float|int $bytes The number of bytes.
 	 * @param int $precision The number of decimal places to use.
 	 * @param bool $dot Whether to use a dot (.) or comma (,) as the decimal separator.
@@ -550,7 +532,6 @@ class Core {
 
 	/**
 	 * Formats a given number of bits into a human-readable string (e.g., "1.23 Mbit").
-	 *
 	 * @param float|int $bits The number of bits.
 	 * @param int $precision The number of decimal places to use.
 	 * @param bool $dot Whether to use a dot (.) or comma (,) as the decimal separator.
@@ -569,7 +550,6 @@ class Core {
 
 	/**
 	 * Converts a size value from a specified unit to bytes.
-	 *
 	 * @param int $value The numeric value of the size.
 	 * @param string $unit The unit of the size (e.g., 'KiB', 'MiB').
 	 * @return int The size in bytes, or -1 if the unit is invalid.
@@ -582,7 +562,6 @@ class Core {
 
 	/**
 	 * Converts a time value from a specified unit to seconds.
-	 *
 	 * @param int $value The numeric value of the time.
 	 * @param string $unit The unit of the time (e.g., 'sec', 'min', 'hour', 'day').
 	 * @return int The time in seconds.
@@ -599,7 +578,6 @@ class Core {
 
 	/**
 	 * Converts a number of seconds into a formatted time string.
-	 *
 	 * @param float $seconds The total number of seconds.
 	 * @param bool $force_hours Whether to always display hours, even if zero.
 	 * @param bool $with_days Whether to include days in the output.
@@ -637,7 +615,6 @@ class Core {
 
 	/**
 	 * Converts a formatted time string into total seconds.
-	 *
 	 * @param string $time The time string (e.g., "HH:MM:SS", "MM:SS", "D:HH:MM:SS").
 	 * @return int The total number of seconds.
 	 */
@@ -661,7 +638,6 @@ class Core {
 
 	/**
 	 * Checks if a given folder is empty.
-	 *
 	 * @param string $path The path to the folder.
 	 * @return bool True if the folder is empty or does not exist, false otherwise.
 	 */
@@ -677,7 +653,6 @@ class Core {
 
 	/**
 	 * Retrieves a list of files from a given path, with optional filtering.
-	 *
 	 * @param string $path The directory path to scan.
 	 * @param ?array $include_extensions An array of extensions to include (e.g., ['jpg', 'png']). Null for all.
 	 * @param ?array $exclude_extensions An array of extensions to exclude. Null for none.
@@ -699,7 +674,6 @@ class Core {
 
 	/**
 	 * Do operations on a list of files from a given path, with optional filtering.
-	 *
 	 * @param string|array $path The directory/direcories path to scan.
 	 * @param callable $callback Callback called for every found files function(string $file)
 	 * @param ?array $include_extensions An array of extensions to include (e.g., ['jpg', 'png']). Null for all.
@@ -728,7 +702,6 @@ class Core {
 
 	/**
 	 * Retrieves a list of folders from a given path, with optional recursion and parent inclusion.
-	 *
 	 * @param string $path The directory path to scan.
 	 * @param bool $with_parent Whether to include the parent directory in the result.
 	 * @param bool $recursive Whether to scan subdirectories recursively.
@@ -765,7 +738,6 @@ class Core {
 
 	/**
 	 * Filters a search string against a list of filters.
-	 *
 	 * @param string $search The string to search within.
 	 * @param array $filters An array of strings to filter by.
 	 * @param bool $case_sensitive Whether the search should be case-sensitive.
@@ -783,7 +755,6 @@ class Core {
 
 	/**
 	 * Closes the application, optionally opening the event log.
-	 *
 	 * @param bool $open_log Whether to open the event log file on exit.
 	 */
 	public function close(bool $open_log = false) : void {
@@ -803,7 +774,6 @@ class Core {
 
 	/**
 	 * Closes current log files and optionally opens them in an external viewer.
-	 *
 	 * @param bool $open_event Whether to open the event log.
 	 * @param bool $init Whether to re-initialize the logs after closing.
 	 */
@@ -825,7 +795,6 @@ class Core {
 
 	/**
 	 * Writes data to the event log.
-	 *
 	 * @param string|array $data The data to write.
 	 */
 	public function write_log(string|array $data) : void {
@@ -836,7 +805,6 @@ class Core {
 
 	/**
 	 * Writes data to the error log.
-	 *
 	 * @param string|array $data The data to write.
 	 */
 	public function write_error(string|array $data) : void {
@@ -847,7 +815,6 @@ class Core {
 
 	/**
 	 * Writes data to the data log.
-	 *
 	 * @param string|array $data The data to write.
 	 */
 	public function write_data(string|array $data) : void {
@@ -856,7 +823,6 @@ class Core {
 
 	/**
 	 * Recursively removes a directory and its contents.
-	 *
 	 * @param string $dir The path to the directory to remove.
 	 * @param bool $log Whether to log the operations.
 	 * @return bool True on success, false if the directory does not exist.
@@ -881,7 +847,6 @@ class Core {
 
 	/**
 	 * Removes an empty directory.
-	 *
 	 * @param string $path The path to the directory to remove.
 	 * @param bool $log Whether to log the operation.
 	 * @return bool True on success, false on failure or if the directory does not exist/is not a directory.
@@ -899,7 +864,6 @@ class Core {
 
 	/**
 	 * Removes empty directories recursively from a given path.
-	 *
 	 * @param string $path The starting path to clean.
 	 * @param bool $log Whether to log the operations.
 	 * @return bool True if the starting path is removed (if it becomes empty), false otherwise.
@@ -919,7 +883,6 @@ class Core {
 
 	/**
 	 * Deletes a file.
-	 *
 	 * @param string $path The path to the file to delete.
 	 * @param bool $log Whether to log the operation.
 	 * @return bool True on success, false on failure or if the file does not exist/is a directory.
@@ -937,7 +900,6 @@ class Core {
 
 	/**
 	 * Creates a directory.
-	 *
 	 * @param string $path The path of the directory to create.
 	 * @param bool $log Whether to log the operation.
 	 * @param int $permissions The permissions for the new directory (default 0755).
@@ -956,7 +918,6 @@ class Core {
 
 	/**
 	 * Clones the folder structure from an input path to an output path.
-	 *
 	 * @param string $input The input directory path.
 	 * @param string $output The output directory path.
 	 * @return int|false The number of errors encountered, or false on input path error.
@@ -978,7 +939,6 @@ class Core {
 
 	/**
 	 * Moves a file or directory from one location to another.
-	 *
 	 * @param string $from The source path.
 	 * @param string $to The destination path.
 	 * @param bool $log Whether to log the operation.
@@ -1005,7 +965,6 @@ class Core {
 
 	/**
 	 * Moves a file or directory, handling case-sensitive renaming on case-insensitive file systems.
-	 *
 	 * @param string $from The source path.
 	 * @param string $to The destination path.
 	 * @param bool $log Whether to log the operation.
@@ -1029,7 +988,6 @@ class Core {
 
 	/**
 	 * Copies a file from one location to another.
-	 *
 	 * @param string $from The source file path.
 	 * @param string $to The destination file path.
 	 * @param bool $log Whether to log the operation.
@@ -1057,7 +1015,6 @@ class Core {
 
 	/**
 	 * Copies a file from one location to another using a buffer and file allocation.
-	 *
 	 * @param string $from The source file path.
 	 * @param string $to The destination file path.
 	 * @param bool $log Whether to log the operation.
@@ -1113,7 +1070,6 @@ class Core {
 
 	/**
 	 * Copies a file from one location to another using a buffer, file allocation and destination comparsion for reduce writing in SSD drives.
-	 *
 	 * @param string $from The source file path.
 	 * @param string $to The destination file path.
 	 * @param int $block_size Block size for read/write operations
@@ -1182,7 +1138,6 @@ class Core {
 
 	/**
 	 * Deletes files within a directory, with optional extension filters.
-	 *
 	 * @param string $path The directory path to scan for files.
 	 * @param ?array $include_extensions An array of extensions to include. Null for all.
 	 * @param ?array $exclude_extensions An array of extensions to exclude. Null for none.
@@ -1196,7 +1151,6 @@ class Core {
 
 	/**
 	 * Escapes special characters for command line usage (specifically for `cmd.exe`).
-	 *
 	 * @param string $text The text to escape.
 	 * @return string The escaped text.
 	 */
@@ -1206,7 +1160,6 @@ class Core {
 
 	/**
 	 * Sets the console window title (Windows only).
-	 *
 	 * @param string $title The title to set.
 	 */
 	public function title(string $title) : void {
@@ -1221,7 +1174,6 @@ class Core {
 
 	/**
 	 * Prompts the user for a yes/no confirmation.
-	 *
 	 * @param string $question The question to ask.
 	 * @return bool True if the user confirms with 'Y', false with 'N'.
 	 */
@@ -1234,7 +1186,6 @@ class Core {
 
 	/**
 	 * Gets input from the user via the command line.
-	 *
 	 * @param ?string $message The message to display as a prompt.
 	 * @param bool $trim Whether to trim whitespace from the input.
 	 * @param bool $history Whether to add the input to readline history.
@@ -1254,7 +1205,6 @@ class Core {
 
 	/**
 	 * Gets a password input from the user (input is masked).
-	 *
 	 * @param string $message The message to display as a prompt.
 	 * @return string The user's password.
 	 */
@@ -1277,7 +1227,6 @@ class Core {
 
 	/**
 	 * Prompts the user for multiple folder paths.
-	 *
 	 * @param string $title The message to display as a prompt.
 	 * @param bool $setup Whether to call `setup_folders` with the parsed folders.
 	 * @return array|false An array of folder paths, or false if the user cancels.
@@ -1292,7 +1241,6 @@ class Core {
 
 	/**
 	 * Prompts the user for a single folder path.
-	 *
 	 * @param string $title The message to display as a prompt.
 	 * @param bool $as_output Whether the folder is intended as an output directory (will attempt to create it).
 	 * @return string|false The path to the selected folder, or false if the user cancels.
@@ -1305,15 +1253,15 @@ class Core {
 		if(!isset($folders[0])) goto set_path;
 		$path = $folders[0];
 		if(\file_exists($path) && !\is_dir($path)){
-			$this->echo(" Invalid folder path");
+			$this->echo("Invalid folder path");
 			goto set_path;
 		}
 		if($as_output && !$this->mkdir($path)){
-			$this->echo(" Failed create folder");
+			$this->echo("Failed create folder");
 			goto set_path;
 		}
 		if(!\file_exists($path)){
-			$this->echo(" Folder not exists");
+			$this->echo("Folder not exists");
 			goto set_path;
 		}
 		return $path;
@@ -1321,7 +1269,6 @@ class Core {
 
 	/**
 	 * Prompts the user for a single file path.
-	 *
 	 * @param string $title The message to display as a prompt.
 	 * @param bool $required Whether the file must exist.
 	 * @param bool $create_directory Whether to create the parent directory if it doesn't exist.
@@ -1335,17 +1282,17 @@ class Core {
 		if(!isset($files[0])) goto set_path;
 		$path = $files[0];
 		if(\file_exists($path) && \is_dir($path)){
-			$this->echo(" Invalid file path");
+			$this->echo("Invalid file path");
 			goto set_path;
 		}
 		if($required && !\file_exists($path)){
-			$this->echo(" Input file not exists");
+			$this->echo("Input file not exists");
 			goto set_path;
 		}
 		if($create_directory){
 			$directory = \pathinfo($path, PATHINFO_DIRNAME);
 			if(!\file_exists($directory) && !$this->mkdir($directory)){
-				$this->echo(" Failed create destination directory \"$directory\"");
+				$this->echo("Failed create destination directory \"$directory\"");
 				goto set_path;
 			}
 		}
@@ -1354,12 +1301,11 @@ class Core {
 
 	/**
 	 * Prompts the user for file extensions, separated by spaces.
-	 *
 	 * @param string $title The message to display as a prompt.
 	 * @param ?string $help_message An optional help message to display before the prompt.
 	 * @return array|null|false An array of extensions, null if empty input, or false if the user cancels.
 	 */
-	public function get_input_extensions(string $title, ?string $help_message = " Empty for all, separate with spaces for multiple") : array|null|false {
+	public function get_input_extensions(string $title, ?string $help_message = "Empty for all, separate with spaces for multiple") : array|null|false {
 		if(!\is_null($help_message)) $this->echo($help_message);
 		$line = $this->get_input($title);
 		if($line == '#') return false;
@@ -1369,7 +1315,6 @@ class Core {
 
 	/**
 	 * Pauses the execution and waits for user input (e.g., "Press any key to continue...").
-	 *
 	 * @param ?string $message An optional message to display before pausing.
 	 */
 	public function pause(?string $message = null) : void {
@@ -1383,7 +1328,6 @@ class Core {
 
 	/**
 	 * Prints a string to the console, with optional color.
-	 *
 	 * @param string $string The string to print.
 	 * @param ?string $color_code The color code (e.g., '0F' for black background, white foreground). Null for default.
 	 */
@@ -1397,7 +1341,6 @@ class Core {
 	 * Prints a string to the console with embedded color codes.
 	 * Color codes are in the format {XY} where X is background and Y is foreground.
 	 * Example: "This is {4F}red on blue{XX}."
-	 *
 	 * @param string $string The string to print with embedded color codes.
 	 */
 	public function cecho(string $string = '') : void {
@@ -1416,35 +1359,29 @@ class Core {
 	/**
 	 * Prints a string to the current console line, overwriting previous content.
 	 * Useful for progress updates.
-	 *
 	 * @param string $string The string to print.
 	 */
 	public function current_line(string $string = '') : void {
-		echo "$string".\str_repeat(" ", (int)\max(62 - \strlen($string), 0))."\r";
+		echo "$string".\str_repeat("\x20", (int)\max(62 - \strlen($string), 0))."\r";
 	}
 
 	/**
 	 * Prints a variable's contents in a human-readable format (similar to `var_dump` but formatted).
-	 *
 	 * @param mixed $var The variable to print.
-	 * @param bool $add_space Whether to add a leading space to each line.
 	 */
-	public function print(mixed $var, bool $add_space = false) : void {
-		echo $this->get_print($var, 0, $add_space);
+	public function print(mixed $var) : void {
+		echo $this->get_print($var, 0);
 	}
 
 	/**
 	 * Returns a string representation of a variable's contents in a human-readable format.
-	 *
 	 * @param mixed $var The variable.
 	 * @param int $indent The current indentation level.
-	 * @param bool $add_space Whether to add a leading space to each line.
 	 * @return string The formatted string representation.
 	 */
-	public function get_print(mixed $var, int $indent = 0, bool $add_space = false) : string {
+	public function get_print(mixed $var, int $indent = 0) : string {
 		$output = '';
 		$prefix = \str_repeat("\t", $indent);
-		if($add_space) $prefix = " $prefix";
 		if(\is_array($var)){
 			if(empty($var)){
 				$output .= "{$prefix}(array) []\n";
@@ -1452,7 +1389,7 @@ class Core {
 				$output .= "{$prefix}(array) [\n";
 				foreach($var as $key => $value){
 					if(!\is_numeric($key)) $key = "'$key'";
-					$output .= "$prefix\t$key => ".\ltrim($this->get_print($value, $indent + 1, $add_space));
+					$output .= "$prefix\t$key => ".\ltrim($this->get_print($value, $indent + 1));
 				}
 				$output .= "$prefix]\n";
 			}
@@ -1464,7 +1401,7 @@ class Core {
 				$output .= "{$prefix}($class){\n";
 				foreach(\get_object_vars($var) as $key => $value){
 					if(!\is_numeric($key)) $key = "'$key'";
-					$output .= "$prefix\t$key => ".\ltrim($this->get_print($value, $indent + 1, $add_space));
+					$output .= "$prefix\t$key => ".\ltrim($this->get_print($value, $indent + 1));
 				}
 				$output .= "$prefix}\n";
 			}
@@ -1491,7 +1428,6 @@ class Core {
 
 	/**
 	 * Gets the value of an environment variable (Windows only).
-	 *
 	 * @param string $string The name of the environment variable (e.g., "%PROGRAMFILES%").
 	 * @return string The value of the environment variable, or an empty string if not found.
 	 */
@@ -1502,7 +1438,6 @@ class Core {
 
 	/**
 	 * Opens a file using the default system application (Windows) or a configured binary.
-	 *
 	 * @param string $path The path to the file.
 	 * @param string $params Additional parameters for the open command (Windows only, e.g., '/MIN').
 	 */
@@ -1518,7 +1453,6 @@ class Core {
 
 	/**
 	 * Opens a URL in the default web browser.
-	 *
 	 * @param string $url The URL to open.
 	 */
 	public function open_url(string $url) : void {
@@ -1533,7 +1467,6 @@ class Core {
 
 	/**
 	 * Gets the file attributes of a given path (Windows only).
-	 *
 	 * @param string $path The path to the file or directory.
 	 * @return array An associative array of attributes ('R', 'A', 'S', 'H', 'I') and their boolean states.
 	 */
@@ -1552,7 +1485,6 @@ class Core {
 
 	/**
 	 * Sets the file attributes of a given path (Windows only).
-	 *
 	 * @param string $path The path to the file or directory.
 	 * @param ?bool $r Read-only attribute. Null to not change.
 	 * @param ?bool $a Archive attribute. Null to not change.
@@ -1577,7 +1509,6 @@ class Core {
 
 	/**
 	 * Checks if a given path is a valid Windows path (drive letter or UNC path).
-	 *
 	 * @param string $path The path to validate.
 	 * @return bool True if the path is valid, false otherwise. Returns true for non-Windows systems.
 	 */
@@ -1599,7 +1530,6 @@ class Core {
 
 	/**
 	 * Converts a path to use the correct directory separator for the current operating system.
-	 *
 	 * @param string $path The path to convert.
 	 * @return string The converted path.
 	 */
@@ -1609,7 +1539,6 @@ class Core {
 
 	/**
 	 * Gets the lowercase file extension from a given path.
-	 *
 	 * @param string $path The file path.
 	 * @return string The lowercase file extension.
 	 */
@@ -1620,7 +1549,6 @@ class Core {
 	/**
 	 * Inserts a subfolder into a given file path.
 	 * Example: `put_folder_to_path("/path/to/file.txt", "sub")` returns `/path/to/sub/file.txt`.
-	 *
 	 * @param string $path The original file path.
 	 * @param string $subfolder The name of the subfolder to insert.
 	 * @return string The modified file path.
@@ -1631,7 +1559,6 @@ class Core {
 
 	/**
 	 * Gets the computer name of the current system.
-	 *
 	 * @return string The computer name.
 	 */
 	public function get_computer_name() : string {
@@ -1644,7 +1571,6 @@ class Core {
 
 	/**
 	 * Formats an array of paths for command-line arguments, enclosing them in double quotes if necessary.
-	 *
 	 * @param array $arguments An array of paths.
 	 * @return string A space-separated string of quoted paths.
 	 */
@@ -1663,7 +1589,6 @@ class Core {
 
 	/**
 	 * Returns information about a hashing algorithm based on its ID.
-	 *
 	 * @param int $id The ID of the hash algorithm (0: md5, 1: sha256, 2: crc32, 3: whirlpool).
 	 * @return array An associative array with 'name' and 'length' of the hash. Defaults to md5.
 	 */
@@ -1679,7 +1604,6 @@ class Core {
 
 	/**
 	 * Checks if a file is a text file based on its MIME type.
-	 *
 	 * @param string $path The path to the file.
 	 * @return bool True if the file is a text file, false otherwise or if it doesn't exist.
 	 */
@@ -1691,7 +1615,6 @@ class Core {
 
 	/**
 	 * Executes an external program. For Windows, it attempts to use a program within `core_path`.
-	 *
 	 * @param string $program The name of the program to execute.
 	 * @param string $command The command-line arguments for the program.
 	 * @param ?array $output Reference to an array to capture the output lines.
@@ -1708,7 +1631,6 @@ class Core {
 
 	/**
 	 * Checks if the current script is running with administrator/root privileges (Windows only).
-	 *
 	 * @return bool True if running as admin, false otherwise. Returns false for non-Windows systems.
 	 */
 	public function is_admin() : bool {
@@ -1718,15 +1640,15 @@ class Core {
 
 	/**
 	 * Prompts the user to input a byte size with a unit (e.g., "1 GiB").
-	 *
 	 * @param string $name The message to display as a prompt.
+	 * @param bool $accept_zero Determine if can accept zero value.
 	 * @return int|false The size in bytes, or false if the user cancels or input is invalid.
 	 */
-	public function get_input_bytes_size(string $name) : int|false {
+	public function get_input_bytes_size(string $name, bool $accept_zero = false) : int|false {
 		set_size:
 		$this->print_help([
-			' Type integer and unit separate by space, example: 1 GiB',
-			' Size units: B, KiB, MiB, GiB, TiB',
+			'Type integer and unit separate by space, example: 1 GiB',
+			'Size units: B, KiB, MiB, GiB, TiB',
 		]);
 
 		$line = $this->get_input($name);
@@ -1734,23 +1656,22 @@ class Core {
 		$size = \explode(' ', $line);
 		if(!isset($size[1])) goto set_size;
 		$size[0] = \preg_replace('/\D/', '', $size[0]);
-		if(empty($size[0])) goto set_size;
+		if($size[0] == '') goto set_size;
 		$bytes = $this->size_unit_to_bytes(\intval($size[0]), $size[1]);
-		if($bytes <= 0) goto set_size;
+		if(!$accept_zero && $bytes <= 0) goto set_size;
 		return $bytes;
 	}
 
 	/**
 	 * Prompts the user to input a time interval with a unit (e.g., "30 sec").
-	 *
 	 * @param string $name The message to display as a prompt.
 	 * @return int|false The interval in seconds, or false if the user cancels or input is invalid.
 	 */
 	public function get_input_time_interval(string $name) : int|false {
 		set_interval:
 		$this->print_help([
-			' Type integer and unit separate by space, example: 30 sec',
-			' Interval units: sec, min, hour, day',
+			'Type integer and unit separate by space, example: 30 sec',
+			'Interval units: sec, min, hour, day',
 		]);
 
 		$line = $this->get_input($name);
@@ -1766,7 +1687,6 @@ class Core {
 
 	/**
 	 * Prompts the user to input an integer within a specified range.
-	 *
 	 * @param string $name The message to display as a prompt.
 	 * @param int $min The minimum allowed integer value (default 1).
 	 * @param int $max The maximum allowed integer value (default 2147483647).
@@ -1778,15 +1698,15 @@ class Core {
 		if($line == '#') return false;
 		$line = \preg_replace('/\D/', '', $line);
 		if($line == ''){
-			$this->echo(" Type valid integer number");
+			$this->echo("Type valid integer number");
 			goto set_number;
 		}
 		$number = \intval($line);
 		if($number < $min){
-			$this->echo(" Number must be have greater than or equal $min");
+			$this->echo("Number must be have greater than or equal $min");
 			goto set_number;
 		} elseif($number > $max){
-			$this->echo(" Number must be have less than or equal $max");
+			$this->echo("Number must be have less than or equal $max");
 			goto set_number;
 		}
 		return $number;
@@ -1794,7 +1714,6 @@ class Core {
 
 	/**
 	 * Gets the configured write buffer size in bytes.
-	 *
 	 * @return int|bool The write buffer size in bytes, or false if the configuration value is invalid.
 	 */
 	public function get_write_buffer() : int|bool {
@@ -1803,7 +1722,7 @@ class Core {
 		if($write_buffer <= 0){
 			$this->clear();
 			$write_buffer_size = $this->config->get('WRITE_BUFFER_SIZE');
-			$this->pause(" Operation aborted: invalid config value for WRITE_BUFFER_SIZE=\"$write_buffer_size\", press any key to back to menu.");
+			$this->pause("Operation aborted: invalid config value for WRITE_BUFFER_SIZE=\"$write_buffer_size\", press any key to back to menu.");
 			return false;
 		}
 		return $write_buffer;
@@ -1811,7 +1730,6 @@ class Core {
 
 	/**
 	 * Moves a file or folder to the system's trash/recycle bin.
-	 *
 	 * @param string $path The path to the file or folder to trash.
 	 * @param ?string $trash_folder The path to the trash folder
 	 * @return bool True on success, false on failure.
@@ -1852,18 +1770,16 @@ class Core {
 
 	/**
 	 * Displays a message indicating that a tool is Windows-only and pauses.
-	 *
 	 * @return bool Always returns false.
 	 */
 	public function windows_only() : bool {
-		$this->echo(" This tool is only available on windows operating system");
-		$this->pause(" Press any key to back to menu");
+		$this->echo("This tool is only available on windows operating system");
+		$this->pause("Press any key to back to menu");
 		return false;
 	}
 
 	/**
 	 * Calculates the original length of a base64 encoded string.
-	 *
 	 * @param string $string The base64 encoded string.
 	 * @return ?int The original length in bytes, or null if the string is not a valid base64 representation.
 	 */
@@ -1878,7 +1794,6 @@ class Core {
 
 	/**
 	 * Cleans a file name by replacing invalid characters with underscores.
-	 *
 	 * @param string $name The file name to clean.
 	 * @return string The cleaned file name.
 	 */
@@ -1888,7 +1803,6 @@ class Core {
 
 	/**
 	 * Cleans and converts a file extension to lowercase.
-	 *
 	 * @param string $extension The file extension to clean.
 	 * @return string The cleaned and lowercase file extension.
 	 */
@@ -1898,7 +1812,6 @@ class Core {
 
 	/**
 	 * Converts all string items in an array to lowercase.
-	 *
 	 * @param array $items The input array.
 	 * @return array The array with all string items converted to lowercase.
 	 */
@@ -1912,7 +1825,6 @@ class Core {
 
 	/**
 	 * Converts all string items in an array to uppercase.
-	 *
 	 * @param array $items The input array.
 	 * @return array The array with all string items converted to uppercase.
 	 */
@@ -1926,7 +1838,6 @@ class Core {
 
 	/**
 	 * Detects the current operating system type.
-	 *
 	 * @return int An integer representing the system type (SYSTEM_TYPE_WINDOWS, SYSTEM_TYPE_LINUX, SYSTEM_TYPE_MACOS, SYSTEM_TYPE_UNKNOWN).
 	 */
 	public function get_system_type() : int {
@@ -1940,7 +1851,6 @@ class Core {
 
 	/**
 	 * Detects the End-Of-Line (EOL) sequence used in a given content string.
-	 *
 	 * @param string $content The string content to analyze.
 	 * @return string The detected EOL sequence (e.g., "\r\n", "\n", "\r"), defaults to "\r\n".
 	 */
@@ -1958,7 +1868,6 @@ class Core {
 
 	/**
 	 * Checks if a string content starts with a UTF-8 Byte Order Mark (BOM).
-	 *
 	 * @param string $content The string content to check.
 	 * @return bool True if the content has a UTF-8 BOM, false otherwise.
 	 */
@@ -1969,7 +1878,6 @@ class Core {
 	/**
 	 * Converts a two-character hexadecimal color code (e.g., "0F") to an ANSI escape code for console coloring.
 	 * The first character represents background color, the second represents foreground color.
-	 *
 	 * @param string $color_code The two-character hexadecimal color code.
 	 * @return string The ANSI escape code. Returns reset code if input is invalid.
 	 */
@@ -1985,7 +1893,6 @@ class Core {
 	/**
 	 * Sets the console foreground and background color using a two-character hexadecimal color code.
 	 * 'XX' will reset the color to the configured default.
-	 *
 	 * @param string $color_code The two-character hexadecimal color code (e.g., '0F').
 	 * @return bool True on success, false if the color code is invalid.
 	 */
@@ -1998,7 +1905,6 @@ class Core {
 
 	/**
 	 * Parses an input string containing one or more paths (potentially quoted) into an array of unique, resolved paths.
-	 *
 	 * @param string $string The input string containing paths.
 	 * @param bool $unique Whether to return only unique paths (default true).
 	 * @return array An array of parsed and resolved paths.
@@ -2026,7 +1932,6 @@ class Core {
 	 *
 	 * Both types of filters support `*` (matches zero or more characters) and `?` (matches exactly one character)
 	 * wildcards. The matching is case-insensitive.
-	 *
 	 * @param string $path The path to check. Backslashes (`\`) are converted to forward slashes (`/`) for normalization.
 	 * @param array<string> $wildcard_filters An array of wildcard patterns to match against the path.
 	 * @return bool True if the path matches any of the wildcard filters, false otherwise.
@@ -2054,7 +1959,6 @@ class Core {
 
 	/**
 	 * Recursively scans a directory for files, applying include/exclude extension filters and name filters.
-	 *
 	 * @param string $dir The directory to scan.
 	 * @param array $data Reference to an array to store the found file paths.
 	 * @param ?array $include_extensions An array of extensions to include.
@@ -2095,7 +1999,6 @@ class Core {
 
 	/**
 	 * Recursively scans a directory for files, applying include/exclude extension filters and name filters.
-	 *
 	 * @param string $dir The directory to scan.
 	 * @param callable $callback Callback called for every found files function(string $file)
 	 * @param ?array $include_extensions An array of extensions to include.
@@ -2138,7 +2041,6 @@ class Core {
 
 	/**
 	 * Create symlink for directory
-	 *
 	 * @param string $target_path The destination folder path
 	 * @param string $link_path The symlink path to create
 	 * @return bool
@@ -2155,7 +2057,6 @@ class Core {
 
 	/**
 	 * Validates a filesystem path for Windows / SMB compatibility.
-	 *
 	 * @param string $path Input path (Windows or Unix style)
 	 * @return bool TRUE if path is Windows-safe, FALSE otherwise
 	 */
@@ -2176,12 +2077,68 @@ class Core {
 
 	/**
 	 * Escape windows cmd parameter quotes
-	 * 
 	 * @param string $arg Argument to perform escape
 	 * @return string
 	 */
 	public function escape_windows_arg(string $arg) : string {
-		return '"'.str_replace('"', '""', $arg).'"';
+		return '"'.\str_replace('"', '""', $arg).'"';
+	}
+
+	/**
+	 * Get data table ready for print.
+	 * @param array $items Data table.
+	 * @return array<array>
+	 */
+	public function get_data_table(array $items) : array {
+		$max_lengths = $this->get_max_lengths($items);
+		$result = [];
+		foreach($items as $row){
+			$new_row = [];
+			foreach($row as $index => $value){
+				$value = (string)$value;
+				if($index === \array_key_last($row)){
+					$new_row[] = $value;
+					continue;
+				}
+				$max_length = $max_lengths[$index] ?? 0;
+				$padding = $max_length - \mb_strlen($value) + 1;
+				if($padding < 1){
+					$padding = 1;
+				}
+				$new_row[] = $value.\str_repeat(' ', $padding);
+			}
+			$result[] = $new_row;
+		}
+		return $result;
+	}
+
+	/**
+	 * Get max string length of items.
+	 * @param array $items
+	 * @return int[]
+	 */
+	public function get_max_lengths(array $items) : array {
+		$max_lengths = [];
+		foreach($items as $row){
+			foreach($row as $index => $value){
+				$length = \mb_strlen((string)$value);
+				if(!isset($max_lengths[$index]) || $length > $max_lengths[$index]){
+					$max_lengths[$index] = $length;
+				}
+			}
+		}
+		return $max_lengths;
+	}
+
+	/**
+	 * Print data table.
+	 * @param array $items
+	 * @return void
+	 */
+	public function print_data_table(array $items) : void {
+		foreach($items as $item){
+			$this->echo(\implode("", $item));
+		}
 	}
 
 }

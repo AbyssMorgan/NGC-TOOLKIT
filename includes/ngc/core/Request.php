@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.1 – Component
+ * NGC-TOOLKIT v2.9.2 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -70,7 +70,6 @@ class Request {
 
 	/**
 	 * Constructor for the Request class.
-	 *
 	 * @param bool $json Whether to treat request/response body as JSON. Defaults to true.
 	 * @param array $header An associative array of custom HTTP headers. Defaults to an empty array.
 	 * @param array $options An associative array of cURL options. Defaults to an empty array.
@@ -97,7 +96,6 @@ class Request {
 
 	/**
 	 * Sets the path to a CA certificate file for SSL verification.
-	 *
 	 * @param string $path The path to the CA certificate file.
 	 * @return bool True if the file exists and is a regular file, false otherwise.
 	 */
@@ -110,7 +108,6 @@ class Request {
 	/**
 	 * Attempts to negotiate the best available HTTP version for a given URL.
 	 * It tests for HTTP/3, then HTTP/2, and falls back to HTTP/1.1 if neither is supported.
-	 *
 	 * @param string $url The URL to test the HTTP version against.
 	 * @return int The negotiated cURL HTTP version constant (CURL_HTTP_VERSION_2, or CURL_HTTP_VERSION_1_1).
 	 */
@@ -121,7 +118,6 @@ class Request {
 
 	/**
 	 * Sets the HTTP protocol version for requests.
-	 *
 	 * @param int $version The cURL HTTP version constant (e.g., CURL_HTTP_VERSION_1_1, CURL_HTTP_VERSION_2_0).
 	 * @return bool True if the version is valid and set, false otherwise.
 	 */
@@ -136,7 +132,6 @@ class Request {
 
 	/**
 	 * Toggles JSON encoding/decoding for request/response bodies.
-	 *
 	 * @param bool $toggle True to enable JSON, false to disable.
 	 */
 	public function toggle_json(bool $toggle) : void {
@@ -145,7 +140,6 @@ class Request {
 
 	/**
 	 * Toggles cookie handling and optionally sets a custom cookie file.
-	 *
 	 * @param bool $toggle True to enable cookies, false to disable.
 	 * @param string|null $file Optional. The path to the cookie file. If null, the default cookie file will be used.
 	 */
@@ -160,7 +154,6 @@ class Request {
 
 	/**
 	 * Returns the current cookie file path.
-	 *
 	 * @return string The path to the cookie file.
 	 */
 	public function get_cookie_file() : string {
@@ -169,7 +162,6 @@ class Request {
 
 	/**
 	 * Sets the custom HTTP headers to be sent with requests.
-	 *
 	 * @param array $header An associative array of custom HTTP headers.
 	 */
 	public function set_header(array $header) : void {
@@ -178,7 +170,6 @@ class Request {
 
 	/**
 	 * Returns the current custom HTTP headers.
-	 *
 	 * @return array An associative array of custom HTTP headers.
 	 */
 	public function get_header() : array {
@@ -187,7 +178,6 @@ class Request {
 
 	/**
 	 * Returns the current cURL options.
-	 *
 	 * @return array An associative array of cURL options.
 	 */
 	public function get_options() : array {
@@ -196,7 +186,6 @@ class Request {
 
 	/**
 	 * Sets multiple cURL options at once.
-	 *
 	 * @param array $options An associative array of cURL options.
 	 */
 	public function set_options(array $options) : void {
@@ -205,7 +194,6 @@ class Request {
 
 	/**
 	 * Sets a single cURL option.
-	 *
 	 * @param int $option The cURL option constant (e.g., CURLOPT_TIMEOUT).
 	 * @param mixed $value The value for the cURL option.
 	 */
@@ -215,7 +203,6 @@ class Request {
 
 	/**
 	 * Makes a GET request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send as query parameters.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -227,7 +214,6 @@ class Request {
 
 	/**
 	 * Makes a HEAD request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send as query parameters.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -239,7 +225,6 @@ class Request {
 
 	/**
 	 * Makes a POST request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send in the request body.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -251,7 +236,6 @@ class Request {
 
 	/**
 	 * Makes a PUT request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send in the request body.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -263,7 +247,6 @@ class Request {
 
 	/**
 	 * Makes a DELETE request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send in the request body.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -275,7 +258,6 @@ class Request {
 
 	/**
 	 * Makes a CONNECT request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -287,7 +269,6 @@ class Request {
 
 	/**
 	 * Makes an OPTIONS request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -299,7 +280,6 @@ class Request {
 
 	/**
 	 * Makes a TRACE request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -311,7 +291,6 @@ class Request {
 
 	/**
 	 * Makes a PATCH request to the specified URL.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param array $data Optional. An associative array of data to send in the request body.
 	 * @param bool $follow Optional. Whether to follow HTTP redirects. Defaults to false.
@@ -323,7 +302,6 @@ class Request {
 
 	/**
 	 * Internal method to perform the actual cURL request.
-	 *
 	 * @param string $url The URL for the request.
 	 * @param string $method The HTTP method (e.g., 'GET', 'POST').
 	 * @param array $data An associative array of data to send with the request.
@@ -386,7 +364,6 @@ class Request {
 
 	/**
 	 * Internal method to test if a specific HTTP version is supported by a given URL.
-	 *
 	 * @param string $url The URL to test.
 	 * @param int $version The cURL HTTP version constant to test for.
 	 * @return bool True if the HTTP version is supported and the request returns a non-zero status code, false otherwise.
