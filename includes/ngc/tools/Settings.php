@@ -155,12 +155,12 @@ class Settings {
 			$this->core->pause("Press any key to back to menu");
 		} else {
 			if($this->core->get_confirm("Install .ngcs scripts support (Y/N): ")){
-				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\.ngcs /ve /d "NGC.SCRIPT" /f'));
-				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT /ve /d "'.$this->core->app_name.' Script" /f'));
-				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\DefaultIcon /ve /d "\"'.$program_path.'\NGC-TOOLKIT.ico\"" /f'));
-				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell /f'));
-				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open /f'));
-				$this->core->echo("".\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open\command /ve /d "\"'.$program_path.'\bin\Script.cmd\" \"%1\" %*" /f'));
+				$this->core->echo(\exec('reg add HKEY_CLASSES_ROOT\.ngcs /ve /d "NGC.SCRIPT" /f'));
+				$this->core->echo(\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT /ve /d "'.$this->core->app_name.' Script" /f'));
+				$this->core->echo(\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\DefaultIcon /ve /d "\"'.$program_path.'\NGC-TOOLKIT.ico\"" /f'));
+				$this->core->echo(\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell /f'));
+				$this->core->echo(\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open /f'));
+				$this->core->echo(\exec('reg add HKEY_CLASSES_ROOT\NGC.SCRIPT\shell\open\command /ve /d "\"'.$program_path.'\bin\Script.cmd\" \"%1\" %*" /f'));
 				$this->core->pause("Operation done, press any key to back to menu");
 			} else {
 				$this->core->pause("Operation aborted, press any key to back to menu");

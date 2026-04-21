@@ -143,7 +143,7 @@ class FtpTools {
 		}
 		catch(FtpException $e){
 			$this->core->echo("Failed to connect:");
-			$this->core->echo("".$e->getMessage());
+			$this->core->echo($e->getMessage());
 			if($this->core->get_confirm("Retry (Y/N): ")) goto try_login_same;
 			goto set_ftp_connection;
 		}
@@ -159,7 +159,7 @@ class FtpTools {
 		}
 		catch(FtpException $e){
 			$this->core->echo("Failed to login:");
-			$this->core->echo("".$e->getMessage());
+			$this->core->echo($e->getMessage());
 			if($this->core->get_confirm("Retry (Y/N): ")) goto try_login_same_user;
 			goto set_ftp_user;
 		}
@@ -847,7 +847,7 @@ class FtpTools {
 		}
 		catch(FtpException $e){
 			$this->core->echo("Failed to connect:");
-			$this->core->echo("".$e->getMessage());
+			$this->core->echo($e->getMessage());
 			goto set_label;
 		}
 		$ftp->set_option(FTP_TIMEOUT_SEC, 300);

@@ -216,7 +216,7 @@ class MySQLTools {
 		}
 		catch(PDOException $e){
 			$this->core->echo("Failed to connect:");
-			$this->core->echo("".$e->getMessage());
+			$this->core->echo($e->getMessage());
 			if($this->core->get_confirm("Retry (Y/N): ")) goto try_login_same;
 			goto set_db_connection;
 		}
@@ -1163,7 +1163,7 @@ class MySQLTools {
 			}
 		}
 		catch(PDOException $e){
-			$this->core->echo("".$e->getMessage());
+			$this->core->echo($e->getMessage());
 			if($save_output) $this->core->write_data(" ".$e->getMessage());
 		}
 		goto query;
