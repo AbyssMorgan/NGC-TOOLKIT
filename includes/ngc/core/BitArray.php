@@ -122,7 +122,7 @@ class BitArray {
 	 * @param string $hex The hexadecimal string.
 	 */
 	public function from_hex(string $hex) : void {
-		$this->from_binary(\hex2bin($hex), \strlen($hex) * 2);
+		$this->from_binary(\hex2bin($hex), \strlen($hex) / 2);
 	}
 
 	/**
