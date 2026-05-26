@@ -179,7 +179,7 @@ class MySQLTools {
 		if($db['name'] == '#') return false;
 		$db['user'] = $this->core->get_input("DB User: ");
 		if($db['user'] == '#') return false;
-		$db['password'] = $this->core->get_input_password(" DB Pass: ");
+		$db['password'] = $this->core->get_input_password("DB Pass: ");
 		if($db['password'] == '#') return false;
 
 		$db['ssl'] = $this->core->get_confirm("DB SSL (Y/N): ");
@@ -1056,7 +1056,7 @@ class MySQLTools {
 		}
 
 		$this->core->echo("Backup for \"$label\" done");
-		$this->core->write_log(" Backup for \"$label\" done");
+		$this->core->write_log("Backup for \"$label\" done");
 		return true;
 	}
 
@@ -1147,14 +1147,14 @@ class MySQLTools {
 			$last_insert_id = $db->get_connection()->lastInsertId();
 			if($last_insert_id){
 				$this->core->echo("Last insert id: $last_insert_id");
-				if($save_output) $this->core->write_data(" Last insert id: $last_insert_id");
+				if($save_output) $this->core->write_data("Last insert id: $last_insert_id");
 			} elseif(\count($results) == 0){
 				if(\substr($lquery, 0, 6) == 'select' || \substr($lquery, 0, 4) == 'show'){
 					$this->core->echo("MySQL returned an empty result");
-					if($save_output) $this->core->write_data(" MySQL returned an empty result");
+					if($save_output) $this->core->write_data("MySQL returned an empty result");
 				} else {
 					$this->core->echo("Done");
-					if($save_output) $this->core->write_data(" Done");
+					if($save_output) $this->core->write_data("Done");
 				}
 			} else {
 				$results = $db->results_to_string($results, $ini->get('SAVE_RESULTS_SEPARATOR'));
@@ -1164,7 +1164,7 @@ class MySQLTools {
 		}
 		catch(PDOException $e){
 			$this->core->echo($e->getMessage());
-			if($save_output) $this->core->write_data(" ".$e->getMessage());
+			if($save_output) $this->core->write_data($e->getMessage());
 		}
 		goto query;
 

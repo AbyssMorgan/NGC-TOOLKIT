@@ -151,7 +151,7 @@ class FtpTools {
 		set_ftp_user:
 		$auth['user'] = $this->core->get_input("FTP User: ");
 		if($auth['user'] == '#') return false;
-		$auth['password'] = $this->core->get_input_password(" FTP Pass: ");
+		$auth['password'] = $this->core->get_input_password("FTP Pass: ");
 		if($auth['password'] == '#') return false;
 		try {
 			try_login_same_user:
@@ -263,7 +263,7 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false){
 			$ftp->close();
 			return false;
@@ -340,7 +340,7 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false){
 			$ftp->close();
 			return false;
@@ -407,7 +407,7 @@ class FtpTools {
 			return false;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false){
 			$ftp->close();
 			return false;
@@ -511,7 +511,7 @@ class FtpTools {
 			goto set_input;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false){
 			$ftp->close();
 			return false;
@@ -689,7 +689,7 @@ class FtpTools {
 			goto set_output;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false){
 			$ftp_source->close();
 			$ftp_destination->close();

@@ -302,9 +302,9 @@ class FileFunctions {
 			if(\file_exists($file_path)) $this->core->delete($file_path);
 			$fp = \fopen($file_path, "w");
 			if($small_mode){
-				$this->core->current_line(" Files: $i / $quantity");
+				$this->core->current_line("Files: $i / $quantity");
 			} else {
-				$this->core->current_line(" Files: $i / $quantity Progress: 0.00 %");
+				$this->core->current_line("Files: $i / $quantity Progress: 0.00 %");
 			}
 			if($fp){
 				$this->core->write_log("FILE CREATE WITH DISK ALLOCATION \"$file_path\" Size: $size_text");
@@ -318,9 +318,9 @@ class FileFunctions {
 				while($bytes_needle > 0){
 					$percent = \sprintf("%.02f", ($current_size / $per_file_size) * 100.0);
 					if($small_mode){
-						$this->core->current_line( " Files: $i / $quantity");
+						$this->core->current_line("Files: $i / $quantity");
 					} else {
-						$this->core->current_line( " Files: $i / $quantity Progress: $percent %");
+						$this->core->current_line("Files: $i / $quantity Progress: $percent %");
 					}
 					if($bytes_needle > $write_buffer){
 						$current_size += $write_buffer;
@@ -341,9 +341,9 @@ class FileFunctions {
 					}
 				}
 				if($small_mode){
-					$this->core->current_line( " Files: $i / $quantity");
+					$this->core->current_line("Files: $i / $quantity");
 				} else {
-					$this->core->current_line( " Files: $i / $quantity Progress: 100.00 %");
+					$this->core->current_line("Files: $i / $quantity Progress: 100.00 %");
 				}
 				\fclose($fp);
 				$this->core->write_log("FILE CREATION FINISH \"$file_path\"");
@@ -367,7 +367,7 @@ class FileFunctions {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->setup_folders($folders);
@@ -441,7 +441,7 @@ class FileFunctions {
 			goto set_output;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->echo("Empty for none, separate with spaces for multiple");
@@ -497,7 +497,7 @@ class FileFunctions {
 			goto set_output;
 		}
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->echo("Empty for none, separate with spaces for multiple");

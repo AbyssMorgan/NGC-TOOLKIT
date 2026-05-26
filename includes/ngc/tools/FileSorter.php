@@ -90,7 +90,7 @@ class FileSorter {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->setup_folders($folders);
@@ -179,7 +179,7 @@ class FileSorter {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->setup_folders($folders);
@@ -246,7 +246,7 @@ class FileSorter {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->setup_folders($folders);

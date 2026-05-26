@@ -62,7 +62,7 @@ class FileEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		set_keyword_file:
@@ -139,7 +139,7 @@ class FileEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		set_keyword_file:
@@ -450,7 +450,7 @@ class FileEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->echo("Empty for none, separate with spaces for multiple");

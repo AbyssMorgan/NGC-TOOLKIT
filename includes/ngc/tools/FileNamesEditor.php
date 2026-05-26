@@ -525,7 +525,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->setup_folders($folders);
@@ -624,7 +624,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->echo("Empty for none, separate with spaces for multiple");
@@ -975,7 +975,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$prefix = $this->core->get_input("Prefix (may be empty): ", false);
@@ -1044,7 +1044,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$keywords = [];
@@ -1138,7 +1138,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		$this->core->setup_folders($folders);
@@ -1193,7 +1193,7 @@ class FileNamesEditor {
 		$folders = $this->core->get_input_multiple_folders("Folders: ", false);
 		if($folders === false) return false;
 
-		$extensions = $this->core->get_input_extensions(" Extensions: ");
+		$extensions = $this->core->get_input_extensions("Extensions: ");
 		if($extensions === false) return false;
 
 		set_keyword_file:
