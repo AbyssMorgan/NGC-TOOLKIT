@@ -89,8 +89,8 @@ class MySQL {
 			$this->db = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
-			echo " Failed to connect:\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed to connect:\r\n";
+			echo $e->getMessage()."\r\n";
 			return false;
 		}
 		return true;

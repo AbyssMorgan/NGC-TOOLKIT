@@ -193,8 +193,8 @@ class DataBaseBackup {
 			$this->source = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
-			echo " Failed to connect:\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed to connect:\r\n";
+			echo $e->getMessage()."\r\n";
 			return false;
 		}
 		$this->database = $dbname;
@@ -226,8 +226,8 @@ class DataBaseBackup {
 			$this->destination = new PDO("mysql:".($dbname == "*" ? "" : "dbname=$dbname;")."host=$host;port=$port;charset=utf8mb4", $user, $password, $options);
 		}
 		catch(PDOException $e){
-			echo " Failed to connect:\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed to connect:\r\n";
+			echo $e->getMessage()."\r\n";
 			return false;
 		}
 		return true;
@@ -574,11 +574,11 @@ class DataBaseBackup {
 			\fwrite($file, $this->get_table_drop($table)."\n\n");
 			\fwrite($file, $creation['query']."\n\n");
 			\fwrite($file, "\n".$this->get_footer()."\n");
-			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+			echo "Table structure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			echo "\n Failed make backup for table structure $table, skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed make backup for table structure $table reason: ".$e->getMessage();
 		}
 		\fclose($file);
@@ -608,11 +608,11 @@ class DataBaseBackup {
 			$this->destination->query($creation['query']);
 			$this->alters .= $creation['alters']."\n";
 			$this->destination->query($this->get_footer());
-			echo " Table structure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+			echo "Table structure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
-			echo " Failed clone table $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone table $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone table structure $table reason: ".$e->getMessage();
 		}
 		return $errors;
@@ -635,7 +635,7 @@ class DataBaseBackup {
 			\fwrite($file, "-- やあ --\n\n");
 			\fwrite($file, $this->get_header()."\n\n");
 			\fwrite($file, "SET foreign_key_checks = 0;\n\n");
-			echo " Table data: `$this->database`.`$table` Progress: 0.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r";
+			echo "Table data: `$this->database`.`$table` Progress: 0.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r";
 			$insert = $this->get_insert($table, \array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
@@ -644,7 +644,7 @@ class DataBaseBackup {
 			if($count > 0){
 				do {
 					$percent = \sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table data: `$this->database`.`$table` Progress: $percent % \x20\x20\x20\x20\x20\x20\x20\r";
+					echo "Table data: `$this->database`.`$table` Progress: $percent % \x20\x20\x20\x20\x20\x20\x20\r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					$query = '';
@@ -701,7 +701,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			\fwrite($file, "SET foreign_key_checks = 1;\n\n");
 			\fwrite($file, "\n".$this->get_footer()."\n");
-			echo " Table data: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+			echo "Table data: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			try {
@@ -711,7 +711,7 @@ class DataBaseBackup {
 
 			}
 			echo "\n Failed make backup for table data $table, skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed make backup for table data $table reason: ".$e->getMessage();
 		}
 		\fclose($file);
@@ -731,7 +731,7 @@ class DataBaseBackup {
 			$columns = $this->get_columns($table);
 			$this->destination->query($this->get_header());
 			$this->destination->query("SET foreign_key_checks = 0;");
-			echo " Table: `$this->database`.`$table` Progress: 0.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r";
+			echo "Table: `$this->database`.`$table` Progress: 0.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r";
 			$insert = $this->get_insert($table, \array_keys($columns))." VALUES\n";
 			if($this->lock_tables) $this->source->query("LOCK TABLE `$table` WRITE");
 			$results = $this->source->query("SELECT count(*) AS cnt FROM `$table`");
@@ -740,7 +740,7 @@ class DataBaseBackup {
 			if($count > 0){
 				do {
 					$percent = \sprintf("%.02f", ($offset / $count) * 100.0);
-					echo " Table: `$this->database`.`$table` Progress: $percent % \x20\x20\x20\x20\x20\x20\x20\r";
+					echo "Table: `$this->database`.`$table` Progress: $percent % \x20\x20\x20\x20\x20\x20\x20\r";
 					$rows = $this->source->query("SELECT * FROM `$table` LIMIT $offset, $this->query_limit", PDO::FETCH_OBJ);
 					$seek = 0;
 					foreach($rows as $row){
@@ -797,7 +797,7 @@ class DataBaseBackup {
 			if($this->lock_tables) $this->source->query("UNLOCK TABLES");
 			$this->destination->query("SET foreign_key_checks = 1;");
 			$this->destination->query($this->get_footer());
-			echo " Table: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+			echo "Table: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			try {
@@ -806,8 +806,8 @@ class DataBaseBackup {
 			catch(PDOException $ee){
 
 			}
-			echo " Failed clone table data $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone table data $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone table data $table reason: ".$e->getMessage();
 		}
 		return $errors;
@@ -830,11 +830,11 @@ class DataBaseBackup {
 			\fwrite($file, $this->get_view_drop($table)."\n\n");
 			\fwrite($file, $this->get_view_creation($table)."\n\n");
 			\fwrite($file, "\n".$this->get_footer()."\n");
-			echo " View: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+			echo "View: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		}
 		catch(PDOException $e){
 			echo "\n Failed make backup for view $table, skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed make backup for view $table reason: ".$e->getMessage();
 		}
 		\fclose($file);
@@ -855,11 +855,11 @@ class DataBaseBackup {
 			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
-			echo " Failed clone view $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone view $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone view $table reason: ".$e->getMessage();
 		}
-		echo " View: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "View: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -882,11 +882,11 @@ class DataBaseBackup {
 			\fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
-			echo " Failed clone function $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone function $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone function $table reason: ".$e->getMessage();
 		}
-		echo " Function: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Function: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -905,11 +905,11 @@ class DataBaseBackup {
 			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
-			echo " Failed clone function $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone function $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone function $table reason: ".$e->getMessage();
 		}
-		echo " Function: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Function: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -932,11 +932,11 @@ class DataBaseBackup {
 			\fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
-			echo " Failed clone procedure $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone procedure $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone procedure $table reason: ".$e->getMessage();
 		}
-		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Procedure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -955,11 +955,11 @@ class DataBaseBackup {
 			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
-			echo " Failed clone procedure $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone procedure $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone procedure $table reason: ".$e->getMessage();
 		}
-		echo " Procedure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Procedure: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -982,11 +982,11 @@ class DataBaseBackup {
 			\fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
-			echo " Failed clone event $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone event $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone event $table reason: ".$e->getMessage();
 		}
-		echo " Event: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Event: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -1005,11 +1005,11 @@ class DataBaseBackup {
 			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
-			echo " Failed clone event $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone event $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone event $table reason: ".$e->getMessage();
 		}
-		echo " Event: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Event: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -1032,11 +1032,11 @@ class DataBaseBackup {
 			\fwrite($file, "\n".$this->get_footer()."\n");
 		}
 		catch(PDOException $e){
-			echo " Failed clone trigger $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone trigger $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone trigger $table reason: ".$e->getMessage();
 		}
-		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Trigger: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		\fclose($file);
 		return $errors;
 	}
@@ -1055,11 +1055,11 @@ class DataBaseBackup {
 			$this->destination->query($this->get_footer());
 		}
 		catch(PDOException $e){
-			echo " Failed clone trigger $table skipping\r\n";
-			echo " ".$e->getMessage()."\r\n";
+			echo "Failed clone trigger $table skipping\r\n";
+			echo $e->getMessage()."\r\n";
 			$errors[] = "Failed clone trigger $table reason: ".$e->getMessage();
 		}
-		echo " Trigger: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
+		echo "Trigger: `$this->database`.`$table` Progress: 100.00 %\x20\x20\x20\x20\x20\x20\x20\x20\r\n";
 		return $errors;
 	}
 
@@ -1114,7 +1114,7 @@ class DataBaseBackup {
 				$this->destination->query($this->get_alters());
 			}
 			catch(PDOException $e){
-				echo " Failed to execute ALTER TABLE statements: ".$e->getMessage()."\r\n";
+				echo "Failed to execute ALTER TABLE statements: ".$e->getMessage()."\r\n";
 				$errors[] = "Failed to execute ALTER TABLE statements reason: ".$e->getMessage();
 			}
 		}
