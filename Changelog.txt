@@ -1,3 +1,11 @@
+v2.9.3:
+- Updated tool: File Editor > Replace keywords in files (Fix UTF-8 characters)
+- Updated tool: File Editor > Remove keywords in files (Fix UTF-8 characters)
+- Updated tool: Directory Names Editor > Remove keywords from directory name (Fix UTF-8 characters)
+- Updated tool: Directory Names Editor > Insert string into directory name (Fix UTF-8 characters)
+- Updated tool: File Names Editor > Remove keywords from directory name (Fix UTF-8 characters)
+- Updated tool: File Names Editor > Insert string into directory name (Fix UTF-8 characters)
+
 v2.9.2:
 - Fixes
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace NGC\Core;
 
+use Normalizer;
 use Exception;
 use FilesystemIterator;
 use IntlTimeZone;
@@ -2139,6 +2140,19 @@ class Core {
 		foreach($items as $item){
 			$this->echo(\implode("", $item));
 		}
+	}
+	
+	/**
+	 * Prepare text for UTF-8 replacements
+	 * @param string $text
+	 * @param bool $trim_bom
+	 * @return bool|string
+	 */
+	public function normalize_text(string $text, bool $trim_bom = true) : string {
+		if($trim_bom){
+			$text = \preg_replace('/^\xEF\xBB\xBF/u', '', $text);
+		}
+		return Normalizer::normalize($text, Normalizer::FORM_C);
 	}
 
 }

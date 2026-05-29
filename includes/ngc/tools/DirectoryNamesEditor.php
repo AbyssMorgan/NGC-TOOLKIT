@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -16,7 +16,7 @@ namespace NGC\Tools;
 use Toolkit;
 use NGC\Services\StringConverter;
 
-class DirectoryNamesEditor {
+final class DirectoryNamesEditor {
 
 	private string $name = "Directory Names Editor";
 	private string $action;
@@ -302,7 +302,7 @@ class DirectoryNamesEditor {
 			if($quantity === false) return false;
 
 			for($i = 0; $i < $quantity; $i++){
-				$keywords[$i] = $this->core->get_input("Keyword ".($i + 1).": ", false);
+				$keywords[$i] = $this->core->normalize_text($this->core->get_input("Keyword ".($i + 1).": ", false));
 			}
 		} elseif($params['mode'] == '1'){
 			set_keyword_file:
@@ -315,7 +315,7 @@ class DirectoryNamesEditor {
 				goto set_keyword_file;
 			}
 			while(($line = \fgets($fp)) !== false){
-				$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+				$line = $this->core->normalize_text($line);
 				if(empty(\trim($line))) continue;
 				\array_push($keywords, $line);
 			}
@@ -333,7 +333,12 @@ class DirectoryNamesEditor {
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
-				$name = \trim(\str_replace($keywords, '', \pathinfo($file, PATHINFO_BASENAME)));
+				$name = $this->core->normalize_text(\pathinfo($file, PATHINFO_BASENAME));
+				foreach($keywords as $keyword){
+					$keyword = \preg_quote($keyword, '/');
+					$name = \preg_replace("/$keyword/u", '', $name);
+				}
+				$name = \trim($name);
 				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");
@@ -451,13 +456,15 @@ class DirectoryNamesEditor {
 		$errors = 0;
 		while(($line = \fgets($fp)) !== false){
 			$i++;
-			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
-			if(empty(\trim($line))) continue;
+			$line = \trim($this->core->normalize_text($line));
+			if(empty($line)) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->core->echo("Failed parse replacement in line $i content: '$line'");
 				$errors++;
 			} else {
+				$replace[0] = $this->core->normalize_text($replace[0]);
+				$replace[1] = $this->core->normalize_text($replace[1]);
 				$replacements[$replace[0]] = $replace[1];
 			}
 		}
@@ -478,7 +485,13 @@ class DirectoryNamesEditor {
 			foreach($files as $file){
 				$items++;
 				if(!\file_exists($file)) continue 1;
-				$name = \trim(\str_replace(\array_keys($replacements), $replacements, \pathinfo($file, PATHINFO_BASENAME)));
+				$name = $this->core->normalize_text(\pathinfo($file, PATHINFO_BASENAME));
+				foreach($replacements as $from => $to){
+					$from = \preg_quote($from, '/');
+					$to = \preg_quote($to, '/');
+					$name = \preg_replace("/$from/u", $to, $name);
+				}
+				$name = \trim($name);
 				$new_name = $this->core->get_path(\pathinfo($file, PATHINFO_DIRNAME)."/$name");
 				if(empty($new_name)){
 					$this->core->write_error("ESCAPED NAME IS EMPTY \"$file\"");

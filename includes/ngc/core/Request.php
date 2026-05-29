@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -338,9 +338,13 @@ class Request {
 			$options[CURLOPT_COOKIEJAR] = $this->cookie_file;
 		}
 		if(\str_starts_with($url, 'https://')){
-			$options[CURLOPT_SSL_VERIFYHOST] = 2;
-			$options[CURLOPT_SSL_VERIFYPEER] = true;
-			if(!\is_null($this->cacert) && \file_exists($this->cacert)){
+			if(!isset($options[CURLOPT_SSL_VERIFYHOST])){
+				$options[CURLOPT_SSL_VERIFYHOST] = 2;
+			}
+			if(!isset($options[CURLOPT_SSL_VERIFYPEER])){
+				$options[CURLOPT_SSL_VERIFYPEER] = true;
+			}
+			if(!isset($options[CURLOPT_CAINFO]) && !\is_null($this->cacert) && \file_exists($this->cacert)){
 				$options[CURLOPT_CAINFO] = $this->cacert;
 			}
 		}

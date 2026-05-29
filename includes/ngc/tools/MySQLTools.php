@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -22,7 +22,7 @@ use NGC\Core\MySQL;
 use NGC\Services\DataBaseBackup;
 use Pdo\Mysql as PdoMySQL;
 
-class MySQLTools {
+final class MySQLTools {
 
 	private string $name = "MySQL Tools";
 	private string $action;

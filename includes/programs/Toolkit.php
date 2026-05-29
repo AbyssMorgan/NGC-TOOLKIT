@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -30,12 +30,12 @@ use NGC\Tools\MediaTools;
 use NGC\Tools\MySQLTools;
 use NGC\Tools\Settings;
 
-class Toolkit extends Core {
+final class Toolkit extends Core {
 
 	public string $app_data;
 	public bool $abort = false;
 	public string $app_name = "NGC-TOOLKIT";
-	public string $version = "2.9.2";
+	public string $version = "2.9.3";
 	public AppStorage $storage;
 	public MediaFunctions $media;
 

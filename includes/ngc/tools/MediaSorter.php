@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -17,7 +17,7 @@ use Exception;
 use Toolkit;
 use Imagick;
 
-class MediaSorter {
+final class MediaSorter {
 
 	private string $name = "Media Sorter";
 	private string $action;

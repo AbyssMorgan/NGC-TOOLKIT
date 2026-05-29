@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -18,7 +18,7 @@ use NGC\Services\GuardPattern;
 use NGC\Services\GuardDriver;
 use NGC\Core\IniFile;
 
-class CheckFileIntegrity {
+final class CheckFileIntegrity {
 
 	private string $name = "Check File Integrity";
 	private string $action;

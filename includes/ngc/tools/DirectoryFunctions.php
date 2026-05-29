@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -16,7 +16,7 @@ namespace NGC\Tools;
 use Toolkit;
 use FilesystemIterator;
 
-class DirectoryFunctions {
+final class DirectoryFunctions {
 
 	private string $name = "Directory Functions";
 	private string $action;

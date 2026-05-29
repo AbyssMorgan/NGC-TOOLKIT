@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -17,7 +17,7 @@ use Toolkit;
 use Exception;
 use NGC\Services\StringConverter;
 
-class FileEditor {
+final class FileEditor {
 
 	private string $name = "File Editor";
 	private string $action;
@@ -79,13 +79,15 @@ class FileEditor {
 		$errors = 0;
 		while(($line = \fgets($fp)) !== false){
 			$i++;
-			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
-			if(empty(\trim($line))) continue;
+			$line = \trim($this->core->normalize_text($line));
+			if(empty($line)) continue;
 			$replace = $this->core->parse_input_path($line, false);
 			if(!isset($replace[0]) || !isset($replace[1]) || isset($replace[2])){
 				$this->core->echo("Failed parse replacement in line $i content: '$line'");
 				$errors++;
 			} else {
+				$replace[0] = $this->core->normalize_text($replace[0]);
+				$replace[1] = $this->core->normalize_text($replace[1]);
 				$replacements[$replace[0]] = $replace[1];
 			}
 		}
@@ -107,8 +109,13 @@ class FileEditor {
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				try {
-					$content = \file_get_contents($file);
-					$new_content = \str_replace(\array_keys($replacements), $replacements, $content);
+					$content = $this->core->normalize_text(\file_get_contents($file), false);
+					$new_content = $content;
+					foreach($replacements as $from => $to){
+						$from = \preg_quote($from, '/');
+						$to = \preg_quote($to, '/');
+						$new_content = \preg_replace("/$from/u", $to, $new_content);
+					}
 					$changed = $content != $new_content;
 					unset($content);
 					if($changed){
@@ -153,7 +160,7 @@ class FileEditor {
 			goto set_keyword_file;
 		}
 		while(($line = \fgets($fp)) !== false){
-			$line = \str_replace(["\n", "\r", $this->core->utf8_bom], "", $line);
+			$line = $this->core->normalize_text($line);
 			if(empty(\trim($line))) continue;
 			\array_push($keywords, $line);
 		}
@@ -171,8 +178,12 @@ class FileEditor {
 				$items++;
 				if(!\file_exists($file)) continue 1;
 				try {
-					$content = \file_get_contents($file);
-					$new_content = \str_replace($keywords, '', $content);
+					$content = $this->core->normalize_text(\file_get_contents($file), false);
+					$new_content = $content;
+					foreach($keywords as $keyword){
+						$keyword = \preg_quote($keyword, '/');
+						$new_content = \preg_replace("/$keyword/u", '', $new_content);
+					}
 					$changed = ($content != $new_content);
 					unset($content);
 					if($changed){

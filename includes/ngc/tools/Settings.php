@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -17,7 +17,7 @@ use Toolkit;
 use NGC\Core\Request;
 use NGC\Core\IniFile;
 
-class Settings {
+final class Settings {
 
 	private string $name = "Settings";
 	private string $action;

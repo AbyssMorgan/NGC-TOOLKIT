@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -18,7 +18,7 @@ use Exception;
 use NGC\Core\IniFile;
 use NGC\Core\JournalService;
 
-class AdmFileConverter {
+final class AdmFileConverter {
 
 	private string $name = "ADM File Converter";
 	private string $action;

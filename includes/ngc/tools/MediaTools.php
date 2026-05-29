@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -21,7 +21,7 @@ use NGC\Core\IniFile;
 use NGC\Services\FaceDetector;
 use NGC\Extensions\SubtitlesValidator;
 
-class MediaTools {
+final class MediaTools {
 
 	private string $name = "Media Tools";
 	private string $action;

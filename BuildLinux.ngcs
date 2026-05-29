@@ -1,6 +1,6 @@
-@AppType NGC_SCRIPT 2.9.2
+@AppType NGC_SCRIPT 2.9.3
 <?php
-class BuildLinux {
+final class BuildLinux {
 
 	private string $name = "Build Linux";
 	private Script $core;

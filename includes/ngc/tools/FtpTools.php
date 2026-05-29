@@ -1,7 +1,7 @@
 <?php
 
 /**
- * NGC-TOOLKIT v2.9.2 – Component
+ * NGC-TOOLKIT v2.9.3 – Component
  *
  * © 2026 Abyss Morgan
  *
@@ -20,7 +20,7 @@ use NGC\Core\FtpService;
 use FtpClient\FtpClient;
 use FtpClient\FtpException;
 
-class FtpTools {
+final class FtpTools {
 
 	private string $name = "Ftp Tools";
 	private string $action;
