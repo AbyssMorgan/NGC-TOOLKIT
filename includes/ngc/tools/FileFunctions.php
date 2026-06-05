@@ -278,17 +278,23 @@ final class FileFunctions {
 
 		switch($params['mode']){
 			case '0': {
-				$this->core->print_help([" Creating single file of size ".$this->core->format_bytes($bytes, 0, false)]);
+				$this->core->print_help([
+					"Creating single file of size ".$this->core->format_bytes($bytes, 0, false)
+				]);
 				$per_file_size = $bytes;
 				break;
 			}
 			case '1': {
-				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes($bytes, 0, false)." in total ".$this->core->format_bytes($bytes * $quantity, 0, false)]);
+				$this->core->print_help([
+					"Creating $quantity files of size ".$this->core->format_bytes($bytes, 0, false)." in total ".$this->core->format_bytes($bytes * $quantity, 0, false)
+				]);
 				$per_file_size = $bytes;
 				break;
 			}
 			case '2': {
-				$this->core->print_help([" Creating $quantity files of size ".$this->core->format_bytes(\intval(\floor($bytes / $quantity)), 0, false)." in total ".$this->core->format_bytes($bytes, 0, false)]);
+				$this->core->print_help([
+					"Creating $quantity files of size ".$this->core->format_bytes(\intval(\floor($bytes / $quantity)), 0, false)." in total ".$this->core->format_bytes($bytes, 0, false)
+				]);
 				$per_file_size = \intval(\floor($bytes / $quantity));
 				break;
 			}

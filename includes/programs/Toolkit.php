@@ -189,7 +189,9 @@ final class Toolkit extends Core {
 		switch(mb_strtolower($this->command ?? '')){
 			case '--make-backup': {
 				if(empty($this->arguments[0] ?? '')){
-					$this->print_help([" Usage: --make-backup <label> [dbname]"]);
+					$this->print_help([
+						"Usage: --make-backup <label> [dbname]"
+					]);
 				} else {
 					$this->tool = new MySQLTools($this);
 					$this->tool->tool_make_backup_cmd($this->arguments[0] ?? '', $this->arguments[1] ?? null);

@@ -1114,7 +1114,10 @@ final class MySQLTools {
 
 		$save_output = $this->core->get_confirm("Save query results in data file (Y/N): ");
 		if($save_output){
-			$this->core->write_data([" Query results for: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'), ""]);
+			$this->core->write_data([
+				"Query results for: ".$ini->get('DB_HOST').":".$ini->get('DB_PORT')."@".$ini->get('DB_USER'),
+				""
+			]);
 		}
 
 		clear:
@@ -1141,7 +1144,12 @@ final class MySQLTools {
 				goto query;
 			}
 
-			if($save_output) $this->core->write_data([" ".$query, ""]);
+			if($save_output){
+				$this->core->write_data([
+					$query,
+					""
+				]);
+			}
 			$sth = $db->query($query);
 			$results = $sth->fetchAll(PDO::FETCH_ASSOC);
 			$last_insert_id = $db->get_connection()->lastInsertId();
