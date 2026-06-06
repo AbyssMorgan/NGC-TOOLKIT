@@ -135,7 +135,7 @@ final class MySQLTools {
 	}
 
 	public function get_data_base(PDO $connection) : ?string {
-		$sth = $connection->query("SELECT DATABASE() AS `name`;");
+		$sth = $connection->query("SELECT DATABASE() AS `name`");
 		$result = $sth->fetch(PDO::FETCH_OBJ);
 		return $result->name ?? null;
 	}
